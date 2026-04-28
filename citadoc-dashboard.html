@@ -865,16 +865,22 @@ body {
     const plan           = medico.plan || 'gratuito';
     const url            = 'citadoc.lat/medico/' + slug;
 
-    // Sidebar — nombre y especialidad
-    const nameEl = document.querySelector('.doc-info-sm .name');
-    const roleEl = document.querySelector('.doc-info-sm .role');
-    const planEl = document.querySelector('.plan-badge-sm');
+    // Sidebar — nombre y especialidad (IDs dinámicos)
+    const nameEl = document.getElementById('sidebarNombre');
+    const roleEl = document.getElementById('sidebarEspecialidad');
+    const planEl = document.getElementById('sidebarPlan');
     if (nameEl) nameEl.textContent = nombreCompleto;
-    if (roleEl) roleEl.textContent = especialidad;
+    if (roleEl) roleEl.textContent = especialidad || '—';
     if (planEl) planEl.textContent = plan === 'destacado' ? '⭐ Destacado' : 'Plan Gratuito';
 
+    // Avatar sidebar
+    const avatarSm = document.getElementById('sidebarAvatar');
+    if (avatarSm && medico.foto_url) {
+      avatarSm.innerHTML = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+    }
+
     // URL sidebar
-    const urlEl = document.querySelector('.url-sidebar-text');
+    const urlEl = document.getElementById('sidebarUrl');
     if (urlEl) urlEl.textContent = url;
 
     // URL en perfil
@@ -883,12 +889,17 @@ body {
     const successUrl = document.getElementById('success-url');
     if (successUrl) successUrl.textContent = url;
 
-    // Panel perfil — rellenar campos
-    const inputs = document.querySelectorAll('#ptab-info input');
-    const vals = [medico.nombre, medico.apellido, medico.titulo, especialidad,
-                  medico.precio, medico.anos_experiencia || '', ciudad, medico.pais || 'Ecuador',
-                  medico.direccion || '', medico.senescyt || '', medico.telefono || ''];
-    inputs.forEach((inp, i) => { if (vals[i] !== undefined) inp.value = vals[i]; });
+    // Panel perfil — rellenar campos por ID
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
+    setVal('inf-nombre',      medico.nombre);
+    setVal('inf-apellido',    medico.apellido);
+    setVal('inf-titulo',      medico.titulo || 'Dr.');
+    setVal('inf-especialidad', (medico.especialidades||[])[0] || '');
+    setVal('inf-precio',      medico.precio);
+    setVal('inf-anos',        medico.anos_experiencia || '');
+    setVal('inf-direccion',   medico.direccion || '');
+    setVal('inf-senescyt',    medico.senescyt || '');
+    setVal('inf-telefono',    medico.telefono || '');
 
     // Bio
     const bioEl = document.getElementById('bioTextarea');
@@ -946,6 +957,7 @@ body {
     // Cargar citas y formación en paralelo
     cargarCitasHoy(medico.id);
     cargarFormacionLogros(medico.id);
+    cargarCitasCalendario(medico.id);
   }
 
   // Cargar citas de hoy desde Supabase
@@ -1026,6 +1038,33 @@ body {
     if (tot)  tot.textContent  = total   || 0;
   }
 
+  // Cargar citas del mes para el calendario
+  async function cargarCitasCalendario(medicoId) {
+    const hoy = new Date();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+    const finMes    = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
+
+    const { data: citas } = await _supabase
+      .from('citas').select('fecha, hora, paciente_nombre, estado')
+      .eq('medico_id', medicoId)
+      .gte('fecha', inicioMes).lte('fecha', finMes)
+      .neq('estado', 'cancelada');
+
+    if (!citas || citas.length === 0) return;
+
+    // Agrupar por día
+    citas.forEach(c => {
+      const dia = parseInt(c.fecha.split('-')[2]);
+      if (!EVENTS[dia]) EVENTS[dia] = [];
+      EVENTS[dia].push({ text: c.hora + ' ' + c.paciente_nombre.split(' ')[0], type: 'green' });
+    });
+
+    // Re-render calendario si está visible
+    if (document.getElementById('panel-calendario').classList.contains('active')) {
+      renderBigCal();
+    }
+  }
+
   async function cancelarCita(citaId) {
     if (!confirm('¿Cancelar esta cita?')) return;
     await _supabase.from('citas').update({ estado: 'cancelada' }).eq('id', citaId);
@@ -1073,11 +1112,11 @@ body {
   <a href="citadoc-index.html" class="sidebar-logo">Cita<span>Doc</span></a>
 
   <div class="sidebar-doctor">
-    <div class="doc-avatar-sm">👨‍⚕️</div>
+    <div class="doc-avatar-sm" id="sidebarAvatar">👨‍⚕️</div>
     <div class="doc-info-sm">
-      <div class="name">Dr. Juan Pérez</div>
-      <div class="role">Cardiología</div>
-      <div class="plan-badge-sm">⭐ Destacado</div>
+      <div class="name" id="sidebarNombre">Cargando...</div>
+      <div class="role" id="sidebarEspecialidad">—</div>
+      <div class="plan-badge-sm" id="sidebarPlan">—</div>
     </div>
   </div>
 
@@ -1106,7 +1145,7 @@ body {
   <div class="sidebar-bottom">
     <div class="url-sidebar">
       <div class="url-sidebar-label">Tu link</div>
-      <div class="url-sidebar-text">citadoc.com/medico/dr-juan-perez</div>
+      <div class="url-sidebar-text" id="sidebarUrl">—</div>
       <button class="btn-copy-sm" onclick="copySidebarUrl(this)">📋 Copiar link</button>
     </div>
     <button class="btn-logout">↩ Cerrar sesión</button>
@@ -1116,7 +1155,7 @@ body {
 <!-- ══ MAIN ══ -->
 <div class="main">
   <div class="topbar">
-    <div class="topbar-title" id="topbarTitle">Inicio</div>
+    <div class="topbar-title" id="topbarTitle">Panel médico</div>
     <div class="topbar-right">
       <span class="topbar-date" id="topbarDate"></span>
       <a href="citadoc-perfil.html" class="btn-perfil-publico">👁 Ver perfil público</a>
@@ -1445,12 +1484,12 @@ body {
           <!-- TAB: Información básica -->
           <div class="perfil-tab-panel active" id="ptab-info">
             <div class="pf-row">
-              <div class="pf-field"><label>Nombre</label><input type="text" value="Juan"></div>
-              <div class="pf-field"><label>Apellido</label><input type="text" value="Pérez"></div>
+              <div class="pf-field"><label>Nombre</label><input type="text" id="inf-nombre" value=""></div>
+              <div class="pf-field"><label>Apellido</label><input type="text" id="inf-apellido" value=""></div>
             </div>
             <div class="pf-row">
-              <div class="pf-field"><label>Título</label><input type="text" value="Dr."></div>
-              <div class="pf-field"><label>Especialidad principal</label><input type="text" value="Cardiología"></div>
+              <div class="pf-field"><label>Título</label><input type="text" id="inf-titulo" value=""></div>
+              <div class="pf-field"><label>Especialidad principal</label><input type="text" id="inf-especialidad" value=""></div>
             </div>
             <div class="pf-row one">
               <div class="pf-field">
@@ -1461,12 +1500,12 @@ body {
                     <span class="ai-spin">⟳</span>
                   </button>
                 </div>
-                <textarea id="bioTextarea" style="min-height:110px">Cardiólogo con 12 años de experiencia en diagnóstico y tratamiento de enfermedades cardiovasculares. Especialización en arritmias y cardiología preventiva. Atención personalizada y enfocada en el bienestar del paciente.</textarea>
+                <textarea id="bioTextarea" style="min-height:110px" placeholder="Tu presentación profesional aparecerá aquí..."></textarea>
               </div>
             </div>
             <div class="pf-row">
-              <div class="pf-field"><label>Precio de consulta (USD)</label><input type="number" value="70"></div>
-              <div class="pf-field"><label>Años de experiencia</label><input type="number" value="12"></div>
+              <div class="pf-field"><label>Precio de consulta (USD)</label><input type="number" id="inf-precio" value=""></div>
+              <div class="pf-field"><label>Años de experiencia</label><input type="number" id="inf-anos" value=""></div>
             </div>
             <div class="pf-row">
               <div class="pf-field">
@@ -1489,13 +1528,13 @@ body {
               </div>
             </div>
             <div class="pf-row one">
-              <div class="pf-field"><label>Dirección del consultorio</label><input type="text" value="Av. 9 de Octubre 115, Edificio Torre Sur, Piso 4"></div>
+              <div class="pf-field"><label>Dirección del consultorio</label><input type="text" id="inf-direccion" value=""></div>
             </div>
             <div class="pf-row one">
-              <div class="pf-field"><label>Registro SENESCYT</label><input type="text" value="1001-23-12345678"></div>
+              <div class="pf-field"><label>Registro SENESCYT</label><input type="text" id="inf-senescyt" value=""></div>
             </div>
             <div class="pf-row one">
-              <div class="pf-field"><label>Teléfono de contacto</label><input type="tel" value="0998 123 456"></div>
+              <div class="pf-field"><label>Teléfono de contacto</label><input type="tel" id="inf-telefono" value=""></div>
             </div>
             <button class="btn-save-perfil" onclick="savePerfil(this)">Guardar cambios</button>
           </div>
@@ -1565,12 +1604,12 @@ function closeSidebar() {
 
 // ── COPY URL ──
 function copySidebarUrl(btn) {
-  navigator.clipboard.writeText('https://citadoc.com/medico/dr-juan-perez');
+  navigator.clipboard.writeText('https://citadoc.lat/medico/...');
   btn.textContent = '✓ Copiado';
   setTimeout(() => btn.textContent = '📋 Copiar link', 2000);
 }
 function copyProfileUrl(btn) {
-  navigator.clipboard.writeText('https://citadoc.com/medico/dr-juan-perez');
+  navigator.clipboard.writeText('https://citadoc.lat/medico/...');
   btn.textContent = '✓ Copiado';
   setTimeout(() => btn.textContent = '📋 Copiar link', 2000);
 }
@@ -1607,12 +1646,7 @@ renderMiniCal(miniCalYear, miniCalMonth);
 
 // ── BIG CALENDAR ──
 let bigYear = now.getFullYear(), bigMonth = now.getMonth();
-const EVENTS = {
-  [now.getDate()]: [{text:'Ana Rodríguez 10:30',type:''},{text:'Roberto Vega 11:00',type:'green'}],
-  [now.getDate()+1]: [{text:'5 citas',type:''}],
-  [now.getDate()+3]: [{text:'3 citas',type:'blue'}],
-  [now.getDate()+4]: [{text:'7 citas',type:'green'}],
-};
+const EVENTS = {}; // se llenará dinámicamente desde cargarCitasCalendario()
 function renderBigCal() {
   const dows = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   document.getElementById('bigCalDow').innerHTML = dows.map(d=>`<div class="big-dow-cell">${d}</div>`).join('');
@@ -1649,7 +1683,7 @@ function changeMonth(dir) {
 // ── SLOTS ──
 const DAYS_ES = { lun:'Lunes', mar:'Martes', mie:'Miércoles', jue:'Jueves', vie:'Viernes', sab:'Sábado', dom:'Domingo' };
 // Slot state per day: 'on', 'off', 'busy'
-const BUSY = { lun:['10:30','11:00'], mar:['09:00'], mie:[], jue:['14:00'], vie:['10:00','10:30'], sab:[], dom:[] };
+const BUSY = { lun:[], mar:[], mie:[], jue:[], vie:[], sab:[], dom:[] }; // se llenará con citas reales de Supabase
 const slotsState = {};
 const TIMES = [];
 for (let h = 7; h < 19; h++) { TIMES.push(`${String(h).padStart(2,'0')}:00`); TIMES.push(`${String(h).padStart(2,'0')}:30`); }
@@ -2035,12 +2069,12 @@ async function generateBio() {
   const textarea = document.getElementById('bioTextarea');
   
   // Recolectar datos del formulario
-  const nombre    = document.querySelector('#ptab-info input[value*="Juan"], #ptab-info input:nth-of-type(1)')?.value || 'Juan';
-  const apellido  = document.querySelector('#ptab-info input[value*="Pérez"], #ptab-info input:nth-of-type(2)')?.value || 'Pérez';
-  const titulo    = document.querySelector('#ptab-info input[value*="Dr"]')?.value || 'Dr.';
-  const esp       = document.querySelector('#ptab-info input[value*="Cardiología"], #ptab-info input:nth-of-type(4)')?.value || 'Cardiología';
-  const anios     = document.querySelector('#ptab-info input[type="number"]')?.value || '12';
-  const precio    = document.querySelectorAll('#ptab-info input[type="number"]')[0]?.value || '70';
+  const nombre    = document.getElementById('inf-nombre')?.value   || window._medicoActual?.nombre   || '';
+  const apellido  = document.getElementById('inf-apellido')?.value || window._medicoActual?.apellido || '';
+  const titulo    = document.getElementById('inf-titulo')?.value   || window._medicoActual?.titulo   || 'Dr.';
+  const esp       = document.getElementById('inf-especialidad')?.value || (window._medicoActual?.especialidades||[])[0] || '';
+  const anios     = document.getElementById('inf-anos')?.value     || window._medicoActual?.anos_experiencia || '';
+  const precio    = document.getElementById('inf-precio')?.value   || window._medicoActual?.precio   || '';
   const ciudad    = dashCiudadSelect?.getLabel() || 'Guayaquil';
   const pais      = dashPaisSelect?.getLabel() || 'Ecuador';
 
