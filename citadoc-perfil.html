@@ -476,6 +476,144 @@ nav {
   .ins-grid { grid-template-columns: 1fr 1fr; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UF1klDW5XOsBVGCy30gYVw_xz1rNWZQ';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Cargar médico por slug desde URL ?slug=dr-nombre o /:slug
+async function cargarPerfilPublico() {
+  const params = new URLSearchParams(window.location.search);
+  const slug   = params.get('slug') || window.location.pathname.split('/').pop();
+
+  if (!slug || slug === 'citadoc-perfil.html') {
+    // Sin slug — mostrar perfil de demo
+    return;
+  }
+
+  const { data: m, error } = await _supabase
+    .from('medicos')
+    .select('*')
+    .eq('slug', slug)
+    .eq('activo', true)
+    .single();
+
+  if (error || !m) {
+    console.error('Médico no encontrado:', slug);
+    return;
+  }
+
+  // Cargar formación/logros
+  const { data: formacion } = await _supabase
+    .from('formacion').select('*').eq('medico_id', m.id).order('orden');
+
+  aplicarPerfilPublico(m, formacion || []);
+}
+
+function aplicarPerfilPublico(m, formacion) {
+  const nombreCompleto = (m.titulo||'Dr.') + ' ' + m.nombre + ' ' + m.apellido;
+  const especialidad   = (m.especialidades||[])[0] || '';
+  const ciudad         = m.ciudad || '';
+  const pais           = m.pais   || 'Ecuador';
+  const precio         = m.precio || 0;
+  const slug           = m.slug   || '';
+
+  // Page title
+  document.title = nombreCompleto + ' — ' + especialidad + ' · CitaDoc';
+
+  // Avatar
+  const avatarEl = document.querySelector('.profile-avatar');
+  if (avatarEl && m.foto_url) {
+    avatarEl.innerHTML = '<img src="' + m.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:20px">';
+  }
+
+  // Nombre
+  const nameEl = document.querySelector('.profile-name');
+  if (nameEl) nameEl.textContent = nombreCompleto;
+
+  // Especialidad + experiencia
+  const specEl = document.querySelector('.profile-specialty');
+  if (specEl) specEl.textContent = especialidad + (m.anos_experiencia ? ' · ' + m.anos_experiencia + ' años de experiencia' : '');
+
+  // Meta items (ciudad, precio, horario)
+  const metas = document.querySelectorAll('.meta-item');
+  if (metas[0]) metas[0].innerHTML = '📍 <strong>' + ciudad + ',</strong> ' + pais;
+  if (metas[1]) metas[1].innerHTML = '💰 Consulta desde <strong>$' + precio + '</strong>';
+
+  // Badge especialidad
+  const specBadge = document.querySelector('.badge-spec');
+  if (specBadge) specBadge.textContent = especialidad;
+
+  // SENESCYT
+  const senEl = document.querySelector('.badge-senescyt');
+  if (senEl && m.senescyt) senEl.textContent = 'SENESCYT: ' + m.senescyt;
+
+  // Bio
+  const bioEl = document.querySelector('.bio-text');
+  if (bioEl && m.bio) bioEl.textContent = m.bio;
+
+  // Precio en sidebar
+  const priceEl = document.querySelector('.price-tag .amount');
+  if (priceEl) priceEl.textContent = '$' + precio;
+
+  // Especialidades tags
+  const specTagsEl = document.querySelector('.spec-tags');
+  if (specTagsEl && m.especialidades) {
+    specTagsEl.innerHTML = m.especialidades.map(e =>
+      '<span class="spec-tag-pub">' + e + '</span>'
+    ).join('');
+  }
+
+  // Seguros
+  const insGrid = document.querySelector('.ins-grid');
+  if (insGrid && m.seguros && m.seguros.length > 0) {
+    insGrid.innerHTML = m.seguros.map(s =>
+      '<div class="ins-item"><span class="ins-check-icon">✓</span> ' + s + '</div>'
+    ).join('');
+  }
+
+  // Precio hero (desktop CTA)
+  const ctaPrice = document.querySelector('.price-tag .amount');
+  if (ctaPrice) ctaPrice.textContent = '$' + precio;
+
+  // WhatsApp botón
+  if (m.whatsapp_activo && m.whatsapp) {
+    const waMsg = 'Hola ' + nombreCompleto + ', vi tu perfil en CitaDoc y quisiera agendar una cita.';
+    const waUrl = 'https://wa.me/' + m.whatsapp.replace(/[^0-9]/g,'') + '?text=' + encodeURIComponent(waMsg);
+    const shareWaBtn = document.querySelector('.share-wa');
+    if (shareWaBtn) shareWaBtn.onclick = () => window.open(waUrl, '_blank');
+  }
+
+  // Formación y logros
+  const educaList = document.querySelector('.edu-list');
+  const logrosGrid = document.querySelector('.logros-grid');
+  const academia = formacion.filter(f => f.tipo === 'academia');
+  const logros   = formacion.filter(f => f.tipo === 'logro');
+
+  if (educaList && academia.length > 0) {
+    educaList.innerHTML = academia.map(f => 
+      '<div class="edu-item"><div class="edu-dot"></div><div class="edu-body"><h4>' + f.titulo + '</h4><p>' + (f.institucion||'') + '</p><span>' + (f.anio||'') + '</span></div></div>'
+    ).join('');
+  }
+
+  if (logrosGrid && logros.length > 0) {
+    logrosGrid.innerHTML = logros.map(l =>
+      '<div class="logro-card"><div class="logro-icon">' + (l.icono||'⭐') + '</div><div class="logro-body"><h4>' + l.titulo + '</h4><p>' + (l.descripcion||'') + '</p></div></div>'
+    ).join('');
+  }
+
+  // Dirección en el mapa
+  const mapInfoEl = document.querySelector('.map-info p');
+  if (mapInfoEl && m.direccion) mapInfoEl.textContent = m.direccion + ' · ' + ciudad;
+
+  // Link compartir
+  const shareUrl = 'https://citadoc.lat/citadoc-perfil.html?slug=' + slug;
+  window._perfilUrl = shareUrl;
+}
+
+document.addEventListener('DOMContentLoaded', cargarPerfilPublico);
+</script>
 </head>
 <body>
 
@@ -944,13 +1082,15 @@ function scrollToBooking() {
   document.getElementById('bookingSidebar').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function copyProfileLink(btn) {
-  navigator.clipboard.writeText('https://citadoc.com/medico/dr-juan-perez');
+  const url = window._perfilUrl || 'https://citadoc.lat/citadoc-perfil.html';
+  navigator.clipboard.writeText(url);
   const orig = btn.textContent || btn.innerText;
   if (btn.textContent !== undefined) btn.textContent = '✓ Copiado';
   setTimeout(() => { if (btn.textContent !== undefined) btn.textContent = orig; }, 2000);
 }
 function shareWA() {
-  window.open('https://wa.me/?text=Agenda una cita con el Dr. Juan Pérez en CitaDoc: https://citadoc.com/medico/dr-juan-perez', '_blank');
+  const url = window._perfilUrl || 'https://citadoc.lat/citadoc-perfil.html';
+  window.open('https://wa.me/?text=' + encodeURIComponent('Agenda una cita en CitaDoc: ' + url), '_blank');
 }
 function shareIG() {
   navigator.clipboard.writeText('https://citadoc.com/medico/dr-juan-perez');

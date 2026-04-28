@@ -711,8 +711,18 @@ nav {
 .triage-apply-btn:hover { background: var(--teal-mid); }
 
 </style>
+<script>window.addEventListener("load",()=>emailjs.init("HwpQ3DPRMmtcVZVt1"));</script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>emailjs.init("HwpQ3DPRMmtcVZVt1");</script>
+<script>window.addEventListener("load",function(){if(typeof emailjs!=="undefined")emailjs.init("HwpQ3DPRMmtcVZVt1");});</script>
+
+<!-- ══ SUPABASE SDK ══ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_UF1klDW5XOsBVGCy30gYVw_xz1rNWZQ';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
 </head>
 <body>
 
@@ -930,27 +940,92 @@ const CIUDADES = {
   peru:     ['Arequipa','Ayacucho','Chiclayo','Cusco','Huancayo','Iquitos','Lima','Piura','Pucallpa','Tacna','Trujillo'],
 };
 
-const DOCTORS = [
-  { id:1,  name:'Dra. Valeria Mora',    specialty:'Cardiología',              city:'Quito',     country:'ecuador', price:60, avatar:'👩‍⚕️', bg:'#d4f0ec', featured:true,  whatsapp:'+593991234561', insurance:['IESS','Salud S.A.','Seguros Sucre'],    slots:['09:00','09:30','11:00','14:00','15:30','16:00'] },
-  { id:2,  name:'Dr. Juan Pérez',       specialty:'Pediatría',                city:'Guayaquil', country:'ecuador', price:45, avatar:'👨‍⚕️', bg:'#e0fff4', featured:false, whatsapp:null,             insurance:['IESS','Panamericana'],                  slots:['08:30','10:00','11:30','14:30','15:00'] },
-  { id:3,  name:'Dra. Ana Torres',      specialty:'Dermatología',             city:'Cuenca',    country:'ecuador', price:55, avatar:'👩‍⚕️', bg:'#e8eaff', featured:true,  whatsapp:'+593991234563', insurance:['Equivida','Salud S.A.','BMI'],           slots:['09:00','10:30','12:00','14:00','16:30'] },
-  { id:4,  name:'Dr. Roberto Vega',     specialty:'Traumatología y Ortopedia',city:'Guayaquil', country:'ecuador', price:70, avatar:'👨‍⚕️', bg:'#ffe8e8', featured:true,  whatsapp:null,             insurance:['Seguros Sucre','Panamericana'],          slots:['08:00','09:30','11:00','15:00'] },
-  { id:5,  name:'Dra. Mónica Salazar',  specialty:'Dermatología',             city:'Quito',     country:'ecuador', price:50, avatar:'👩‍⚕️', bg:'#f0ffe8', featured:false, whatsapp:'+593991234565', insurance:['IESS','BMI'],                           slots:['09:00','10:00','13:00','15:30','16:30'] },
-  { id:6,  name:'Dr. Carlos Ríos',      specialty:'Medicina Interna',         city:'Quito',     country:'ecuador', price:35, avatar:'👨‍⚕️', bg:'#e8f0ff', featured:false, whatsapp:null,             insurance:['IESS','Salud S.A.'],                    slots:['08:00','09:00','10:00','11:00','14:00','15:00','16:00'] },
-  { id:7,  name:'Dra. Lorena Castro',   specialty:'Ginecología y Obstetricia',city:'Quito',     country:'ecuador', price:65, avatar:'👩‍⚕️', bg:'#ffe8f5', featured:true,  whatsapp:'+593991234567', insurance:['Equivida','Panamericana','BMI'],         slots:['09:30','11:00','14:00','15:00'] },
-  { id:8,  name:'Dr. Miguel Andrade',   specialty:'Neurología',               city:'Guayaquil', country:'ecuador', price:80, avatar:'👨‍⚕️', bg:'#fff3e0', featured:false, whatsapp:null,             insurance:['Seguros Sucre','IESS'],                 slots:['10:00','11:30','14:30','16:00'] },
-  { id:9,  name:'Dra. Patricia Lema',   specialty:'Pediatría',                city:'Cuenca',    country:'ecuador', price:40, avatar:'👩‍⚕️', bg:'#e0fff4', featured:false, whatsapp:'+593991234569', insurance:['IESS','Salud S.A.'],                    slots:['08:30','09:30','10:30','14:00','15:30'] },
-  { id:10, name:'Dr. Andrés Muñoz',     specialty:'Cardiología',              city:'Guayaquil', country:'ecuador', price:75, avatar:'👨‍⚕️', bg:'#f5e8ff', featured:true,  whatsapp:'+593991234570', insurance:['Panamericana','BMI','Equivida'],         slots:['09:00','10:30','12:00','15:00'] },
-  { id:11, name:'Dra. Isabel Ruiz',     specialty:'Endocrinología',           city:'Quito',     country:'ecuador', price:65, avatar:'👩‍⚕️', bg:'#e8fff5', featured:false, whatsapp:null,             insurance:['Salud S.A.','BMI'],                     slots:['09:00','11:00','14:30','16:00'] },
-  { id:12, name:'Dr. Felipe Guerrero',  specialty:'Psiquiatría',              city:'Quito',     country:'ecuador', price:70, avatar:'👨‍⚕️', bg:'#fff8e8', featured:false, whatsapp:'+593991234572', insurance:['Equivida','Panamericana'],              slots:['10:00','11:30','14:00','15:30','16:30'] },
-];
-
+// ══ SUPABASE — datos reales ══
+let ALL_DOCTORS = [];          // todos los médicos cargados de Supabase
 let currentFilter = { especialidad: '', pais: '', ciudad: '' };
-let currentSort = 'destacado';
+let currentSort   = 'destacado';
 let filteredDoctors = [];
 
-// ── CITIES ──
-// updateCities handled by SearchableSelect
+// Paleta de fondos para avatares (sin foto)
+const BG_PALETTE = ['#d4f0ec','#e0fff4','#e8eaff','#ffe8e8','#f0ffe8','#e8f0ff','#ffe8f5','#fff3e0','#f5e8ff','#fff8e8','#e8fff5','#fdf0e0'];
+
+// Convertir fila de Supabase al formato que usan renderDirectory/renderQuickResults
+function dbToCard(d, idx) {
+  const especialidad = (d.especialidades || [])[0] || '';
+  const nombre = (d.titulo||'Dr.') + ' ' + d.nombre + ' ' + d.apellido;
+  return {
+    id:        d.id,
+    name:      nombre,
+    specialty: especialidad,
+    city:      d.ciudad || '',
+    country:   d.pais   || 'ecuador',
+    price:     d.precio || 0,
+    avatar:    d.foto_url ? null : '👨‍⚕️',
+    foto_url:  d.foto_url || null,
+    bg:        BG_PALETTE[idx % BG_PALETTE.length],
+    featured:  d.plan === 'destacado',
+    whatsapp:  d.whatsapp_activo && d.whatsapp ? d.whatsapp : null,
+    insurance: d.seguros || [],
+    slots:     generarSlots(d.horario_desde||'09:00', d.horario_hasta||'17:00'),
+    slug:      d.slug || '',
+    especialidades: d.especialidades || [],
+  };
+}
+
+// Generar slots de 30 min entre desde y hasta
+function generarSlots(desde, hasta) {
+  const slots = [];
+  let [h, m] = desde.split(':').map(Number);
+  const [hf, mf] = hasta.split(':').map(Number);
+  while (h < hf || (h === hf && m < mf)) {
+    slots.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
+    m += 30; if (m >= 60) { m -= 60; h++; }
+  }
+  return slots;
+}
+
+// Cargar médicos desde Supabase
+async function cargarMedicos() {
+  mostrarLoading(true);
+  try {
+    const { data, error } = await _supabase
+      .from('medicos')
+      .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,slug,activo')
+      .eq('activo', true)
+      .order('plan', { ascending: false })   // destacados primero
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    ALL_DOCTORS = (data || []).map((d, i) => dbToCard(d, i));
+
+    // Actualizar contador del hero
+    const eyebrow = document.querySelector('.hero-eyebrow');
+    if (eyebrow && ALL_DOCTORS.length > 0) {
+      eyebrow.innerHTML = '<div class="live-dot"></div> +' + ALL_DOCTORS.length + ' médico' + (ALL_DOCTORS.length !== 1 ? 's' : '') + ' disponible' + (ALL_DOCTORS.length !== 1 ? 's' : '');
+    }
+  } catch(err) {
+    console.error('Error cargando médicos:', err);
+    ALL_DOCTORS = [];
+  }
+  mostrarLoading(false);
+  applyFiltersAndRender();
+}
+
+function mostrarLoading(show) {
+  let el = document.getElementById('dirLoading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dirLoading';
+    el.style.cssText = 'text-align:center;padding:3rem;font-size:.95rem;color:var(--muted);display:none';
+    el.innerHTML = '<div style="display:inline-flex;align-items:center;gap:.7rem"><span style="animation:spin .8s linear infinite;display:inline-block">⟳</span> Cargando médicos...</div>';
+    const grid = document.getElementById('doctorsGrid');
+    if (grid) grid.parentNode.insertBefore(el, grid);
+  }
+  el.style.display = show ? 'block' : 'none';
+  const grid = document.getElementById('doctorsGrid');
+  if (grid) grid.style.display = show ? 'none' : '';
+}
 
 // ── SEARCH ──
 function buscar() {
@@ -975,15 +1050,16 @@ function applyFiltersAndRender() {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
       .replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'_').replace(/__+/g,'_');
   }
-  filteredDoctors = DOCTORS.filter(d => {
+  filteredDoctors = ALL_DOCTORS.filter(d => {
     if (currentFilter.especialidad) {
-      if (toSlug(d.specialty) !== currentFilter.especialidad) return false;
+      // Buscar en todas las especialidades del médico
+      const match = (d.especialidades||[]).some(e => toSlug(e) === currentFilter.especialidad);
+      if (!match) return false;
     }
-    if (currentFilter.pais && d.country !== currentFilter.pais) return false;
+    if (currentFilter.pais   && d.country !== currentFilter.pais) return false;
     if (currentFilter.ciudad && d.city.toLowerCase() !== currentFilter.ciudad) return false;
     return true;
   });
-
   sortList();
   renderQuickResults();
   renderDirectory();
@@ -1024,7 +1100,7 @@ function renderQuickResults() {
 
   list.innerHTML = top3.map(d => `
     <div class="qr-card" onclick="openModal(${d.id})">
-      <div class="qr-avatar" style="background:${d.bg}">${d.avatar}</div>
+      <div class="qr-avatar" style="background:${d.bg}">${d.foto_url ? '<img src="'+d.foto_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : d.avatar}</div>
       <div class="qr-info">
         <div class="qr-name">${d.name}${d.featured ? '<span class="badge-dest">⭐ Destacado</span>' : ''}</div>
         <div class="qr-meta">${d.specialty} · ${d.city}</div>
@@ -1065,7 +1141,7 @@ function renderDirectory() {
       <div class="doctor-card${d.featured ? ' featured' : ''}" style="animation-delay:${i * 60}ms" onclick="openModal(${d.id})">
         ${d.featured ? '<div class="featured-ribbon">⭐ Médico Destacado</div>' : ''}
         <div class="card-top">
-          <div class="doc-avatar" style="background:${d.bg}">${d.avatar}</div>
+          <div class="doc-avatar" style="background:${d.bg}">${d.foto_url ? '<img src="'+d.foto_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:14px">' : d.avatar}</div>
           <div class="doc-main">
             <div class="doc-name">${d.name}</div>
             <div class="doc-specialty">${d.specialty}</div>
@@ -1150,7 +1226,7 @@ let selectedSlot = null;
 let selectedDoctor = null;
 
 function openModal(id) {
-  selectedDoctor = DOCTORS.find(d => d.id === id);
+  selectedDoctor = ALL_DOCTORS.find(d => d.id === id);
   if (!selectedDoctor) return;
 
   document.getElementById('modal-doc-name').textContent = selectedDoctor.name;
@@ -1343,8 +1419,7 @@ window.addEventListener('DOMContentLoaded', () => {
     placeholder:'Ej: Quito',
     onChange: (val) => { currentFilter.ciudad = val || ''; }
   });
-  filteredDoctors = [...DOCTORS].sort((a,b) => b.featured - a.featured);
-  renderDirectory();
+  cargarMedicos(); // carga desde Supabase y renderiza
 });
 </script>
 
@@ -1397,13 +1472,128 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
+// ══ TRIAJE IA ══
+let triageHistory = [];
+let triageSpecResult = null;
+
+function openTriage() {
+  document.getElementById('triageOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (triageHistory.length === 0) {
+    addTriageMsg('ai', '¡Hola! Soy el asistente de CitaDoc 🩺\n\nCuéntame qué síntomas tienes o qué tipo de consulta necesitas, y te diré qué especialista es el indicado para ti.');
+  }
+  setTimeout(() => document.getElementById('triageInput').focus(), 300);
+}
+function closeTriageBtn() {
+  document.getElementById('triageOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeTriage(e) {
+  if (e && e.target !== document.getElementById('triageOverlay')) return;
+  closeTriageBtn();
+}
+function addTriageMsg(role, text) {
+  const container = document.getElementById('triageMessages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = '<div class="msg-avatar ' + role + '">' + (role==='ai'?'🤖':'👤') + '</div><div class="msg-bubble ' + role + '">' + text.replace(/\n/g,'<br>') + '</div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function showTyping() {
+  const container = document.getElementById('triageMessages');
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = 'typingIndicator';
+  div.innerHTML = '<div class="msg-avatar ai">🤖</div><div class="msg-bubble ai"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+async function sendTriage() {
+  const input = document.getElementById('triageInput');
+  const text = input.value.trim();
+  if (!text) return;
+  addTriageMsg('user', text);
+  input.value = ''; input.style.height = 'auto';
+  triageHistory.push({ role: 'user', content: text });
+  document.getElementById('triageSend').disabled = true;
+  showTyping();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': 'ANTHROPIC_KEY_PLACEHOLDER',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: 'Eres un asistente de triaje médico de CitaDoc Ecuador. Analiza síntomas y recomienda especialidad. Especialidades: Medicina Interna, Cardiología, Dermatología, Ginecología y Obstetricia, Pediatría, Neurología, Psiquiatría, Gastroenterología, Endocrinología, Traumatología y Ortopedia, Oftalmología, Otorrinolaringología, Urología, Oncología, Neumología, Infectología, Reumatología, Medicina Familiar y Comunitaria, Odontología General, Cirugía General. Haz máximo 2 preguntas. Cuando tengas suficiente info añade al final: ESPECIALIDAD_RECOMENDADA: [nombre]. Responde en español, máximo 3 párrafos.',
+        messages: triageHistory
+      })
+    });
+    removeTyping();
+    if (!res.ok) { addTriageMsg('ai','Error del servicio. Intenta de nuevo.'); document.getElementById('triageSend').disabled=false; return; }
+    const data = await res.json();
+    const aiText = data.content?.[0]?.text || 'Error inesperado.';
+    triageHistory.push({ role:'assistant', content: aiText });
+    const match = aiText.match(/ESPECIALIDAD_RECOMENDADA:\s*([^\n]+)/);
+    const display = aiText.replace(/ESPECIALIDAD_RECOMENDADA:\s*[^\n]+/,'').trim();
+    addTriageMsg('ai', display);
+    if (match) {
+      triageSpecResult = match[1].trim();
+      const btn = document.getElementById('triageApplyBtn');
+      btn.textContent = 'Ver médicos de ' + triageSpecResult + ' →';
+      btn.style.display = 'block';
+    }
+  } catch(e) {
+    removeTyping();
+    addTriageMsg('ai','Error de conexión. Verifica tu internet.');
+  }
+  document.getElementById('triageSend').disabled = false;
+}
+function applyTriageResult() {
+  if (!triageSpecResult) return;
+  const sel = document.getElementById('sel-especialidad');
+  if (sel) {
+    for (let i=0;i<sel.options.length;i++) {
+      if (sel.options[i].text.toLowerCase()===triageSpecResult.toLowerCase()) { sel.selectedIndex=i; break; }
+    }
+    currentFilter.especialidad = sel.value;
+  }
+  applyFiltersAndRender();
+  closeTriageBtn();
+  setTimeout(()=>document.getElementById('directorio').scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+</script>
+
+
+<script>
 function openLogin(e) { e.preventDefault(); document.getElementById('loginOverlay').style.display='flex'; document.body.style.overflow='hidden'; }
 function closeLogin() { document.getElementById('loginOverlay').style.display='none'; document.body.style.overflow=''; }
 function closeLoginOutside(e) { if(e.target===document.getElementById('loginOverlay')) closeLogin(); }
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
-  if(!email||!pass){ alert('Completa correo y contraseña'); return; }
+  if (!email || !pass) { alert('Completa correo y contraseña'); return; }
+
+  const btn = document.querySelector('#loginForm .btn-confirm');
+  if (btn) { btn.textContent = 'Entrando...'; btn.disabled = true; }
+
+  const { data, error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+
+  if (error) {
+    alert('Correo o contraseña incorrectos.');
+    if (btn) { btn.textContent = 'Entrar al dashboard →'; btn.disabled = false; }
+    return;
+  }
+
+  // Guardar sesión y redirigir
   window.location.href = 'citadoc-dashboard.html';
 }
 </script>

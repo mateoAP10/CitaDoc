@@ -4,540 +4,208 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitaDoc — Registro médico</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_UF1klDW5XOsBVGCy30gYVw_xz1rNWZQ';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'></script>
+<script>window.addEventListener('load',function(){if(typeof emailjs!=='undefined')emailjs.init('HwpQ3DPRMmtcVZVt1');});</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0b7c6e;--teal-mid:#0e9d8c;--teal-lite:#e0f5f2;--teal-dark:#085f54;
+  --cream:#f7f4ef;--white:#fff;--ink:#0f1a18;--ink2:#2c3a38;--muted:#6b7c79;--muted2:#a0b0ae;
+  --border:rgba(11,124,110,.13);--shadow-md:0 8px 32px rgba(15,26,24,.10);--shadow-lg:0 20px 60px rgba(15,26,24,.13);
+  --green:#16a34a;--red:#dc2626;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:64px;background:rgba(247,244,239,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Fraunces',serif;font-size:1.55rem;font-weight:700;color:var(--teal);letter-spacing:-.5px;text-decoration:none}
+.logo span{color:var(--teal-mid);font-style:italic}
+.nav-back{font-size:.85rem;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:var(--teal)}
+.page-wrap{min-height:100vh;padding-top:64px;display:grid;grid-template-columns:1fr 1fr}
 
-:root {
-  --teal:      #0b7c6e;
-  --teal-mid:  #0e9d8c;
-  --teal-lite: #e0f5f2;
-  --teal-dark: #085f54;
-  --cream:     #f7f4ef;
-  --white:     #ffffff;
-  --ink:       #0f1a18;
-  --ink2:      #2c3a38;
-  --muted:     #6b7c79;
-  --muted2:    #a0b0ae;
-  --border:    rgba(11,124,110,.13);
-  --shadow-sm: 0 2px 12px rgba(15,26,24,.07);
-  --shadow-md: 0 8px 32px rgba(15,26,24,.10);
-  --shadow-lg: 0 20px 60px rgba(15,26,24,.13);
-  --accent:    #2563eb;
-  --accent-lite: #eff6ff;
-}
+/* PLANS LEFT */
+.plans-side{background:var(--teal-dark);padding:4rem 5% 4rem 6%;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;display:flex;flex-direction:column;justify-content:center;position:relative}
+.plans-side::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(14,157,140,.25) 0%,transparent 60%);pointer-events:none}
+.plans-inner{position:relative;z-index:1}
+.plans-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:1rem}
+.plans-title{font-family:'Fraunces',serif;font-size:clamp(1.8rem,2.5vw,2.6rem);font-weight:600;line-height:1.1;letter-spacing:-.03em;color:#fff;margin-bottom:.7rem}
+.plans-title em{font-style:italic;color:rgba(255,255,255,.6)}
+.plans-sub{font-size:.9rem;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:2.5rem}
+.plan-card{border-radius:18px;padding:1.6rem;margin-bottom:1rem;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.plan-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.plan-card.selected{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.5)}
+.plan-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem}
+.plan-name{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem}
+.plan-price-row{display:flex;align-items:baseline;gap:.3rem}
+.plan-price{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:700;color:#fff;line-height:1}
+.plan-price sup{font-size:1rem;vertical-align:super}
+.plan-period{font-size:.82rem;color:rgba(255,255,255,.45)}
+.plan-radio{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.plan-card.selected .plan-radio{border-color:#fff;background:#fff}
+.plan-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--teal-dark);display:none}
+.plan-card.selected .plan-radio::after{display:block}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.plan-features li{font-size:.82rem;color:rgba(255,255,255,.75);display:flex;align-items:flex-start;gap:.55rem}
+.plan-features li::before{content:'✓';color:rgba(255,255,255,.5);flex-shrink:0;font-weight:700}
+.plan-card.selected .plan-features li::before{color:#fff}
+.badge-popular{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.18);color:#fff;font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:.25rem .65rem;border-radius:50px;border:1px solid rgba(255,255,255,.25)}
+.trial-note{margin-top:1.5rem;font-size:.8rem;color:rgba(255,255,255,.4);text-align:center;line-height:1.5}
+.trial-note strong{color:rgba(255,255,255,.7)}
 
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--cream);
-  color: var(--ink);
-  min-height: 100vh;
-}
+/* FORM RIGHT */
+.form-side{padding:3.5rem 6% 4rem 5%;display:flex;flex-direction:column;justify-content:center}
+.steps-indicator{display:flex;align-items:center;margin-bottom:2.5rem}
+.step-item{display:flex;align-items:center;gap:.6rem;flex:1}
+.step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;border:2px solid var(--border);color:var(--muted2);background:var(--white);flex-shrink:0;transition:all .3s}
+.step-num.active{border-color:var(--teal);color:var(--teal);background:var(--teal-lite)}
+.step-num.done{border-color:var(--teal);background:var(--teal);color:#fff}
+.step-label{font-size:.78rem;font-weight:500;color:var(--muted2);transition:color .3s}
+.step-label.active{color:var(--teal);font-weight:600}
+.step-label.done{color:var(--teal)}
+.step-connector{flex:1;height:2px;background:var(--border);margin:0 .5rem;border-radius:2px;transition:background .3s}
+.step-connector.done{background:var(--teal)}
+.form-panel{display:none;animation:panelIn .3s ease}
+.form-panel.active{display:block}
+@keyframes panelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.form-title{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;letter-spacing:-.025em;color:var(--ink);margin-bottom:.4rem}
+.form-sub{font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:2rem}
 
-/* ── NAV ── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 5%; height: 64px;
-  background: rgba(247,244,239,.92);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-}
-.logo { font-family: 'Fraunces', serif; font-size: 1.55rem; font-weight: 700; color: var(--teal); letter-spacing: -.5px; text-decoration: none; }
-.logo span { color: var(--teal-mid); font-style: italic; }
-.nav-back { font-size: .85rem; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: .4rem; transition: color .2s; }
-.nav-back:hover { color: var(--teal); }
+/* FIELDS */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.field-row.one{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:.4rem}
+.field label{font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}
+.field input,.field select,.field textarea{padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none}
+.field textarea{resize:vertical;min-height:90px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted2)}
 
-/* ── LAYOUT ── */
-.page-wrap {
-  min-height: 100vh;
-  padding-top: 64px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
+/* SEARCHABLE SELECT */
+.ss-wrap{position:relative}
+.ss-input-row{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;padding:.55rem .9rem;border:1.5px solid var(--border);border-radius:12px;background:var(--white);cursor:text;min-height:48px;transition:border-color .2s,box-shadow .2s}
+.ss-input-row:focus-within{border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)}
+.ss-selected-tag{display:inline-flex;align-items:center;gap:.3rem;background:var(--teal-lite);color:var(--teal);font-size:.8rem;font-weight:600;padding:.2rem .55rem;border-radius:6px;white-space:nowrap}
+.ss-x{cursor:pointer;opacity:.6;font-size:.85rem}
+.ss-x:hover{opacity:1}
+.ss-text{border:none;outline:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--ink);min-width:80px;flex:1}
+.ss-text::placeholder{color:var(--muted2)}
+.ss-dropdown{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:300;background:var(--white);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow-md);max-height:200px;overflow-y:auto;display:none}
+.ss-dropdown.open{display:block}
+.ss-option{padding:.6rem 1rem;font-size:.88rem;color:var(--ink2);cursor:pointer;transition:background .12s}
+.ss-option:hover{background:var(--teal-lite);color:var(--teal)}
+.ss-empty{padding:.8rem 1rem;font-size:.82rem;color:var(--muted2);text-align:center}
 
-/* LEFT - Plans */
-.plans-side {
-  background: var(--teal-dark);
-  padding: 4rem 5% 4rem 6%;
-  position: sticky; top: 64px;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
-  display: flex; flex-direction: column; justify-content: center;
-}
-.plans-side::before {
-  content: '';
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(14,157,140,.25) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 80% 90%, rgba(11,95,84,.4) 0%, transparent 60%);
-  pointer-events: none;
-}
-.plans-inner { position: relative; z-index: 1; }
+/* SPEC DROPDOWN */
+.spec-search-wrap{position:relative}
+.spec-input-row{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;padding:.55rem .9rem;border:1.5px solid var(--border);border-radius:12px;background:var(--white);cursor:text;min-height:48px;transition:border-color .2s,box-shadow .2s}
+.spec-input-row:focus-within{border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)}
+.spec-tag{display:inline-flex;align-items:center;gap:.35rem;background:var(--teal-lite);color:var(--teal);font-size:.78rem;font-weight:600;padding:.22rem .55rem;border-radius:6px;white-space:nowrap}
+.spec-tag-x{cursor:pointer;opacity:.6;font-size:.85rem;line-height:1}
+.spec-tag-x:hover{opacity:1}
+.spec-text-input{border:none;outline:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);min-width:140px;flex:1}
+.spec-text-input::placeholder{color:var(--muted2)}
+.spec-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:50;background:var(--white);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow-md);max-height:220px;overflow-y:auto;display:none}
+.spec-dropdown.open{display:block}
+.spec-option{padding:.65rem 1rem;font-size:.88rem;color:var(--ink2);cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:space-between}
+.spec-option:hover{background:var(--teal-lite);color:var(--teal)}
+.spec-option.already{color:var(--muted2);cursor:default;pointer-events:none}
+.spec-empty{padding:.9rem 1rem;font-size:.85rem;color:var(--muted2);text-align:center}
 
-.plans-eyebrow {
-  font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(255,255,255,.5); margin-bottom: 1rem;
-}
-.plans-title {
-  font-family: 'Fraunces', serif;
-  font-size: clamp(1.8rem, 2.5vw, 2.6rem);
-  font-weight: 600; line-height: 1.1; letter-spacing: -.03em;
-  color: #fff; margin-bottom: .7rem;
-}
-.plans-title em { font-style: italic; color: rgba(255,255,255,.6); }
-.plans-sub { font-size: .9rem; color: rgba(255,255,255,.55); line-height: 1.65; margin-bottom: 2.5rem; }
+/* INSURANCE */
+.insurance-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.ins-check{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;background:var(--white);transition:all .2s;user-select:none;font-size:.82rem;color:var(--ink2)}
+.ins-check:hover{border-color:var(--teal)}
+.ins-check.selected{background:var(--teal-lite);border-color:var(--teal);color:var(--teal);font-weight:500}
+.ins-checkmark{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem;transition:all .2s}
+.ins-check.selected .ins-checkmark{background:var(--teal);border-color:var(--teal);color:#fff}
 
-/* Plan cards */
-.plan-card {
-  border-radius: 18px;
-  padding: 1.6rem;
-  margin-bottom: 1rem;
-  border: 1.5px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  cursor: pointer;
-  transition: all .25s;
-  position: relative;
-  overflow: hidden;
-}
-.plan-card:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); }
-.plan-card.selected {
-  background: rgba(255,255,255,.13);
-  border-color: rgba(255,255,255,.5);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.2);
-}
-.plan-card.featured-plan { border-color: rgba(255,255,255,.3); }
+/* SCHEDULE */
+.schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.4rem}
+.day-chip{padding:.55rem .3rem;border-radius:10px;border:1.5px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted);text-align:center;cursor:pointer;background:var(--white);transition:all .2s;user-select:none}
+.day-chip:hover{border-color:var(--teal);color:var(--teal)}
+.day-chip.selected{background:var(--teal);border-color:var(--teal);color:#fff}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 
-.plan-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
-.plan-name { font-size: .82rem; font-weight: 700; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .35rem; }
-.plan-price-row { display: flex; align-items: baseline; gap: .3rem; }
-.plan-price { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 700; color: #fff; line-height: 1; }
-.plan-price sup { font-size: 1rem; vertical-align: super; }
-.plan-period { font-size: .82rem; color: rgba(255,255,255,.45); }
+/* URL PREVIEW */
+.url-preview{background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:12px;padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-top:.5rem}
+.url-text{font-size:.88rem;color:var(--teal);font-weight:500;word-break:break-all}
+.url-copy{background:var(--teal);color:#fff;border:none;cursor:pointer;padding:.4rem .8rem;border-radius:8px;font-size:.75rem;font-weight:600;white-space:nowrap;flex-shrink:0;transition:background .2s;font-family:'DM Sans',sans-serif}
+.url-copy:hover{background:var(--teal-mid)}
 
-.plan-radio {
-  width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.3);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: all .2s;
-}
-.plan-card.selected .plan-radio { border-color: #fff; background: #fff; }
-.plan-radio::after {
-  content: '';
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--teal-dark);
-  display: none;
-}
-.plan-card.selected .plan-radio::after { display: block; }
+/* PHOTO */
+.photo-upload{border:2px dashed var(--border);border-radius:14px;padding:1.8rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--white)}
+.photo-upload:hover{border-color:var(--teal);background:var(--teal-lite)}
+.upload-icon{font-size:2rem;margin-bottom:.6rem}
+.upload-label{font-size:.85rem;color:var(--muted)}
+.upload-label strong{color:var(--teal)}
 
-.plan-features { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
-.plan-features li {
-  font-size: .82rem; color: rgba(255,255,255,.75);
-  display: flex; align-items: flex-start; gap: .55rem;
-}
-.plan-features li::before { content: '✓'; color: rgba(255,255,255,.5); flex-shrink: 0; font-weight: 700; }
-.plan-card.selected .plan-features li::before { color: #fff; }
+/* PLAN SUMMARY */
+.plan-summary{background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:14px;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.6rem}
+.plan-summary-name{font-size:.82rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.06em}
+.plan-summary-price{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:var(--teal)}
+.plan-summary-price span{font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:400;color:var(--muted)}
 
-.badge-popular {
-  position: absolute; top: 1rem; right: 1rem;
-  background: rgba(255,255,255,.18);
-  color: #fff;
-  font-size: .65rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
-  padding: .25rem .65rem; border-radius: 50px;
-  border: 1px solid rgba(255,255,255,.25);
-}
+/* PAYMENT */
+.payment-field{margin-bottom:1rem}
+.payment-field label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.4rem}
+.payment-field input{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s}
+.payment-field input:focus{border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)}
+.card-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.secure-note{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted2);margin-top:1rem}
 
-.trial-note {
-  margin-top: 1.5rem;
-  font-size: .8rem; color: rgba(255,255,255,.4);
-  text-align: center; line-height: 1.5;
-}
-.trial-note strong { color: rgba(255,255,255,.7); }
+/* NAV BUTTONS */
+.form-nav{display:flex;justify-content:space-between;align-items:center;margin-top:2rem}
+.btn-back{font-size:.9rem;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.35rem;transition:color .2s;font-family:'DM Sans',sans-serif}
+.btn-back:hover{color:var(--teal)}
+.btn-next{background:var(--teal);color:#fff;border:none;cursor:pointer;padding:.8rem 2rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;display:flex;align-items:center;gap:.5rem;transition:background .2s,transform .15s;box-shadow:0 4px 16px rgba(11,124,110,.25)}
+.btn-next:hover:not(:disabled){background:var(--teal-mid);transform:translateY(-1px)}
+.btn-next:disabled{opacity:.6;cursor:not-allowed}
 
-/* RIGHT - Form */
-.form-side {
-  padding: 3.5rem 6% 4rem 5%;
-  display: flex; flex-direction: column; justify-content: center;
-}
+/* SUCCESS */
+.success-screen{text-align:center;padding:2rem 0}
+.success-icon{width:72px;height:72px;border-radius:50%;background:var(--teal-lite);border:3px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.5rem}
+.success-screen h2{font-family:'Fraunces',serif;font-size:2rem;font-weight:600;color:var(--ink);margin-bottom:.5rem}
+.success-screen p{font-size:.95rem;color:var(--muted);line-height:1.65;margin-bottom:1.5rem;max-width:380px;margin-left:auto;margin-right:auto}
+.url-box{background:var(--cream);border:1.5px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin:1.5rem 0;text-align:left}
+.url-box-label{font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem}
+.url-box-url{font-size:.95rem;color:var(--teal);font-weight:600;margin-bottom:.8rem;word-break:break-all}
+.url-box-btns{display:flex;gap:.6rem}
+.btn-copy-url{flex:1;padding:.6rem;border-radius:10px;background:var(--teal);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;transition:background .2s}
+.btn-copy-url:hover{background:var(--teal-mid)}
+.btn-dashboard{flex:1;padding:.6rem;border-radius:10px;background:var(--teal-lite);color:var(--teal);border:1.5px solid var(--teal);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-dashboard:hover{background:var(--teal);color:#fff}
 
-/* Step indicator */
-.steps-indicator {
-  display: flex; align-items: center; gap: 0;
-  margin-bottom: 2.5rem;
-}
-.step-item {
-  display: flex; align-items: center; gap: .6rem;
-  flex: 1;
-}
-.step-num {
-  width: 32px; height: 32px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: .78rem; font-weight: 700;
-  border: 2px solid var(--border);
-  color: var(--muted2);
-  background: var(--white);
-  flex-shrink: 0;
-  transition: all .3s;
-}
-.step-num.active { border-color: var(--teal); color: var(--teal); background: var(--teal-lite); }
-.step-num.done { border-color: var(--teal); background: var(--teal); color: #fff; }
-.step-label { font-size: .78rem; font-weight: 500; color: var(--muted2); transition: color .3s; }
-.step-label.active { color: var(--teal); font-weight: 600; }
-.step-label.done { color: var(--teal); }
-.step-connector {
-  flex: 1; height: 2px;
-  background: var(--border);
-  margin: 0 .5rem;
-  border-radius: 2px;
-  transition: background .3s;
-}
-.step-connector.done { background: var(--teal); }
-
-/* Form panels */
-.form-panel { display: none; animation: panelIn .3s ease; }
-.form-panel.active { display: block; }
-@keyframes panelIn { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:none} }
-
-.form-title {
-  font-family: 'Fraunces', serif;
-  font-size: 1.8rem; font-weight: 600; letter-spacing: -.025em;
-  color: var(--ink); margin-bottom: .4rem;
-}
-.form-sub { font-size: .9rem; color: var(--muted); line-height: 1.6; margin-bottom: 2rem; }
-
-/* Fields */
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-.field-row.one { grid-template-columns: 1fr; }
-.field { display: flex; flex-direction: column; gap: .4rem; }
-.field label {
-  font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--muted2);
-}
-.field input,
-.field select,
-.field textarea {
-  padding: .75rem 1rem;
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: .92rem; color: var(--ink);
-  background: var(--white);
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
-  appearance: none; -webkit-appearance: none;
-}
-.field textarea { resize: vertical; min-height: 90px; }
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: var(--teal-mid);
-  box-shadow: 0 0 0 3px rgba(11,124,110,.1);
-}
-.field input::placeholder,
-.field textarea::placeholder { color: var(--muted2); }
-.select-wrap { position: relative; }
-.select-wrap::after {
-  content: '▾'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
-  color: var(--muted); font-size: .8rem; pointer-events: none;
-}
-.select-wrap select { padding-right: 2.2rem; }
-
-/* Specialties searchable dropdown */
-.spec-search-wrap { position: relative; }
-.spec-input-row {
-  display: flex; align-items: center; flex-wrap: wrap; gap: .4rem;
-  padding: .55rem .9rem;
-  border: 1.5px solid var(--border); border-radius: 12px;
-  background: var(--white); cursor: text;
-  min-height: 48px;
-  transition: border-color .2s, box-shadow .2s;
-}
-.spec-input-row:focus-within {
-  border-color: var(--teal-mid);
-  box-shadow: 0 0 0 3px rgba(11,124,110,.1);
-}
-.spec-tag {
-  display: inline-flex; align-items: center; gap: .35rem;
-  background: var(--teal-lite); color: var(--teal);
-  font-size: .78rem; font-weight: 600;
-  padding: .22rem .55rem; border-radius: 6px;
-  white-space: nowrap;
-}
-.spec-tag-x { cursor: pointer; font-size: .85rem; line-height: 1; opacity: .6; transition: opacity .15s; }
-.spec-tag-x:hover { opacity: 1; }
-.spec-text-input {
-  border: none; outline: none; background: transparent;
-  font-family: 'DM Sans', sans-serif; font-size: .9rem; color: var(--ink);
-  min-width: 140px; flex: 1;
-}
-.spec-text-input::placeholder { color: var(--muted2); }
-.spec-dropdown {
-  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 50;
-  background: var(--white);
-  border: 1.5px solid var(--border); border-radius: 14px;
-  box-shadow: var(--shadow-md);
-  max-height: 220px; overflow-y: auto;
-  display: none;
-}
-.spec-dropdown.open { display: block; }
-.spec-option {
-  padding: .65rem 1rem;
-  font-size: .88rem; color: var(--ink2);
-  cursor: pointer; transition: background .15s;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.spec-option:hover { background: var(--teal-lite); color: var(--teal); }
-.spec-option.already { color: var(--muted2); cursor: default; pointer-events: none; }
-.spec-option .check-mark { color: var(--teal); font-size: .85rem; }
-.spec-empty { padding: .9rem 1rem; font-size: .85rem; color: var(--muted2); text-align: center; }
-
-/* Photo upload */
-.photo-upload {
-  border: 2px dashed var(--border);
-  border-radius: 14px;
-  padding: 1.8rem;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
-  background: var(--white);
-}
-.photo-upload:hover { border-color: var(--teal); background: var(--teal-lite); }
-.upload-icon { font-size: 2rem; margin-bottom: .6rem; }
-.upload-label { font-size: .85rem; color: var(--muted); }
-.upload-label strong { color: var(--teal); }
-
-/* Insurance checkboxes */
-.insurance-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem;
-}
-.ins-check {
-  display: flex; align-items: center; gap: .6rem;
-  padding: .6rem .8rem;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  cursor: pointer; background: var(--white);
-  transition: all .2s; user-select: none;
-  font-size: .82rem; color: var(--ink2);
-}
-.ins-check:hover { border-color: var(--teal); }
-.ins-check.selected { background: var(--teal-lite); border-color: var(--teal); color: var(--teal); font-weight: 500; }
-.ins-check input { display: none; }
-.ins-checkmark {
-  width: 18px; height: 18px; border-radius: 5px;
-  border: 1.5px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: .7rem;
-  transition: all .2s;
-}
-.ins-check.selected .ins-checkmark { background: var(--teal); border-color: var(--teal); color: #fff; }
-
-/* Horario */
-.schedule-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: .4rem;
-  margin-bottom: 1rem;
-}
-.day-chip {
-  padding: .55rem .3rem;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  font-size: .75rem; font-weight: 600; color: var(--muted);
-  text-align: center; cursor: pointer; background: var(--white);
-  transition: all .2s; user-select: none;
-}
-.day-chip:hover { border-color: var(--teal); color: var(--teal); }
-.day-chip.selected { background: var(--teal); border-color: var(--teal); color: #fff; }
-
-.time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-/* Preview URL */
-.url-preview {
-  background: var(--teal-lite);
-  border: 1.5px solid var(--teal);
-  border-radius: 12px;
-  padding: .9rem 1.1rem;
-  display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-  margin-top: .5rem;
-}
-.url-text { font-size: .88rem; color: var(--teal); font-weight: 500; word-break: break-all; }
-.url-copy {
-  background: var(--teal); color: #fff;
-  border: none; cursor: pointer;
-  padding: .4rem .8rem; border-radius: 8px;
-  font-size: .75rem; font-weight: 600;
-  white-space: nowrap; flex-shrink: 0;
-  transition: background .2s;
-}
-.url-copy:hover { background: var(--teal-mid); }
-
-/* Navigation buttons */
-.form-nav {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-top: 2rem;
-}
-.btn-back {
-  font-size: .9rem; font-weight: 500; color: var(--muted);
-  background: none; border: none; cursor: pointer;
-  display: flex; align-items: center; gap: .35rem;
-  transition: color .2s;
-}
-.btn-back:hover { color: var(--teal); }
-.btn-next {
-  background: var(--teal); color: #fff; border: none; cursor: pointer;
-  padding: .8rem 2rem; border-radius: 12px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: .95rem; font-weight: 600;
-  display: flex; align-items: center; gap: .5rem;
-  transition: background .2s, transform .15s;
-  box-shadow: 0 4px 16px rgba(11,124,110,.25);
-}
-.btn-next:hover { background: var(--teal-mid); transform: translateY(-1px); }
-
-/* Selected plan summary */
-.plan-summary {
-  background: var(--teal-lite);
-  border: 1.5px solid var(--teal);
-  border-radius: 14px;
-  padding: 1rem 1.2rem;
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.6rem;
-}
-.plan-summary-name { font-size: .82rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .06em; }
-.plan-summary-price { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; color: var(--teal); }
-.plan-summary-price span { font-family: 'DM Sans', sans-serif; font-size: .75rem; font-weight: 400; color: var(--muted); }
-
-/* Payment */
-.payment-field { margin-bottom: 1rem; }
-.payment-field label { display: block; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted2); margin-bottom: .4rem; }
-.payment-field input {
-  width: 100%; padding: .75rem 1rem;
-  border: 1.5px solid var(--border); border-radius: 12px;
-  font-family: 'DM Sans', sans-serif; font-size: .92rem; color: var(--ink);
-  background: var(--white); outline: none;
-  transition: border-color .2s, box-shadow .2s;
-}
-.payment-field input:focus { border-color: var(--teal-mid); box-shadow: 0 0 0 3px rgba(11,124,110,.1); }
-.card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.secure-note { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: var(--muted2); margin-top: 1rem; }
-
-/* Success */
-.success-screen {
-  text-align: center; padding: 2rem 0;
-}
-.success-icon {
-  width: 72px; height: 72px; border-radius: 50%;
-  background: var(--teal-lite); border: 3px solid var(--teal);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; margin: 0 auto 1.5rem;
-}
-.success-screen h2 { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 600; color: var(--ink); margin-bottom: .5rem; }
-.success-screen p { font-size: .95rem; color: var(--muted); line-height: 1.65; margin-bottom: 1.5rem; max-width: 380px; margin-left: auto; margin-right: auto; }
-.url-box {
-  background: var(--cream); border: 1.5px solid var(--border);
-  border-radius: 14px; padding: 1.2rem 1.4rem;
-  margin: 1.5rem 0; text-align: left;
-}
-.url-box-label { font-size: .72rem; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .5rem; }
-.url-box-url { font-size: .95rem; color: var(--teal); font-weight: 600; margin-bottom: .8rem; }
-.url-box-btns { display: flex; gap: .6rem; }
-.btn-copy-url {
-  flex: 1; padding: .6rem; border-radius: 10px;
-  background: var(--teal); color: #fff; border: none; cursor: pointer;
-  font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600;
-  transition: background .2s;
-}
-.btn-copy-url:hover { background: var(--teal-mid); }
-.btn-dashboard {
-  flex: 1; padding: .6rem; border-radius: 10px;
-  background: var(--teal-lite); color: var(--teal); border: 1.5px solid var(--teal);
-  cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600;
-  transition: background .2s; text-decoration: none; display: flex; align-items: center; justify-content: center;
-}
-.btn-dashboard:hover { background: var(--teal); color: #fff; }
-
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .page-wrap { grid-template-columns: 1fr; }
-  .plans-side { position: static; height: auto; }
-  .schedule-grid { grid-template-columns: repeat(4, 1fr); }
-  .insurance-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .field-row { grid-template-columns: 1fr; }
-}
-
-/* ── SEARCHABLE SELECT (País / Ciudad) ── */
-.ss-wrap { position: relative; }
-.ss-input-row {
-  display: flex; align-items: center;
-  padding: .75rem 1rem;
-  border: 1.5px solid var(--border); border-radius: 12px;
-  background: var(--white); cursor: text; gap: .4rem;
-  transition: border-color .2s, box-shadow .2s;
-  min-height: 46px;
-}
-.ss-input-row:focus-within {
-  border-color: var(--teal-mid);
-  box-shadow: 0 0 0 3px rgba(11,124,110,.1);
-}
-.ss-selected-tag {
-  display: inline-flex; align-items: center; gap: .3rem;
-  background: var(--teal-lite); color: var(--teal);
-  font-size: .8rem; font-weight: 600;
-  padding: .2rem .55rem; border-radius: 6px; white-space: nowrap;
-}
-.ss-x { cursor: pointer; opacity: .6; font-size: .85rem; transition: opacity .15s; }
-.ss-x:hover { opacity: 1; }
-.ss-text {
-  border: none; outline: none; background: transparent;
-  font-family: 'DM Sans', sans-serif; font-size: .92rem; color: var(--ink);
-  min-width: 80px; flex: 1;
-}
-.ss-text::placeholder { color: var(--muted2); }
-.ss-dropdown {
-  position: absolute; top: calc(100% + 5px); left: 0; right: 0; z-index: 300;
-  background: var(--white); border: 1.5px solid var(--border); border-radius: 14px;
-  box-shadow: var(--shadow-md); max-height: 200px; overflow-y: auto; display: none;
-}
-.ss-dropdown.open { display: block; }
-.ss-option {
-  padding: .6rem 1rem; font-size: .88rem; color: var(--ink2);
-  cursor: pointer; transition: background .12s;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.ss-option:hover { background: var(--teal-lite); color: var(--teal); }
-.ss-option.active { color: var(--muted2); font-style: italic; pointer-events: none; }
-.ss-empty { padding: .8rem 1rem; font-size: .82rem; color: var(--muted2); text-align: center; }
-
+@media(max-width:900px){.page-wrap{grid-template-columns:1fr}.plans-side{position:static;height:auto}.field-row{grid-template-columns:1fr}.schedule-grid{grid-template-columns:repeat(4,1fr)}.insurance-grid{grid-template-columns:1fr}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>emailjs.init("HwpQ3DPRMmtcVZVt1");</script>
 </head>
 <body>
-
 <nav>
-  <a href="citadoc-index.html" class="logo">Cita<span>Doc</span></a>
-  <a href="citadoc-index.html" class="nav-back">← Volver al inicio</a>
+  <a href="index.html" class="logo">Cita<span>Doc</span></a>
+  <a href="index.html" class="nav-back">← Volver al inicio</a>
 </nav>
 
 <div class="page-wrap">
-
-  <!-- ══ LEFT: PLANES ══ -->
+  <!-- PLANES -->
   <aside class="plans-side">
     <div class="plans-inner">
       <div class="plans-eyebrow">Para médicos</div>
       <h2 class="plans-title">Elige tu plan<br><em>y empieza hoy</em></h2>
       <p class="plans-sub">Sin contratos. Cambia o cancela cuando quieras. El plan Destacado incluye 30 días gratis.</p>
-
-      <!-- Plan Gratuito -->
       <div class="plan-card selected" id="plan-free" onclick="selectPlan('free')">
         <div class="plan-card-top">
           <div>
             <div class="plan-name">Plan Gratuito</div>
-            <div class="plan-price-row">
-              <div class="plan-price"><sup>$</sup>0</div>
-              <div class="plan-period">/ mes</div>
-            </div>
+            <div class="plan-price-row"><div class="plan-price"><sup>$</sup>0</div><div class="plan-period">/ mes</div></div>
           </div>
           <div class="plan-radio"></div>
         </div>
@@ -548,17 +216,12 @@ nav {
           <li>Panel básico de citas</li>
         </ul>
       </div>
-
-      <!-- Plan Destacado -->
-      <div class="plan-card featured-plan" id="plan-featured" onclick="selectPlan('featured')">
+      <div class="plan-card" id="plan-featured" onclick="selectPlan('featured')">
         <div class="badge-popular">Más popular</div>
         <div class="plan-card-top">
           <div>
             <div class="plan-name">Plan Destacado</div>
-            <div class="plan-price-row">
-              <div class="plan-price"><sup>$</sup>29</div>
-              <div class="plan-period">/ mes</div>
-            </div>
+            <div class="plan-price-row"><div class="plan-price"><sup>$</sup>29</div><div class="plan-period">/ mes</div></div>
           </div>
           <div class="plan-radio"></div>
         </div>
@@ -570,90 +233,48 @@ nav {
           <li>30 días gratis al inicio</li>
         </ul>
       </div>
-
-      <p class="trial-note">
-        <strong>Sin tarjeta de crédito</strong> para el plan gratuito.<br>
-        El plan Destacado incluye 30 días de prueba.
-      </p>
+      <p class="trial-note"><strong>Sin tarjeta de crédito</strong> para el plan gratuito.</p>
     </div>
   </aside>
 
-  <!-- ══ RIGHT: FORM ══ -->
+  <!-- FORM -->
   <main class="form-side">
-
-    <!-- Step indicator -->
     <div class="steps-indicator">
-      <div class="step-item">
-        <div class="step-num active" id="sn-1">1</div>
-        <span class="step-label active" id="sl-1">Tu cuenta</span>
-      </div>
+      <div class="step-item"><div class="step-num active" id="sn-1">1</div><span class="step-label active" id="sl-1">Tu cuenta</span></div>
       <div class="step-connector" id="sc-1"></div>
-      <div class="step-item">
-        <div class="step-num" id="sn-2">2</div>
-        <span class="step-label" id="sl-2">Tu perfil</span>
-      </div>
+      <div class="step-item"><div class="step-num" id="sn-2">2</div><span class="step-label" id="sl-2">Tu perfil</span></div>
       <div class="step-connector" id="sc-2"></div>
-      <div class="step-item">
-        <div class="step-num" id="sn-3">3</div>
-        <span class="step-label" id="sl-3">Horarios</span>
-      </div>
+      <div class="step-item"><div class="step-num" id="sn-3">3</div><span class="step-label" id="sl-3">Horarios</span></div>
       <div class="step-connector" id="sc-3"></div>
-      <div class="step-item">
-        <div class="step-num" id="sn-4">4</div>
-        <span class="step-label" id="sl-4">Pago</span>
-      </div>
+      <div class="step-item"><div class="step-num" id="sn-4">4</div><span class="step-label" id="sl-4">Pago</span></div>
     </div>
 
-    <!-- STEP 1: Cuenta -->
+    <!-- PASO 1 -->
     <div class="form-panel active" id="panel-1">
       <h2 class="form-title">Crea tu cuenta</h2>
       <p class="form-sub">Datos de acceso a tu panel. Solo tú los verás.</p>
-
       <div class="field-row">
-        <div class="field">
-          <label>Nombre</label>
-          <input type="text" placeholder="Ej: Juan" id="f-nombre">
-        </div>
-        <div class="field">
-          <label>Apellido</label>
-          <input type="text" placeholder="Ej: Pérez" id="f-apellido">
-        </div>
+        <div class="field"><label>Nombre</label><input type="text" placeholder="Ej: Juan" id="f-nombre"></div>
+        <div class="field"><label>Apellido</label><input type="text" placeholder="Ej: Pérez" id="f-apellido"></div>
       </div>
       <div class="field-row one">
-        <div class="field">
-          <label>Correo electrónico</label>
-          <input type="email" placeholder="dr.juan@email.com" id="f-email">
-        </div>
+        <div class="field"><label>Correo electrónico</label><input type="email" placeholder="dr.juan@email.com" id="f-email"></div>
       </div>
       <div class="field-row">
-        <div class="field">
-          <label>Contraseña</label>
-          <input type="password" placeholder="Mínimo 8 caracteres" id="f-pass">
-        </div>
-        <div class="field">
-          <label>Confirmar contraseña</label>
-          <input type="password" placeholder="Repite tu contraseña" id="f-pass2">
-        </div>
+        <div class="field"><label>Contraseña</label><input type="password" placeholder="Mínimo 8 caracteres" id="f-pass"></div>
+        <div class="field"><label>Confirmar contraseña</label><input type="password" placeholder="Repite tu contraseña" id="f-pass2"></div>
       </div>
-      <div class="field-row one">
-        <div class="field">
-          <label>Número de cédula / RUC</label>
-          <input type="text" placeholder="Ej: 1712345678" id="f-cedula">
-        </div>
+      <div class="field-row">
+        <div class="field"><label>Cédula / RUC</label><input type="text" placeholder="Ej: 1712345678" id="f-cedula"></div>
+        <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" placeholder="Ej: +593 99 123 4567" id="f-tel"></div>
       </div>
-
-      <div class="form-nav">
-        <span></span>
-        <button class="btn-next" onclick="goStep(2)">Siguiente → Tu perfil</button>
-      </div>
+      <div class="form-nav"><span></span><button class="btn-next" onclick="goStep(2)">Siguiente → Tu perfil</button></div>
     </div>
 
-    <!-- STEP 2: Perfil -->
+    <!-- PASO 2 -->
     <div class="form-panel" id="panel-2">
       <h2 class="form-title">Tu perfil público</h2>
       <p class="form-sub">Esta información verán los pacientes al encontrarte en CitaDoc.</p>
-
-      <!-- Photo upload -->
       <div class="field" style="margin-bottom:1.2rem">
         <label>Foto de perfil</label>
         <div class="photo-upload" onclick="this.querySelector('input').click()">
@@ -662,18 +283,10 @@ nav {
           <div class="upload-label"><strong>Sube tu foto</strong> o arrastra aquí<br><span style="font-size:.75rem;color:var(--muted2)">JPG o PNG, máx. 5MB</span></div>
         </div>
       </div>
-
       <div class="field-row">
-        <div class="field">
-          <label>Título profesional</label>
-          <input type="text" placeholder="Ej: Dr. / Dra." id="f-titulo">
-        </div>
-        <div class="field">
-          <label>Número de registro SENESCYT</label>
-          <input type="text" placeholder="Ej: 1001-23-12345678" id="f-senescyt">
-        </div>
+        <div class="field"><label>Título profesional</label><input type="text" placeholder="Ej: Dr. / Dra." id="f-titulo"></div>
+        <div class="field"><label>Registro SENESCYT</label><input type="text" placeholder="Ej: 1001-23-12345678" id="f-senescyt"></div>
       </div>
-
       <div class="field" style="margin-bottom:1rem">
         <label>Especialidad(es)</label>
         <div class="spec-search-wrap" id="specWrap">
@@ -683,7 +296,6 @@ nav {
           <div class="spec-dropdown" id="specDropdown"></div>
         </div>
       </div>
-
       <div class="field-row">
         <div class="field">
           <label>País</label>
@@ -704,51 +316,38 @@ nav {
           </div>
         </div>
       </div>
-
       <div class="field-row one">
-        <div class="field">
-          <label>Dirección del consultorio</label>
-          <input type="text" placeholder="Ej: Av. 12 de Octubre N22-160, Quito" id="f-direccion">
-        </div>
+        <div class="field"><label>Dirección del consultorio</label><input type="text" placeholder="Ej: Av. 12 de Octubre N22-160" id="f-direccion"></div>
       </div>
-
       <div class="field" style="margin-bottom:1rem">
         <label>Presentación / Bio profesional</label>
-        <textarea placeholder="Escribe una breve presentación para tus pacientes. Puedes mencionar tu experiencia, enfoque y lo que te hace diferente..." id="f-bio"></textarea>
+        <textarea placeholder="Escribe una breve presentación para tus pacientes..." id="f-bio"></textarea>
       </div>
-
       <div class="field" style="margin-bottom:1rem">
         <label>Precio de consulta (USD)</label>
         <input type="number" placeholder="Ej: 50" id="f-precio" style="max-width:180px">
       </div>
-
       <div class="field" style="margin-bottom:1.5rem">
         <label>Seguros médicos que acepta</label>
-        <div class="insurance-grid" id="insuranceGrid">
-          <!-- Generated by JS -->
-        </div>
+        <div class="insurance-grid" id="insuranceGrid"></div>
       </div>
-
-      <!-- URL preview -->
       <div class="field" style="margin-bottom:1rem">
         <label>Tu link en CitaDoc</label>
         <div class="url-preview">
-          <span class="url-text" id="urlPreview">citadoc.com/medico/dr-</span>
+          <span class="url-text" id="urlPreview">citadoc.lat/medico/dr-</span>
           <button class="url-copy" onclick="copyUrl()">Copiar</button>
         </div>
       </div>
-
       <div class="form-nav">
         <button class="btn-back" onclick="goStep(1)">← Atrás</button>
         <button class="btn-next" onclick="goStep(3)">Siguiente → Horarios</button>
       </div>
     </div>
 
-    <!-- STEP 3: Horarios -->
+    <!-- PASO 3 -->
     <div class="form-panel" id="panel-3">
       <h2 class="form-title">Horarios de atención</h2>
-      <p class="form-sub">Define tu disponibilidad general. Desde tu <strong>dashboard</strong> podrás configurar los slots exactos, bloquear días y gestionar tu agenda con detalle.</p>
-
+      <p class="form-sub">Define tu disponibilidad general. Los slots exactos los configuras desde tu <strong>dashboard</strong>.</p>
       <div class="field" style="margin-bottom:1.6rem">
         <label>Días de atención</label>
         <div class="schedule-grid">
@@ -761,489 +360,318 @@ nav {
           <div class="day-chip" onclick="toggleDay(this)">Dom</div>
         </div>
       </div>
-
       <div class="field" style="margin-bottom:1.6rem">
         <label>Rango horario general</label>
         <div class="time-row">
-          <div class="field">
-            <label style="font-size:.7rem;margin-bottom:.35rem">Desde</label>
-            <input type="time" value="09:00" id="f-desde">
-          </div>
-          <div class="field">
-            <label style="font-size:.7rem;margin-bottom:.35rem">Hasta</label>
-            <input type="time" value="17:00" id="f-hasta">
-          </div>
+          <div class="field"><label style="font-size:.7rem;margin-bottom:.35rem">Desde</label><input type="time" value="09:00" id="f-desde"></div>
+          <div class="field"><label style="font-size:.7rem;margin-bottom:.35rem">Hasta</label><input type="time" value="17:00" id="f-hasta"></div>
         </div>
       </div>
-
       <div style="background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:14px;padding:1rem 1.2rem;font-size:.85rem;color:var(--teal);line-height:1.6">
-        📅 <strong>Los horarios exactos los configuras en tu dashboard.</strong> Podrás definir slots disponibles por día, bloquear fechas y gestionar excepciones desde tu panel de control.
+        📅 <strong>Los horarios exactos los configuras en tu dashboard.</strong> Podrás definir slots por día y bloquear fechas.
       </div>
-
       <div class="form-nav" style="margin-top:2rem">
         <button class="btn-back" onclick="goStep(2)">← Atrás</button>
         <button class="btn-next" onclick="goStep(4)">Siguiente → Pago</button>
       </div>
     </div>
 
-    <!-- STEP 4: Pago -->
+    <!-- PASO 4 -->
     <div class="form-panel" id="panel-4">
       <h2 class="form-title">Confirma tu plan</h2>
-      <p class="form-sub">Estás casi listo. Revisa tu selección y completa el pago para activar tu perfil.</p>
-
-      <div class="plan-summary" id="planSummary">
+      <p class="form-sub">Estás casi listo. Revisa tu selección y activa tu perfil.</p>
+      <div class="plan-summary">
         <div>
           <div class="plan-summary-name" id="sum-name">Plan Gratuito</div>
-          <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem" id="sum-desc">Perfil básico, link para compartir</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem" id="sum-desc">Perfil básico · Link para compartir</div>
         </div>
         <div class="plan-summary-price" id="sum-price">$0 <span>/mes</span></div>
       </div>
-
-      <!-- Payment form (hidden for free plan) -->
-      <div id="payment-form">
-        <div class="payment-field">
-          <label>Nombre en la tarjeta</label>
-          <input type="text" placeholder="Ej: JUAN PEREZ">
-        </div>
-        <div class="payment-field">
-          <label>Número de tarjeta</label>
-          <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)">
-        </div>
+      <div id="payment-form" style="display:none">
+        <div class="payment-field"><label>Nombre en la tarjeta</label><input type="text" placeholder="Ej: JUAN PEREZ"></div>
+        <div class="payment-field"><label>Número de tarjeta</label><input type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)"></div>
         <div class="card-row">
-          <div class="payment-field">
-            <label>Vencimiento</label>
-            <input type="text" placeholder="MM/AA" maxlength="5" oninput="formatExp(this)">
-          </div>
-          <div class="payment-field">
-            <label>CVV</label>
-            <input type="text" placeholder="123" maxlength="4">
-          </div>
+          <div class="payment-field"><label>Vencimiento</label><input type="text" placeholder="MM/AA" maxlength="5" oninput="formatExp(this)"></div>
+          <div class="payment-field"><label>CVV</label><input type="text" placeholder="123" maxlength="4"></div>
         </div>
-        <div class="secure-note">
-          🔒 Pago seguro. Tus datos están encriptados con SSL.
-        </div>
+        <div class="secure-note">🔒 Pago seguro con SSL.</div>
       </div>
-
-      <div id="free-note" style="display:none;background:var(--teal-lite);border-radius:12px;padding:1.2rem;font-size:.88rem;color:var(--teal);line-height:1.6;margin-bottom:.5rem">
-        🎉 <strong>Sin costo.</strong> Tu perfil se activará de inmediato. Puedes actualizar a Destacado desde tu panel cuando quieras.
+      <div id="free-note" style="background:var(--teal-lite);border-radius:12px;padding:1.2rem;font-size:.88rem;color:var(--teal);line-height:1.6">
+        🎉 <strong>Sin costo.</strong> Tu perfil se activará de inmediato. Puedes actualizar al plan Destacado desde tu panel cuando quieras.
       </div>
-
       <div class="form-nav">
         <button class="btn-back" onclick="goStep(3)">← Atrás</button>
-        <button class="btn-next" onclick="activarCuenta()" id="btn-activar">Activar mi perfil →</button>
+        <button class="btn-next" onclick="activarCuenta()" id="btn-activar">Activar mi perfil gratis →</button>
       </div>
     </div>
 
-    <!-- STEP 5: SUCCESS -->
+    <!-- PASO 5 -->
     <div class="form-panel" id="panel-5">
       <div class="success-screen">
         <div class="success-icon">✓</div>
         <h2>¡Bienvenido a CitaDoc!</h2>
         <p>Tu perfil está activo. Comparte tu link con tus pacientes y empieza a recibir citas desde hoy.</p>
-
         <div class="url-box">
           <div class="url-box-label">Tu link único</div>
-          <div class="url-box-url" id="success-url">citadoc.com/medico/dr-juan-perez</div>
+          <div class="url-box-url" id="success-url">citadoc.lat/medico/dr-nombre-apellido</div>
           <div class="url-box-btns">
             <button class="btn-copy-url" onclick="copySuccessUrl()">📋 Copiar link</button>
             <a href="citadoc-dashboard.html" class="btn-dashboard">Ir a mi panel →</a>
           </div>
         </div>
-
-        <p style="font-size:.82rem;color:var(--muted2)">Comparte este link en Instagram, WhatsApp y tus redes para que tus pacientes agenden directamente contigo.</p>
+        <p style="font-size:.82rem;color:var(--muted2)">Revisa tu correo — te enviamos un email de bienvenida con todos los detalles.</p>
       </div>
     </div>
-
   </main>
 </div>
 
 <script>
-// ── PLAN SELECTION ──
+// ══ PLAN ══
 let selectedPlan = 'free';
-
-function selectPlan(plan) {
-  selectedPlan = plan;
-  document.getElementById('plan-free').classList.toggle('selected', plan === 'free');
-  document.getElementById('plan-featured').classList.toggle('selected', plan === 'featured');
+function selectPlan(p) {
+  selectedPlan = p;
+  document.getElementById('plan-free').classList.toggle('selected', p==='free');
+  document.getElementById('plan-featured').classList.toggle('selected', p==='featured');
   updatePaymentStep();
 }
-
 function updatePaymentStep() {
-  const sumName  = document.getElementById('sum-name');
-  const sumPrice = document.getElementById('sum-price');
-  const sumDesc  = document.getElementById('sum-desc');
-  const payForm  = document.getElementById('payment-form');
-  const freeNote = document.getElementById('free-note');
-  const btnAct   = document.getElementById('btn-activar');
-
-  if (selectedPlan === 'featured') {
-    sumName.textContent  = 'Plan Destacado';
-    sumPrice.innerHTML   = '$29 <span>/mes</span>';
-    sumDesc.textContent  = 'Primero en búsquedas · Badge Destacado · Soporte prioritario';
-    payForm.style.display = 'block';
-    freeNote.style.display = 'none';
-    btnAct.textContent   = 'Empezar 30 días gratis →';
-  } else {
-    sumName.textContent  = 'Plan Gratuito';
-    sumPrice.innerHTML   = '$0 <span>/mes</span>';
-    sumDesc.textContent  = 'Perfil básico · Link para compartir · Panel de citas';
-    payForm.style.display = 'none';
-    freeNote.style.display = 'block';
-    btnAct.textContent   = 'Activar mi perfil gratis →';
-  }
+  const f = selectedPlan==='featured';
+  document.getElementById('sum-name').textContent = f ? 'Plan Destacado' : 'Plan Gratuito';
+  document.getElementById('sum-price').innerHTML  = f ? '$29 <span>/mes</span>' : '$0 <span>/mes</span>';
+  document.getElementById('sum-desc').textContent  = f ? 'Primero en búsquedas · Badge Destacado' : 'Perfil básico · Link para compartir';
+  document.getElementById('payment-form').style.display = f ? 'block' : 'none';
+  document.getElementById('free-note').style.display    = f ? 'none' : 'block';
+  document.getElementById('btn-activar').textContent    = f ? 'Empezar 30 días gratis →' : 'Activar mi perfil gratis →';
 }
 
-// ── SPECIALTIES DROPDOWN ──
-const SPECS = [
-  'Alergia e Inmunología',
-  'Anatomía Patológica',
-  'Anestesiología',
-  'Cardiología',
-  'Cirugía Bucal',
-  'Cirugía Cardiovascular',
-  'Cirugía General',
-  'Cirugía Maxilofacial',
-  'Cirugía Pediátrica',
-  'Cirugía Plástica y Reconstructiva',
-  'Cirugía Torácica',
-  'Cirugía Vascular',
-  'Dermatología',
-  'Endocrinología',
-  'Endodoncia',
-  'Gastroenterología',
-  'Genética Médica',
-  'Geriatría',
-  'Ginecología y Obstetricia',
-  'Hematología',
-  'Implantología Oral',
-  'Infectología',
-  'Laboratorio Clínico',
-  'Medicina Bucal',
-  'Medicina de Emergencias',
-  'Medicina del Deporte',
-  'Medicina del Dolor',
-  'Medicina del Trabajo',
-  'Medicina Familiar y Comunitaria',
-  'Medicina Física y Rehabilitación',
-  'Medicina Intensiva',
-  'Medicina Interna',
-  'Medicina Legal y Forense',
-  'Medicina Nuclear',
-  'Medicina Paliativa',
-  'Medicina Preventiva',
-  'Medicina Tropical',
-  'Nefrología',
-  'Neumonología',
-  'Neurocirugía',
-  'Neurología',
-  'Nutrición Clínica',
-  'Oclusión y Disfunción Temporomandibular',
-  'Odontogeriatría',
-  'Odontología Estética',
-  'Odontología General',
-  'Odontología Preventiva y Comunitaria',
-  'Odontología Restauradora',
-  'Odontopediatría',
-  'Oftalmología',
-  'Oncología',
-  'Ortodoncia y Ortopedia Maxilar',
-  'Otorrinolaringología',
-  'Patología Bucal',
-  'Pediatría',
-  'Periodoncia',
-  'Prótesis Dental',
-  'Psiquiatría',
-  'Radiología e Imágenes',
-  'Radiología Oral y Maxilofacial',
-  'Rehabilitación Oral',
-  'Reumatología',
-  'Traumatología y Ortopedia',
-  'Urología'
-];
+// ══ ESPECIALIDADES ══
+const SPECS = ['Alergia e Inmunología','Anatomía Patológica','Anestesiología','Cardiología','Cirugía Bucal','Cirugía Cardiovascular','Cirugía General','Cirugía Maxilofacial','Cirugía Pediátrica','Cirugía Plástica y Reconstructiva','Cirugía Torácica','Cirugía Vascular','Dermatología','Endodoncia','Endocrinología','Gastroenterología','Genética Médica','Geriatría','Ginecología y Obstetricia','Hematología','Implantología Oral','Infectología','Laboratorio Clínico','Medicina Bucal','Medicina de Emergencias','Medicina del Deporte','Medicina del Dolor','Medicina del Trabajo','Medicina Familiar y Comunitaria','Medicina Física y Rehabilitación','Medicina Intensiva','Medicina Interna','Medicina Legal y Forense','Medicina Nuclear','Medicina Paliativa','Medicina Preventiva','Medicina Tropical','Nefrología','Neumonología','Neurocirugía','Neurología','Nutrición Clínica','Oclusión y Disfunción Temporomandibular','Odontología Estética','Odontología General','Odontología Preventiva y Comunitaria','Odontología Restauradora','Odontopediatría','Odontogeriatría','Oftalmología','Oncología','Ortodoncia y Ortopedia Maxilar','Otorrinolaringología','Patología Bucal','Pediatría','Periodoncia','Prótesis Dental','Psiquiatría','Radiología e Imágenes','Radiología Oral y Maxilofacial','Rehabilitación Oral','Reumatología','Traumatología y Ortopedia','Urología'];
 const selectedSpecs = new Set();
-
-const specInput    = document.getElementById('specTextInput');
+const specInput = document.getElementById('specTextInput');
 const specDropdown = document.getElementById('specDropdown');
 const specInputRow = document.getElementById('specInputRow');
-
 function renderSpecTags() {
-  // Remove existing tags
-  specInputRow.querySelectorAll('.spec-tag').forEach(t => t.remove());
-  selectedSpecs.forEach(s => {
-    const tag = document.createElement('div');
-    tag.className = 'spec-tag';
-    tag.innerHTML = `${s} <span class="spec-tag-x" data-spec="${s}">×</span>`;
-    tag.querySelector('.spec-tag-x').addEventListener('click', e => {
-      e.stopPropagation();
-      selectedSpecs.delete(s);
-      renderSpecTags();
-      renderSpecOptions(specInput.value);
-    });
-    specInputRow.insertBefore(tag, specInput);
+  specInputRow.querySelectorAll('.spec-tag').forEach(t=>t.remove());
+  selectedSpecs.forEach(s=>{
+    const tag=document.createElement('div'); tag.className='spec-tag';
+    tag.innerHTML=s+' <span class="spec-tag-x" data-spec="'+s+'">×</span>';
+    tag.querySelector('.spec-tag-x').addEventListener('click',e=>{e.stopPropagation();selectedSpecs.delete(s);renderSpecTags();renderSpecOptions(specInput.value);});
+    specInputRow.insertBefore(tag,specInput);
   });
 }
-
-function renderSpecOptions(query) {
-  const q = query.trim().toLowerCase();
-  const filtered = SPECS.filter(s => s.toLowerCase().includes(q));
-  if (filtered.length === 0) {
-    specDropdown.innerHTML = `<div class="spec-empty">Sin resultados para "${query}"</div>`;
-  } else {
-    specDropdown.innerHTML = filtered.map(s => {
-      const already = selectedSpecs.has(s);
-      return `<div class="spec-option${already ? ' already' : ''}" data-spec="${s}">
-        ${s}${already ? '<span class="check-mark">✓</span>' : ''}
-      </div>`;
-    }).join('');
-    specDropdown.querySelectorAll('.spec-option:not(.already)').forEach(el => {
-      el.addEventListener('click', () => {
-        selectedSpecs.add(el.dataset.spec);
-        renderSpecTags();
-        specInput.value = '';
-        renderSpecOptions('');
-        specInput.focus();
-      });
-    });
-  }
+function renderSpecOptions(q) {
+  const filtered=SPECS.filter(s=>s.toLowerCase().includes(q.trim().toLowerCase()));
+  specDropdown.innerHTML=filtered.length===0?'<div class="spec-empty">Sin resultados</div>':filtered.map(s=>{
+    const a=selectedSpecs.has(s);
+    return '<div class="spec-option'+(a?' already':'')+'" data-spec="'+s+'">'+s+(a?' <span style="color:var(--teal)">✓</span>':'')+'</div>';
+  }).join('');
+  specDropdown.querySelectorAll('.spec-option:not(.already)').forEach(el=>{
+    el.addEventListener('click',()=>{selectedSpecs.add(el.dataset.spec);renderSpecTags();specInput.value='';renderSpecOptions('');specInput.focus();});
+  });
   specDropdown.classList.add('open');
 }
+specInput.addEventListener('focus',()=>renderSpecOptions(specInput.value));
+specInput.addEventListener('input',()=>renderSpecOptions(specInput.value));
+document.addEventListener('click',e=>{if(!document.getElementById('specWrap').contains(e.target))specDropdown.classList.remove('open');});
 
-specInput.addEventListener('focus', () => renderSpecOptions(specInput.value));
-specInput.addEventListener('input', () => renderSpecOptions(specInput.value));
-document.addEventListener('click', e => {
-  if (!document.getElementById('specWrap').contains(e.target)) {
-    specDropdown.classList.remove('open');
+// ══ SEGUROS ══
+const INSURANCES=['IESS','Salud S.A.','Equivida','Panamericana','BMI','Seguros Sucre','Produbanco','Agrego luego'];
+const selectedIns=new Set();
+document.getElementById('insuranceGrid').innerHTML=INSURANCES.map(i=>'<label class="ins-check" onclick="toggleIns(this,\''+i+'\')"><div class="ins-checkmark"></div>'+i+'</label>').join('');
+function toggleIns(el,ins){
+  if(selectedIns.has(ins)){selectedIns.delete(ins);el.classList.remove('selected');el.querySelector('.ins-checkmark').textContent='';}
+  else{selectedIns.add(ins);el.classList.add('selected');el.querySelector('.ins-checkmark').textContent='✓';}
+}
+
+// ══ URL PREVIEW ══
+function updateUrlPreview(){
+  const n=(document.getElementById('f-nombre')?.value||'').toLowerCase().replace(/\s+/g,'-');
+  const a=(document.getElementById('f-apellido')?.value||'').toLowerCase().replace(/\s+/g,'-');
+  const t=(document.getElementById('f-titulo')?.value||'dr').toLowerCase().replace(/\./g,'').replace(/\s+/g,'-');
+  const slug=[t,n,a].filter(Boolean).join('-')||'dr-nombre-apellido';
+  document.getElementById('urlPreview').textContent='citadoc.lat/medico/'+slug;
+  document.getElementById('success-url').textContent='citadoc.lat/medico/'+slug;
+}
+document.getElementById('f-nombre').addEventListener('input',updateUrlPreview);
+document.getElementById('f-apellido').addEventListener('input',updateUrlPreview);
+function copyUrl(){navigator.clipboard.writeText('https://'+document.getElementById('urlPreview').textContent);const b=document.querySelector('.url-copy');b.textContent='¡Copiado!';setTimeout(()=>b.textContent='Copiar',2000);}
+function copySuccessUrl(){navigator.clipboard.writeText('https://'+document.getElementById('success-url').textContent);const b=document.querySelector('.btn-copy-url');b.textContent='✓ Copiado';setTimeout(()=>b.textContent='📋 Copiar link',2000);}
+
+// ══ DÍAS ══
+function toggleDay(el){el.classList.toggle('selected');}
+
+// ══ SEARCHABLE SELECT ══
+class SearchableSelect{
+  constructor({wrap,inputId,dropdownId,options,placeholder,onChange}){
+    this.wrap=document.getElementById(wrap);this.input=document.getElementById(inputId);
+    this.dropdown=document.getElementById(dropdownId);this.options=options;this.selected=null;this.onChange=onChange||(()=>{});
+    this.input.setAttribute('placeholder',placeholder||'Escribe para buscar...');
+    this.input.addEventListener('focus',()=>this.render(this.input.value));
+    this.input.addEventListener('input',()=>this.render(this.input.value));
+    document.addEventListener('click',e=>{if(!this.wrap.contains(e.target))this.close();});
   }
-});
-
-// ── INSURANCE ──
-const INSURANCES = ['IESS','Salud S.A.','Equivida','Panamericana','BMI','Seguros Sucre','Produbanco','Agrego luego'];
-const selectedIns = new Set();
-
-document.getElementById('insuranceGrid').innerHTML = INSURANCES.map(i =>
-  `<label class="ins-check" onclick="toggleIns(this,'${i}')">
-    <div class="ins-checkmark"></div>
-    ${i}
-  </label>`
-).join('');
-
-function toggleIns(el, ins) {
-  if (selectedIns.has(ins)) { selectedIns.delete(ins); el.classList.remove('selected'); }
-  else { selectedIns.add(ins); el.classList.add('selected'); }
-}
-
-// ── URL PREVIEW ──
-function updateUrlPreview() {
-  const nombre   = document.getElementById('f-nombre')?.value?.toLowerCase().replace(/\s+/g,'-') || '';
-  const apellido = document.getElementById('f-apellido')?.value?.toLowerCase().replace(/\s+/g,'-') || '';
-  const titulo   = document.getElementById('f-titulo')?.value?.toLowerCase().replace(/\./g,'').replace(/\s+/g,'-') || 'dr';
-  const slug     = [titulo, nombre, apellido].filter(Boolean).join('-');
-  const url      = `citadoc.com/medico/${slug || 'dr-nombre-apellido'}`;
-  document.getElementById('urlPreview').textContent = url;
-  document.getElementById('success-url').textContent = url;
-}
-document.getElementById('f-nombre').addEventListener('input', updateUrlPreview);
-document.getElementById('f-apellido').addEventListener('input', updateUrlPreview);
-
-function copyUrl() {
-  const url = document.getElementById('urlPreview').textContent;
-  navigator.clipboard.writeText('https://' + url).then(() => {
-    const btn = document.querySelector('.url-copy');
-    btn.textContent = '¡Copiado!';
-    setTimeout(() => btn.textContent = 'Copiar', 2000);
-  });
-}
-function copySuccessUrl() {
-  const url = document.getElementById('success-url').textContent;
-  navigator.clipboard.writeText('https://' + url).then(() => {
-    const btn = document.querySelector('.btn-copy-url');
-    btn.textContent = '✓ Copiado';
-    setTimeout(() => btn.textContent = '📋 Copiar link', 2000);
-  });
-}
-
-// ── CITIES ──
-
-// ══ SEARCHABLE SELECT COMPONENT ══
-class SearchableSelect {
-  constructor({ wrap, inputId, dropdownId, options, placeholder, onChange, single = true }) {
-    this.wrap      = document.getElementById(wrap);
-    this.input     = document.getElementById(inputId);
-    this.dropdown  = document.getElementById(dropdownId);
-    this.options   = options;   // array de { value, label }
-    this.single    = single;
-    this.selected  = null;      // { value, label }
-    this.onChange  = onChange || (() => {});
-
-    this.input.setAttribute('placeholder', placeholder || 'Escribe para buscar...');
-    this.input.addEventListener('focus',  () => this.render(this.input.value));
-    this.input.addEventListener('input',  () => this.render(this.input.value));
-    document.addEventListener('click', e => { if (!this.wrap.contains(e.target)) this.close(); });
-  }
-
-  render(query) {
-    const q = query.trim().toLowerCase();
-    const filtered = this.options.filter(o => o.label.toLowerCase().includes(q));
-    if (filtered.length === 0) {
-      this.dropdown.innerHTML = `<div class="ss-empty">Sin resultados para "${query}"</div>`;
-    } else {
-      this.dropdown.innerHTML = filtered.map(o => {
-        const isCur = this.selected && this.selected.value === o.value;
-        return `<div class="ss-option${isCur ? ' active' : ''}" data-val="${o.value}" data-lbl="${o.label}">
-          ${o.label}${isCur ? ' <span style="color:var(--teal)">✓</span>' : ''}
-        </div>`;
-      }).join('');
-      this.dropdown.querySelectorAll('.ss-option:not(.active)').forEach(el => {
-        el.addEventListener('click', () => {
-          this.setValue(el.dataset.val, el.dataset.lbl);
-        });
-      });
-    }
+  render(query){
+    const q=query.trim().toLowerCase();
+    const filtered=this.options.filter(o=>o.label.toLowerCase().includes(q));
+    this.dropdown.innerHTML=filtered.length===0?'<div class="ss-empty">Sin resultados</div>':filtered.map(o=>{
+      const cur=this.selected&&this.selected.value===o.value;
+      return '<div class="ss-option'+(cur?' active':'')+'" data-val="'+o.value+'" data-lbl="'+o.label+'">'+o.label+(cur?' ✓':'')+'</div>';
+    }).join('');
+    this.dropdown.querySelectorAll('.ss-option:not(.active)').forEach(el=>{el.addEventListener('click',()=>this.setValue(el.dataset.val,el.dataset.lbl));});
     this.dropdown.classList.add('open');
   }
-
-  setValue(value, label) {
-    this.selected = { value, label };
-    this.input.value = '';
-    this.updateTag();
-    this.close();
-    this.onChange(value, label);
-  }
-
-  updateTag() {
-    // Remove existing tag
+  setValue(value,label){this.selected={value,label};this.input.value='';this.updateTag();this.close();this.onChange(value,label);}
+  updateTag(){
     this.wrap.querySelector('.ss-selected-tag')?.remove();
-    if (this.selected) {
-      const tag = document.createElement('div');
-      tag.className = 'ss-selected-tag';
-      tag.innerHTML = `${this.selected.label} <span class="ss-x">×</span>`;
-      tag.querySelector('.ss-x').addEventListener('click', e => {
-        e.stopPropagation();
-        this.selected = null;
-        this.updateTag();
-        this.input.placeholder = this.input.getAttribute('placeholder');
-        this.onChange(null, null);
-      });
-      this.wrap.querySelector('.ss-input-row').insertBefore(tag, this.input);
+    if(this.selected){
+      const tag=document.createElement('div');tag.className='ss-selected-tag';
+      tag.innerHTML=this.selected.label+' <span class="ss-x">×</span>';
+      tag.querySelector('.ss-x').addEventListener('click',e=>{e.stopPropagation();this.selected=null;this.updateTag();this.onChange(null,null);});
+      this.wrap.querySelector('.ss-input-row').insertBefore(tag,this.input);
     }
   }
-
-  getValue() { return this.selected ? this.selected.value : ''; }
-  getLabel() { return this.selected ? this.selected.label : ''; }
-
-  close() { this.dropdown.classList.remove('open'); }
-
-  setOptions(opts) {
-    this.options = opts;
-    this.selected = null;
-    this.updateTag();
-  }
+  getValue(){return this.selected?this.selected.value:'';}
+  getLabel(){return this.selected?this.selected.label:'';}
+  close(){this.dropdown.classList.remove('open');}
+  setOptions(opts){this.options=opts;this.selected=null;this.updateTag();}
 }
 
-const CIUDAD_MAP = {
-  ecuador: [{value:"ambato",label:"Ambato"},{value:"azogues",label:"Azogues"},{value:"babahoyo",label:"Babahoyo"},{value:"cuenca",label:"Cuenca"},{value:"esmeraldas",label:"Esmeraldas"},{value:"guaranda",label:"Guaranda"},{value:"guayaquil",label:"Guayaquil"},{value:"ibarra",label:"Ibarra"},{value:"latacunga",label:"Latacunga"},{value:"loja",label:"Loja"},{value:"macas",label:"Macas"},{value:"machala",label:"Machala"},{value:"manta",label:"Manta"},{value:"nueva loja",label:"Nueva Loja"},{value:"portoviejo",label:"Portoviejo"},{value:"puyo",label:"Puyo"},{value:"quito",label:"Quito"},{value:"riobamba",label:"Riobamba"},{value:"santa rosa",label:"Santa Rosa"},{value:"santo domingo",label:"Santo Domingo"},{value:"tena",label:"Tena"},{value:"tulcán",label:"Tulcán"},{value:"zamora",label:"Zamora"}],
-  colombia: [{value:"barranquilla",label:"Barranquilla"},{value:"bogotá",label:"Bogotá"},{value:"bucaramanga",label:"Bucaramanga"},{value:"cali",label:"Cali"},{value:"cartagena",label:"Cartagena"},{value:"cúcuta",label:"Cúcuta"},{value:"ibagué",label:"Ibagué"},{value:"manizales",label:"Manizales"},{value:"medellín",label:"Medellín"},{value:"montería",label:"Montería"},{value:"neiva",label:"Neiva"},{value:"pasto",label:"Pasto"},{value:"pereira",label:"Pereira"},{value:"santa marta",label:"Santa Marta"},{value:"villavicencio",label:"Villavicencio"}],
-  peru: [{value:"arequipa",label:"Arequipa"},{value:"ayacucho",label:"Ayacucho"},{value:"chiclayo",label:"Chiclayo"},{value:"cusco",label:"Cusco"},{value:"huancayo",label:"Huancayo"},{value:"iquitos",label:"Iquitos"},{value:"lima",label:"Lima"},{value:"piura",label:"Piura"},{value:"pucallpa",label:"Pucallpa"},{value:"tacna",label:"Tacna"},{value:"trujillo",label:"Trujillo"}]
+const CIUDAD_MAP={
+  ecuador:[{value:'ambato',label:'Ambato'},{value:'azogues',label:'Azogues'},{value:'babahoyo',label:'Babahoyo'},{value:'cuenca',label:'Cuenca'},{value:'esmeraldas',label:'Esmeraldas'},{value:'guaranda',label:'Guaranda'},{value:'guayaquil',label:'Guayaquil'},{value:'ibarra',label:'Ibarra'},{value:'latacunga',label:'Latacunga'},{value:'loja',label:'Loja'},{value:'macas',label:'Macas'},{value:'machala',label:'Machala'},{value:'manta',label:'Manta'},{value:'nueva loja',label:'Nueva Loja'},{value:'portoviejo',label:'Portoviejo'},{value:'puyo',label:'Puyo'},{value:'quito',label:'Quito'},{value:'riobamba',label:'Riobamba'},{value:'santa rosa',label:'Santa Rosa'},{value:'santo domingo',label:'Santo Domingo'},{value:'tena',label:'Tena'},{value:'tulcan',label:'Tulcán'},{value:'zamora',label:'Zamora'}],
+  colombia:[{value:'barranquilla',label:'Barranquilla'},{value:'bogota',label:'Bogotá'},{value:'bucaramanga',label:'Bucaramanga'},{value:'cali',label:'Cali'},{value:'cartagena',label:'Cartagena'},{value:'cucuta',label:'Cúcuta'},{value:'ibague',label:'Ibagué'},{value:'manizales',label:'Manizales'},{value:'medellin',label:'Medellín'},{value:'monteria',label:'Montería'},{value:'neiva',label:'Neiva'},{value:'pasto',label:'Pasto'},{value:'pereira',label:'Pereira'},{value:'santa marta',label:'Santa Marta'},{value:'villavicencio',label:'Villavicencio'}],
+  peru:[{value:'arequipa',label:'Arequipa'},{value:'ayacucho',label:'Ayacucho'},{value:'chiclayo',label:'Chiclayo'},{value:'cusco',label:'Cusco'},{value:'huancayo',label:'Huancayo'},{value:'iquitos',label:'Iquitos'},{value:'lima',label:'Lima'},{value:'piura',label:'Piura'},{value:'pucallpa',label:'Pucallpa'},{value:'tacna',label:'Tacna'},{value:'trujillo',label:'Trujillo'}]
 };
 
-let regPais = null, regCiudad = null;
-function initRegSelects() {
-  regPais = new SearchableSelect({
-    wrap:'reg-pais-wrap', inputId:'reg-pais-input', dropdownId:'reg-pais-drop',
-    options:[{value:'ecuador',label:'Ecuador'},{value:'colombia',label:'Colombia'},{value:'peru',label:'Peru'}],
+let regPais=null,regCiudad=null;
+function initRegSelects(){
+  regPais=new SearchableSelect({wrap:'reg-pais-wrap',inputId:'reg-pais-input',dropdownId:'reg-pais-drop',
+    options:[{value:'ecuador',label:'Ecuador'},{value:'colombia',label:'Colombia'},{value:'peru',label:'Perú'}],
     placeholder:'Ej: Ecuador',
-    onChange: (val) => {
-      if (regCiudad) { regCiudad.selected=null; regCiudad.updateTag(); regCiudad.setOptions(val&&CIUDAD_MAP[val]?CIUDAD_MAP[val]:[]); }
-    }
+    onChange:(val)=>{if(regCiudad){regCiudad.selected=null;regCiudad.updateTag();regCiudad.setOptions(val&&CIUDAD_MAP[val]?CIUDAD_MAP[val]:[]);}}
   });
   regPais.setValue('ecuador','Ecuador');
-  regCiudad = new SearchableSelect({
-    wrap:'reg-ciudad-wrap', inputId:'reg-ciudad-input', dropdownId:'reg-ciudad-drop',
-    options: CIUDAD_MAP['ecuador'],
-    placeholder:'Ej: Quito',
-    onChange: () => {}
+  regCiudad=new SearchableSelect({wrap:'reg-ciudad-wrap',inputId:'reg-ciudad-input',dropdownId:'reg-ciudad-drop',
+    options:CIUDAD_MAP['ecuador'],placeholder:'Ej: Quito',onChange:()=>{}
   });
 }
-function updateFormCities() {} // legacy stub
 
-// ── DAYS ──
-function toggleDay(el) { el.classList.toggle('selected'); }
+// ══ STEPS ══
+let currentStep=1;
+function goStep(n){
+  document.getElementById('panel-'+currentStep).classList.remove('active');
+  document.getElementById('panel-'+n).classList.add('active');
+  for(let i=1;i<=4;i++){
+    const num=document.getElementById('sn-'+i);
+    const lbl=document.getElementById('sl-'+i);
+    if(i<n){num.className='step-num done';num.textContent='✓';lbl.className='step-label done';}
+    else if(i===n){num.className='step-num active';num.textContent=i;lbl.className='step-label active';}
+    else{num.className='step-num';num.textContent=i;lbl.className='step-label';}
+    if(i<=3)document.getElementById('sc-'+i).className='step-connector'+(i<n?' done':'');
+  }
+  if(n===4)updatePaymentStep();
+  currentStep=n;
+  document.querySelector('.form-side').scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-// ── STEPS ──
-let currentStep = 1;
-function goStep(n) {
-  document.getElementById(`panel-${currentStep}`).classList.remove('active');
-  document.getElementById(`panel-${n}`).classList.add('active');
+// ══ FOTO ══
+function previewPhoto(input){
+  if(input.files&&input.files[0]){const r=new FileReader();r.onload=e=>{document.getElementById('upload-icon').innerHTML='<img src="'+e.target.result+'" style="width:64px;height:64px;border-radius:50%;object-fit:cover">';};r.readAsDataURL(input.files[0]);}
+}
 
-  // Update step indicators (steps 1-4 only)
-  for (let i = 1; i <= 4; i++) {
-    const num   = document.getElementById(`sn-${i}`);
-    const label = document.getElementById(`sl-${i}`);
-    if (i < n) {
-      num.className   = 'step-num done'; num.textContent = '✓';
-      label.className = 'step-label done';
-    } else if (i === n) {
-      num.className   = 'step-num active'; num.textContent = i;
-      label.className = 'step-label active';
-    } else {
-      num.className   = 'step-num'; num.textContent = i;
-      label.className = 'step-label';
+// ══ CARD FORMAT ══
+function formatCard(el){let v=el.value.replace(/\D/g,'').substring(0,16);el.value=v.replace(/(.{4})/g,'$1 ').trim();}
+function formatExp(el){let v=el.value.replace(/\D/g,'').substring(0,4);if(v.length>=3)v=v.substring(0,2)+'/'+v.substring(2);el.value=v;}
+
+// ══ ACTIVAR CUENTA (Supabase) ══
+async function activarCuenta(){
+  const nombre  =document.getElementById('f-nombre')?.value?.trim();
+  const apellido=document.getElementById('f-apellido')?.value?.trim();
+  const email   =document.getElementById('f-email')?.value?.trim();
+  const pass    =document.getElementById('f-pass')?.value;
+  const pass2   =document.getElementById('f-pass2')?.value;
+  const titulo  =document.getElementById('f-titulo')?.value?.trim()||'Dr.';
+  const cedula  =document.getElementById('f-cedula')?.value?.trim();
+  const tel     =document.getElementById('f-tel')?.value?.trim();
+  const senescyt=document.getElementById('f-senescyt')?.value?.trim();
+  const bio     =document.getElementById('f-bio')?.value?.trim();
+  const precio  =parseInt(document.getElementById('f-precio')?.value)||0;
+  const desde   =document.getElementById('f-desde')?.value||'09:00';
+  const hasta   =document.getElementById('f-hasta')?.value||'17:00';
+
+  if(!nombre||!apellido||!email||!pass){alert('Completa nombre, apellido, email y contraseña.');return;}
+  if(pass!==pass2){alert('Las contraseñas no coinciden.');return;}
+  if(pass.length<8){alert('La contraseña debe tener mínimo 8 caracteres.');return;}
+
+  const btn=document.getElementById('btn-activar');
+  btn.textContent='Creando cuenta...';btn.disabled=true;
+
+  try{
+    // 1. Supabase Auth
+    const{data:authData,error:authError}=await _supabase.auth.signUp({
+      email,password:pass,options:{data:{nombre,apellido,titulo}}
+    });
+    if(authError){
+      alert(authError.message.includes('already registered')?'Este correo ya está registrado. Inicia sesión.':'Error: '+authError.message);
+      btn.textContent='Activar mi perfil →';btn.disabled=false;return;
     }
+    const userId=authData.user?.id;
+
+    // 2. Slug
+    function toSlug(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().replace(/\s+/g,'-');}
+    const slug=toSlug(titulo.replace('.','').replace(/\s+/g,' ')+' '+nombre+' '+apellido);
+
+    // 3. Días
+    const diasMap={'Lun':'lun','Mar':'mar','Mié':'mie','Jue':'jue','Vie':'vie','Sáb':'sab','Dom':'dom'};
+    const dias=Array.from(document.querySelectorAll('.day-chip.selected')).map(el=>diasMap[el.textContent]||el.textContent.toLowerCase());
+
+    // 4. País y ciudad
+    const paisVal=regPais?.getValue()||'ecuador';
+    const ciudadLabel=regCiudad?.getLabel()||'';
+
+    // 5. Insertar médico en Supabase
+    const{data:medicoData,error:medicoError}=await _supabase.from('medicos').insert({
+      user_id:userId,email,nombre,apellido,titulo,cedula,senescyt,slug,bio,precio,
+      pais:paisVal,ciudad:ciudadLabel,
+      especialidades:Array.from(selectedSpecs),
+      seguros:Array.from(selectedIns),
+      telefono:tel,horario_desde:desde,horario_hasta:hasta,dias_atencion:dias,
+      plan:selectedPlan==='featured'?'destacado':'gratuito',activo:true,
+    }).select().single();
+
+    if(medicoError){
+      console.error(medicoError);
+      alert('Error al guardar perfil: '+medicoError.message);
+      btn.textContent='Activar mi perfil →';btn.disabled=false;return;
+    }
+
+    // 6. URL y sessionStorage
+    const url='citadoc.lat/medico/'+slug;
+    document.getElementById('success-url').textContent=url;
+    sessionStorage.setItem('citadoc_user',JSON.stringify({...medicoData,nombre,apellido,titulo,email,slug,ciudad:ciudadLabel,especialidades:Array.from(selectedSpecs)}));
+
+    // 7. Email de bienvenida
+    if(typeof emailjs!=='undefined'){
+      emailjs.send('service_63xln0n','template_xnrw4eb',{
+        medico_nombre:titulo+' '+nombre+' '+apellido,
+        medico_email:email,
+        plan:selectedPlan==='featured'?'Plan Destacado':'Plan Gratuito',
+        url_perfil:'https://citadoc.lat/medico/'+slug,
+        url_dashboard:'https://citadoc.lat/citadoc-dashboard.html',
+      }).catch(e=>console.warn('EmailJS:',e));
+    }
+
+    // 8. Paso 5
+    goStep(5);
+
+  }catch(err){
+    console.error(err);
+    alert('Error inesperado. Intenta de nuevo.');
+    btn.textContent='Activar mi perfil →';btn.disabled=false;
   }
-  for (let i = 1; i <= 3; i++) {
-    document.getElementById(`sc-${i}`).className = 'step-connector' + (i < n ? ' done' : '');
-  }
-
-  if (n === 4) updatePaymentStep();
-  currentStep = n;
-  document.querySelector('.form-side').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ── ACTIVATE ──
-function activarCuenta() {
-  const email  = document.getElementById('f-email')?.value?.trim();
-  const nombre = document.getElementById('f-nombre')?.value?.trim();
-  const apellido = document.getElementById('f-apellido')?.value?.trim();
-
-  // ── Email de bienvenida al médico (requiere EmailJS configurado) ──
-  if (typeof emailjs !== 'undefined' && email) {
-    emailjs.send('service_63xln0n', 'template_xnrw4eb', {
-      medico_nombre:  nombre + ' ' + apellido,
-      medico_email:   email,
-      plan:           selectedPlan === 'featured' ? 'Plan Destacado' : 'Plan Gratuito',
-      url_perfil:     'citadoc.com/medico/' + (document.getElementById('f-titulo')?.value?.toLowerCase().replace(/\./g,'') || 'dr') + '-' + nombre?.toLowerCase() + '-' + apellido?.toLowerCase(),
-      url_dashboard:  'citadoc.com/dashboard',
-    }).catch(() => {});
-  }
-
-  goStep(5);
-}
-
-// ── CARD FORMAT ──
-function formatCard(el) {
-  let v = el.value.replace(/\D/g,'').substring(0,16);
-  el.value = v.replace(/(.{4})/g,'$1 ').trim();
-}
-function formatExp(el) {
-  let v = el.value.replace(/\D/g,'').substring(0,4);
-  if (v.length >= 3) v = v.substring(0,2) + '/' + v.substring(2);
-  el.value = v;
-}
-
-// ── PHOTO PREVIEW ──
-function previewPhoto(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('upload-icon').innerHTML = `<img src="${e.target.result}" style="width:64px;height:64px;border-radius:50%;object-fit:cover">`;
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-
-// Init
-updateUrlPreview();
-document.addEventListener('DOMContentLoaded', initRegSelects);
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded',()=>{initRegSelects();updateUrlPreview();updatePaymentStep();});
 </script>
 </body>
 </html>

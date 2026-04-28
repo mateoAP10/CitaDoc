@@ -810,6 +810,258 @@ body {
 @keyframes shimmer { to{background-position:-200% 0} }
 
 </style>
+
+<!-- ══ SUPABASE SDK ══ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_UF1klDW5XOsBVGCy30gYVw_xz1rNWZQ';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Cargar datos del médico al iniciar
+  async function cargarMedico() {
+    // 1. Intentar desde sessionStorage (viene del registro)
+    const cached = sessionStorage.getItem('citadoc_user');
+    if (cached) {
+      const medico = JSON.parse(cached);
+      aplicarDatosMedico(medico);
+      // Cargar datos completos desde DB en background
+      cargarDesdDB(medico.user_id);
+      return;
+    }
+
+    // 2. Verificar sesión activa de Supabase Auth
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      // No hay sesión — redirigir al index
+      window.location.href = 'index.html';
+      return;
+    }
+
+    await cargarDesdDB(session.user.id);
+  }
+
+  async function cargarDesdDB(userId) {
+    const { data: medico, error } = await _supabase
+      .from('medicos')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !medico) {
+      console.error('No se encontró perfil médico:', error);
+      return;
+    }
+
+    sessionStorage.setItem('citadoc_user', JSON.stringify(medico));
+    aplicarDatosMedico(medico);
+  }
+
+  function aplicarDatosMedico(medico) {
+    const nombreCompleto = (medico.titulo || 'Dr.') + ' ' + medico.nombre + ' ' + medico.apellido;
+    const especialidad   = (medico.especialidades || [])[0] || 'Médico';
+    const ciudad         = medico.ciudad || '';
+    const slug           = medico.slug || '';
+    const plan           = medico.plan || 'gratuito';
+    const url            = 'citadoc.lat/medico/' + slug;
+
+    // Sidebar — nombre y especialidad
+    const nameEl = document.querySelector('.doc-info-sm .name');
+    const roleEl = document.querySelector('.doc-info-sm .role');
+    const planEl = document.querySelector('.plan-badge-sm');
+    if (nameEl) nameEl.textContent = nombreCompleto;
+    if (roleEl) roleEl.textContent = especialidad;
+    if (planEl) planEl.textContent = plan === 'destacado' ? '⭐ Destacado' : 'Plan Gratuito';
+
+    // URL sidebar
+    const urlEl = document.querySelector('.url-sidebar-text');
+    if (urlEl) urlEl.textContent = url;
+
+    // URL en perfil
+    const urlCard = document.querySelector('.url-card-url');
+    if (urlCard) urlCard.textContent = url;
+    const successUrl = document.getElementById('success-url');
+    if (successUrl) successUrl.textContent = url;
+
+    // Panel perfil — rellenar campos
+    const inputs = document.querySelectorAll('#ptab-info input');
+    const vals = [medico.nombre, medico.apellido, medico.titulo, especialidad,
+                  medico.precio, medico.anos_experiencia || '', ciudad, medico.pais || 'Ecuador',
+                  medico.direccion || '', medico.senescyt || '', medico.telefono || ''];
+    inputs.forEach((inp, i) => { if (vals[i] !== undefined) inp.value = vals[i]; });
+
+    // Bio
+    const bioEl = document.getElementById('bioTextarea');
+    if (bioEl && medico.bio) bioEl.value = medico.bio;
+
+    // Foto
+    const avatarEl = document.querySelector('.perfil-avatar-big');
+    const avatarSm = document.querySelector('.doc-avatar-sm');
+    if (medico.foto_url) {
+      const imgHtml = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">';
+      if (avatarEl) avatarEl.innerHTML = imgHtml;
+      if (avatarSm) avatarSm.innerHTML = imgHtml;
+    }
+
+    // Plan badge color
+    if (planEl && plan === 'destacado') {
+      planEl.style.background = 'rgba(232,164,74,.2)';
+      planEl.style.color = '#f0b860';
+    }
+
+    // Topbar saludo
+    const titleEl = document.getElementById('topbarTitle');
+    if (titleEl && titleEl.textContent === 'Inicio') {
+      titleEl.textContent = 'Bienvenido, ' + medico.nombre;
+    }
+
+    // Seguros — marcar los del médico
+    activeSeguros.clear();
+    (medico.seguros || []).forEach(s => activeSeguros.add(s));
+    if (document.getElementById('segurosEditor')) renderSeguros();
+
+    // Toggles de contacto
+    const waToggle = document.getElementById('waToggle');
+    const agToggle = document.getElementById('toggleAgendamiento');
+    if (waToggle) { waToggle.checked = medico.whatsapp_activo || false; toggleWA(waToggle); }
+    if (agToggle) { agToggle.checked = medico.agendamiento_citadoc !== false; }
+    if (document.getElementById('waNumber')) document.getElementById('waNumber').value = medico.whatsapp || '';
+    updateContactMode();
+
+    // Photo card
+    const h4El = document.getElementById('perfilNombreCard');
+    const pEl  = document.getElementById('perfilEspCard');
+    if (h4El) h4El.textContent = nombreCompleto;
+    if (pEl)  pEl.textContent  = especialidad + (ciudad ? ' · ' + ciudad : '');
+
+    // URL dinámica
+    const urlCardEl = document.getElementById('perfilUrlCard');
+    if (urlCardEl) urlCardEl.textContent = url;
+    const verLink = document.getElementById('verPerfilLink');
+    if (verLink && slug) verLink.href = 'citadoc-perfil.html?slug=' + slug;
+
+    // Guardar globalmente
+    window._medicoActual = medico;
+
+    // Cargar citas y formación en paralelo
+    cargarCitasHoy(medico.id);
+    cargarFormacionLogros(medico.id);
+  }
+
+  // Cargar citas de hoy desde Supabase
+  async function cargarCitasHoy(medicoId) {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data: citas, error } = await _supabase
+      .from('citas')
+      .select('*')
+      .eq('medico_id', medicoId)
+      .eq('fecha', hoy)
+      .order('hora', { ascending: true });
+
+    const list  = document.getElementById('citasHoyList');
+    const count = document.getElementById('citasHoyCount');
+    const badge = document.getElementById('badge-citas');
+    if (!list) return;
+
+    if (error || !citas || citas.length === 0) {
+      list.innerHTML = '<div class="empty-citas">No hay citas programadas para hoy</div>';
+      if (count) count.textContent = '0 citas';
+      if (badge) badge.textContent = '0';
+
+      // Actualizar stat
+      const statHoy = document.getElementById('statHoy');
+      if (statHoy) statHoy.textContent = '0';
+      return;
+    }
+
+    if (count) count.textContent = citas.length + ' cita' + (citas.length !== 1 ? 's' : '');
+    if (badge) badge.textContent = citas.length;
+
+    // Stats
+    const statHoy = document.getElementById('statHoy');
+    if (statHoy) statHoy.textContent = citas.length;
+
+    const now = new Date();
+    list.innerHTML = citas.map(c => {
+      const [h, m] = c.hora.split(':').map(Number);
+      const slotDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+      const isPast   = slotDate < now;
+      const estado   = c.estado || 'confirmada';
+      const statusMap = { confirmada: 'confirmed', cancelada: 'done', completada: 'done', pendiente: 'pending' };
+      const labelMap  = { confirmada: 'Confirmada', cancelada: 'Cancelada', completada: 'Completada', pendiente: 'Pendiente' };
+      const avatares  = ['👩','👨','👴','👩‍💼','👨‍💼','🧑'];
+      const av = avatares[Math.abs(c.paciente_nombre.charCodeAt(0)) % avatares.length];
+      return '<div class="cita-item">' +
+        '<div class="cita-time' + (isPast ? ' past' : '') + '">' + c.hora + '</div>' +
+        '<div class="cita-avatar">' + av + '</div>' +
+        '<div class="cita-info">' +
+          '<div class="cita-name">' + c.paciente_nombre + '</div>' +
+          '<div class="cita-motivo">' + (c.motivo || 'Sin motivo indicado') + '</div>' +
+        '</div>' +
+        '<span class="cita-status ' + (statusMap[estado] || 'confirmed') + '">' + (labelMap[estado] || estado) + '</span>' +
+        (estado === 'confirmada' ? '<div class="cita-actions"><div class="btn-icon danger" onclick="cancelarCita('' + c.id + '')" title="Cancelar">✕</div></div>' : '') +
+      '</div>';
+    }).join('');
+
+    // Stats semana y mes
+    cargarStatsExtras(medicoId);
+  }
+
+  async function cargarStatsExtras(medicoId) {
+    const hoy    = new Date();
+    const inicioSemana = new Date(hoy); inicioSemana.setDate(hoy.getDate() - 7);
+    const inicioMes    = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+    const [{ count: semana }, { count: mes }, { count: total }] = await Promise.all([
+      _supabase.from('citas').select('*', {count:'exact',head:true}).eq('medico_id', medicoId).gte('fecha', inicioSemana.toISOString().split('T')[0]),
+      _supabase.from('citas').select('*', {count:'exact',head:true}).eq('medico_id', medicoId).gte('fecha', inicioMes.toISOString().split('T')[0]),
+      _supabase.from('citas').select('*', {count:'exact',head:true}).eq('medico_id', medicoId),
+    ]);
+
+    const sem = document.getElementById('statSemana');
+    const mes_ = document.getElementById('statMes');
+    const tot = document.getElementById('statTotal');
+    if (sem)  sem.textContent  = semana  || 0;
+    if (mes_) mes_.textContent = mes     || 0;
+    if (tot)  tot.textContent  = total   || 0;
+  }
+
+  async function cancelarCita(citaId) {
+    if (!confirm('¿Cancelar esta cita?')) return;
+    await _supabase.from('citas').update({ estado: 'cancelada' }).eq('id', citaId);
+    const m = window._medicoActual;
+    if (m) cargarCitasHoy(m.id);
+  }
+
+  // Cargar formación y logros desde Supabase
+  async function cargarFormacionLogros(medicoId) {
+    const { data, error } = await _supabase
+      .from('formacion')
+      .select('*')
+      .eq('medico_id', medicoId)
+      .order('orden', { ascending: true });
+
+    if (error || !data) return;
+
+    formacionData.length = 0;
+    logrosData.length    = 0;
+
+    data.forEach(f => {
+      if (f.tipo === 'academia') {
+        formacionData.push({ titulo: f.titulo || '', lugar: f.institucion || '', anio: f.anio || '' });
+      } else {
+        logrosData.push({ icono: f.icono || '⭐', titulo: f.titulo || '', desc: f.descripcion || '' });
+      }
+    });
+
+    if (document.getElementById('formacionList')) renderFormacion();
+    if (document.getElementById('logrosList'))   renderLogros();
+  }
+
+  // Ejecutar al cargar
+  document.addEventListener('DOMContentLoaded', cargarMedico);
+</script>
+
 </head>
 <body>
 
@@ -878,110 +1130,37 @@ body {
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-label">Citas hoy</div>
-          <div class="stat-num teal">6</div>
-          <div class="stat-sub"><span class="stat-trend up">↑ 2</span> vs ayer</div>
+          <div class="stat-num teal" id="statHoy">—</div>
+          <div class="stat-sub" id="statHoySub">cargando...</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Esta semana</div>
-          <div class="stat-num">24</div>
-          <div class="stat-sub"><span class="stat-trend up">↑ 12%</span> vs semana anterior</div>
+          <div class="stat-num" id="statSemana">—</div>
+          <div class="stat-sub">últimos 7 días</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Este mes</div>
-          <div class="stat-num">87</div>
-          <div class="stat-sub"><span class="stat-trend up">↑ 8%</span> vs mes anterior</div>
+          <div class="stat-num" id="statMes">—</div>
+          <div class="stat-sub">mes en curso</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Ocupación</div>
-          <div class="stat-num teal">74%</div>
-          <div class="stat-sub">de slots disponibles</div>
+          <div class="stat-label">Total pacientes</div>
+          <div class="stat-num teal" id="statTotal">—</div>
+          <div class="stat-sub">desde el inicio</div>
         </div>
       </div>
 
       <div class="dash-grid">
-        <!-- Citas de hoy -->
+        <!-- Citas de hoy — dinámicas desde Supabase -->
         <div class="card">
           <div class="card-header">
             <h3>Citas de hoy</h3>
             <div class="card-header-right">
-              <span class="badge-count">6 citas</span>
+              <span class="badge-count" id="citasHoyCount">0 citas</span>
             </div>
           </div>
-
-          <div class="cita-item">
-            <div class="cita-time past">08:30</div>
-            <div class="cita-avatar">👩</div>
-            <div class="cita-info">
-              <div class="cita-name">María García</div>
-              <div class="cita-motivo">Control de rutina</div>
-            </div>
-            <span class="cita-status done">Completada</span>
-          </div>
-
-          <div class="cita-item">
-            <div class="cita-time past">09:00</div>
-            <div class="cita-avatar">👨</div>
-            <div class="cita-info">
-              <div class="cita-name">Carlos Mora</div>
-              <div class="cita-motivo">Dolor en el pecho</div>
-            </div>
-            <span class="cita-status done">Completada</span>
-          </div>
-
-          <div class="cita-item" style="background:rgba(11,124,110,.03)">
-            <div class="cita-time">10:30</div>
-            <div class="cita-avatar" style="background:#fef9c3">👩</div>
-            <div class="cita-info">
-              <div class="cita-name">Ana Rodríguez</div>
-              <div class="cita-motivo">Revisión electrocardiograma</div>
-            </div>
-            <span class="cita-status confirmed">Confirmada</span>
-            <div class="cita-actions">
-              <div class="btn-icon" title="Ver detalles">👁</div>
-              <div class="btn-icon danger" title="Cancelar">✕</div>
-            </div>
-          </div>
-
-          <div class="cita-item">
-            <div class="cita-time">11:00</div>
-            <div class="cita-avatar">👴</div>
-            <div class="cita-info">
-              <div class="cita-name">Roberto Vega</div>
-              <div class="cita-motivo">Hipertensión — seguimiento</div>
-            </div>
-            <span class="cita-status confirmed">Confirmada</span>
-            <div class="cita-actions">
-              <div class="btn-icon">👁</div>
-              <div class="btn-icon danger">✕</div>
-            </div>
-          </div>
-
-          <div class="cita-item">
-            <div class="cita-time">14:00</div>
-            <div class="cita-avatar">👩</div>
-            <div class="cita-info">
-              <div class="cita-name">Lucía Herrera</div>
-              <div class="cita-motivo">Primera consulta</div>
-            </div>
-            <span class="cita-status pending">Pendiente</span>
-            <div class="cita-actions">
-              <div class="btn-icon">👁</div>
-              <div class="btn-icon danger">✕</div>
-            </div>
-          </div>
-
-          <div class="cita-item">
-            <div class="cita-time">15:30</div>
-            <div class="cita-avatar">👦</div>
-            <div class="cita-info">
-              <div class="cita-name">Diego Salazar</div>
-              <div class="cita-motivo">Arritmia — control</div>
-            </div>
-            <span class="cita-status confirmed">Confirmada</span>
-            <div class="cita-actions">
-              <div class="btn-icon">👁</div>
-              <div class="btn-icon danger">✕</div>
-            </div>
+          <div id="citasHoyList">
+            <div class="empty-citas" id="citasLoading">⟳ Cargando citas...</div>
           </div>
         </div>
 
@@ -1223,19 +1402,20 @@ body {
         <!-- Columna izquierda: foto + link -->
         <div style="display:flex;flex-direction:column;gap:1.2rem">
           <div class="perfil-photo-card">
-            <div class="perfil-avatar-big">👨‍⚕️</div>
-            <h4>Dr. Juan Pérez</h4>
-            <p>Cardiología · Guayaquil</p>
-            <button class="btn-change-photo">📸 Cambiar foto</button>
+            <div class="perfil-avatar-big" id="perfilAvatarBig">👨‍⚕️</div>
+            <h4 id="perfilNombreCard">—</h4>
+            <p id="perfilEspCard">—</p>
+            <button class="btn-change-photo" onclick="document.getElementById('fotoInput').click()">📸 Cambiar foto</button>
+            <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="subirFoto(this)">
           </div>
           <div class="card" style="padding:1.2rem">
             <div class="url-card">
               <div class="url-card-label">Tu link público</div>
-              <div class="url-card-url">citadoc.com/medico/dr-juan-perez</div>
+              <div class="url-card-url" id="perfilUrlCard">citadoc.lat/medico/...</div>
               <button class="btn-copy-url-card" onclick="copyProfileUrl(this)">📋 Copiar link</button>
             </div>
             <div style="margin-top:.8rem">
-              <a href="citadoc-perfil.html" style="display:block;text-align:center;font-size:.82rem;font-weight:600;color:var(--teal);text-decoration:none;padding:.5rem;border:1.5px solid var(--teal);border-radius:10px;transition:all .2s" onmouseover="this.style.background='var(--teal-lite)'" onmouseout="this.style.background='transparent'">👁 Ver perfil público →</a>
+              <a id="verPerfilLink" href="citadoc-perfil.html" style="display:block;text-align:center;font-size:.82rem;font-weight:600;color:var(--teal);text-decoration:none;padding:.5rem;border:1.5px solid var(--teal);border-radius:10px;transition:all .2s" onmouseover="this.style.background='var(--teal-lite)'" onmouseout="this.style.background='transparent'">👁 Ver perfil público →</a>
             </div>
           </div>
 
@@ -1619,12 +1799,106 @@ document.addEventListener('DOMContentLoaded', () => {
   dashCiudadSelect.setValue('guayaquil','Guayaquil');
 });
 
-// ── SAVE PERFIL ──
-function savePerfil(btn) {
+// ── SAVE PERFIL → SUPABASE ──
+async function savePerfil(btn) {
+  const m = window._medicoActual;
+  if (!m) { alert('Sesión no encontrada. Recarga la página.'); return; }
+
   const orig = btn.textContent;
-  btn.textContent = '✓ Cambios guardados';
-  btn.style.background = 'var(--green)';
-  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2500);
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+
+  // Recopilar todos los inputs del tab info
+  const infoInputs = document.querySelectorAll('#ptab-info input:not([type="file"])');
+  const nombre    = infoInputs[0]?.value?.trim() || m.nombre;
+  const apellido  = infoInputs[1]?.value?.trim() || m.apellido;
+  const titulo    = infoInputs[2]?.value?.trim() || m.titulo;
+  const bio       = document.getElementById('bioTextarea')?.value?.trim() || m.bio;
+  const precio    = parseInt(infoInputs[4]?.value) || m.precio;
+  const anos_exp  = parseInt(infoInputs[5]?.value) || 0;
+  const ciudad    = dashCiudadSelect?.getLabel() || m.ciudad;
+  const pais      = dashPaisSelect?.getValue()   || m.pais;
+  const direccion = infoInputs[8]?.value?.trim() || m.direccion;
+  const senescyt  = infoInputs[9]?.value?.trim() || m.senescyt;
+  const telefono  = infoInputs[10]?.value?.trim() || m.telefono;
+
+  const seguros   = Array.from(activeSeguros);
+  const waActivo  = document.getElementById('waToggle')?.checked || false;
+  const waNum     = document.getElementById('waNumber')?.value?.trim() || '';
+  const agActivo  = document.getElementById('toggleAgendamiento')?.checked ?? true;
+
+  // Formación y logros → guardar en tabla formacion
+  const allFormacion = [
+    ...formacionData.map(f => ({tipo:'academia', titulo:f.titulo, institucion:f.lugar, anio:f.anio, icono:'🎓'})),
+    ...logrosData.map(l => ({tipo:'logro', titulo:l.titulo, descripcion:l.desc, icono:l.icono}))
+  ];
+
+  try {
+    const { error } = await _supabase.from('medicos').update({
+      nombre, apellido, titulo, bio, precio, anos_experiencia: anos_exp,
+      ciudad, pais, direccion, senescyt, telefono,
+      seguros, whatsapp: waNum, whatsapp_activo: waActivo,
+      agendamiento_citadoc: agActivo,
+    }).eq('id', m.id);
+
+    if (error) throw error;
+
+    // Actualizar formación en DB (borrar y reinsert)
+    if (allFormacion.length > 0) {
+      await _supabase.from('formacion').delete().eq('medico_id', m.id);
+      await _supabase.from('formacion').insert(
+        allFormacion.map((f, i) => ({ ...f, medico_id: m.id, orden: i }))
+      );
+    }
+
+    // Actualizar cache local
+    const updated = { ...m, nombre, apellido, titulo, bio, precio, ciudad, pais, seguros, whatsapp: waNum, whatsapp_activo: waActivo };
+    window._medicoActual = updated;
+    sessionStorage.setItem('citadoc_user', JSON.stringify(updated));
+
+    // Actualizar UI sidebar y photo card
+    const nombreCompleto = titulo + ' ' + nombre + ' ' + apellido;
+    const nameEl = document.querySelector('.doc-info-sm .name');
+    if (nameEl) nameEl.textContent = nombreCompleto;
+    const h4El = document.getElementById('perfilNombreCard');
+    if (h4El) h4El.textContent = nombreCompleto;
+
+    btn.textContent = '✓ Guardado';
+    btn.style.background = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.disabled = false; }, 2500);
+
+  } catch(err) {
+    console.error(err);
+    btn.textContent = '✗ Error al guardar';
+    btn.style.background = 'var(--red)';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.disabled = false; }, 2500);
+  }
+}
+
+// ── SUBIR FOTO → Supabase Storage ──
+async function subirFoto(input) {
+  const m = window._medicoActual;
+  if (!m || !input.files[0]) return;
+  const file = input.files[0];
+  const ext  = file.name.split('.').pop();
+  const path = m.id + '.' + ext;
+
+  const { data, error } = await _supabase.storage
+    .from('fotos-medicos')
+    .upload(path, file, { upsert: true });
+
+  if (error) { alert('Error subiendo foto: ' + error.message); return; }
+
+  const { data: urlData } = _supabase.storage.from('fotos-medicos').getPublicUrl(path);
+  const foto_url = urlData.publicUrl;
+
+  await _supabase.from('medicos').update({ foto_url }).eq('id', m.id);
+  window._medicoActual.foto_url = foto_url;
+  sessionStorage.setItem('citadoc_user', JSON.stringify(window._medicoActual));
+
+  const img = '<img src="' + foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">';
+  document.getElementById('perfilAvatarBig').innerHTML = img;
+  const sm = document.querySelector('.doc-avatar-sm');
+  if (sm) sm.innerHTML = img;
 }
 
 // ── PERFIL TABS ──
@@ -1690,7 +1964,7 @@ function setDuracion(el, mins) {
 
 // ── SEGUROS EDITOR ──
 const ALL_SEGUROS = ['IESS','Salud S.A.','Equivida','Panamericana','BMI','Seguros Sucre','Produbanco','Agrego luego'];
-const activeSeguros = new Set(['IESS','Salud S.A.','Panamericana','BMI']);
+const activeSeguros = new Set(); // se llena desde _medicoActual en aplicarDatosMedico
 function renderSeguros() {
   document.getElementById('segurosEditor').innerHTML = ALL_SEGUROS.map(s => {
     const on = activeSeguros.has(s);
@@ -1706,10 +1980,7 @@ function toggleSeguro(el, s) {
 renderSeguros();
 
 // ── FORMACION EDITOR ──
-const formacionData = [
-  { titulo: 'Especialización en Cardiología', lugar: 'Instituto Nacional de Cardiología — CDMX', anio: '2014–2016' },
-  { titulo: 'Médico Cirujano', lugar: 'Universidad Central del Ecuador', anio: '2006–2013' },
-];
+const formacionData = []; // se llena desde Supabase
 function renderFormacion() {
   document.getElementById('formacionList').innerHTML = formacionData.map((f,i) => `
     <div class="list-item-row">
@@ -1734,11 +2005,7 @@ function removeFormacion(i) { formacionData.splice(i,1); renderFormacion(); }
 renderFormacion();
 
 // ── LOGROS EDITOR ──
-const logrosData = [
-  { icono: '🏆', titulo: 'Premio Nacional de Cardiología 2021', desc: 'Sociedad Ecuatoriana de Cardiología' },
-  { icono: '📄', titulo: 'Publicación en Revista Latinoamericana', desc: '"Prevalencia de FA en pacientes hipertensos — 2022"' },
-  { icono: '🎓', titulo: 'Docente universitario', desc: 'Cátedra de Semiología Cardiovascular, Univ. de Guayaquil' },
-];
+const logrosData = []; // se llena desde Supabase
 function renderLogros() {
   document.getElementById('logrosList').innerHTML = logrosData.map((l,i) => `
     <div class="list-item-row">
