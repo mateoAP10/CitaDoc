@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CitaDoc — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --teal:      #0b7c6e;
+  --teal-mid:  #0e9d8c;
+  --teal-lite: #e0f5f2;
+  --teal-dark: #085f54;
+  --cream:     #f7f4ef;
+  --white:     #ffffff;
+  --ink:       #0f1a18;
+  --ink2:      #2c3a38;
+  --muted:     #6b7c79;
+  --muted2:    #a0b0ae;
+  --border:    rgba(11,124,110,.13);
+  --shadow-sm: 0 2px 12px rgba(15,26,24,.07);
+  --shadow-md: 0 8px 32px rgba(15,26,24,.10);
+  --shadow-lg: 0 20px 60px rgba(15,26,24,.13);
+  --accent:    #2563eb;
+  --accent-lite: #eff6ff;
+  --red:       #dc2626;
+  --red-lite:  #fef2f2;
+  --green:     #16a34a;
+  --green-lite:#f0fdf4;
+  --sidebar-w: 240px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ══════════════════════════════
+   SIDEBAR
+══════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--teal-dark);
+  min-height: 100vh;
+  position: fixed; top: 0; left: 0;
+  display: flex; flex-direction: column;
+  z-index: 100;
+  overflow: hidden;
+}
+.sidebar::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(14,157,140,.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+.sidebar-logo {
+  padding: 1.6rem 1.4rem 1.2rem;
+  font-family: 'Fraunces', serif;
+  font-size: 1.45rem; font-weight: 700;
+  color: #fff; letter-spacing: -.4px;
+  text-decoration: none;
+  display: block;
+  position: relative; z-index: 1;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-logo span { color: rgba(255,255,255,.5); font-style: italic; }
+
+.sidebar-doctor {
+  padding: 1.1rem 1.4rem;
+  display: flex; align-items: center; gap: .8rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: relative; z-index: 1;
+}
+.doc-avatar-sm {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.doc-info-sm .name { font-size: .82rem; font-weight: 600; color: #fff; }
+.doc-info-sm .role { font-size: .72rem; color: rgba(255,255,255,.45); margin-top: .1rem; }
+.plan-badge-sm {
+  display: inline-flex; align-items: center; gap: .25rem;
+  background: rgba(255,255,255,.12); color: rgba(255,255,255,.8);
+  font-size: .62rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: .15rem .5rem; border-radius: 50px; margin-top: .3rem;
+}
+
+.sidebar-nav {
+  flex: 1; padding: 1rem 0;
+  position: relative; z-index: 1;
+  overflow-y: auto;
+}
+.nav-section-label {
+  font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(255,255,255,.3); padding: .8rem 1.4rem .4rem;
+}
+.nav-item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .65rem 1.4rem;
+  font-size: .85rem; font-weight: 500; color: rgba(255,255,255,.6);
+  cursor: pointer; transition: all .2s;
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,.06); }
+.nav-item.active { color: #fff; background: rgba(255,255,255,.1); border-left-color: var(--teal-mid); }
+.nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--teal-mid); color: #fff;
+  font-size: .65rem; font-weight: 700;
+  padding: .15rem .45rem; border-radius: 50px;
+}
+
+.sidebar-bottom {
+  padding: 1rem 1.4rem 1.4rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+  position: relative; z-index: 1;
+}
+.url-sidebar {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  padding: .7rem .9rem;
+  margin-bottom: .8rem;
+}
+.url-sidebar-label { font-size: .65rem; font-weight: 700; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .3rem; }
+.url-sidebar-text { font-size: .72rem; color: rgba(255,255,255,.7); word-break: break-all; margin-bottom: .5rem; }
+.btn-copy-sm {
+  width: 100%; padding: .42rem;
+  background: rgba(255,255,255,.15); color: #fff; border: none; cursor: pointer;
+  border-radius: 8px; font-family: 'DM Sans', sans-serif;
+  font-size: .75rem; font-weight: 600;
+  transition: background .2s;
+}
+.btn-copy-sm:hover { background: rgba(255,255,255,.25); }
+.btn-logout {
+  width: 100%; padding: .5rem;
+  background: none; color: rgba(255,255,255,.4); border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: .78rem;
+  transition: color .2s; text-align: left;
+  display: flex; align-items: center; gap: .5rem;
+}
+.btn-logout:hover { color: rgba(255,255,255,.7); }
+
+/* ══════════════════════════════
+   MAIN CONTENT
+══════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1; min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* Top bar */
+.topbar {
+  background: rgba(247,244,239,.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2.5rem;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.2rem; font-weight: 600; color: var(--ink);
+  letter-spacing: -.02em;
+}
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
+.topbar-date { font-size: .82rem; color: var(--muted); }
+.btn-perfil-publico {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .8rem; font-weight: 600; color: var(--teal);
+  background: var(--teal-lite); border: 1.5px solid var(--teal);
+  padding: .4rem .9rem; border-radius: 50px; cursor: pointer;
+  text-decoration: none; transition: all .2s;
+}
+.btn-perfil-publico:hover { background: var(--teal); color: #fff; }
+
+/* Content panels */
+.content { padding: 2rem 2.5rem; flex: 1; }
+.panel { display: none; animation: panelIn .3s ease; }
+.panel.active { display: block; }
+@keyframes panelIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* Section header */
+.section-header { margin-bottom: 1.8rem; }
+.section-header h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.6rem; font-weight: 600; letter-spacing: -.025em; color: var(--ink);
+}
+.section-header p { font-size: .88rem; color: var(--muted); margin-top: .3rem; }
+
+/* ══════════════════════════════
+   PANEL: INICIO
+══════════════════════════════ */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1rem; margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--white); border-radius: 16px;
+  padding: 1.2rem 1.4rem;
+  border: 1.5px solid var(--border);
+  transition: box-shadow .2s, transform .2s;
+}
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-label { font-size: .75rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .5rem; }
+.stat-num {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem; font-weight: 700; color: var(--ink); line-height: 1;
+}
+.stat-num.teal { color: var(--teal); }
+.stat-sub { font-size: .75rem; color: var(--muted); margin-top: .35rem; }
+.stat-trend { display: inline-flex; align-items: center; gap: .2rem; font-size: .72rem; font-weight: 600; }
+.stat-trend.up { color: var(--green); }
+.stat-trend.down { color: var(--red); }
+
+.dash-grid {
+  display: grid; grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+}
+
+/* Citas de hoy */
+.card {
+  background: var(--white); border-radius: 18px;
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+}
+.card-header {
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h3 { font-size: .95rem; font-weight: 600; color: var(--ink); }
+.card-header-right { display: flex; align-items: center; gap: .6rem; }
+.badge-count {
+  background: var(--teal-lite); color: var(--teal);
+  font-size: .72rem; font-weight: 700;
+  padding: .2rem .55rem; border-radius: 50px;
+}
+
+.cita-item {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  transition: background .15s; cursor: pointer;
+}
+.cita-item:last-child { border-bottom: none; }
+.cita-item:hover { background: var(--cream); }
+.cita-time {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem; font-weight: 600; color: var(--teal);
+  min-width: 52px; text-align: center;
+}
+.cita-time.past { color: var(--muted2); }
+.cita-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--teal-lite);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; flex-shrink: 0;
+}
+.cita-info { flex: 1; min-width: 0; }
+.cita-name { font-size: .88rem; font-weight: 600; color: var(--ink); }
+.cita-motivo { font-size: .75rem; color: var(--muted); margin-top: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cita-status {
+  font-size: .7rem; font-weight: 700; padding: .22rem .6rem; border-radius: 50px;
+  white-space: nowrap;
+}
+.cita-status.confirmed { background: var(--green-lite); color: var(--green); }
+.cita-status.pending   { background: var(--accent-lite); color: var(--accent); }
+.cita-status.done      { background: var(--cream); color: var(--muted2); }
+.cita-actions { display: flex; gap: .4rem; }
+.btn-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; cursor: pointer; transition: all .2s;
+}
+.btn-icon:hover { border-color: var(--teal); background: var(--teal-lite); }
+.btn-icon.danger:hover { border-color: var(--red); background: var(--red-lite); }
+
+.empty-citas {
+  padding: 2.5rem; text-align: center;
+  font-size: .88rem; color: var(--muted2);
+}
+
+/* Mini calendario en inicio */
+.mini-cal { padding: 1.2rem 1.4rem; }
+.mini-cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.mini-cal-title { font-size: .9rem; font-weight: 600; color: var(--ink); }
+.cal-nav-btn {
+  width: 26px; height: 26px; border-radius: 6px;
+  border: 1.5px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; cursor: pointer; color: var(--muted);
+  transition: all .2s;
+}
+.cal-nav-btn:hover { border-color: var(--teal); color: var(--teal); }
+.mini-cal-days {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px; text-align: center;
+}
+.cal-dow { font-size: .65rem; font-weight: 700; color: var(--muted2); padding: .3rem 0; }
+.cal-day {
+  font-size: .78rem; padding: .35rem .2rem;
+  border-radius: 7px; cursor: pointer;
+  transition: all .15s; color: var(--ink2);
+  position: relative;
+}
+.cal-day:hover { background: var(--teal-lite); color: var(--teal); }
+.cal-day.today { background: var(--teal); color: #fff; font-weight: 700; }
+.cal-day.has-citas::after {
+  content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--teal-mid);
+}
+.cal-day.today.has-citas::after { background: rgba(255,255,255,.7); }
+.cal-day.other-month { color: var(--muted2); opacity: .4; }
+.cal-day.selected { background: var(--teal-lite); color: var(--teal); font-weight: 700; }
+
+/* Próximas citas (sidebar card) */
+.proximas-list { padding: .5rem 0; }
+.proxima-item {
+  display: flex; align-items: center; gap: .8rem;
+  padding: .7rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  font-size: .82rem;
+}
+.proxima-item:last-child { border-bottom: none; }
+.proxima-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal-lite); border: 2px solid var(--teal); flex-shrink: 0; }
+.proxima-date { font-weight: 600; color: var(--ink); min-width: 65px; }
+.proxima-name { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ══════════════════════════════
+   PANEL: CALENDARIO
+══════════════════════════════ */
+.big-cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.big-cal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.4rem; font-weight: 600; color: var(--ink); letter-spacing: -.02em;
+}
+.cal-nav { display: flex; align-items: center; gap: .5rem; }
+.cal-nav-btn-lg {
+  width: 34px; height: 34px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; cursor: pointer; color: var(--muted);
+  transition: all .2s;
+}
+.cal-nav-btn-lg:hover { border-color: var(--teal); color: var(--teal); }
+
+.big-cal-grid {
+  background: var(--white); border-radius: 18px;
+  border: 1.5px solid var(--border); overflow: hidden;
+}
+.big-cal-dow {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+}
+.big-dow-cell {
+  padding: .65rem; text-align: center;
+  font-size: .72rem; font-weight: 700; color: var(--muted2);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.big-cal-days {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+}
+.big-cal-day {
+  min-height: 90px; padding: .6rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .15s;
+}
+.big-cal-day:hover { background: var(--teal-lite); }
+.big-cal-day.today { background: rgba(11,124,110,.04); }
+.big-cal-day.other-month { opacity: .35; }
+.big-day-num {
+  font-size: .82rem; font-weight: 600; color: var(--ink2);
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: .4rem;
+}
+.big-cal-day.today .big-day-num { background: var(--teal); color: #fff; }
+.cal-event {
+  font-size: .68rem; font-weight: 500;
+  background: var(--teal-lite); color: var(--teal);
+  padding: .18rem .45rem; border-radius: 4px;
+  margin-bottom: .2rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cal-event.blue { background: var(--accent-lite); color: var(--accent); }
+.cal-event.green { background: var(--green-lite); color: var(--green); }
+
+/* ══════════════════════════════
+   PANEL: ESTADÍSTICAS
+══════════════════════════════ */
+.stats-full-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1.5rem; margin-bottom: 1.5rem;
+}
+.stat-big-card {
+  background: var(--white); border-radius: 18px;
+  border: 1.5px solid var(--border); padding: 1.5rem;
+}
+.stat-big-card h4 { font-size: .82rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 1rem; }
+.bar-chart { display: flex; flex-direction: column; gap: .7rem; }
+.bar-row { display: flex; align-items: center; gap: .8rem; }
+.bar-label { font-size: .78rem; color: var(--muted); min-width: 28px; text-align: right; }
+.bar-track {
+  flex: 1; height: 10px; background: var(--cream);
+  border-radius: 50px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--teal-mid) 100%);
+  transition: width .6s ease;
+}
+.bar-val { font-size: .78rem; font-weight: 600; color: var(--ink); min-width: 20px; }
+
+.donut-wrap { display: flex; align-items: center; gap: 1.5rem; }
+.donut-svg { flex-shrink: 0; }
+.donut-legend { display: flex; flex-direction: column; gap: .6rem; }
+.legend-item { display: flex; align-items: center; gap: .6rem; font-size: .82rem; color: var(--ink2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ══════════════════════════════
+   PANEL: HORARIOS
+══════════════════════════════ */
+.schedule-section { margin-bottom: 2rem; }
+.schedule-section h3 {
+  font-size: .95rem; font-weight: 600; color: var(--ink);
+  margin-bottom: 1.2rem; padding-bottom: .6rem;
+  border-bottom: 1.5px solid var(--border);
+}
+.days-tabs {
+  display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+}
+.day-tab {
+  padding: .5rem 1.1rem; border-radius: 50px;
+  border: 1.5px solid var(--border); background: var(--white);
+  font-size: .82rem; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: all .2s; user-select: none;
+}
+.day-tab:hover { border-color: var(--teal); color: var(--teal); }
+.day-tab.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+.day-tab.off { opacity: .45; }
+
+.slots-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; flex-wrap: wrap; gap: .8rem;
+}
+.slots-legend { display: flex; gap: 1rem; }
+.legend-slot { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--muted); }
+.legend-sq { width: 14px; height: 14px; border-radius: 4px; }
+.legend-sq.on  { background: var(--teal-lite); border: 1.5px solid var(--teal); }
+.legend-sq.off { background: var(--cream); border: 1.5px solid var(--border); }
+.legend-sq.busy { background: var(--accent-lite); border: 1.5px solid var(--accent); }
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: .5rem;
+}
+.slot-btn {
+  padding: .6rem .4rem;
+  border-radius: 10px; border: 1.5px solid var(--border);
+  background: var(--cream); color: var(--muted2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .8rem; font-weight: 500;
+  text-align: center; cursor: pointer; transition: all .18s;
+  user-select: none; position: relative;
+}
+.slot-btn.on {
+  background: var(--teal-lite); border-color: var(--teal); color: var(--teal); font-weight: 600;
+}
+.slot-btn.busy {
+  background: var(--accent-lite); border-color: var(--accent); color: var(--accent);
+  cursor: default;
+}
+.slot-btn.busy::after { content: '•'; display: block; font-size: .6rem; margin-top: .1rem; }
+.slot-btn:not(.busy):hover { border-color: var(--teal); color: var(--teal); }
+
+.slots-actions {
+  display: flex; gap: .7rem; margin-top: 1.2rem;
+}
+.btn-select-all {
+  font-size: .8rem; font-weight: 600; color: var(--teal);
+  background: var(--teal-lite); border: 1.5px solid var(--teal);
+  padding: .45rem .9rem; border-radius: 50px; cursor: pointer;
+  transition: all .2s;
+}
+.btn-select-all:hover { background: var(--teal); color: #fff; }
+.btn-clear-all {
+  font-size: .8rem; font-weight: 600; color: var(--muted);
+  background: var(--white); border: 1.5px solid var(--border);
+  padding: .45rem .9rem; border-radius: 50px; cursor: pointer;
+  transition: all .2s;
+}
+.btn-clear-all:hover { border-color: var(--red); color: var(--red); }
+
+.btn-save-schedule {
+  background: var(--teal); color: #fff; border: none; cursor: pointer;
+  padding: .75rem 2rem; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600;
+  transition: background .2s; margin-top: 1.5rem;
+}
+.btn-save-schedule:hover { background: var(--teal-mid); }
+
+.save-toast {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: var(--green-lite); color: var(--green);
+  font-size: .82rem; font-weight: 600;
+  padding: .5rem 1rem; border-radius: 50px;
+  margin-left: 1rem; opacity: 0; transition: opacity .3s;
+}
+.save-toast.show { opacity: 1; }
+
+/* ══════════════════════════════
+   PANEL: PERFIL
+══════════════════════════════ */
+.perfil-grid {
+  display: grid; grid-template-columns: 280px 1fr;
+  gap: 1.5rem; align-items: start;
+}
+.perfil-photo-card {
+  background: var(--white); border-radius: 18px;
+  border: 1.5px solid var(--border); padding: 1.5rem;
+  text-align: center;
+}
+.perfil-avatar-big {
+  width: 90px; height: 90px; border-radius: 20px;
+  background: var(--teal-lite); border: 3px solid var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; margin: 0 auto 1rem;
+}
+.perfil-photo-card h4 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: .2rem; }
+.perfil-photo-card p { font-size: .8rem; color: var(--muted); margin-bottom: 1.2rem; }
+.btn-change-photo {
+  width: 100%; padding: .6rem;
+  background: var(--teal-lite); color: var(--teal);
+  border: 1.5px solid var(--teal); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600;
+  cursor: pointer; transition: all .2s; margin-bottom: .6rem;
+}
+.btn-change-photo:hover { background: var(--teal); color: #fff; }
+
+.url-card {
+  background: var(--teal-dark); border-radius: 14px;
+  padding: 1rem; margin-top: 1rem;
+}
+.url-card-label { font-size: .65rem; font-weight: 700; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .4rem; }
+.url-card-url { font-size: .78rem; color: rgba(255,255,255,.85); font-weight: 500; margin-bottom: .7rem; word-break: break-all; }
+.btn-copy-url-card {
+  width: 100%; padding: .5rem;
+  background: rgba(255,255,255,.15); color: #fff; border: none; cursor: pointer;
+  border-radius: 8px; font-family: 'DM Sans', sans-serif;
+  font-size: .75rem; font-weight: 600; transition: background .2s;
+}
+.btn-copy-url-card:hover { background: rgba(255,255,255,.25); }
+
+.perfil-form-card {
+  background: var(--white); border-radius: 18px;
+  border: 1.5px solid var(--border); padding: 1.5rem;
+}
+.perfil-form-card h3 { font-size: .95rem; font-weight: 600; color: var(--ink); margin-bottom: 1.2rem; }
+.pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.pf-row.one { grid-template-columns: 1fr; }
+.pf-field { display: flex; flex-direction: column; gap: .35rem; }
+.pf-field label { font-size: .72rem; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: .06em; }
+.pf-field input,
+.pf-field select,
+.pf-field textarea {
+  padding: .7rem 1rem;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: .88rem; color: var(--ink);
+  background: var(--cream); outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  appearance: none;
+}
+.pf-field textarea { min-height: 90px; resize: vertical; }
+.pf-field input:focus,
+.pf-field select:focus,
+.pf-field textarea:focus {
+  border-color: var(--teal-mid);
+  box-shadow: 0 0 0 3px rgba(11,124,110,.1);
+  background: var(--white);
+}
+.btn-save-perfil {
+  background: var(--teal); color: #fff; border: none; cursor: pointer;
+  padding: .75rem 2rem; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600;
+  transition: background .2s; margin-top: .5rem;
+}
+.btn-save-perfil:hover { background: var(--teal-mid); }
+
+/* MOBILE */
+.mobile-menu-btn {
+  display: none;
+  position: fixed; top: 1rem; left: 1rem; z-index: 300;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--teal-dark); color: #fff; border: none;
+  font-size: 1.1rem; cursor: pointer;
+  align-items: center; justify-content: center;
+}
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 90;
+}
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); transition: transform .3s; }
+  .sidebar.open { transform: none; }
+  .sidebar-overlay.open { display: block; }
+  .mobile-menu-btn { display: flex; }
+  .main { margin-left: 0; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .stats-full-grid { grid-template-columns: 1fr; }
+  .perfil-grid { grid-template-columns: 1fr; }
+  .content { padding: 1.2rem 1rem; }
+  .topbar { padding: 0 1rem 0 3.5rem; }
+}
+@media (max-width: 500px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .pf-row { grid-template-columns: 1fr; }
+}
+
+/* ── TOGGLE SWITCH ── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.2rem;
+  background: var(--white); border-radius: 14px;
+  border: 1.5px solid var(--border); margin-bottom: .8rem;
+}
+.toggle-row:last-child { margin-bottom: 0; }
+.toggle-info h4 { font-size: .88rem; font-weight: 600; color: var(--ink); }
+.toggle-info p  { font-size: .75rem; color: var(--muted); margin-top: .15rem; line-height: 1.4; }
+.toggle-switch {
+  position: relative; width: 44px; height: 24px; flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; border-radius: 50px;
+  background: var(--border); cursor: pointer; transition: background .2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; left: 3px; top: 3px;
+  transition: transform .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.15);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--teal); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+.wa-number-field {
+  display: none; padding: .7rem 1rem; margin-top: .6rem;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: .88rem; color: var(--ink);
+  background: var(--cream); outline: none; width: 100%;
+  transition: border-color .2s, box-shadow .2s;
+}
+.wa-number-field:focus { border-color: var(--teal-mid); box-shadow: 0 0 0 3px rgba(11,124,110,.1); }
+
+/* ── LOGROS / FORMACION EDITOR ── */
+.list-editor { display: flex; flex-direction: column; gap: .7rem; margin-bottom: .8rem; }
+.list-item-row {
+  display: flex; gap: .6rem; align-items: flex-start;
+}
+.list-item-row .pf-field { flex: 1; }
+.btn-remove-item {
+  width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; margin-top: 1.5rem;
+  border: 1.5px solid var(--border); background: var(--white);
+  color: var(--muted); cursor: pointer; font-size: .9rem;
+  transition: all .2s; display: flex; align-items: center; justify-content: center;
+}
+.btn-remove-item:hover { border-color: var(--red); color: var(--red); background: var(--red-lite); }
+.btn-add-item {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .8rem; font-weight: 600; color: var(--teal);
+  background: var(--teal-lite); border: 1.5px dashed var(--teal);
+  padding: .55rem 1rem; border-radius: 10px; cursor: pointer;
+  transition: all .2s; width: 100%; justify-content: center;
+}
+.btn-add-item:hover { background: var(--teal); color: #fff; border-style: solid; }
+
+/* ── HORARIOS: duración selector ── */
+.duracion-grid {
+  display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.4rem;
+}
+.dur-chip {
+  padding: .45rem 1rem; border-radius: 50px;
+  border: 1.5px solid var(--border); background: var(--white);
+  font-size: .82rem; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: all .2s; user-select: none;
+}
+.dur-chip:hover { border-color: var(--teal); color: var(--teal); }
+.dur-chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+/* perfil tabs */
+.perfil-tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0; }
+.perfil-tab {
+  padding: .65rem 1.1rem; font-size: .82rem; font-weight: 600;
+  color: var(--muted); border-bottom: 2.5px solid transparent; margin-bottom: -2px;
+  cursor: pointer; transition: all .2s; background: none; border-top: none; border-left: none; border-right: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.perfil-tab:hover { color: var(--teal); }
+.perfil-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+.perfil-tab-panel { display: none; }
+.perfil-tab-panel.active { display: block; }
+
+/* seguros chips en perfil */
+.seguros-editor { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; margin-bottom: .8rem; }
+.seguro-chip {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .55rem .8rem; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--white);
+  font-size: .8rem; color: var(--ink2); cursor: pointer; transition: all .2s; user-select: none;
+}
+.seguro-chip:hover { border-color: var(--teal); }
+.seguro-chip.on { background: var(--teal-lite); border-color: var(--teal); color: var(--teal); font-weight: 600; }
+.seguro-chip .seg-check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border); flex-shrink: 0; display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .2s; }
+.seguro-chip.on .seg-check { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+
+/* ── SEARCHABLE SELECT (País / Ciudad) ── */
+.ss-wrap { position: relative; }
+.ss-input-row {
+  display: flex; align-items: center;
+  padding: .75rem 1rem;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  background: var(--white); cursor: text; gap: .4rem;
+  transition: border-color .2s, box-shadow .2s;
+  min-height: 46px;
+}
+.ss-input-row:focus-within {
+  border-color: var(--teal-mid);
+  box-shadow: 0 0 0 3px rgba(11,124,110,.1);
+}
+.ss-selected-tag {
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: var(--teal-lite); color: var(--teal);
+  font-size: .8rem; font-weight: 600;
+  padding: .2rem .55rem; border-radius: 6px; white-space: nowrap;
+}
+.ss-x { cursor: pointer; opacity: .6; font-size: .85rem; transition: opacity .15s; }
+.ss-x:hover { opacity: 1; }
+.ss-text {
+  border: none; outline: none; background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: .92rem; color: var(--ink);
+  min-width: 80px; flex: 1;
+}
+.ss-text::placeholder { color: var(--muted2); }
+.ss-dropdown {
+  position: absolute; top: calc(100% + 5px); left: 0; right: 0; z-index: 300;
+  background: var(--white); border: 1.5px solid var(--border); border-radius: 14px;
+  box-shadow: var(--shadow-md); max-height: 200px; overflow-y: auto; display: none;
+}
+.ss-dropdown.open { display: block; }
+.ss-option {
+  padding: .6rem 1rem; font-size: .88rem; color: var(--ink2);
+  cursor: pointer; transition: background .12s;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ss-option:hover { background: var(--teal-lite); color: var(--teal); }
+.ss-option.active { color: var(--muted2); font-style: italic; pointer-events: none; }
+.ss-empty { padding: .8rem 1rem; font-size: .82rem; color: var(--muted2); text-align: center; }
+
+
+/* ── BIO IA ── */
+.btn-ai-bio {
+  display: inline-flex; align-items: center; gap: .45rem;
+  font-size: .78rem; font-weight: 600; color: var(--teal);
+  background: var(--teal-lite); border: 1.5px solid var(--teal);
+  padding: .4rem .9rem; border-radius: 8px; cursor: pointer;
+  transition: all .2s; font-family: 'DM Sans', sans-serif;
+  margin-left: auto;
+}
+.btn-ai-bio:hover { background: var(--teal); color: #fff; }
+.btn-ai-bio .ai-spin { display: none; }
+.btn-ai-bio.loading .ai-spin { display: inline; animation: spin .8s linear infinite; }
+.btn-ai-bio.loading .ai-static { display: none; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.bio-generating {
+  position: relative;
+}
+.bio-generating::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: 10px;
+  background: linear-gradient(90deg, transparent 0%, rgba(11,124,110,.05) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  pointer-events: none;
+}
+@keyframes shimmer { to{background-position:-200% 0} }
+
+</style>
+</head>
+<body>
+
+<button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar" id="sidebar">
+  <a href="citadoc-index.html" class="sidebar-logo">Cita<span>Doc</span></a>
+
+  <div class="sidebar-doctor">
+    <div class="doc-avatar-sm">👨‍⚕️</div>
+    <div class="doc-info-sm">
+      <div class="name">Dr. Juan Pérez</div>
+      <div class="role">Cardiología</div>
+      <div class="plan-badge-sm">⭐ Destacado</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <div class="nav-item active" onclick="showPanel('inicio', this)">
+      <span class="nav-icon">🏠</span> Inicio
+      <span class="nav-badge" id="badge-citas">6</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('calendario', this)">
+      <span class="nav-icon">📅</span> Calendario
+    </div>
+    <div class="nav-item" onclick="showPanel('estadisticas', this)">
+      <span class="nav-icon">📊</span> Estadísticas
+    </div>
+
+    <div class="nav-section-label">Configuración</div>
+    <div class="nav-item" onclick="showPanel('horarios', this)">
+      <span class="nav-icon">🕐</span> Horarios
+    </div>
+    <div class="nav-item" onclick="showPanel('perfil', this)">
+      <span class="nav-icon">👤</span> Mi perfil
+    </div>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="url-sidebar">
+      <div class="url-sidebar-label">Tu link</div>
+      <div class="url-sidebar-text">citadoc.com/medico/dr-juan-perez</div>
+      <button class="btn-copy-sm" onclick="copySidebarUrl(this)">📋 Copiar link</button>
+    </div>
+    <button class="btn-logout">↩ Cerrar sesión</button>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">Inicio</div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="topbarDate"></span>
+      <a href="citadoc-perfil.html" class="btn-perfil-publico">👁 Ver perfil público</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ PANEL: INICIO ══ -->
+    <div class="panel active" id="panel-inicio">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Citas hoy</div>
+          <div class="stat-num teal">6</div>
+          <div class="stat-sub"><span class="stat-trend up">↑ 2</span> vs ayer</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Esta semana</div>
+          <div class="stat-num">24</div>
+          <div class="stat-sub"><span class="stat-trend up">↑ 12%</span> vs semana anterior</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Este mes</div>
+          <div class="stat-num">87</div>
+          <div class="stat-sub"><span class="stat-trend up">↑ 8%</span> vs mes anterior</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ocupación</div>
+          <div class="stat-num teal">74%</div>
+          <div class="stat-sub">de slots disponibles</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Citas de hoy -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Citas de hoy</h3>
+            <div class="card-header-right">
+              <span class="badge-count">6 citas</span>
+            </div>
+          </div>
+
+          <div class="cita-item">
+            <div class="cita-time past">08:30</div>
+            <div class="cita-avatar">👩</div>
+            <div class="cita-info">
+              <div class="cita-name">María García</div>
+              <div class="cita-motivo">Control de rutina</div>
+            </div>
+            <span class="cita-status done">Completada</span>
+          </div>
+
+          <div class="cita-item">
+            <div class="cita-time past">09:00</div>
+            <div class="cita-avatar">👨</div>
+            <div class="cita-info">
+              <div class="cita-name">Carlos Mora</div>
+              <div class="cita-motivo">Dolor en el pecho</div>
+            </div>
+            <span class="cita-status done">Completada</span>
+          </div>
+
+          <div class="cita-item" style="background:rgba(11,124,110,.03)">
+            <div class="cita-time">10:30</div>
+            <div class="cita-avatar" style="background:#fef9c3">👩</div>
+            <div class="cita-info">
+              <div class="cita-name">Ana Rodríguez</div>
+              <div class="cita-motivo">Revisión electrocardiograma</div>
+            </div>
+            <span class="cita-status confirmed">Confirmada</span>
+            <div class="cita-actions">
+              <div class="btn-icon" title="Ver detalles">👁</div>
+              <div class="btn-icon danger" title="Cancelar">✕</div>
+            </div>
+          </div>
+
+          <div class="cita-item">
+            <div class="cita-time">11:00</div>
+            <div class="cita-avatar">👴</div>
+            <div class="cita-info">
+              <div class="cita-name">Roberto Vega</div>
+              <div class="cita-motivo">Hipertensión — seguimiento</div>
+            </div>
+            <span class="cita-status confirmed">Confirmada</span>
+            <div class="cita-actions">
+              <div class="btn-icon">👁</div>
+              <div class="btn-icon danger">✕</div>
+            </div>
+          </div>
+
+          <div class="cita-item">
+            <div class="cita-time">14:00</div>
+            <div class="cita-avatar">👩</div>
+            <div class="cita-info">
+              <div class="cita-name">Lucía Herrera</div>
+              <div class="cita-motivo">Primera consulta</div>
+            </div>
+            <span class="cita-status pending">Pendiente</span>
+            <div class="cita-actions">
+              <div class="btn-icon">👁</div>
+              <div class="btn-icon danger">✕</div>
+            </div>
+          </div>
+
+          <div class="cita-item">
+            <div class="cita-time">15:30</div>
+            <div class="cita-avatar">👦</div>
+            <div class="cita-info">
+              <div class="cita-name">Diego Salazar</div>
+              <div class="cita-motivo">Arritmia — control</div>
+            </div>
+            <span class="cita-status confirmed">Confirmada</span>
+            <div class="cita-actions">
+              <div class="btn-icon">👁</div>
+              <div class="btn-icon danger">✕</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini calendario + próximas -->
+        <div style="display:flex;flex-direction:column;gap:1.2rem">
+          <div class="card">
+            <div class="mini-cal" id="miniCal"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Próximas citas</h3></div>
+            <div class="proximas-list">
+              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Mañana</div><div class="proxima-name">5 citas agendadas</div></div>
+              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Jue 1</div><div class="proxima-name">3 citas agendadas</div></div>
+              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Vie 2</div><div class="proxima-name">7 citas agendadas</div></div>
+              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Lun 5</div><div class="proxima-name">4 citas agendadas</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: CALENDARIO ══ -->
+    <div class="panel" id="panel-calendario">
+      <div class="big-cal-header">
+        <div class="big-cal-title" id="bigCalTitle"></div>
+        <div class="cal-nav">
+          <button class="cal-nav-btn-lg" onclick="changeMonth(-1)">‹</button>
+          <button class="cal-nav-btn-lg" onclick="changeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="big-cal-grid">
+        <div class="big-cal-dow" id="bigCalDow"></div>
+        <div class="big-cal-days" id="bigCalDays"></div>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: ESTADÍSTICAS ══ -->
+    <div class="panel" id="panel-estadisticas">
+      <div class="section-header">
+        <h2>Estadísticas</h2>
+        <p>Resumen de actividad de tu consultorio en CitaDoc</p>
+      </div>
+
+      <div class="stats-row" style="margin-bottom:1.5rem">
+        <div class="stat-card">
+          <div class="stat-label">Total este mes</div>
+          <div class="stat-num teal">87</div>
+          <div class="stat-sub"><span class="stat-trend up">↑ 8%</span> vs mes anterior</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Nuevos pacientes</div>
+          <div class="stat-num">31</div>
+          <div class="stat-sub"><span class="stat-trend up">↑ 15%</span> este mes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cancelaciones</div>
+          <div class="stat-num">4</div>
+          <div class="stat-sub"><span class="stat-trend down">4.6%</span> tasa de cancelación</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Visitas al perfil</div>
+          <div class="stat-num">213</div>
+          <div class="stat-sub"><span class="stat-trend up">↑ 22%</span> este mes</div>
+        </div>
+      </div>
+
+      <div class="stats-full-grid">
+        <div class="stat-big-card">
+          <h4>Citas por día de la semana</h4>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">Lun</span><div class="bar-track"><div class="bar-fill" style="width:82%"></div></div><span class="bar-val">18</span></div>
+            <div class="bar-row"><span class="bar-label">Mar</span><div class="bar-track"><div class="bar-fill" style="width:90%"></div></div><span class="bar-val">20</span></div>
+            <div class="bar-row"><span class="bar-label">Mié</span><div class="bar-track"><div class="bar-fill" style="width:68%"></div></div><span class="bar-val">15</span></div>
+            <div class="bar-row"><span class="bar-label">Jue</span><div class="bar-track"><div class="bar-fill" style="width:77%"></div></div><span class="bar-val">17</span></div>
+            <div class="bar-row"><span class="bar-label">Vie</span><div class="bar-track"><div class="bar-fill" style="width:55%"></div></div><span class="bar-val">12</span></div>
+            <div class="bar-row"><span class="bar-label">Sáb</span><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="bar-val">5</span></div>
+          </div>
+        </div>
+
+        <div class="stat-big-card">
+          <h4>Estado de citas este mes</h4>
+          <div class="donut-wrap">
+            <svg class="donut-svg" width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="40" fill="none" stroke="#e0f5f2" stroke-width="18"/>
+              <!-- Completadas 75% -->
+              <circle cx="55" cy="55" r="40" fill="none" stroke="#0b7c6e" stroke-width="18"
+                stroke-dasharray="188.5 251.3" stroke-dashoffset="62.8" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+              <!-- Pendientes 16% -->
+              <circle cx="55" cy="55" r="40" fill="none" stroke="#2563eb" stroke-width="18"
+                stroke-dasharray="40.2 251.3" stroke-dashoffset="-125.7" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+              <!-- Canceladas 5% -->
+              <circle cx="55" cy="55" r="40" fill="none" stroke="#dc2626" stroke-width="18"
+                stroke-dasharray="12.6 251.3" stroke-dashoffset="-165.9" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+              <text x="55" y="51" text-anchor="middle" font-size="13" font-weight="700" fill="#0f1a18" font-family="'Fraunces',serif">87</text>
+              <text x="55" y="64" text-anchor="middle" font-size="9" fill="#6b7c79" font-family="'DM Sans',sans-serif">citas</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>Completadas — 75%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Pendientes — 20%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Canceladas — 5%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-big-card">
+          <h4>Citas por hora del día</h4>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label" style="min-width:38px;font-size:.72rem">08:00</span><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="bar-val">8</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:38px;font-size:.72rem">09:00</span><div class="bar-track"><div class="bar-fill" style="width:75%"></div></div><span class="bar-val">15</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:38px;font-size:.72rem">10:00</span><div class="bar-track"><div class="bar-fill" style="width:90%"></div></div><span class="bar-val">18</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:38px;font-size:.72rem">11:00</span><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div><span class="bar-val">17</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:38px;font-size:.72rem">14:00</span><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><span class="bar-val">13</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:38px;font-size:.72rem">15:00</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><span class="bar-val">10</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:38px;font-size:.72rem">16:00</span><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="bar-val">6</span></div>
+          </div>
+        </div>
+
+        <div class="stat-big-card">
+          <h4>Crecimiento mensual</h4>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label" style="min-width:28px">Ene</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><span class="bar-val">54</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:28px">Feb</span><div class="bar-track"><div class="bar-fill" style="width:58%"></div></div><span class="bar-val">63</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:28px">Mar</span><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><span class="bar-val">70</span></div>
+            <div class="bar-row"><span class="bar-label" style="min-width:28px">Abr</span><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><span class="bar-val">87</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: HORARIOS ══ -->
+    <div class="panel" id="panel-horarios">
+      <div class="section-header">
+        <h2>Gestión de horarios</h2>
+        <p>Configura tu disponibilidad. Activa o desactiva slots de 30 min por día. Los slots con cita no se pueden modificar.</p>
+      </div>
+
+      <!-- Duración de cita -->
+      <div class="card" style="padding:1.2rem 1.4rem;margin-bottom:1.4rem">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.8rem">Duración por cita</div>
+        <div class="duracion-grid">
+          <div class="dur-chip" onclick="setDuracion(this,15)">15 min</div>
+          <div class="dur-chip" onclick="setDuracion(this,20)">20 min</div>
+          <div class="dur-chip active" onclick="setDuracion(this,30)">30 min</div>
+          <div class="dur-chip" onclick="setDuracion(this,45)">45 min</div>
+          <div class="dur-chip" onclick="setDuracion(this,60)">60 min</div>
+        </div>
+      </div>
+
+      <!-- Canales de contacto -->
+      <div class="card" style="padding:1.2rem 1.4rem;margin-bottom:1.4rem">
+        <div style="font-size:.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Modo de contacto</div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:1rem">Elige cómo quieres que los pacientes te contacten desde tu perfil. Puedes activar uno o ambos.</p>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <h4>📅 Agendamiento en CitaDoc</h4>
+            <p>El paciente elige fecha y hora directamente en la plataforma. Tú gestionas citas desde tu panel.</p>
+            <div id="agendamientoNote" style="margin-top:.5rem;font-size:.72rem;color:var(--teal);display:none">
+              ✓ Activo — los pacientes verán el botón <strong>"Agendar cita"</strong> en tu perfil
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleAgendamiento" checked onchange="updateContactMode()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row" style="margin-bottom:0">
+          <div class="toggle-info" style="flex:1">
+            <h4>📱 WhatsApp directo</h4>
+            <p>El paciente te escribe por WhatsApp. Tú coordinas la cita como prefieras. Sin intermediarios.</p>
+            <input class="wa-number-field" type="tel" id="waNumber" placeholder="+593 99 123 4567">
+            <div id="waNote" style="margin-top:.5rem;font-size:.72rem;color:var(--teal);display:none">
+              ✓ Activo — los pacientes verán el botón <strong>"Escribir por WhatsApp"</strong> en tu perfil
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="waToggle" onchange="toggleWA(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Preview de cómo se verá -->
+        <div id="contactPreview" style="margin-top:1.2rem;padding:.9rem 1rem;background:var(--cream);border-radius:12px;border:1.5px solid var(--border)">
+          <div style="font-size:.7rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">Vista previa — así te verán los pacientes</div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="previewBtns">
+            <div style="background:var(--teal);color:#fff;padding:.5rem 1rem;border-radius:10px;font-size:.8rem;font-weight:600" id="prevAgendar">📅 Agendar cita</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Días y slots -->
+      <div class="schedule-section">
+        <h3>Slots por día</h3>
+        <div class="days-tabs" id="daysTabs">
+          <div class="day-tab active" onclick="selectDay('lun', this)">Lunes</div>
+          <div class="day-tab" onclick="selectDay('mar', this)">Martes</div>
+          <div class="day-tab" onclick="selectDay('mie', this)">Miércoles</div>
+          <div class="day-tab" onclick="selectDay('jue', this)">Jueves</div>
+          <div class="day-tab" onclick="selectDay('vie', this)">Viernes</div>
+          <div class="day-tab off" onclick="selectDay('sab', this)">Sábado</div>
+          <div class="day-tab off" onclick="selectDay('dom', this)">Domingo</div>
+        </div>
+
+        <div class="slots-header">
+          <div>
+            <div style="font-size:.88rem;font-weight:600;color:var(--ink)" id="slotsTitle">Slots — Lunes</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">Haz clic para activar o desactivar</div>
+          </div>
+          <div class="slots-legend">
+            <div class="legend-slot"><div class="legend-sq on"></div>Disponible</div>
+            <div class="legend-slot"><div class="legend-sq busy"></div>Con cita</div>
+            <div class="legend-slot"><div class="legend-sq off"></div>Inactivo</div>
+          </div>
+        </div>
+
+        <div class="slots-grid" id="slotsGrid"></div>
+
+        <div class="slots-actions">
+          <button class="btn-select-all" onclick="selectAllSlots()">Activar todos</button>
+          <button class="btn-clear-all" onclick="clearAllSlots()">Desactivar todos</button>
+        </div>
+
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem">
+          <button class="btn-save-schedule" onclick="saveSchedule()">Guardar horarios</button>
+          <span class="save-toast" id="saveToast">✓ Guardado correctamente</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PANEL: PERFIL ══ -->
+    <div class="panel" id="panel-perfil">
+      <div class="section-header">
+        <h2>Mi perfil público</h2>
+        <p>Todo lo que edites aquí se refleja en tu vitrina pública de CitaDoc.</p>
+      </div>
+
+      <div class="perfil-grid">
+        <!-- Columna izquierda: foto + link -->
+        <div style="display:flex;flex-direction:column;gap:1.2rem">
+          <div class="perfil-photo-card">
+            <div class="perfil-avatar-big">👨‍⚕️</div>
+            <h4>Dr. Juan Pérez</h4>
+            <p>Cardiología · Guayaquil</p>
+            <button class="btn-change-photo">📸 Cambiar foto</button>
+          </div>
+          <div class="card" style="padding:1.2rem">
+            <div class="url-card">
+              <div class="url-card-label">Tu link público</div>
+              <div class="url-card-url">citadoc.com/medico/dr-juan-perez</div>
+              <button class="btn-copy-url-card" onclick="copyProfileUrl(this)">📋 Copiar link</button>
+            </div>
+            <div style="margin-top:.8rem">
+              <a href="citadoc-perfil.html" style="display:block;text-align:center;font-size:.82rem;font-weight:600;color:var(--teal);text-decoration:none;padding:.5rem;border:1.5px solid var(--teal);border-radius:10px;transition:all .2s" onmouseover="this.style.background='var(--teal-lite)'" onmouseout="this.style.background='transparent'">👁 Ver perfil público →</a>
+            </div>
+          </div>
+
+          <!-- Modo contacto (resumen) -->
+          <div class="card" style="padding:1.2rem">
+            <div style="font-size:.75rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem">Modo de contacto</div>
+            <p style="font-size:.78rem;color:var(--muted);margin-bottom:.8rem">Configura esto en la sección <strong>Horarios</strong>.</p>
+            <div style="display:flex;flex-direction:column;gap:.4rem" id="contactSummary">
+              <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--teal)">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0"></span>
+                Agendamiento CitaDoc activo
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: formulario con tabs -->
+        <div class="perfil-form-card">
+          <!-- Tabs -->
+          <div class="perfil-tabs">
+            <button class="perfil-tab active" onclick="showPerfilTab('info',this)">Información</button>
+            <button class="perfil-tab" onclick="showPerfilTab('seguros',this)">Seguros</button>
+            <button class="perfil-tab" onclick="showPerfilTab('formacion',this)">Formación</button>
+            <button class="perfil-tab" onclick="showPerfilTab('logros',this)">Logros</button>
+          </div>
+
+          <!-- TAB: Información básica -->
+          <div class="perfil-tab-panel active" id="ptab-info">
+            <div class="pf-row">
+              <div class="pf-field"><label>Nombre</label><input type="text" value="Juan"></div>
+              <div class="pf-field"><label>Apellido</label><input type="text" value="Pérez"></div>
+            </div>
+            <div class="pf-row">
+              <div class="pf-field"><label>Título</label><input type="text" value="Dr."></div>
+              <div class="pf-field"><label>Especialidad principal</label><input type="text" value="Cardiología"></div>
+            </div>
+            <div class="pf-row one">
+              <div class="pf-field">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem">
+                  <label style="margin-bottom:0">Presentación / Bio</label>
+                  <button class="btn-ai-bio" id="btnAiBio" onclick="generateBio()">
+                    <span class="ai-static">✨ Generar con IA</span>
+                    <span class="ai-spin">⟳</span>
+                  </button>
+                </div>
+                <textarea id="bioTextarea" style="min-height:110px">Cardiólogo con 12 años de experiencia en diagnóstico y tratamiento de enfermedades cardiovasculares. Especialización en arritmias y cardiología preventiva. Atención personalizada y enfocada en el bienestar del paciente.</textarea>
+              </div>
+            </div>
+            <div class="pf-row">
+              <div class="pf-field"><label>Precio de consulta (USD)</label><input type="number" value="70"></div>
+              <div class="pf-field"><label>Años de experiencia</label><input type="number" value="12"></div>
+            </div>
+            <div class="pf-row">
+              <div class="pf-field">
+                <label>País</label>
+                <div class="ss-wrap" id="dash-pais-wrap">
+                  <div class="ss-input-row" onclick="document.getElementById('dash-pais-input').focus()">
+                    <input class="ss-text" id="dash-pais-input" autocomplete="off" placeholder="Ej: Ecuador">
+                  </div>
+                  <div class="ss-dropdown" id="dash-pais-drop"></div>
+                </div>
+              </div>
+              <div class="pf-field">
+                <label>Ciudad</label>
+                <div class="ss-wrap" id="dash-ciudad-wrap">
+                  <div class="ss-input-row" onclick="document.getElementById('dash-ciudad-input').focus()">
+                    <input class="ss-text" id="dash-ciudad-input" autocomplete="off" placeholder="Ej: Guayaquil">
+                  </div>
+                  <div class="ss-dropdown" id="dash-ciudad-drop"></div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-row one">
+              <div class="pf-field"><label>Dirección del consultorio</label><input type="text" value="Av. 9 de Octubre 115, Edificio Torre Sur, Piso 4"></div>
+            </div>
+            <div class="pf-row one">
+              <div class="pf-field"><label>Registro SENESCYT</label><input type="text" value="1001-23-12345678"></div>
+            </div>
+            <div class="pf-row one">
+              <div class="pf-field"><label>Teléfono de contacto</label><input type="tel" value="0998 123 456"></div>
+            </div>
+            <button class="btn-save-perfil" onclick="savePerfil(this)">Guardar cambios</button>
+          </div>
+
+          <!-- TAB: Seguros -->
+          <div class="perfil-tab-panel" id="ptab-seguros">
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Selecciona los seguros médicos que aceptas en tu consultorio.</p>
+            <div class="seguros-editor" id="segurosEditor"></div>
+            <button class="btn-save-perfil" onclick="savePerfil(this)" style="margin-top:.5rem">Guardar seguros</button>
+          </div>
+
+          <!-- TAB: Formación -->
+          <div class="perfil-tab-panel" id="ptab-formacion">
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Agrega tu formación académica y certificaciones.</p>
+            <div class="list-editor" id="formacionList"></div>
+            <button class="btn-add-item" onclick="addFormacion()">+ Agregar título o certificación</button>
+            <button class="btn-save-perfil" onclick="savePerfil(this)" style="margin-top:1rem">Guardar formación</button>
+          </div>
+
+          <!-- TAB: Logros -->
+          <div class="perfil-tab-panel" id="ptab-logros">
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Comparte tus reconocimientos, publicaciones y hitos profesionales.</p>
+            <div class="list-editor" id="logrosList"></div>
+            <button class="btn-add-item" onclick="addLogro()">+ Agregar logro o reconocimiento</button>
+            <button class="btn-save-perfil" onclick="savePerfil(this)" style="margin-top:1rem">Guardar logros</button>
+          </div>
+
+        </div><!-- /perfil-form-card -->
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── DATE ──
+const now = new Date();
+const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+document.getElementById('topbarDate').textContent =
+  `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+// ── NAV ──
+const PANEL_TITLES = {
+  inicio: 'Inicio', calendario: 'Calendario',
+  estadisticas: 'Estadísticas', horarios: 'Horarios', perfil: 'Mi perfil'
+};
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('topbarTitle').textContent = PANEL_TITLES[id];
+  if (id === 'calendario') renderBigCal();
+  closeSidebar();
+}
+
+// ── MOBILE SIDEBAR ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ── COPY URL ──
+function copySidebarUrl(btn) {
+  navigator.clipboard.writeText('https://citadoc.com/medico/dr-juan-perez');
+  btn.textContent = '✓ Copiado';
+  setTimeout(() => btn.textContent = '📋 Copiar link', 2000);
+}
+function copyProfileUrl(btn) {
+  navigator.clipboard.writeText('https://citadoc.com/medico/dr-juan-perez');
+  btn.textContent = '✓ Copiado';
+  setTimeout(() => btn.textContent = '📋 Copiar link', 2000);
+}
+
+// ── MINI CALENDAR ──
+function renderMiniCal(year, month) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const citaDays = [2, 5, 8, 12, 15, 18, 22, 25, 28];
+  let html = `
+    <div class="mini-cal-header">
+      <button class="cal-nav-btn" onclick="miniCalPrev()">‹</button>
+      <div class="mini-cal-title">${months[month]} ${year}</div>
+      <button class="cal-nav-btn" onclick="miniCalNext()">›</button>
+    </div>
+    <div class="mini-cal-days">
+      ${['D','L','M','X','J','V','S'].map(d => `<div class="cal-dow">${d}</div>`).join('')}
+  `;
+  const blanks = (firstDay) % 7;
+  for (let i = 0; i < blanks; i++) html += `<div class="cal-day other-month"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    const hasCita = citaDays.includes(d);
+    html += `<div class="cal-day${isToday?' today':''}${hasCita?' has-citas':''}">${d}</div>`;
+  }
+  html += '</div>';
+  document.getElementById('miniCal').innerHTML = html;
+}
+let miniCalYear = now.getFullYear(), miniCalMonth = now.getMonth();
+function miniCalPrev() { miniCalMonth--; if(miniCalMonth<0){miniCalMonth=11;miniCalYear--;} renderMiniCal(miniCalYear,miniCalMonth); }
+function miniCalNext() { miniCalMonth++; if(miniCalMonth>11){miniCalMonth=0;miniCalYear++;} renderMiniCal(miniCalYear,miniCalMonth); }
+renderMiniCal(miniCalYear, miniCalMonth);
+
+// ── BIG CALENDAR ──
+let bigYear = now.getFullYear(), bigMonth = now.getMonth();
+const EVENTS = {
+  [now.getDate()]: [{text:'Ana Rodríguez 10:30',type:''},{text:'Roberto Vega 11:00',type:'green'}],
+  [now.getDate()+1]: [{text:'5 citas',type:''}],
+  [now.getDate()+3]: [{text:'3 citas',type:'blue'}],
+  [now.getDate()+4]: [{text:'7 citas',type:'green'}],
+};
+function renderBigCal() {
+  const dows = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  document.getElementById('bigCalDow').innerHTML = dows.map(d=>`<div class="big-dow-cell">${d}</div>`).join('');
+  document.getElementById('bigCalTitle').textContent = `${months[bigMonth]} ${bigYear}`;
+  const firstDay = new Date(bigYear, bigMonth, 1).getDay();
+  const daysInMonth = new Date(bigYear, bigMonth+1, 0).getDate();
+  const prevDays = new Date(bigYear, bigMonth, 0).getDate();
+  const today = new Date();
+  let html = '';
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div class="big-cal-day other-month"><div class="big-day-num">${prevDays-firstDay+1+i}</div></div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d===today.getDate()&&bigMonth===today.getMonth()&&bigYear===today.getFullYear();
+    const evs = EVENTS[d] || [];
+    html += `<div class="big-cal-day${isToday?' today':''}">
+      <div class="big-day-num">${d}</div>
+      ${evs.map(e=>`<div class="cal-event ${e.type}">${e.text}</div>`).join('')}
+    </div>`;
+  }
+  const remaining = 42 - firstDay - daysInMonth;
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="big-cal-day other-month"><div class="big-day-num">${i}</div></div>`;
+  }
+  document.getElementById('bigCalDays').innerHTML = html;
+}
+function changeMonth(dir) {
+  bigMonth += dir;
+  if(bigMonth<0){bigMonth=11;bigYear--;}
+  if(bigMonth>11){bigMonth=0;bigYear++;}
+  renderBigCal();
+}
+
+// ── SLOTS ──
+const DAYS_ES = { lun:'Lunes', mar:'Martes', mie:'Miércoles', jue:'Jueves', vie:'Viernes', sab:'Sábado', dom:'Domingo' };
+// Slot state per day: 'on', 'off', 'busy'
+const BUSY = { lun:['10:30','11:00'], mar:['09:00'], mie:[], jue:['14:00'], vie:['10:00','10:30'], sab:[], dom:[] };
+const slotsState = {};
+const TIMES = [];
+for (let h = 7; h < 19; h++) { TIMES.push(`${String(h).padStart(2,'0')}:00`); TIMES.push(`${String(h).padStart(2,'0')}:30`); }
+['lun','mar','mie','jue','vie','sab','dom'].forEach(d => {
+  slotsState[d] = {};
+  TIMES.forEach(t => {
+    slotsState[d][t] = (BUSY[d]||[]).includes(t) ? 'busy' : (d==='sab'||d==='dom') ? 'off' : (parseInt(t)<9||parseInt(t)>=17) ? 'off' : 'on';
+  });
+});
+
+let currentDay = 'lun';
+function selectDay(day, el) {
+  currentDay = day;
+  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('slotsTitle').textContent = `Slots — ${DAYS_ES[day]}`;
+  renderSlots();
+}
+function renderSlots() {
+  const grid = document.getElementById('slotsGrid');
+  grid.innerHTML = TIMES.map(t => {
+    const state = slotsState[currentDay][t];
+    return `<div class="slot-btn ${state}" onclick="toggleSlot('${t}')">${t}</div>`;
+  }).join('');
+}
+function toggleSlot(t) {
+  if (slotsState[currentDay][t] === 'busy') return;
+  slotsState[currentDay][t] = slotsState[currentDay][t] === 'on' ? 'off' : 'on';
+  renderSlots();
+}
+function selectAllSlots() {
+  TIMES.forEach(t => { if (slotsState[currentDay][t] !== 'busy') slotsState[currentDay][t] = 'on'; });
+  renderSlots();
+}
+function clearAllSlots() {
+  TIMES.forEach(t => { if (slotsState[currentDay][t] !== 'busy') slotsState[currentDay][t] = 'off'; });
+  renderSlots();
+}
+function saveSchedule() {
+  const toast = document.getElementById('saveToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+renderSlots();
+
+
+// ══ SEARCHABLE SELECT COMPONENT ══
+class SearchableSelect {
+  constructor({ wrap, inputId, dropdownId, options, placeholder, onChange, single = true }) {
+    this.wrap      = document.getElementById(wrap);
+    this.input     = document.getElementById(inputId);
+    this.dropdown  = document.getElementById(dropdownId);
+    this.options   = options;   // array de { value, label }
+    this.single    = single;
+    this.selected  = null;      // { value, label }
+    this.onChange  = onChange || (() => {});
+
+    this.input.setAttribute('placeholder', placeholder || 'Escribe para buscar...');
+    this.input.addEventListener('focus',  () => this.render(this.input.value));
+    this.input.addEventListener('input',  () => this.render(this.input.value));
+    document.addEventListener('click', e => { if (!this.wrap.contains(e.target)) this.close(); });
+  }
+
+  render(query) {
+    const q = query.trim().toLowerCase();
+    const filtered = this.options.filter(o => o.label.toLowerCase().includes(q));
+    if (filtered.length === 0) {
+      this.dropdown.innerHTML = `<div class="ss-empty">Sin resultados para "${query}"</div>`;
+    } else {
+      this.dropdown.innerHTML = filtered.map(o => {
+        const isCur = this.selected && this.selected.value === o.value;
+        return `<div class="ss-option${isCur ? ' active' : ''}" data-val="${o.value}" data-lbl="${o.label}">
+          ${o.label}${isCur ? ' <span style="color:var(--teal)">✓</span>' : ''}
+        </div>`;
+      }).join('');
+      this.dropdown.querySelectorAll('.ss-option:not(.active)').forEach(el => {
+        el.addEventListener('click', () => {
+          this.setValue(el.dataset.val, el.dataset.lbl);
+        });
+      });
+    }
+    this.dropdown.classList.add('open');
+  }
+
+  setValue(value, label) {
+    this.selected = { value, label };
+    this.input.value = '';
+    this.updateTag();
+    this.close();
+    this.onChange(value, label);
+  }
+
+  updateTag() {
+    // Remove existing tag
+    this.wrap.querySelector('.ss-selected-tag')?.remove();
+    if (this.selected) {
+      const tag = document.createElement('div');
+      tag.className = 'ss-selected-tag';
+      tag.innerHTML = `${this.selected.label} <span class="ss-x">×</span>`;
+      tag.querySelector('.ss-x').addEventListener('click', e => {
+        e.stopPropagation();
+        this.selected = null;
+        this.updateTag();
+        this.input.placeholder = this.input.getAttribute('placeholder');
+        this.onChange(null, null);
+      });
+      this.wrap.querySelector('.ss-input-row').insertBefore(tag, this.input);
+    }
+  }
+
+  getValue() { return this.selected ? this.selected.value : ''; }
+  getLabel() { return this.selected ? this.selected.label : ''; }
+
+  close() { this.dropdown.classList.remove('open'); }
+
+  setOptions(opts) {
+    this.options = opts;
+    this.selected = null;
+    this.updateTag();
+  }
+}
+
+const CIUDAD_MAP = {
+  ecuador: [{value:"ambato",label:"Ambato"},{value:"azogues",label:"Azogues"},{value:"babahoyo",label:"Babahoyo"},{value:"cuenca",label:"Cuenca"},{value:"esmeraldas",label:"Esmeraldas"},{value:"guaranda",label:"Guaranda"},{value:"guayaquil",label:"Guayaquil"},{value:"ibarra",label:"Ibarra"},{value:"latacunga",label:"Latacunga"},{value:"loja",label:"Loja"},{value:"macas",label:"Macas"},{value:"machala",label:"Machala"},{value:"manta",label:"Manta"},{value:"nueva loja",label:"Nueva Loja"},{value:"portoviejo",label:"Portoviejo"},{value:"puyo",label:"Puyo"},{value:"quito",label:"Quito"},{value:"riobamba",label:"Riobamba"},{value:"santa rosa",label:"Santa Rosa"},{value:"santo domingo",label:"Santo Domingo"},{value:"tena",label:"Tena"},{value:"tulcán",label:"Tulcán"},{value:"zamora",label:"Zamora"}],
+  colombia: [{value:"barranquilla",label:"Barranquilla"},{value:"bogotá",label:"Bogotá"},{value:"bucaramanga",label:"Bucaramanga"},{value:"cali",label:"Cali"},{value:"cartagena",label:"Cartagena"},{value:"cúcuta",label:"Cúcuta"},{value:"ibagué",label:"Ibagué"},{value:"manizales",label:"Manizales"},{value:"medellín",label:"Medellín"},{value:"montería",label:"Montería"},{value:"neiva",label:"Neiva"},{value:"pasto",label:"Pasto"},{value:"pereira",label:"Pereira"},{value:"santa marta",label:"Santa Marta"},{value:"villavicencio",label:"Villavicencio"}],
+  peru: [{value:"arequipa",label:"Arequipa"},{value:"ayacucho",label:"Ayacucho"},{value:"chiclayo",label:"Chiclayo"},{value:"cusco",label:"Cusco"},{value:"huancayo",label:"Huancayo"},{value:"iquitos",label:"Iquitos"},{value:"lima",label:"Lima"},{value:"piura",label:"Piura"},{value:"pucallpa",label:"Pucallpa"},{value:"tacna",label:"Tacna"},{value:"trujillo",label:"Trujillo"}]
+};
+
+let dashPaisSelect = null, dashCiudadSelect = null;
+document.addEventListener('DOMContentLoaded', () => {
+  if (!document.getElementById('dash-pais-wrap')) return;
+  dashPaisSelect = new SearchableSelect({
+    wrap:'dash-pais-wrap', inputId:'dash-pais-input', dropdownId:'dash-pais-drop',
+    options:[{value:'ecuador',label:'Ecuador'},{value:'colombia',label:'Colombia'},{value:'peru',label:'Peru'}],
+    placeholder:'Ej: Ecuador',
+    onChange: (val) => {
+      if (dashCiudadSelect) { dashCiudadSelect.selected=null; dashCiudadSelect.updateTag(); dashCiudadSelect.setOptions(val&&CIUDAD_MAP[val]?CIUDAD_MAP[val]:[]); }
+    }
+  });
+  dashPaisSelect.setValue('ecuador','Ecuador');
+  dashCiudadSelect = new SearchableSelect({
+    wrap:'dash-ciudad-wrap', inputId:'dash-ciudad-input', dropdownId:'dash-ciudad-drop',
+    options: CIUDAD_MAP['ecuador'],
+    placeholder:'Ej: Guayaquil',
+    onChange: () => {}
+  });
+  dashCiudadSelect.setValue('guayaquil','Guayaquil');
+});
+
+// ── SAVE PERFIL ──
+function savePerfil(btn) {
+  const orig = btn.textContent;
+  btn.textContent = '✓ Cambios guardados';
+  btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2500);
+}
+
+// ── PERFIL TABS ──
+function showPerfilTab(id, btn) {
+  document.querySelectorAll('.perfil-tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.perfil-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('ptab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── CONTACT MODE TOGGLES ──
+function toggleWA(chk) {
+  document.getElementById('waNumber').style.display = chk.checked ? 'block' : 'none';
+  document.getElementById('waNote').style.display   = chk.checked ? 'block' : 'none';
+  updateContactMode();
+}
+
+function updateContactMode() {
+  const agOn = document.getElementById('toggleAgendamiento')?.checked;
+  const waOn = document.getElementById('waToggle')?.checked;
+  const waNum = document.getElementById('waNumber')?.value?.trim();
+
+  // Nota agendamiento
+  const agNote = document.getElementById('agendamientoNote');
+  if (agNote) agNote.style.display = agOn ? 'block' : 'none';
+
+  // Preview botones
+  const prev = document.getElementById('previewBtns');
+  if (prev) {
+    let html = '';
+    if (!agOn && !waOn) {
+      html = '<div style="font-size:.78rem;color:var(--muted2);font-style:italic">Ningún canal activo — el paciente no podrá contactarte</div>';
+    } else {
+      if (agOn) html += '<div style="background:var(--teal);color:#fff;padding:.5rem 1rem;border-radius:10px;font-size:.8rem;font-weight:600">📅 Agendar cita</div>';
+      if (waOn) html += '<div style="background:#25d366;color:#fff;padding:.5rem 1rem;border-radius:10px;font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:.35rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp</div>';
+    }
+    prev.innerHTML = html;
+  }
+
+  // Actualizar resumen en perfil
+  const summary = document.getElementById('contactSummary');
+  if (summary) {
+    let html = '';
+    if (agOn) html += '<div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--teal)"><span style="width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0"></span>Agendamiento CitaDoc activo</div>';
+    if (waOn) html += '<div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:#16a34a"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;flex-shrink:0"></span>WhatsApp directo activo</div>';
+    if (!agOn && !waOn) html = '<div style="font-size:.78rem;color:var(--muted2)">Sin canales activos</div>';
+    summary.innerHTML = html;
+  }
+}
+
+// Inicializar preview al cargar
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(updateContactMode, 500);
+});
+
+// ── DURACIÓN ──
+function setDuracion(el, mins) {
+  document.querySelectorAll('.dur-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  // Re-render slots grid with new duration
+  renderSlots();
+}
+
+// ── SEGUROS EDITOR ──
+const ALL_SEGUROS = ['IESS','Salud S.A.','Equivida','Panamericana','BMI','Seguros Sucre','Produbanco','Agrego luego'];
+const activeSeguros = new Set(['IESS','Salud S.A.','Panamericana','BMI']);
+function renderSeguros() {
+  document.getElementById('segurosEditor').innerHTML = ALL_SEGUROS.map(s => {
+    const on = activeSeguros.has(s);
+    return `<div class="seguro-chip${on?' on':''}" onclick="toggleSeguro(this,'${s}')">
+      <div class="seg-check">${on?'✓':''}</div>${s}
+    </div>`;
+  }).join('');
+}
+function toggleSeguro(el, s) {
+  if (activeSeguros.has(s)) { activeSeguros.delete(s); el.classList.remove('on'); el.querySelector('.seg-check').textContent=''; }
+  else { activeSeguros.add(s); el.classList.add('on'); el.querySelector('.seg-check').textContent='✓'; }
+}
+renderSeguros();
+
+// ── FORMACION EDITOR ──
+const formacionData = [
+  { titulo: 'Especialización en Cardiología', lugar: 'Instituto Nacional de Cardiología — CDMX', anio: '2014–2016' },
+  { titulo: 'Médico Cirujano', lugar: 'Universidad Central del Ecuador', anio: '2006–2013' },
+];
+function renderFormacion() {
+  document.getElementById('formacionList').innerHTML = formacionData.map((f,i) => `
+    <div class="list-item-row">
+      <div class="pf-field" style="flex:2">
+        <label>Título / Certificación</label>
+        <input type="text" value="${f.titulo}" onchange="formacionData[${i}].titulo=this.value">
+      </div>
+      <div class="pf-field" style="flex:2">
+        <label>Institución</label>
+        <input type="text" value="${f.lugar}" onchange="formacionData[${i}].lugar=this.value">
+      </div>
+      <div class="pf-field" style="flex:1">
+        <label>Año</label>
+        <input type="text" value="${f.anio}" onchange="formacionData[${i}].anio=this.value">
+      </div>
+      <button class="btn-remove-item" onclick="removeFormacion(${i})">✕</button>
+    </div>
+  `).join('');
+}
+function addFormacion() { formacionData.push({titulo:'',lugar:'',anio:''}); renderFormacion(); }
+function removeFormacion(i) { formacionData.splice(i,1); renderFormacion(); }
+renderFormacion();
+
+// ── LOGROS EDITOR ──
+const logrosData = [
+  { icono: '🏆', titulo: 'Premio Nacional de Cardiología 2021', desc: 'Sociedad Ecuatoriana de Cardiología' },
+  { icono: '📄', titulo: 'Publicación en Revista Latinoamericana', desc: '"Prevalencia de FA en pacientes hipertensos — 2022"' },
+  { icono: '🎓', titulo: 'Docente universitario', desc: 'Cátedra de Semiología Cardiovascular, Univ. de Guayaquil' },
+];
+function renderLogros() {
+  document.getElementById('logrosList').innerHTML = logrosData.map((l,i) => `
+    <div class="list-item-row">
+      <div class="pf-field" style="flex:0 0 64px">
+        <label>Ícono</label>
+        <input type="text" value="${l.icono}" maxlength="2" style="text-align:center;font-size:1.2rem" onchange="logrosData[${i}].icono=this.value">
+      </div>
+      <div class="pf-field" style="flex:2">
+        <label>Título del logro</label>
+        <input type="text" value="${l.titulo}" onchange="logrosData[${i}].titulo=this.value">
+      </div>
+      <div class="pf-field" style="flex:2">
+        <label>Descripción</label>
+        <input type="text" value="${l.desc}" onchange="logrosData[${i}].desc=this.value">
+      </div>
+      <button class="btn-remove-item" onclick="removeLogro(${i})">✕</button>
+    </div>
+  `).join('');
+}
+function addLogro() { logrosData.push({icono:'⭐',titulo:'',desc:''}); renderLogros(); }
+function removeLogro(i) { logrosData.splice(i,1); renderLogros(); }
+renderLogros();
+
+// ══ BIO GENERATOR IA ══
+async function generateBio() {
+  const btn = document.getElementById('btnAiBio');
+  const textarea = document.getElementById('bioTextarea');
+  
+  // Recolectar datos del formulario
+  const nombre    = document.querySelector('#ptab-info input[value*="Juan"], #ptab-info input:nth-of-type(1)')?.value || 'Juan';
+  const apellido  = document.querySelector('#ptab-info input[value*="Pérez"], #ptab-info input:nth-of-type(2)')?.value || 'Pérez';
+  const titulo    = document.querySelector('#ptab-info input[value*="Dr"]')?.value || 'Dr.';
+  const esp       = document.querySelector('#ptab-info input[value*="Cardiología"], #ptab-info input:nth-of-type(4)')?.value || 'Cardiología';
+  const anios     = document.querySelector('#ptab-info input[type="number"]')?.value || '12';
+  const precio    = document.querySelectorAll('#ptab-info input[type="number"]')[0]?.value || '70';
+  const ciudad    = dashCiudadSelect?.getLabel() || 'Guayaquil';
+  const pais      = dashPaisSelect?.getLabel() || 'Ecuador';
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  textarea.classList.add('bio-generating');
+  textarea.value = 'Generando tu presentación con IA...';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Eres un redactor especializado en perfiles médicos profesionales para Latinoamérica.
+          
+Genera una presentación profesional y cálida para un médico con estos datos:
+- Nombre: ${titulo} ${nombre} ${apellido}
+- Especialidad: ${esp}
+- Años de experiencia: ${anios}
+- Ciudad: ${ciudad}, ${pais}
+- Precio de consulta: $${precio}
+
+INSTRUCCIONES:
+- Máximo 3 párrafos cortos (total ~120-150 palabras)
+- Tono profesional pero cercano y humano — que el paciente sienta confianza
+- Mencionar la especialidad, experiencia y enfoque en el paciente
+- NO mencionar precios ni datos de contacto
+- Terminar con una frase que invite al paciente a agendar
+- Solo devuelve el texto de la bio, sin comillas ni encabezados`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const bio = data.content?.[0]?.text || '';
+    textarea.value = bio;
+  } catch(err) {
+    textarea.value = 'Error al generar la bio. Verifica tu conexión e intenta de nuevo.';
+  }
+
+  btn.classList.remove('loading');
+  btn.disabled = false;
+  textarea.classList.remove('bio-generating');
+}
+
+</script>
+</body>
+</html>
