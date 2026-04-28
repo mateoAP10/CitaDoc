@@ -612,16 +612,41 @@ function aplicarPerfilPublico(m, formacion) {
   window._perfilUrl = shareUrl;
 }
 
-document.addEventListener('DOMContentLoaded', cargarPerfilPublico);
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. Si hay ?slug en la URL, mostrar ese médico
+  // 2. Si no hay slug pero hay sesión activa, mostrar el propio médico
+  const params = new URLSearchParams(window.location.search);
+  const slugParam = params.get('slug');
+
+  if (!slugParam) {
+    // Intentar desde sessionStorage (médico logueado)
+    const cached = sessionStorage.getItem('citadoc_user');
+    if (cached) {
+      const medico = JSON.parse(cached);
+      if (medico.slug) {
+        // Redirigir a su propio perfil con slug
+        window.history.replaceState({}, '', '?slug=' + medico.slug);
+      }
+    } else {
+      // Verificar sesión Supabase
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (session) {
+        const { data: m } = await _supabase.from('medicos').select('slug').eq('user_id', session.user.id).single();
+        if (m?.slug) window.history.replaceState({}, '', '?slug=' + m.slug);
+      }
+    }
+  }
+  cargarPerfilPublico();
+});
 </script>
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-  <a href="citadoc-index.html" class="logo">Cita<span>Doc</span></a>
+  <a href="index.html" class="logo">Cita<span>Doc</span></a>
   <div class="nav-right">
-    <a href="citadoc-index.html" class="nav-link">← Ver más médicos</a>
+    <a href="index.html" class="nav-link">← Ver más médicos</a>
     <a href="citadoc-registro.html" class="btn-nav-sm">Soy médico</a>
   </div>
 </nav>

@@ -817,288 +817,6 @@ body {
   const SUPABASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_UF1klDW5XOsBVGCy30gYVw_xz1rNWZQ';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // Cargar datos del médico al iniciar
-  async function cargarMedico() {
-    // 1. Intentar desde sessionStorage (viene del registro)
-    const cached = sessionStorage.getItem('citadoc_user');
-    if (cached) {
-      const medico = JSON.parse(cached);
-      aplicarDatosMedico(medico);
-      // Cargar datos completos desde DB en background
-      cargarDesdDB(medico.user_id);
-      return;
-    }
-
-    // 2. Verificar sesión activa de Supabase Auth
-    const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) {
-      // No hay sesión — redirigir al index
-      window.location.href = 'index.html';
-      return;
-    }
-
-    await cargarDesdDB(session.user.id);
-  }
-
-  async function cargarDesdDB(userId) {
-    const { data: medico, error } = await _supabase
-      .from('medicos')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error || !medico) {
-      console.error('No se encontró perfil médico:', error);
-      return;
-    }
-
-    sessionStorage.setItem('citadoc_user', JSON.stringify(medico));
-    aplicarDatosMedico(medico);
-  }
-
-  function aplicarDatosMedico(medico) {
-    const nombreCompleto = (medico.titulo || 'Dr.') + ' ' + medico.nombre + ' ' + medico.apellido;
-    const especialidad   = (medico.especialidades || [])[0] || 'Médico';
-    const ciudad         = medico.ciudad || '';
-    const slug           = medico.slug || '';
-    const plan           = medico.plan || 'gratuito';
-    const url            = 'citadoc.lat/medico/' + slug;
-
-    // Sidebar — nombre y especialidad (IDs dinámicos)
-    const nameEl = document.getElementById('sidebarNombre');
-    const roleEl = document.getElementById('sidebarEspecialidad');
-    const planEl = document.getElementById('sidebarPlan');
-    if (nameEl) nameEl.textContent = nombreCompleto;
-    if (roleEl) roleEl.textContent = especialidad || '—';
-    if (planEl) planEl.textContent = plan === 'destacado' ? '⭐ Destacado' : 'Plan Gratuito';
-
-    // Avatar sidebar
-    const avatarSm = document.getElementById('sidebarAvatar');
-    if (avatarSm && medico.foto_url) {
-      avatarSm.innerHTML = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
-    }
-
-    // URL sidebar
-    const urlEl = document.getElementById('sidebarUrl');
-    if (urlEl) urlEl.textContent = url;
-
-    // URL en perfil
-    const urlCard = document.querySelector('.url-card-url');
-    if (urlCard) urlCard.textContent = url;
-    const successUrl = document.getElementById('success-url');
-    if (successUrl) successUrl.textContent = url;
-
-    // Panel perfil — rellenar campos por ID
-    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
-    setVal('inf-nombre',      medico.nombre);
-    setVal('inf-apellido',    medico.apellido);
-    setVal('inf-titulo',      medico.titulo || 'Dr.');
-    setVal('inf-especialidad', (medico.especialidades||[])[0] || '');
-    setVal('inf-precio',      medico.precio);
-    setVal('inf-anos',        medico.anos_experiencia || '');
-    setVal('inf-direccion',   medico.direccion || '');
-    setVal('inf-senescyt',    medico.senescyt || '');
-    setVal('inf-telefono',    medico.telefono || '');
-
-    // Bio
-    const bioEl = document.getElementById('bioTextarea');
-    if (bioEl && medico.bio) bioEl.value = medico.bio;
-
-    // Foto
-    const avatarEl = document.querySelector('.perfil-avatar-big');
-    const avatarSm = document.querySelector('.doc-avatar-sm');
-    if (medico.foto_url) {
-      const imgHtml = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">';
-      if (avatarEl) avatarEl.innerHTML = imgHtml;
-      if (avatarSm) avatarSm.innerHTML = imgHtml;
-    }
-
-    // Plan badge color
-    if (planEl && plan === 'destacado') {
-      planEl.style.background = 'rgba(232,164,74,.2)';
-      planEl.style.color = '#f0b860';
-    }
-
-    // Topbar saludo
-    const titleEl = document.getElementById('topbarTitle');
-    if (titleEl && titleEl.textContent === 'Inicio') {
-      titleEl.textContent = 'Bienvenido, ' + medico.nombre;
-    }
-
-    // Seguros — marcar los del médico
-    activeSeguros.clear();
-    (medico.seguros || []).forEach(s => activeSeguros.add(s));
-    if (document.getElementById('segurosEditor')) renderSeguros();
-
-    // Toggles de contacto
-    const waToggle = document.getElementById('waToggle');
-    const agToggle = document.getElementById('toggleAgendamiento');
-    if (waToggle) { waToggle.checked = medico.whatsapp_activo || false; toggleWA(waToggle); }
-    if (agToggle) { agToggle.checked = medico.agendamiento_citadoc !== false; }
-    if (document.getElementById('waNumber')) document.getElementById('waNumber').value = medico.whatsapp || '';
-    updateContactMode();
-
-    // Photo card
-    const h4El = document.getElementById('perfilNombreCard');
-    const pEl  = document.getElementById('perfilEspCard');
-    if (h4El) h4El.textContent = nombreCompleto;
-    if (pEl)  pEl.textContent  = especialidad + (ciudad ? ' · ' + ciudad : '');
-
-    // URL dinámica
-    const urlCardEl = document.getElementById('perfilUrlCard');
-    if (urlCardEl) urlCardEl.textContent = url;
-    const verLink = document.getElementById('verPerfilLink');
-    if (verLink && slug) verLink.href = 'citadoc-perfil.html?slug=' + slug;
-
-    // Guardar globalmente
-    window._medicoActual = medico;
-
-    // Cargar citas y formación en paralelo
-    cargarCitasHoy(medico.id);
-    cargarFormacionLogros(medico.id);
-    cargarCitasCalendario(medico.id);
-  }
-
-  // Cargar citas de hoy desde Supabase
-  async function cargarCitasHoy(medicoId) {
-    const hoy = new Date().toISOString().split('T')[0];
-    const { data: citas, error } = await _supabase
-      .from('citas')
-      .select('*')
-      .eq('medico_id', medicoId)
-      .eq('fecha', hoy)
-      .order('hora', { ascending: true });
-
-    const list  = document.getElementById('citasHoyList');
-    const count = document.getElementById('citasHoyCount');
-    const badge = document.getElementById('badge-citas');
-    if (!list) return;
-
-    if (error || !citas || citas.length === 0) {
-      list.innerHTML = '<div class="empty-citas">No hay citas programadas para hoy</div>';
-      if (count) count.textContent = '0 citas';
-      if (badge) badge.textContent = '0';
-
-      // Actualizar stat
-      const statHoy = document.getElementById('statHoy');
-      if (statHoy) statHoy.textContent = '0';
-      return;
-    }
-
-    if (count) count.textContent = citas.length + ' cita' + (citas.length !== 1 ? 's' : '');
-    if (badge) badge.textContent = citas.length;
-
-    // Stats
-    const statHoy = document.getElementById('statHoy');
-    if (statHoy) statHoy.textContent = citas.length;
-
-    const now = new Date();
-    list.innerHTML = citas.map(c => {
-      const [h, m] = c.hora.split(':').map(Number);
-      const slotDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
-      const isPast   = slotDate < now;
-      const estado   = c.estado || 'confirmada';
-      const statusMap = { confirmada: 'confirmed', cancelada: 'done', completada: 'done', pendiente: 'pending' };
-      const labelMap  = { confirmada: 'Confirmada', cancelada: 'Cancelada', completada: 'Completada', pendiente: 'Pendiente' };
-      const avatares  = ['👩','👨','👴','👩‍💼','👨‍💼','🧑'];
-      const av = avatares[Math.abs(c.paciente_nombre.charCodeAt(0)) % avatares.length];
-      return '<div class="cita-item">' +
-        '<div class="cita-time' + (isPast ? ' past' : '') + '">' + c.hora + '</div>' +
-        '<div class="cita-avatar">' + av + '</div>' +
-        '<div class="cita-info">' +
-          '<div class="cita-name">' + c.paciente_nombre + '</div>' +
-          '<div class="cita-motivo">' + (c.motivo || 'Sin motivo indicado') + '</div>' +
-        '</div>' +
-        '<span class="cita-status ' + (statusMap[estado] || 'confirmed') + '">' + (labelMap[estado] || estado) + '</span>' +
-        (estado === 'confirmada' ? '<div class="cita-actions"><div class="btn-icon danger" onclick="cancelarCita('' + c.id + '')" title="Cancelar">✕</div></div>' : '') +
-      '</div>';
-    }).join('');
-
-    // Stats semana y mes
-    cargarStatsExtras(medicoId);
-  }
-
-  async function cargarStatsExtras(medicoId) {
-    const hoy    = new Date();
-    const inicioSemana = new Date(hoy); inicioSemana.setDate(hoy.getDate() - 7);
-    const inicioMes    = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-
-    const [{ count: semana }, { count: mes }, { count: total }] = await Promise.all([
-      _supabase.from('citas').select('*', {count:'exact',head:true}).eq('medico_id', medicoId).gte('fecha', inicioSemana.toISOString().split('T')[0]),
-      _supabase.from('citas').select('*', {count:'exact',head:true}).eq('medico_id', medicoId).gte('fecha', inicioMes.toISOString().split('T')[0]),
-      _supabase.from('citas').select('*', {count:'exact',head:true}).eq('medico_id', medicoId),
-    ]);
-
-    const sem = document.getElementById('statSemana');
-    const mes_ = document.getElementById('statMes');
-    const tot = document.getElementById('statTotal');
-    if (sem)  sem.textContent  = semana  || 0;
-    if (mes_) mes_.textContent = mes     || 0;
-    if (tot)  tot.textContent  = total   || 0;
-  }
-
-  // Cargar citas del mes para el calendario
-  async function cargarCitasCalendario(medicoId) {
-    const hoy = new Date();
-    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
-    const finMes    = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
-
-    const { data: citas } = await _supabase
-      .from('citas').select('fecha, hora, paciente_nombre, estado')
-      .eq('medico_id', medicoId)
-      .gte('fecha', inicioMes).lte('fecha', finMes)
-      .neq('estado', 'cancelada');
-
-    if (!citas || citas.length === 0) return;
-
-    // Agrupar por día
-    citas.forEach(c => {
-      const dia = parseInt(c.fecha.split('-')[2]);
-      if (!EVENTS[dia]) EVENTS[dia] = [];
-      EVENTS[dia].push({ text: c.hora + ' ' + c.paciente_nombre.split(' ')[0], type: 'green' });
-    });
-
-    // Re-render calendario si está visible
-    if (document.getElementById('panel-calendario').classList.contains('active')) {
-      renderBigCal();
-    }
-  }
-
-  async function cancelarCita(citaId) {
-    if (!confirm('¿Cancelar esta cita?')) return;
-    await _supabase.from('citas').update({ estado: 'cancelada' }).eq('id', citaId);
-    const m = window._medicoActual;
-    if (m) cargarCitasHoy(m.id);
-  }
-
-  // Cargar formación y logros desde Supabase
-  async function cargarFormacionLogros(medicoId) {
-    const { data, error } = await _supabase
-      .from('formacion')
-      .select('*')
-      .eq('medico_id', medicoId)
-      .order('orden', { ascending: true });
-
-    if (error || !data) return;
-
-    formacionData.length = 0;
-    logrosData.length    = 0;
-
-    data.forEach(f => {
-      if (f.tipo === 'academia') {
-        formacionData.push({ titulo: f.titulo || '', lugar: f.institucion || '', anio: f.anio || '' });
-      } else {
-        logrosData.push({ icono: f.icono || '⭐', titulo: f.titulo || '', desc: f.descripcion || '' });
-      }
-    });
-
-    if (document.getElementById('formacionList')) renderFormacion();
-    if (document.getElementById('logrosList'))   renderLogros();
-  }
-
-  // Ejecutar al cargar
-  document.addEventListener('DOMContentLoaded', cargarMedico);
 </script>
 
 </head>
@@ -1109,7 +827,7 @@ body {
 
 <!-- ══ SIDEBAR ══ -->
 <aside class="sidebar" id="sidebar">
-  <a href="citadoc-index.html" class="sidebar-logo">Cita<span>Doc</span></a>
+  <a href="index.html" class="sidebar-logo">Cita<span>Doc</span></a>
 
   <div class="sidebar-doctor">
     <div class="doc-avatar-sm" id="sidebarAvatar">👨‍⚕️</div>
@@ -1210,11 +928,8 @@ body {
           </div>
           <div class="card">
             <div class="card-header"><h3>Próximas citas</h3></div>
-            <div class="proximas-list">
-              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Mañana</div><div class="proxima-name">5 citas agendadas</div></div>
-              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Jue 1</div><div class="proxima-name">3 citas agendadas</div></div>
-              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Vie 2</div><div class="proxima-name">7 citas agendadas</div></div>
-              <div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">Lun 5</div><div class="proxima-name">4 citas agendadas</div></div>
+            <div class="proximas-list" id="proximasList">
+              <div class="empty-citas" style="padding:1rem;font-size:.82rem;color:var(--muted2)">Sin citas próximas</div>
             </div>
           </div>
         </div>
@@ -1246,27 +961,27 @@ body {
       <div class="stats-row" style="margin-bottom:1.5rem">
         <div class="stat-card">
           <div class="stat-label">Total este mes</div>
-          <div class="stat-num teal">87</div>
-          <div class="stat-sub"><span class="stat-trend up">↑ 8%</span> vs mes anterior</div>
+          <div class="stat-num teal" id="estMes">—</div>
+          <div class="stat-sub" id="estMesSub">sin datos aún</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Nuevos pacientes</div>
-          <div class="stat-num">31</div>
-          <div class="stat-sub"><span class="stat-trend up">↑ 15%</span> este mes</div>
+          <div class="stat-label">Total acumulado</div>
+          <div class="stat-num" id="estTotal">—</div>
+          <div class="stat-sub">desde el inicio</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Cancelaciones</div>
-          <div class="stat-num">4</div>
-          <div class="stat-sub"><span class="stat-trend down">4.6%</span> tasa de cancelación</div>
+          <div class="stat-num" id="estCanceladas">—</div>
+          <div class="stat-sub" id="estCanceladasSub">este mes</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Visitas al perfil</div>
-          <div class="stat-num">213</div>
-          <div class="stat-sub"><span class="stat-trend up">↑ 22%</span> este mes</div>
+          <div class="stat-label">Esta semana</div>
+          <div class="stat-num" id="estSemana">—</div>
+          <div class="stat-sub">últimos 7 días</div>
         </div>
       </div>
 
-      <div class="stats-full-grid">
+      <div class="stats-full-grid" id="statsGraphsGrid">
         <div class="stat-big-card">
           <h4>Citas por día de la semana</h4>
           <div class="bar-chart">
@@ -2124,6 +1839,341 @@ INSTRUCCIONES:
   textarea.classList.remove('bio-generating');
 }
 
+</script>
+<script>
+
+  // Cargar datos del médico al iniciar
+  async function cargarMedico() {
+    // 1. Intentar desde sessionStorage (viene del registro)
+    const cached = sessionStorage.getItem('citadoc_user');
+    if (cached) {
+      const medico = JSON.parse(cached);
+      aplicarDatosMedico(medico);
+      // Cargar datos completos desde DB en background
+      cargarDesdDB(medico.user_id);
+      return;
+    }
+
+    // 2. Verificar sesión activa de Supabase Auth
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      // No hay sesión — redirigir al index
+      window.location.href = 'index.html';
+      return;
+    }
+
+    await cargarDesdDB(session.user.id);
+  }
+
+  async function cargarDesdDB(userId) {
+    const { data: medico, error } = await _supabase
+      .from('medicos')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !medico) {
+      console.error('No se encontró perfil médico:', error);
+      return;
+    }
+
+    sessionStorage.setItem('citadoc_user', JSON.stringify(medico));
+    aplicarDatosMedico(medico);
+  }
+
+  function aplicarDatosMedico(medico) {
+    const nombreCompleto = (medico.titulo || 'Dr.') + ' ' + medico.nombre + ' ' + medico.apellido;
+    const especialidad   = (medico.especialidades || [])[0] || 'Médico';
+    const ciudad         = medico.ciudad || '';
+    const slug           = medico.slug || '';
+    const plan           = medico.plan || 'gratuito';
+    const url            = 'citadoc.lat/medico/' + slug;
+
+    // Sidebar — nombre y especialidad (IDs dinámicos)
+    const nameEl = document.getElementById('sidebarNombre');
+    const roleEl = document.getElementById('sidebarEspecialidad');
+    const planEl = document.getElementById('sidebarPlan');
+    if (nameEl) nameEl.textContent = nombreCompleto;
+    if (roleEl) roleEl.textContent = especialidad || '—';
+    if (planEl) planEl.textContent = plan === 'destacado' ? '⭐ Destacado' : 'Plan Gratuito';
+
+    // Avatar sidebar
+    const avatarSm = document.getElementById('sidebarAvatar');
+    if (avatarSm && medico.foto_url) {
+      avatarSm.innerHTML = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+    }
+
+    // URL sidebar
+    const urlEl = document.getElementById('sidebarUrl');
+    if (urlEl) urlEl.textContent = url;
+
+    // URL en perfil
+    const urlCard = document.querySelector('.url-card-url');
+    if (urlCard) urlCard.textContent = url;
+    const successUrl = document.getElementById('success-url');
+    if (successUrl) successUrl.textContent = url;
+
+    // Panel perfil — rellenar campos por ID
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
+    setVal('inf-nombre',      medico.nombre);
+    setVal('inf-apellido',    medico.apellido);
+    setVal('inf-titulo',      medico.titulo || 'Dr.');
+    setVal('inf-especialidad', (medico.especialidades||[])[0] || '');
+    setVal('inf-precio',      medico.precio);
+    setVal('inf-anos',        medico.anos_experiencia || '');
+    setVal('inf-direccion',   medico.direccion || '');
+    setVal('inf-senescyt',    medico.senescyt || '');
+    setVal('inf-telefono',    medico.telefono || '');
+
+    // Bio
+    const bioEl = document.getElementById('bioTextarea');
+    if (bioEl && medico.bio) bioEl.value = medico.bio;
+
+    // Foto
+    const avatarEl = document.querySelector('.perfil-avatar-big');
+    const avatarSm = document.querySelector('.doc-avatar-sm');
+    if (medico.foto_url) {
+      const imgHtml = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">';
+      if (avatarEl) avatarEl.innerHTML = imgHtml;
+      if (avatarSm) avatarSm.innerHTML = imgHtml;
+    }
+
+    // Plan badge color
+    if (planEl && plan === 'destacado') {
+      planEl.style.background = 'rgba(232,164,74,.2)';
+      planEl.style.color = '#f0b860';
+    }
+
+    // Topbar saludo
+    const titleEl = document.getElementById('topbarTitle');
+    if (titleEl && titleEl.textContent === 'Inicio') {
+      titleEl.textContent = 'Bienvenido, ' + medico.nombre;
+    }
+
+    // Seguros — marcar los del médico
+    activeSeguros.clear();
+    (medico.seguros || []).forEach(s => activeSeguros.add(s));
+    if (document.getElementById('segurosEditor')) renderSeguros();
+
+    // Toggles de contacto
+    const waToggle = document.getElementById('waToggle');
+    const agToggle = document.getElementById('toggleAgendamiento');
+    if (waToggle) { waToggle.checked = medico.whatsapp_activo || false; toggleWA(waToggle); }
+    if (agToggle) { agToggle.checked = medico.agendamiento_citadoc !== false; }
+    if (document.getElementById('waNumber')) document.getElementById('waNumber').value = medico.whatsapp || '';
+    updateContactMode();
+
+    // Photo card
+    const h4El = document.getElementById('perfilNombreCard');
+    const pEl  = document.getElementById('perfilEspCard');
+    if (h4El) h4El.textContent = nombreCompleto;
+    if (pEl)  pEl.textContent  = especialidad + (ciudad ? ' · ' + ciudad : '');
+
+    // URL dinámica
+    const urlCardEl = document.getElementById('perfilUrlCard');
+    if (urlCardEl) urlCardEl.textContent = url;
+    const verLink = document.getElementById('verPerfilLink');
+    if (verLink && slug) verLink.href = 'citadoc-perfil.html?slug=' + slug;
+
+    // Guardar globalmente
+    window._medicoActual = medico;
+
+    // Cargar citas y formación en paralelo
+    cargarCitasHoy(medico.id);
+    cargarFormacionLogros(medico.id);
+    cargarCitasCalendario(medico.id);
+  }
+
+  // Cargar citas de hoy desde Supabase
+  async function cargarCitasHoy(medicoId) {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data: citas, error } = await _supabase
+      .from('citas')
+      .select('*')
+      .eq('medico_id', medicoId)
+      .eq('fecha', hoy)
+      .order('hora', { ascending: true });
+
+    const list  = document.getElementById('citasHoyList');
+    const count = document.getElementById('citasHoyCount');
+    const badge = document.getElementById('badge-citas');
+    if (!list) return;
+
+    if (error || !citas || citas.length === 0) {
+      list.innerHTML = '<div class="empty-citas">No hay citas programadas para hoy</div>';
+      if (count) count.textContent = '0 citas';
+      if (badge) badge.textContent = '0';
+
+      // Actualizar stat
+      const statHoy = document.getElementById('statHoy');
+      if (statHoy) statHoy.textContent = '0';
+      return;
+    }
+
+    if (count) count.textContent = citas.length + ' cita' + (citas.length !== 1 ? 's' : '');
+    if (badge) badge.textContent = citas.length;
+
+    // Stats
+    const statHoy = document.getElementById('statHoy');
+    if (statHoy) statHoy.textContent = citas.length;
+
+    const now = new Date();
+    list.innerHTML = citas.map(c => {
+      const [h, m] = c.hora.split(':').map(Number);
+      const slotDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+      const isPast   = slotDate < now;
+      const estado   = c.estado || 'confirmada';
+      const statusMap = { confirmada: 'confirmed', cancelada: 'done', completada: 'done', pendiente: 'pending' };
+      const labelMap  = { confirmada: 'Confirmada', cancelada: 'Cancelada', completada: 'Completada', pendiente: 'Pendiente' };
+      const avatares  = ['👩','👨','👴','👩‍💼','👨‍💼','🧑'];
+      const av = avatares[Math.abs(c.paciente_nombre.charCodeAt(0)) % avatares.length];
+      return '<div class="cita-item">' +
+        '<div class="cita-time' + (isPast ? ' past' : '') + '">' + c.hora + '</div>' +
+        '<div class="cita-avatar">' + av + '</div>' +
+        '<div class="cita-info">' +
+          '<div class="cita-name">' + c.paciente_nombre + '</div>' +
+          '<div class="cita-motivo">' + (c.motivo || 'Sin motivo indicado') + '</div>' +
+        '</div>' +
+        '<span class="cita-status ' + (statusMap[estado] || 'confirmed') + '">' + (labelMap[estado] || estado) + '</span>' +
+        (estado === 'confirmada' ? '<div class="cita-actions"><div class="btn-icon danger" onclick="cancelarCita('' + c.id + '')" title="Cancelar">✕</div></div>' : '') +
+      '</div>';
+    }).join('');
+
+    // Stats semana y mes
+    cargarStatsExtras(medicoId);
+    cargarProximasCitas(medicoId);
+  }
+
+  async function cargarProximasCitas(medicoId) {
+    const hoy = new Date();
+    const manana = new Date(hoy); manana.setDate(hoy.getDate() + 1);
+    const en7dias = new Date(hoy); en7dias.setDate(hoy.getDate() + 7);
+
+    const { data: proximas } = await _supabase
+      .from('citas').select('fecha, hora, paciente_nombre')
+      .eq('medico_id', medicoId)
+      .gt('fecha', hoy.toISOString().split('T')[0])
+      .lte('fecha', en7dias.toISOString().split('T')[0])
+      .neq('estado','cancelada')
+      .order('fecha').order('hora')
+      .limit(5);
+
+    const list = document.getElementById('proximasList');
+    if (!list) return;
+
+    if (!proximas || proximas.length === 0) {
+      list.innerHTML = '<div class="empty-citas" style="padding:1rem;font-size:.82rem;color:var(--muted2)">Sin citas próximas programadas</div>';
+      return;
+    }
+
+    const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    list.innerHTML = proximas.map(c => {
+      const fecha = new Date(c.fecha + 'T00:00:00');
+      const esManana = c.fecha === manana.toISOString().split('T')[0];
+      const label = esManana ? 'Mañana' : dias[fecha.getDay()] + ' ' + fecha.getDate();
+      return '<div class="proxima-item">' +
+        '<div class="proxima-dot"></div>' +
+        '<div class="proxima-date">' + label + '</div>' +
+        '<div class="proxima-name">' + c.hora + ' · ' + c.paciente_nombre.split(' ')[0] + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  async function cargarStatsExtras(medicoId) {
+    const hoy = new Date();
+    const inicioSemana = new Date(hoy); inicioSemana.setDate(hoy.getDate() - 7);
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+    const [
+      { count: semana },
+      { count: mes },
+      { count: total },
+      { count: canceladas }
+    ] = await Promise.all([
+      _supabase.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId).gte('fecha', inicioSemana.toISOString().split('T')[0]),
+      _supabase.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId).gte('fecha', inicioMes.toISOString().split('T')[0]),
+      _supabase.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId),
+      _supabase.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId).eq('estado','cancelada').gte('fecha', inicioMes.toISOString().split('T')[0]),
+    ]);
+
+    // Panel inicio
+    const setN = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val ?? 0; };
+    setN('statSemana', semana);
+    setN('statMes',    mes);
+    setN('statTotal',  total);
+
+    // Panel estadísticas
+    setN('estMes',         mes);
+    setN('estTotal',       total);
+    setN('estCanceladas',  canceladas);
+    setN('estSemana',      semana);
+
+    if (document.getElementById('estMesSub') && mes !== undefined) {
+      document.getElementById('estMesSub').textContent = mes === 0 ? 'sin citas aún' : 'citas este mes';
+    }
+  }
+
+  // Cargar citas del mes para el calendario
+  async function cargarCitasCalendario(medicoId) {
+    const hoy = new Date();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+    const finMes    = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
+
+    const { data: citas } = await _supabase
+      .from('citas').select('fecha, hora, paciente_nombre, estado')
+      .eq('medico_id', medicoId)
+      .gte('fecha', inicioMes).lte('fecha', finMes)
+      .neq('estado', 'cancelada');
+
+    if (!citas || citas.length === 0) return;
+
+    // Agrupar por día
+    citas.forEach(c => {
+      const dia = parseInt(c.fecha.split('-')[2]);
+      if (!EVENTS[dia]) EVENTS[dia] = [];
+      EVENTS[dia].push({ text: c.hora + ' ' + c.paciente_nombre.split(' ')[0], type: 'green' });
+    });
+
+    // Re-render calendario si está visible
+    if (document.getElementById('panel-calendario').classList.contains('active')) {
+      renderBigCal();
+    }
+  }
+
+  async function cancelarCita(citaId) {
+    if (!confirm('¿Cancelar esta cita?')) return;
+    await _supabase.from('citas').update({ estado: 'cancelada' }).eq('id', citaId);
+    const m = window._medicoActual;
+    if (m) cargarCitasHoy(m.id);
+  }
+
+  // Cargar formación y logros desde Supabase
+  async function cargarFormacionLogros(medicoId) {
+    const { data, error } = await _supabase
+      .from('formacion')
+      .select('*')
+      .eq('medico_id', medicoId)
+      .order('orden', { ascending: true });
+
+    if (error || !data) return;
+
+    formacionData.length = 0;
+    logrosData.length    = 0;
+
+    data.forEach(f => {
+      if (f.tipo === 'academia') {
+        formacionData.push({ titulo: f.titulo || '', lugar: f.institucion || '', anio: f.anio || '' });
+      } else {
+        logrosData.push({ icono: f.icono || '⭐', titulo: f.titulo || '', desc: f.descripcion || '' });
+      }
+    });
+
+    if (document.getElementById('formacionList')) renderFormacion();
+    if (document.getElementById('logrosList'))   renderLogros();
+  }
+
+  // Ejecutar al cargar
+  document.addEventListener('DOMContentLoaded', cargarMedico);
 </script>
 </body>
 </html>

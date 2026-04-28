@@ -347,37 +347,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
     <!-- PASO 3 -->
     <div class="form-panel" id="panel-3">
       <h2 class="form-title">Horarios de atención</h2>
-      <p class="form-sub">Define tu disponibilidad general. Los slots exactos los configuras desde tu <strong>dashboard</strong>.</p>
-      <div class="field" style="margin-bottom:1.6rem">
-        <label>Días de atención</label>
-        <div class="schedule-grid">
-          <div class="day-chip selected" onclick="toggleDay(this)">Lun</div>
-          <div class="day-chip selected" onclick="toggleDay(this)">Mar</div>
-          <div class="day-chip selected" onclick="toggleDay(this)">Mié</div>
-          <div class="day-chip selected" onclick="toggleDay(this)">Jue</div>
-          <div class="day-chip selected" onclick="toggleDay(this)">Vie</div>
-          <div class="day-chip" onclick="toggleDay(this)">Sáb</div>
-          <div class="day-chip" onclick="toggleDay(this)">Dom</div>
-        </div>
+      <p class="form-sub">No te preocupes por los horarios ahora.</p>
+
+      <div style="background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:16px;padding:2rem;text-align:center;margin-bottom:1rem">
+        <div style="font-size:2.5rem;margin-bottom:.8rem">📅</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--teal);margin-bottom:.5rem">Todos los horarios habilitados por defecto</div>
+        <div style="font-size:.88rem;color:var(--muted);line-height:1.7">Desde tu <strong style="color:var(--teal)">dashboard</strong> activas los días y slots exactos en que atiendes.<br>Puedes bloquear fechas, ajustar disponibilidad y gestionar todo en detalle.</div>
       </div>
-      <div class="field" style="margin-bottom:1.6rem">
-        <label>Rango horario general</label>
-        <div class="time-row">
-          <div class="field"><label style="font-size:.7rem;margin-bottom:.35rem">Desde</label><input type="time" value="09:00" id="f-desde"></div>
-          <div class="field"><label style="font-size:.7rem;margin-bottom:.35rem">Hasta</label><input type="time" value="17:00" id="f-hasta"></div>
-        </div>
-      </div>
-      <div style="background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:14px;padding:1rem 1.2rem;font-size:.85rem;color:var(--teal);line-height:1.6">
-        📅 <strong>Los horarios exactos los configuras en tu dashboard.</strong> Podrás definir slots por día y bloquear fechas.
-      </div>
-      <div class="form-nav" style="margin-top:2rem">
+
+      <div class="form-nav" style="margin-top:1.5rem">
         <button class="btn-back" onclick="goStep(2)">← Atrás</button>
         <button class="btn-next" onclick="goStep(4)">Siguiente → Pago</button>
       </div>
     </div>
 
     <!-- PASO 4 -->
-    <div class="form-panel" id="panel-4">
+    <div id="panel-4">
       <h2 class="form-title">Confirma tu plan</h2>
       <p class="form-sub">Estás casi listo. Revisa tu selección y activa tu perfil.</p>
       <div class="plan-summary">
