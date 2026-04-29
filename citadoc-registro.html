@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Registro médico</title>
+<title>Registro médico — CitaDoc Ecuador</title>
+<meta name="description" content="Crea tu perfil médico en CitaDoc. Recibe pacientes desde tu link único. Plan gratuito disponible.">
+<meta name="keywords" content="registro médico, perfil médico online, agendar citas, médicos Ecuador">
+<meta name="author" content="CitaDoc">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Únete a CitaDoc como médico">
+<meta property="og:description" content="Crea tu perfil profesional y empieza a recibir pacientes hoy. Plan gratuito disponible.">
+<meta property="og:image" content="https://citadoc.lat/og-image.png">
+<meta property="og:url" content="https://citadoc.lat/citadoc-registro.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Únete a CitaDoc como médico">
+<meta name="twitter:description" content="Crea tu perfil profesional y empieza a recibir pacientes hoy. Plan gratuito disponible.">
+<link rel="canonical" href="https://citadoc.lat/citadoc-registro.html">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -185,13 +198,91 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .btn-dashboard:hover{background:var(--teal);color:#fff}
 
 @media(max-width:900px){.page-wrap{grid-template-columns:1fr}.plans-side{position:static;height:auto}.field-row{grid-template-columns:1fr}.schedule-grid{grid-template-columns:repeat(4,1fr)}.insurance-grid{grid-template-columns:1fr}}
+
+/* ══ AUTH NAV ══ */
+.nav-auth{display:flex;align-items:center;gap:.8rem}
+.nav-logged-out{display:flex;align-items:center;gap:.7rem}
+.nav-user-dropdown{position:relative}
+.nav-user-pill{
+  display:none;align-items:center;gap:.5rem;
+  padding:.38rem 1rem .38rem .5rem;
+  background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.25);
+  border-radius:50px;cursor:pointer;transition:all .2s;user-select:none;
+}
+.nav-user-pill:hover{background:var(--teal);border-color:var(--teal)}
+.nav-user-pill:hover .nav-user-name,.nav-user-pill:hover .nav-chevron{color:#fff}
+.nav-user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--teal);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;flex-shrink:0;
+}
+.nav-user-pill:hover .nav-user-avatar{background:rgba(255,255,255,.25)}
+.nav-user-name{font-size:.82rem;font-weight:600;color:var(--teal);transition:color .2s;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-chevron{font-size:.6rem;color:var(--teal-mid);transition:transform .2s}
+.nav-user-dropdown.open .nav-chevron{transform:rotate(180deg)}
+.nav-user-dropdown-menu{
+  display:none;position:absolute;top:calc(100% + 10px);right:0;
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:16px;box-shadow:0 16px 48px rgba(15,26,24,.12);
+  min-width:210px;z-index:500;overflow:hidden;
+}
+.nav-user-dropdown.open .nav-user-dropdown-menu{display:block;animation:navMenuIn .18s ease}
+@keyframes navMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.nav-dropdown-user-info{padding:.9rem 1rem .75rem;border-bottom:1px solid var(--border);background:var(--cream)}
+.nav-dropdown-user-info .ddu-name{font-size:.88rem;font-weight:700;color:var(--ink)}
+.nav-dropdown-user-info .ddu-plan{font-size:.72rem;color:var(--teal);font-weight:600;margin-top:.2rem}
+.nav-dropdown-item{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.72rem 1rem;font-size:.84rem;font-weight:500;color:var(--ink2);
+  text-decoration:none;cursor:pointer;transition:background .15s;
+  border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;text-align:left;
+}
+.nav-dropdown-item:hover{background:var(--cream);color:var(--teal)}
+.nav-dropdown-item .ddi-icon{font-size:.95rem;width:20px;text-align:center;flex-shrink:0}
+.nav-dropdown-sep{height:1px;background:var(--border);margin:.25rem 0}
+.nav-dropdown-item.danger{color:#dc2626}
+.nav-dropdown-item.danger:hover{background:#fef2f2}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- Analytics -->
+<script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 </head>
 <body>
 <nav>
   <a href="index.html" class="logo">Cita<span>Doc</span></a>
-  <a href="index.html" class="nav-back">← Volver al inicio</a>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <a href="index.html" class="nav-back">← Volver al inicio</a>
+    <div class="nav-auth">
+      <div class="nav-logged-out" id="navLoggedOut" style="display:flex;align-items:center;gap:.7rem">
+        <a href="#" class="nav-link" onclick="openLogin?openLogin(event):null;return false">Iniciar sesión</a>
+        <a href="citadoc-registro.html" class="btn-nav">Registrarme</a>
+      </div>
+      <div class="nav-user-dropdown" id="navUserDropdown">
+        <div class="nav-user-pill" id="navUserPill" onclick="toggleUserMenu()">
+          <div class="nav-user-avatar" id="navUserAvatar">—</div>
+          <div class="nav-user-name"  id="navUserName">Mi cuenta</div>
+          <span class="nav-chevron">▾</span>
+        </div>
+        <div class="nav-user-dropdown-menu" id="navDropdownMenu">
+          <div class="nav-dropdown-user-info">
+            <div class="ddu-name" id="ddNombre">—</div>
+            <div class="ddu-plan" id="ddPlan">—</div>
+          </div>
+          <a href="citadoc-dashboard.html" class="nav-dropdown-item">
+            <span class="ddi-icon">⚡</span> Mi dashboard
+          </a>
+          <a href="#" class="nav-dropdown-item" id="navVerPerfil">
+            <span class="ddi-icon">👁</span> Ver mi perfil público
+          </a>
+          <div class="nav-dropdown-sep"></div>
+          <button class="nav-dropdown-item danger" onclick="cerrarSesion()">
+            <span class="ddi-icon">↩</span> Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <div class="page-wrap">
@@ -657,6 +748,65 @@ async function activarCuenta(){
 
 // ══ INIT ══
 document.addEventListener('DOMContentLoaded',()=>{initRegSelects();updateUrlPreview();updatePaymentStep();});
+
+
+
+</script>
+<script>
+
+</script>
+<script>
+// ══ AUTH NAV ══
+async function initAuthNav() {
+  const cached = sessionStorage.getItem('citadoc_user');
+  if (cached) {
+    try { showLoggedIn(JSON.parse(cached)); return; } catch(e) {}
+  }
+  const { data:{ session } } = await _supabase.auth.getSession();
+  if (session) {
+    const { data: m } = await _supabase.from('medicos')
+      .select('nombre,apellido,titulo,slug,plan').eq('user_id', session.user.id).single();
+    if (m) {
+      sessionStorage.setItem('citadoc_user', JSON.stringify({...m, email: session.user.email}));
+      showLoggedIn(m);
+    }
+  } else { showLoggedOut(); }
+}
+function showLoggedIn(m) {
+  const nombre   = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  const initials = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase();
+  const plan     = m.plan==='destacado'?'⭐ Plan Destacado':'Plan Gratuito';
+  const pill = document.getElementById('navUserPill');
+  const out  = document.getElementById('navLoggedOut');
+  if (pill) pill.style.display = 'flex';
+  if (out)  out.style.display  = 'none';
+  const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  set('navUserAvatar', initials);
+  set('navUserName',   nombre);
+  set('ddNombre',      nombre);
+  set('ddPlan',        plan);
+  const pl = document.getElementById('navVerPerfil');
+  if (pl && m.slug) pl.href = 'citadoc-perfil.html?slug='+m.slug;
+}
+function showLoggedOut() {
+  const pill = document.getElementById('navUserPill');
+  const out  = document.getElementById('navLoggedOut');
+  if (pill) pill.style.display = 'none';
+  if (out)  out.style.display  = 'flex';
+}
+function toggleUserMenu() {
+  document.getElementById('navUserDropdown')?.classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('navUserDropdown')?.contains(e.target))
+    document.getElementById('navUserDropdown')?.classList.remove('open');
+});
+async function cerrarSesion() {
+  await _supabase.auth.signOut();
+  sessionStorage.removeItem('citadoc_user');
+  window.location.href = 'index.html';
+}
+document.addEventListener('DOMContentLoaded', initAuthNav);
 </script>
 </body>
 </html>

@@ -723,6 +723,50 @@ nav {
 }
 .triage-apply-btn:hover { background: var(--teal-mid); }
 
+/* ══ AUTH NAV ══ */
+.nav-auth{display:flex;align-items:center;gap:.8rem}
+.nav-logged-out{display:flex;align-items:center;gap:.7rem}
+.nav-user-dropdown{position:relative}
+.nav-user-pill{
+  display:none;align-items:center;gap:.5rem;
+  padding:.38rem 1rem .38rem .5rem;
+  background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.25);
+  border-radius:50px;cursor:pointer;transition:all .2s;user-select:none;
+}
+.nav-user-pill:hover{background:var(--teal);border-color:var(--teal)}
+.nav-user-pill:hover .nav-user-name,.nav-user-pill:hover .nav-chevron{color:#fff}
+.nav-user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--teal);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;flex-shrink:0;
+}
+.nav-user-pill:hover .nav-user-avatar{background:rgba(255,255,255,.25)}
+.nav-user-name{font-size:.82rem;font-weight:600;color:var(--teal);transition:color .2s;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-chevron{font-size:.6rem;color:var(--teal-mid);transition:transform .2s}
+.nav-user-dropdown.open .nav-chevron{transform:rotate(180deg)}
+.nav-user-dropdown-menu{
+  display:none;position:absolute;top:calc(100% + 10px);right:0;
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:16px;box-shadow:0 16px 48px rgba(15,26,24,.12);
+  min-width:210px;z-index:500;overflow:hidden;
+}
+.nav-user-dropdown.open .nav-user-dropdown-menu{display:block;animation:navMenuIn .18s ease}
+@keyframes navMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.nav-dropdown-user-info{padding:.9rem 1rem .75rem;border-bottom:1px solid var(--border);background:var(--cream)}
+.nav-dropdown-user-info .ddu-name{font-size:.88rem;font-weight:700;color:var(--ink)}
+.nav-dropdown-user-info .ddu-plan{font-size:.72rem;color:var(--teal);font-weight:600;margin-top:.2rem}
+.nav-dropdown-item{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.72rem 1rem;font-size:.84rem;font-weight:500;color:var(--ink2);
+  text-decoration:none;cursor:pointer;transition:background .15s;
+  border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;text-align:left;
+}
+.nav-dropdown-item:hover{background:var(--cream);color:var(--teal)}
+.nav-dropdown-item .ddi-icon{font-size:.95rem;width:20px;text-align:center;flex-shrink:0}
+.nav-dropdown-sep{height:1px;background:var(--border);margin:.25rem 0}
+.nav-dropdown-item.danger{color:#dc2626}
+.nav-dropdown-item.danger:hover{background:#fef2f2}
 </style>
 <script>window.addEventListener("load",()=>emailjs.init("HwpQ3DPRMmtcVZVt1"));</script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -746,25 +790,32 @@ nav {
   <a href="index.html" class="logo">Cita<span>Doc</span></a>
   <div class="nav-right">
     <a href="citadoc-registro.html" class="nav-link">Para médicos</a>
-    <!-- AUTH NAV -->
     <div class="nav-auth">
-      <!-- Si no está logueado -->
-      <div class="nav-logged-out" id="navLoggedOut" style="display:flex;align-items:center;gap:.6rem">
-        <a href="#" class="nav-link" onclick="openLogin ? openLogin(event) : (window.location.href='index.html')" style="display:flex;align-items:center;gap:.35rem">→ Iniciar sesión</a>
+      <div class="nav-logged-out" id="navLoggedOut" style="display:flex;align-items:center;gap:.7rem">
+        <a href="#" class="nav-link" onclick="openLogin?openLogin(event):null;return false">Iniciar sesión</a>
         <a href="citadoc-registro.html" class="btn-nav">Registrarme</a>
       </div>
-      <!-- Si está logueado -->
       <div class="nav-user-dropdown" id="navUserDropdown">
-        <div class="nav-user-pill" id="navUserPill" onclick="toggleUserMenu()" style="cursor:pointer">
-          <div class="nav-user-avatar" id="navUserAvatar">MA</div>
-          <div class="nav-user-name" id="navUserName">Dr. Médico</div>
-          <span style="color:var(--teal);font-size:.75rem;margin-left:.2rem">▾</span>
+        <div class="nav-user-pill" id="navUserPill" onclick="toggleUserMenu()">
+          <div class="nav-user-avatar" id="navUserAvatar">—</div>
+          <div class="nav-user-name"  id="navUserName">Mi cuenta</div>
+          <span class="nav-chevron">▾</span>
         </div>
         <div class="nav-user-dropdown-menu" id="navDropdownMenu">
-          <a href="citadoc-dashboard.html" class="nav-dropdown-item">🏠 Mi dashboard</a>
-          <a href="citadoc-perfil.html" class="nav-dropdown-item" id="navVerPerfil">👁 Ver mi perfil público</a>
+          <div class="nav-dropdown-user-info">
+            <div class="ddu-name" id="ddNombre">—</div>
+            <div class="ddu-plan" id="ddPlan">—</div>
+          </div>
+          <a href="citadoc-dashboard.html" class="nav-dropdown-item">
+            <span class="ddi-icon">⚡</span> Mi dashboard
+          </a>
+          <a href="#" class="nav-dropdown-item" id="navVerPerfil">
+            <span class="ddi-icon">👁</span> Ver mi perfil público
+          </a>
           <div class="nav-dropdown-sep"></div>
-          <button class="nav-dropdown-item danger" onclick="cerrarSesion()">↩ Cerrar sesión</button>
+          <button class="nav-dropdown-item danger" onclick="cerrarSesion()">
+            <span class="ddi-icon">↩</span> Cerrar sesión
+          </button>
         </div>
       </div>
     </div>
@@ -1693,8 +1744,14 @@ async function doLogin() {
 }
 </script>
 
+<script>
+
+</script>
 </body>
 
+<script>
+
+</script>
 <script>
 // ══ AUTH NAV ══
 async function initAuthNav() {
@@ -1702,30 +1759,31 @@ async function initAuthNav() {
   if (cached) {
     try { showLoggedIn(JSON.parse(cached)); return; } catch(e) {}
   }
-  const { data: { session } } = await _supabase.auth.getSession();
+  const { data:{ session } } = await _supabase.auth.getSession();
   if (session) {
-    const { data: medico } = await _supabase.from('medicos')
+    const { data: m } = await _supabase.from('medicos')
       .select('nombre,apellido,titulo,slug,plan').eq('user_id', session.user.id).single();
-    if (medico) {
-      sessionStorage.setItem('citadoc_user', JSON.stringify({...medico, email: session.user.email}));
-      showLoggedIn(medico);
+    if (m) {
+      sessionStorage.setItem('citadoc_user', JSON.stringify({...m, email: session.user.email}));
+      showLoggedIn(m);
     }
   } else { showLoggedOut(); }
 }
 function showLoggedIn(m) {
-  const nombre = (m.titulo||'Dr.') + ' ' + m.nombre + ' ' + m.apellido;
-  const initials = ((m.nombre||'')[0]||('')).toUpperCase() + ((m.apellido||'')[0]||('')).toUpperCase();
+  const nombre   = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  const initials = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase();
+  const plan     = m.plan==='destacado'?'⭐ Plan Destacado':'Plan Gratuito';
   const pill = document.getElementById('navUserPill');
   const out  = document.getElementById('navLoggedOut');
-  const name = document.getElementById('navUserName');
-  const av   = document.getElementById('navUserAvatar');
   if (pill) pill.style.display = 'flex';
   if (out)  out.style.display  = 'none';
-  if (name) name.textContent   = nombre;
-  if (av)   av.textContent     = initials;
-  // Actualizar link del perfil en dropdown
-  const perfilLink = document.getElementById('navVerPerfil');
-  if (perfilLink && m.slug) perfilLink.href = 'citadoc-perfil.html?slug=' + m.slug;
+  const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  set('navUserAvatar', initials);
+  set('navUserName',   nombre);
+  set('ddNombre',      nombre);
+  set('ddPlan',        plan);
+  const pl = document.getElementById('navVerPerfil');
+  if (pl && m.slug) pl.href = 'citadoc-perfil.html?slug='+m.slug;
 }
 function showLoggedOut() {
   const pill = document.getElementById('navUserPill');
@@ -1734,11 +1792,11 @@ function showLoggedOut() {
   if (out)  out.style.display  = 'flex';
 }
 function toggleUserMenu() {
-  document.getElementById('navDropdownMenu')?.classList.toggle('open');
+  document.getElementById('navUserDropdown')?.classList.toggle('open');
 }
 document.addEventListener('click', e => {
   if (!document.getElementById('navUserDropdown')?.contains(e.target))
-    document.getElementById('navDropdownMenu')?.classList.remove('open');
+    document.getElementById('navUserDropdown')?.classList.remove('open');
 });
 async function cerrarSesion() {
   await _supabase.auth.signOut();
