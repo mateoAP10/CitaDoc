@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Allow: /citadoc-registro.html
+Allow: /citadoc-perfil.html
+Disallow: /citadoc-dashboard.html
+
+Sitemap: https://citadoc.lat/sitemap.xml

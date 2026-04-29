@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Encuentra tu médico</title>
+<title>CitaDoc — Encuentra tu médico y agenda en minutos | Ecuador</title>
+<meta name="description" content="Directorio médico de Ecuador. Encuentra especialistas en Quito, Guayaquil y Cuenca. Agenda tu cita en minutos, sin llamadas ni intermediarios.">
+<meta name="keywords" content="médicos Ecuador, agenda médica online, especialistas Quito, Guayaquil, citas médicas">
+<meta name="author" content="CitaDoc">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CitaDoc — Agenda tu cita médica en minutos">
+<meta property="og:description" content="Encuentra tu médico ideal en Ecuador. Cardiología, Dermatología, Pediatría y más. Sin llamadas, sin esperas.">
+<meta property="og:image" content="https://citadoc.lat/og-image.png">
+<meta property="og:url" content="https://citadoc.lat/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CitaDoc — Agenda tu cita médica en minutos">
+<meta name="twitter:description" content="Encuentra tu médico ideal en Ecuador. Cardiología, Dermatología, Pediatría y más. Sin llamadas, sin esperas.">
+<link rel="canonical" href="https://citadoc.lat/">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -723,16 +736,38 @@ nav {
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
+<!-- Analytics -->
+<script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="logo">Cita<span>Doc</span></a>
+  <a href="index.html" class="logo">Cita<span>Doc</span></a>
   <div class="nav-right">
     <a href="citadoc-registro.html" class="nav-link">Para médicos</a>
-    <a href="#" class="nav-link" onclick="openLogin(event)" style="display:flex;align-items:center;gap:.35rem"><span style="font-size:.9rem">→</span> Iniciar sesión</a>
-    <a href="citadoc-registro.html" class="btn-nav">Registrarme</a>
+    <!-- AUTH NAV -->
+    <div class="nav-auth">
+      <!-- Si no está logueado -->
+      <div class="nav-logged-out" id="navLoggedOut" style="display:flex;align-items:center;gap:.6rem">
+        <a href="#" class="nav-link" onclick="openLogin ? openLogin(event) : (window.location.href='index.html')" style="display:flex;align-items:center;gap:.35rem">→ Iniciar sesión</a>
+        <a href="citadoc-registro.html" class="btn-nav">Registrarme</a>
+      </div>
+      <!-- Si está logueado -->
+      <div class="nav-user-dropdown" id="navUserDropdown">
+        <div class="nav-user-pill" id="navUserPill" onclick="toggleUserMenu()" style="cursor:pointer">
+          <div class="nav-user-avatar" id="navUserAvatar">MA</div>
+          <div class="nav-user-name" id="navUserName">Dr. Médico</div>
+          <span style="color:var(--teal);font-size:.75rem;margin-left:.2rem">▾</span>
+        </div>
+        <div class="nav-user-dropdown-menu" id="navDropdownMenu">
+          <a href="citadoc-dashboard.html" class="nav-dropdown-item">🏠 Mi dashboard</a>
+          <a href="citadoc-perfil.html" class="nav-dropdown-item" id="navVerPerfil">👁 Ver mi perfil público</a>
+          <div class="nav-dropdown-sep"></div>
+          <button class="nav-dropdown-item danger" onclick="cerrarSesion()">↩ Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -962,6 +997,7 @@ function dbToCard(d, idx) {
     price:     d.precio || 0,
     avatar:    d.foto_url ? null : '👨‍⚕️',
     foto_url:  d.foto_url || null,
+    email:     d.email || null,
     bg:        BG_PALETTE[idx % BG_PALETTE.length],
     featured:  d.plan === 'destacado',
     whatsapp:  d.whatsapp_activo && d.whatsapp ? d.whatsapp : null,
@@ -990,7 +1026,7 @@ async function cargarMedicos() {
   try {
     const { data, error } = await _supabase
       .from('medicos')
-      .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,slug,activo')
+      .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,slug,activo,email')
       .eq('activo', true)
       .order('plan', { ascending: false })   // destacados primero
       .order('created_at', { ascending: false });
@@ -1292,29 +1328,88 @@ function closeModalOutside(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
 }
 
-function confirmarCita() {
+async function confirmarCita() {
   const nombre = document.getElementById('inp-nombre').value.trim();
   const tel    = document.getElementById('inp-tel').value.trim();
+  const email  = document.getElementById('inp-email')?.value.trim() || '';
+  const motivo = document.getElementById('inp-motivo')?.value.trim() || '';
+
   if (!nombre || !tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
   if (!selectedSlot)   { alert('Por favor selecciona un horario.'); return; }
+  if (!selectedDoctor) { alert('Error: médico no seleccionado.'); return; }
 
+  // Deshabilitar botón mientras se procesa
+  const btn = document.querySelector('.btn-confirm');
+  if (btn) { btn.textContent = 'Confirmando...'; btn.disabled = true; }
+
+  const fechaHoy = new Date().toISOString().split('T')[0];
+  const fechaLabel = new Date().toLocaleDateString('es-EC', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+  try {
+    // 1. Guardar cita en Supabase
+    const { error: citaError } = await _supabase.from('citas').insert({
+      medico_id:       selectedDoctor.id,
+      paciente_nombre: nombre,
+      paciente_email:  email || null,
+      paciente_tel:    tel,
+      motivo:          motivo || null,
+      fecha:           fechaHoy,
+      hora:            selectedSlot,
+      estado:          'confirmada',
+    });
+
+    if (citaError) {
+      console.error('Error guardando cita:', citaError);
+      // Continuar de todas formas — no bloquear al paciente
+    }
+
+    // 2. Emails — paciente y médico
+    if (typeof emailjs !== 'undefined') {
+      const templateData = {
+        paciente_nombre:     nombre,
+        paciente_tel:        tel,
+        medico_nombre:       selectedDoctor.name,
+        medico_especialidad: selectedDoctor.specialty,
+        medico_ciudad:       selectedDoctor.city,
+        hora_cita:           selectedSlot,
+        fecha_cita:          fechaLabel,
+        motivo:              motivo || 'No especificado',
+      };
+
+      // Email al paciente (con su email como destino)
+      if (email) {
+        emailjs.send('service_63xln0n', 'template_e8t8qkq', {
+          ...templateData,
+          to_name:  nombre,
+          to_email: email,
+          paciente_email: email,
+          mensaje:  'Tu cita ha sido confirmada. Te esperamos el ' + fechaLabel + ' a las ' + selectedSlot + '.',
+        }).catch(e => console.warn('Email paciente:', e));
+      }
+
+      // Email al médico (con su email como destino)
+      if (selectedDoctor.email) {
+        emailjs.send('service_63xln0n', 'template_e8t8qkq', {
+          ...templateData,
+          to_name:  selectedDoctor.name,
+          to_email: selectedDoctor.email,
+          paciente_email: email || 'No proporcionado',
+          mensaje:  'Tienes una nueva cita agendada. Paciente: ' + nombre + ' — Tel: ' + tel + '.',
+        }).catch(e => console.warn('Email médico:', e));
+      }
+    }
+
+  } catch(err) {
+    console.error('Error en confirmarCita:', err);
+  }
+
+  // Mostrar éxito
   document.getElementById('bookingForm').style.display = 'none';
   document.getElementById('successState').style.display = 'block';
   document.getElementById('success-msg').textContent =
-    `Tu cita con ${selectedDoctor.name} está confirmada para hoy a las ${selectedSlot}. ${nombre}, te contactaremos a ${email || tel}.`;
+    `${nombre}, tu cita con ${selectedDoctor.name} está confirmada para hoy a las ${selectedSlot}. ${email ? 'Te enviamos confirmación a ' + email + '.' : ''}`;
 
-  // ── Enviar email de confirmación (requiere EmailJS configurado) ──
-  if (typeof emailjs !== 'undefined' && email) {
-    emailjs.send('service_63xln0n', 'template_e8t8qkq', {
-      paciente_nombre:   nombre,
-      paciente_email:    email,
-      medico_nombre:     selectedDoctor.name,
-      medico_especialidad: selectedDoctor.specialty,
-      medico_ciudad:     selectedDoctor.city,
-      hora_cita:         selectedSlot,
-      fecha_cita:        new Date().toLocaleDateString('es-EC', {weekday:'long', year:'numeric', month:'long', day:'numeric'}),
-    }).catch(() => {}); // falla silenciosamente si no está configurado
-  }
+  if (btn) { btn.textContent = 'Confirmar cita →'; btn.disabled = false; }
 }
 
 
@@ -1598,5 +1693,59 @@ async function doLogin() {
 }
 </script>
 
+</body>
+
+<script>
+// ══ AUTH NAV ══
+async function initAuthNav() {
+  const cached = sessionStorage.getItem('citadoc_user');
+  if (cached) {
+    try { showLoggedIn(JSON.parse(cached)); return; } catch(e) {}
+  }
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (session) {
+    const { data: medico } = await _supabase.from('medicos')
+      .select('nombre,apellido,titulo,slug,plan').eq('user_id', session.user.id).single();
+    if (medico) {
+      sessionStorage.setItem('citadoc_user', JSON.stringify({...medico, email: session.user.email}));
+      showLoggedIn(medico);
+    }
+  } else { showLoggedOut(); }
+}
+function showLoggedIn(m) {
+  const nombre = (m.titulo||'Dr.') + ' ' + m.nombre + ' ' + m.apellido;
+  const initials = ((m.nombre||'')[0]||('')).toUpperCase() + ((m.apellido||'')[0]||('')).toUpperCase();
+  const pill = document.getElementById('navUserPill');
+  const out  = document.getElementById('navLoggedOut');
+  const name = document.getElementById('navUserName');
+  const av   = document.getElementById('navUserAvatar');
+  if (pill) pill.style.display = 'flex';
+  if (out)  out.style.display  = 'none';
+  if (name) name.textContent   = nombre;
+  if (av)   av.textContent     = initials;
+  // Actualizar link del perfil en dropdown
+  const perfilLink = document.getElementById('navVerPerfil');
+  if (perfilLink && m.slug) perfilLink.href = 'citadoc-perfil.html?slug=' + m.slug;
+}
+function showLoggedOut() {
+  const pill = document.getElementById('navUserPill');
+  const out  = document.getElementById('navLoggedOut');
+  if (pill) pill.style.display = 'none';
+  if (out)  out.style.display  = 'flex';
+}
+function toggleUserMenu() {
+  document.getElementById('navDropdownMenu')?.classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('navUserDropdown')?.contains(e.target))
+    document.getElementById('navDropdownMenu')?.classList.remove('open');
+});
+async function cerrarSesion() {
+  await _supabase.auth.signOut();
+  sessionStorage.removeItem('citadoc_user');
+  window.location.href = 'index.html';
+}
+document.addEventListener('DOMContentLoaded', initAuthNav);
+</script>
 </body>
 </html>
