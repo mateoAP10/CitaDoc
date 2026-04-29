@@ -1319,12 +1319,12 @@ body {
 </div><!-- /main -->
 
 <script>
+
+
 // ── DATE ──
 const now = new Date();
 const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-document.getElementById('topbarDate').textContent =
-  `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} ${now.getFullYear()}`;
 
 // ── NAV ──
 const PANEL_TITLES = {
@@ -1391,7 +1391,7 @@ function renderMiniCal(year, month) {
 let miniCalYear = now.getFullYear(), miniCalMonth = now.getMonth();
 function miniCalPrev() { miniCalMonth--; if(miniCalMonth<0){miniCalMonth=11;miniCalYear--;} renderMiniCal(miniCalYear,miniCalMonth); }
 function miniCalNext() { miniCalMonth++; if(miniCalMonth>11){miniCalMonth=0;miniCalYear++;} renderMiniCal(miniCalYear,miniCalMonth); }
-renderMiniCal(miniCalYear, miniCalMonth);
+// renderMiniCal se llama desde DOMContentLoaded
 
 // ── BIG CALENDAR ──
 let bigYear = now.getFullYear(), bigMonth = now.getMonth();
@@ -1476,7 +1476,7 @@ function saveSchedule() {
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2500);
 }
-renderSlots();
+// renderSlots llamado desde DOMContentLoaded
 
 
 // ══ SEARCHABLE SELECT COMPONENT ══
@@ -2219,7 +2219,19 @@ INSTRUCCIONES:
   }
 
   // Ejecutar al cargar
-  document.addEventListener('DOMContentLoaded', cargarMedico);
+  document.addEventListener('DOMContentLoaded', () => {
+  // Fecha en topbar
+  const topbarDate = document.getElementById('topbarDate');
+  if (topbarDate) {
+    topbarDate.textContent = days[now.getDay()] + ', ' + now.getDate() + ' de ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  }
+  // Mini calendario
+  if (document.getElementById('miniCal')) renderMiniCal(miniCalYear, miniCalMonth);
+  // Slots horarios
+  if (document.getElementById('slotsGrid')) renderSlots();
+  // Cargar datos del médico desde Supabase
+  cargarMedico();
+});
 
 // ══ SESIÓN ══
 async function cerrarSesionDash() {
@@ -2227,6 +2239,8 @@ async function cerrarSesionDash() {
   sessionStorage.removeItem('citadoc_user');
   window.location.href = 'index.html';
 }
+
+
 </script>
 </body>
 </html>
