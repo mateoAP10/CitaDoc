@@ -1323,6 +1323,11 @@ body {
 
 
 
+
+
+
+
+
 // ── DATE ──
 const now = new Date();
 const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -1336,10 +1341,18 @@ const PANEL_TITLES = {
 function showPanel(id, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
-  el.classList.add('active');
-  document.getElementById('topbarTitle').textContent = PANEL_TITLES[id];
+  const panel = document.getElementById('panel-' + id);
+  if (!panel) { console.warn('Panel no encontrado:', id); return; }
+  panel.classList.add('active');
+  if (el) el.classList.add('active');
+  const titleEl = document.getElementById('topbarTitle');
+  if (titleEl) titleEl.textContent = PANEL_TITLES[id] || id;
   if (id === 'calendario') renderBigCal();
+  if (id === 'horarios') renderSlots();
+  if (id === 'estadisticas') {
+    const m = window._medicoActual;
+    if (m && m.id) cargarStatsExtras(m.id);
+  }
   closeSidebar();
 }
 
@@ -1376,7 +1389,7 @@ function renderMiniCal(year, month) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = new Date();
-  const citaDays = [2, 5, 8, 12, 15, 18, 22, 25, 28];
+  const citaDays = Object.keys(EVENTS).map(Number);
   let html = `
     <div class="mini-cal-header">
       <button class="cal-nav-btn" onclick="miniCalPrev()">‹</button>
@@ -1440,16 +1453,47 @@ function changeMonth(dir) {
 // ── SLOTS ──
 const DAYS_ES = { lun:'Lunes', mar:'Martes', mie:'Miércoles', jue:'Jueves', vie:'Viernes', sab:'Sábado', dom:'Domingo' };
 // Slot state per day: 'on', 'off', 'busy'
-const BUSY = { lun:[], mar:[], mie:[], jue:[], vie:[], sab:[], dom:[] }; // se llenará con citas reales de Supabase
+const BUSY = { lun:[], mar:[], mie:[], jue:[], vie:[], sab:[], dom:[] };
 const slotsState = {};
 const TIMES = [];
-for (let h = 7; h < 19; h++) { TIMES.push(`${String(h).padStart(2,'0')}:00`); TIMES.push(`${String(h).padStart(2,'0')}:30`); }
-['lun','mar','mie','jue','vie','sab','dom'].forEach(d => {
-  slotsState[d] = {};
-  TIMES.forEach(t => {
-    slotsState[d][t] = (BUSY[d]||[]).includes(t) ? 'busy' : (d==='sab'||d==='dom') ? 'off' : (parseInt(t)<9||parseInt(t)>=17) ? 'off' : 'on';
-  });
+for (let h = 7; h < 19; h++) {
+  TIMES.push(String(h).padStart(2,'0') + ':00');
+  TIMES.push(String(h).padStart(2,'0') + ':30');
+}
+
+// Inicializar slotsState con todos los días apagados
+// Se actualizará con datos reales del médico en inicializarSlotsConMedico()
+['lun','mar','mie','jue','vie','sab','dom'].forEach(dia => {
+  slotsState[dia] = {};
+  TIMES.forEach(t => { slotsState[dia][t] = 'off'; });
 });
+
+function inicializarSlotsConMedico(medico) {
+  const diasActivos  = medico.dias_atencion || ['lun','mar','mie','jue','vie'];
+  const desdeStr     = medico.horario_desde || '09:00';
+  const hastaStr     = medico.horario_hasta || '17:00';
+  const desdeMin     = parseInt(desdeStr.split(':')[0])*60 + parseInt(desdeStr.split(':')[1]);
+  const hastaMin     = parseInt(hastaStr.split(':')[0])*60 + parseInt(hastaStr.split(':')[1]);
+
+  ['lun','mar','mie','jue','vie','sab','dom'].forEach(dia => {
+    const activo = diasActivos.includes(dia);
+    TIMES.forEach(t => {
+      const h = parseInt(t.split(':')[0]);
+      const m = parseInt(t.split(':')[1]);
+      const tMin = h*60 + m;
+      const busy = (BUSY[dia]||[]).includes(t);
+      if (busy) {
+        slotsState[dia][t] = 'busy';
+      } else if (!activo || tMin < desdeMin || tMin >= hastaMin) {
+        slotsState[dia][t] = 'off';
+      } else {
+        slotsState[dia][t] = 'on';
+      }
+    });
+  });
+  // Re-renderizar si el panel de horarios está visible
+  if (document.getElementById('slotsGrid')) renderSlots();
+}
 
 let currentDay = 'lun';
 function selectDay(day, el) {
@@ -1461,9 +1505,14 @@ function selectDay(day, el) {
 }
 function renderSlots() {
   const grid = document.getElementById('slotsGrid');
+  if (!grid) return;
+  if (!slotsState[currentDay]) {
+    slotsState[currentDay] = {};
+    TIMES.forEach(t => { slotsState[currentDay][t] = 'on'; });
+  }
   grid.innerHTML = TIMES.map(t => {
-    const state = slotsState[currentDay][t];
-    return `<div class="slot-btn ${state}" onclick="toggleSlot('${t}')">${t}</div>`;
+    const state = slotsState[currentDay][t] || 'on';
+    return '<div class="slot-btn ' + state + '" onclick="toggleSlot('' + t + '')">' + t + '</div>';
   }).join('');
 }
 function toggleSlot(t) {
@@ -1703,8 +1752,10 @@ function showPerfilTab(id, btn) {
 
 // ── CONTACT MODE TOGGLES ──
 function toggleWA(chk) {
-  document.getElementById('waNumber').style.display = chk.checked ? 'block' : 'none';
-  document.getElementById('waNote').style.display   = chk.checked ? 'block' : 'none';
+  const waNum  = document.getElementById('waNumber');
+  const waNote = document.getElementById('waNote');
+  if (waNum)  waNum.style.display  = chk && chk.checked ? 'block' : 'none';
+  if (waNote) waNote.style.display = chk && chk.checked ? 'block' : 'none';
   updateContactMode();
 }
 
@@ -1939,141 +1990,137 @@ INSTRUCCIONES:
 }
 
   function aplicarDatosMedico(medico) {
-    const titulo         = medico.titulo || 'Dr.';
-    const nombre         = medico.nombre || '';
-    const apellido       = medico.apellido || '';
-    const nombreCompleto = titulo + ' ' + nombre + ' ' + apellido;
-    const especialidades = medico.especialidades || [];
-    const especialidad   = especialidades[0] || '—';
-    const ciudad         = medico.ciudad || '';
-    const pais           = medico.pais   || '';
-    const slug           = medico.slug   || '';
-    const plan           = medico.plan   || 'gratuito';
-    const url            = 'citadoc.lat/medico/' + slug;
-    const urlCompleta    = 'https://citadoc.lat/medico/' + slug;
+  // Extraer datos
+  const titulo         = medico.titulo || 'Dr.';
+  const nombre         = medico.nombre || '';
+  const apellido       = medico.apellido || '';
+  const nombreCompleto = titulo + ' ' + nombre + ' ' + apellido;
+  const especialidad   = (medico.especialidades || [])[0] || '—';
+  const ciudad         = medico.ciudad || '';
+  const pais           = medico.pais   || 'ecuador';
+  const slug           = medico.slug   || '';
+  const plan           = medico.plan   || 'gratuito';
+  const url            = 'citadoc.lat/medico/' + slug;
+  const iniciales      = (nombre[0]||'').toUpperCase() + (apellido[0]||'').toUpperCase();
 
-    // ── SIDEBAR ──
-    const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
-    setTxt('sidebarNombre',       nombreCompleto);
-    setTxt('sidebarEspecialidad', especialidad);
-    setTxt('sidebarPlan',         plan === 'destacado' ? '⭐ Destacado' : 'Plan Gratuito');
-    setTxt('sidebarUrl', url);
-    // URL completa en el área de Tu Link
-    const sidebarUrlEl = document.getElementById('sidebarUrl');
-    if (sidebarUrlEl) {
-      sidebarUrlEl.textContent = url;
-      sidebarUrlEl.title = 'https://' + url;
-    }
+  // Helper seguro
+  const set = (id, val) => { try { const e=document.getElementById(id); if(e) e.textContent=val; } catch(e){} };
+  const setV = (id, val) => { try { const e=document.getElementById(id); if(e && val!=null && val!='') e.value=val; } catch(e){} };
 
-    // Avatar sidebar con foto o iniciales
-    const avatarSmEl = document.getElementById('sidebarAvatar');
-    if (avatarSmEl) {
+  // ── 1. SIDEBAR ──
+  set('sidebarNombre',       nombreCompleto);
+  set('sidebarEspecialidad', especialidad);
+  set('sidebarPlan',         plan==='destacado' ? '⭐ Destacado' : 'Plan Gratuito');
+  set('sidebarUrl',          url);
+
+  try {
+    const av = document.getElementById('sidebarAvatar');
+    if (av) {
       if (medico.foto_url) {
-        avatarSmEl.innerHTML = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+        av.innerHTML = '<img src="'+medico.foto_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
       } else {
-        avatarSmEl.textContent = (nombre[0]||'') + (apellido[0]||'');
-        avatarSmEl.style.fontSize = '.75rem';
-        avatarSmEl.style.fontWeight = '700';
-        avatarSmEl.style.color = '#fff';
+        av.textContent = iniciales;
+        av.style.fontSize = '.75rem';
+        av.style.fontWeight = '700';
+        av.style.color = '#fff';
       }
     }
+  } catch(e) {}
 
-    // ── TOPBAR ──
-    setTxt('topbarTitle', 'Bienvenido, ' + nombre);
-    // Topbar usuario
-    const setTxtEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-    setTxtEl('topbarAvatar',   (nombre[0]||'').toUpperCase()+(apellido[0]||'').toUpperCase());
-    setTxtEl('topbarUserName', nombreCompleto);
-    setTxtEl('topbarUserPlan', plan==='destacado'?'⭐ Destacado':'Plan Gratuito');
+  // ── 2. TOPBAR ──
+  set('topbarTitle',    'Bienvenido, ' + nombre);
+  set('topbarAvatar',   iniciales);
+  set('topbarUserName', nombreCompleto);
+  set('topbarUserPlan', plan==='destacado' ? '⭐ Destacado' : 'Plan Gratuito');
+  try {
+    const tp = document.getElementById('topbarVerPerfil');
+    if (tp && slug) tp.href = 'citadoc-perfil.html?slug=' + slug;
+    const bp = document.querySelector('.btn-perfil-publico');
+    if (bp && slug) bp.href = 'citadoc-perfil.html?slug=' + slug;
+  } catch(e) {}
 
-    // Botón "Ver perfil público" en topbar
-    const btnPerfil = document.querySelector('.btn-perfil-publico');
-    if (btnPerfil && slug) btnPerfil.href = 'citadoc-perfil.html?slug=' + slug;
-    const topbarPerfil = document.getElementById('topbarVerPerfil');
-    if (topbarPerfil && slug) topbarPerfil.href = 'citadoc-perfil.html?slug=' + slug;
+  // ── 3. URL CARDS ──
+  set('perfilUrlCard', url);
+  set('sidebarUrl',    url);
+  try {
+    const vc = document.getElementById('verPerfilLink');
+    if (vc && slug) vc.href = 'citadoc-perfil.html?slug=' + slug;
+  } catch(e) {}
 
-    // ── URL CARDS ──
-    const urlCardEl = document.getElementById('perfilUrlCard');
-    if (urlCardEl) urlCardEl.textContent = url;
-    const urlCardOld = document.querySelector('.url-card-url');
-    if (urlCardOld) urlCardOld.textContent = url;
-
-    // Botón ver perfil y copiar en el panel perfil
-    const verLink = document.getElementById('verPerfilLink');
-    if (verLink && slug) verLink.href = 'citadoc-perfil.html?slug=' + slug;
-
-    // ── PHOTO CARD ──
-    setTxt('perfilNombreCard', nombreCompleto);
-    setTxt('perfilEspCard',    especialidad + (ciudad ? ' · ' + ciudad : ''));
-
-    // Avatar big
-    const avatarBig = document.getElementById('perfilAvatarBig');
-    if (avatarBig) {
+  // ── 4. PHOTO CARD ──
+  set('perfilNombreCard', nombreCompleto);
+  set('perfilEspCard',    especialidad + (ciudad ? ' · ' + ciudad : ''));
+  try {
+    const ab = document.getElementById('perfilAvatarBig');
+    if (ab) {
       if (medico.foto_url) {
-        avatarBig.innerHTML = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:20px">';
-      } else {
-        avatarBig.textContent = '👨‍⚕️';
-      }
+        ab.innerHTML = '<img src="'+medico.foto_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:20px">';
+      } else { ab.textContent = '👨‍⚕️'; }
     }
+  } catch(e) {}
 
-    // ── PANEL PERFIL — inputs ──
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el && val !== undefined && val !== null && val !== '') el.value = val;
-    };
-    setVal('inf-nombre',       nombre);
-    setVal('inf-apellido',     apellido);
-    setVal('inf-titulo',       titulo);
-    setVal('inf-especialidad', especialidad !== '—' ? especialidad : '');
-    setVal('inf-precio',       medico.precio || '');
-    setVal('inf-anos',         medico.anos_experiencia || '');
-    setVal('inf-direccion',    medico.direccion || '');
-    setVal('inf-senescyt',     medico.senescyt || '');
-    setVal('inf-telefono',     medico.telefono || medico.whatsapp || '');
+  // ── 5. PANEL PERFIL — INPUTS ──
+  setV('inf-nombre',       nombre);
+  setV('inf-apellido',     apellido);
+  setV('inf-titulo',       titulo);
+  setV('inf-especialidad', especialidad !== '—' ? especialidad : '');
+  setV('inf-precio',       medico.precio || '');
+  setV('inf-anos',         medico.anos_experiencia || '');
+  setV('inf-direccion',    medico.direccion || '');
+  setV('inf-senescyt',     medico.senescyt || '');
+  setV('inf-telefono',     medico.telefono || medico.whatsapp || '');
+  try { const bio = document.getElementById('bioTextarea'); if(bio) bio.value = medico.bio || ''; } catch(e) {}
 
-    // Bio
-    const bioEl = document.getElementById('bioTextarea');
-    if (bioEl) bioEl.value = medico.bio || '';
-
-    // ── SEGUROS ──
+  // ── 6. SEGUROS ──
+  try {
     activeSeguros.clear();
     (medico.seguros || []).forEach(s => activeSeguros.add(s));
     if (document.getElementById('segurosEditor')) renderSeguros();
+  } catch(e) {}
 
-    // ── PAÍS Y CIUDAD ──
+  // ── 7. PAÍS Y CIUDAD ──
+  try {
     if (dashPaisSelect && pais) dashPaisSelect.setValue(pais, pais.charAt(0).toUpperCase()+pais.slice(1));
     if (dashCiudadSelect && ciudad) {
-      const ciudadVal = ciudad.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'_');
-      dashCiudadSelect.setValue(ciudadVal, ciudad);
+      const cv = ciudad.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'_');
+      dashCiudadSelect.setValue(cv, ciudad);
     }
+  } catch(e) {}
 
-    // ── TOGGLES CONTACTO ──
+  // ── 8. TOGGLES CONTACTO ──
+  try {
     const waToggle = document.getElementById('waToggle');
     const agToggle = document.getElementById('toggleAgendamiento');
-    if (waToggle) { waToggle.checked = !!(medico.whatsapp_activo); toggleWA(waToggle); }
-    if (agToggle) { agToggle.checked = medico.agendamiento_citadoc !== false; }
-    const waNumEl = document.getElementById('waNumber');
-    if (waNumEl) waNumEl.value = medico.whatsapp || '';
+    const waNumEl  = document.getElementById('waNumber');
+    if (waToggle) waToggle.checked = !!(medico.whatsapp_activo);
+    if (agToggle) agToggle.checked = medico.agendamiento_citadoc !== false;
+    if (waNumEl)  waNumEl.value    = medico.whatsapp || '';
+    toggleWA(waToggle);
     updateContactMode();
+  } catch(e) {}
 
-    // ── PLAN badge color ──
+  // ── 9. PLAN badge color ──
+  try {
     const planEl = document.getElementById('sidebarPlan');
     if (planEl && plan === 'destacado') {
       planEl.style.background = 'rgba(14,157,140,.25)';
-      planEl.style.color = 'rgba(255,255,255,.9)';
+      planEl.style.color = '#fff';
     }
+  } catch(e) {}
 
-    // ── GUARDAR GLOBAL ──
-    window._medicoActual = medico;
+  // ── 10. GUARDAR GLOBAL ──
+  window._medicoActual = medico;
 
-    // ── CARGAR DATOS RELACIONADOS ──
-    if (medico.id) {
-      cargarCitasHoy(medico.id);
-      cargarFormacionLogros(medico.id);
-      cargarCitasCalendario(medico.id);
-    }
+  // ── 11. INICIALIZAR SLOTS CON HORARIO DEL MÉDICO ──
+  inicializarSlotsConMedico(medico);
 
+  // ── 12. CARGAR DATOS RELACIONADOS ──
+  if (medico.id) {
+    cargarCitasHoy(medico.id);
+    cargarFormacionLogros(medico.id);
+    cargarCitasCalendario(medico.id);
   }
+}
 
   // Cargar citas de hoy desde Supabase
   async function cargarCitasHoy(medicoId) {
@@ -2274,7 +2321,39 @@ INSTRUCCIONES:
   if (document.getElementById('miniCal')) renderMiniCal(miniCalYear, miniCalMonth);
   // Slots horarios
   if (document.getElementById('slotsGrid')) renderSlots();
-  // Cargar datos del médico desde Supabase
+
+  // Mostrar datos del sessionStorage INMEDIATAMENTE (sin esperar a Supabase)
+  const cached = sessionStorage.getItem('citadoc_user');
+  if (cached) {
+    try {
+      const m = JSON.parse(cached);
+      const nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+      const ini = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase();
+      const plan = m.plan==='destacado'?'⭐ Destacado':'Plan Gratuito';
+      const slug = m.slug||'';
+
+      // Sidebar
+      const setT = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+      setT('sidebarNombre', nombre);
+      setT('sidebarEspecialidad', (m.especialidades||[])[0]||'—');
+      setT('sidebarPlan', plan);
+      setT('sidebarUrl', 'citadoc.lat/medico/'+slug);
+
+      // Avatar sidebar
+      const av = document.getElementById('sidebarAvatar');
+      if (av && !m.foto_url) { av.textContent = ini; av.style.fontSize='.75rem'; av.style.fontWeight='700'; av.style.color='#fff'; }
+
+      // Topbar
+      setT('topbarTitle', 'Bienvenido, '+m.nombre);
+      setT('topbarAvatar', ini);
+      setT('topbarUserName', nombre);
+      setT('topbarUserPlan', plan);
+      if (document.getElementById('topbarVerPerfil') && slug)
+        document.getElementById('topbarVerPerfil').href = 'citadoc-perfil.html?slug='+slug;
+    } catch(e) {}
+  }
+
+  // Cargar datos frescos de Supabase
   cargarMedico();
 });
 
@@ -2284,6 +2363,11 @@ async function cerrarSesionDash() {
   sessionStorage.removeItem('citadoc_user');
   window.location.href = 'index.html';
 }
+
+
+
+
+
 
 
 
