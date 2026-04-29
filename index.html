@@ -1427,26 +1427,42 @@ async function confirmarCita() {
         motivo:              motivo || 'No especificado',
       };
 
-      // Email al paciente (con su email como destino)
+      // Email al paciente
       if (email) {
         emailjs.send('service_63xln0n', 'template_e8t8qkq', {
-          ...templateData,
-          to_name:  nombre,
-          to_email: email,
-          paciente_email: email,
-          mensaje:  'Tu cita ha sido confirmada. Te esperamos el ' + fechaLabel + ' a las ' + selectedSlot + '.',
-        }).catch(e => console.warn('Email paciente:', e));
+          to_name:             nombre,
+          to_email:            email,
+          paciente_nombre:     nombre,
+          paciente_email:      email,
+          paciente_tel:        tel,
+          medico_nombre:       selectedDoctor.name,
+          medico_especialidad: selectedDoctor.specialty,
+          medico_ciudad:       selectedDoctor.city,
+          hora_cita:           selectedSlot,
+          fecha_cita:          fechaLabel,
+          motivo:              motivo || 'No especificado',
+          mensaje:             'Tu cita con ' + selectedDoctor.name + ' está confirmada para el ' + fechaLabel + ' a las ' + selectedSlot + '.',
+        }).then(() => console.log('Email paciente enviado OK'))
+          .catch(e => console.error('Email paciente error:', e));
       }
 
-      // Email al médico (con su email como destino)
+      // Email al médico
       if (selectedDoctor.email) {
         emailjs.send('service_63xln0n', 'template_e8t8qkq', {
-          ...templateData,
-          to_name:  selectedDoctor.name,
-          to_email: selectedDoctor.email,
-          paciente_email: email || 'No proporcionado',
-          mensaje:  'Tienes una nueva cita agendada. Paciente: ' + nombre + ' — Tel: ' + tel + '.',
-        }).catch(e => console.warn('Email médico:', e));
+          to_name:             selectedDoctor.name,
+          to_email:            selectedDoctor.email,
+          paciente_nombre:     nombre,
+          paciente_email:      email || 'No proporcionado',
+          paciente_tel:        tel,
+          medico_nombre:       selectedDoctor.name,
+          medico_especialidad: selectedDoctor.specialty,
+          medico_ciudad:       selectedDoctor.city,
+          hora_cita:           selectedSlot,
+          fecha_cita:          fechaLabel,
+          motivo:              motivo || 'No especificado',
+          mensaje:             'Nueva cita agendada. Paciente: ' + nombre + ' · Tel: ' + tel + ' · ' + fechaLabel + ' a las ' + selectedSlot,
+        }).then(() => console.log('Email médico enviado OK'))
+          .catch(e => console.error('Email médico error:', e));
       }
     }
 
