@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CitaDoc — Diagnóstico Supabase</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+body { font-family: monospace; padding: 2rem; background: #0f1a18; color: #e0f5f2; }
+.ok { color: #4ade80; } .err { color: #f87171; } .warn { color: #fbbf24; }
+pre { background: #1a2e2b; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size:.85rem; }
+h2 { color: #0e9d8c; margin-top:1.5rem; }
+</style>
+</head>
+<body>
+<h1>🔍 CitaDoc — Diagnóstico Supabase</h1>
+<div id="output"></div>
+<script>
+const SUPABASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const out = document.getElementById('output');
+const log = (msg, cls='') => { out.innerHTML += `<p class="${cls}">${msg}</p>`; };
+const pre = (obj) => { out.innerHTML += `<pre>${JSON.stringify(obj, null, 2)}</pre>`; };
+
+async function diagnose() {
+  // 1. SessionStorage
+  log('<h2>1. SessionStorage</h2>');
+  const cached = sessionStorage.getItem('citadoc_user');
+  if (cached) {
+    const m = JSON.parse(cached);
+    log(`✅ Datos en sessionStorage: ${m.titulo||'Dr.'} ${m.nombre} ${m.apellido}`, 'ok');
+    log(`   Slug: ${m.slug || 'SIN SLUG'}`, m.slug ? 'ok' : 'err');
+    log(`   Especialidades: ${(m.especialidades||[]).join(', ') || 'vacío'}`, m.especialidades?.length ? 'ok' : 'warn');
+  } else {
+    log('❌ No hay datos en sessionStorage — el médico no ha iniciado sesión en esta sesión del browser', 'err');
+  }
+
+  // 2. Sesión Supabase
+  log('<h2>2. Sesión Supabase Auth</h2>');
+  const { data: { session }, error: sErr } = await _supabase.auth.getSession();
+  if (sErr) { log('❌ Error getSession: ' + sErr.message, 'err'); }
+  else if (!session) { log('❌ No hay sesión activa — necesitas iniciar sesión primero', 'err'); }
+  else {
+    log(`✅ Sesión activa: ${session.user.email}`, 'ok');
+    log(`   user_id: ${session.user.id}`, 'ok');
+
+    // 3. Buscar médico en DB
+    log('<h2>3. Perfil en tabla medicos</h2>');
+    const { data: medico, error: mErr } = await _supabase
+      .from('medicos').select('*').eq('user_id', session.user.id).single();
+
+    if (mErr) {
+      log('❌ Error buscando médico: ' + mErr.message, 'err');
+      log('   CAUSA: El registro médico no se guardó en la tabla medicos', 'warn');
+      log('   SOLUCIÓN: Regístrate de nuevo en citadoc-registro.html', 'warn');
+    } else {
+      log(`✅ Médico encontrado: ${medico.titulo} ${medico.nombre} ${medico.apellido}`, 'ok');
+      log(`   Slug: ${medico.slug}`, 'ok');
+      log(`   Ciudad: ${medico.ciudad}`, 'ok');
+      log(`   Plan: ${medico.plan}`, 'ok');
+      pre(medico);
+    }
+
+    // 4. Citas
+    log('<h2>4. Citas en DB</h2>');
+    if (medico) {
+      const { data: citas, count } = await _supabase
+        .from('citas').select('*', {count:'exact'}).eq('medico_id', medico.id);
+      log(`Citas totales: ${count||0}`, count > 0 ? 'ok' : 'warn');
+    }
+  }
+
+  log('<h2>✅ Diagnóstico completo</h2>');
+}
+diagnose();
+</script>
+</body>
+</html>
