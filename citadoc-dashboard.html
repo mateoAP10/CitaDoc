@@ -840,7 +840,7 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
   const SUPABASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_UF1klDW5XOsBVGCy30gYVw_xz1rNWZQ';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
@@ -1321,6 +1321,8 @@ body {
 <script>
 
 
+
+
 // ── DATE ──
 const now = new Date();
 const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -1353,14 +1355,20 @@ function closeSidebar() {
 
 // ── COPY URL ──
 function copySidebarUrl(btn) {
-  navigator.clipboard.writeText('https://citadoc.lat/medico/...');
-  btn.textContent = '✓ Copiado';
-  setTimeout(() => btn.textContent = '📋 Copiar link', 2000);
+  const m = window._medicoActual;
+  const url = m && m.slug ? 'https://citadoc.lat/citadoc-perfil.html?slug=' + m.slug : 'https://citadoc.lat';
+  navigator.clipboard.writeText(url);
+  const orig = btn.textContent;
+  btn.textContent = '✓ Copiado!';
+  setTimeout(() => btn.textContent = orig, 2000);
 }
 function copyProfileUrl(btn) {
-  navigator.clipboard.writeText('https://citadoc.lat/medico/...');
-  btn.textContent = '✓ Copiado';
-  setTimeout(() => btn.textContent = '📋 Copiar link', 2000);
+  const m = window._medicoActual;
+  const url = m && m.slug ? 'https://citadoc.lat/citadoc-perfil.html?slug=' + m.slug : 'https://citadoc.lat';
+  navigator.clipboard.writeText(url);
+  const orig = btn.textContent;
+  btn.textContent = '✓ Copiado!';
+  setTimeout(() => btn.textContent = orig, 2000);
 }
 
 // ── MINI CALENDAR ──
@@ -1576,10 +1584,10 @@ document.addEventListener('DOMContentLoaded', () => {
   dashCiudadSelect = new SearchableSelect({
     wrap:'dash-ciudad-wrap', inputId:'dash-ciudad-input', dropdownId:'dash-ciudad-drop',
     options: CIUDAD_MAP['ecuador'],
-    placeholder:'Ej: Guayaquil',
+    placeholder:'Ej: Tu ciudad',
     onChange: () => {}
   });
-  dashCiudadSelect.setValue('guayaquil','Guayaquil');
+  // Ciudad se setea desde aplicarDatosMedico con datos reales del médico
 });
 
 // ── SAVE PERFIL → SUPABASE ──
@@ -1761,7 +1769,7 @@ function toggleSeguro(el, s) {
   if (activeSeguros.has(s)) { activeSeguros.delete(s); el.classList.remove('on'); el.querySelector('.seg-check').textContent=''; }
   else { activeSeguros.add(s); el.classList.add('on'); el.querySelector('.seg-check').textContent='✓'; }
 }
-renderSeguros();
+// renderSeguros() — llamado desde aplicarDatosMedico
 
 // ── FORMACION EDITOR ──
 const formacionData = []; // se llena desde Supabase
@@ -1786,7 +1794,7 @@ function renderFormacion() {
 }
 function addFormacion() { formacionData.push({titulo:'',lugar:'',anio:''}); renderFormacion(); }
 function removeFormacion(i) { formacionData.splice(i,1); renderFormacion(); }
-renderFormacion();
+// renderFormacion() — llamado desde cargarFormacionLogros
 
 // ── LOGROS EDITOR ──
 const logrosData = []; // se llena desde Supabase
@@ -1811,7 +1819,7 @@ function renderLogros() {
 }
 function addLogro() { logrosData.push({icono:'⭐',titulo:'',desc:''}); renderLogros(); }
 function removeLogro(i) { logrosData.splice(i,1); renderLogros(); }
-renderLogros();
+// renderLogros() — llamado desde cargarFormacionLogros
 
 // ══ BIO GENERATOR IA ══
 async function generateBio() {
@@ -1877,18 +1885,26 @@ INSTRUCCIONES:
 // ══ MÉDICO SUPABASE ══
 // Cargar datos del médico al iniciar
   async function cargarMedico() {
-    // Mostrar estado de carga en sidebar
-    const nameEl = document.getElementById('sidebarNombre');
-    if (nameEl) nameEl.textContent = 'Cargando...';
+  const nameEl = document.getElementById('sidebarNombre');
+  if (nameEl) nameEl.textContent = 'Cargando...';
 
-    // Verificar sesión Supabase
-    const { data: { session } } = await _supabase.auth.getSession();
+  try {
+    // 1. Verificar sesión Supabase
+    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+
     if (!session) {
+      // Intentar desde sessionStorage antes de redirigir
+      const cached = sessionStorage.getItem('citadoc_user');
+      if (cached) {
+        const medico = JSON.parse(cached);
+        aplicarDatosMedico(medico);
+        return;
+      }
       window.location.href = 'index.html';
       return;
     }
 
-    // Cargar datos COMPLETOS desde DB siempre
+    // 2. Cargar datos completos desde DB
     const { data: medico, error } = await _supabase
       .from('medicos')
       .select('*')
@@ -1896,15 +1912,31 @@ INSTRUCCIONES:
       .single();
 
     if (error || !medico) {
+      // Intentar sessionStorage como fallback
+      const cached = sessionStorage.getItem('citadoc_user');
+      if (cached) {
+        aplicarDatosMedico(JSON.parse(cached));
+        return;
+      }
       console.error('No se encontró perfil médico:', error);
       if (nameEl) nameEl.textContent = 'Error al cargar';
       return;
     }
 
-    // Guardar datos frescos
     sessionStorage.setItem('citadoc_user', JSON.stringify(medico));
     aplicarDatosMedico(medico);
+
+  } catch(err) {
+    console.error('Error en cargarMedico:', err);
+    // Fallback: intentar sessionStorage
+    const cached = sessionStorage.getItem('citadoc_user');
+    if (cached) {
+      aplicarDatosMedico(JSON.parse(cached));
+    } else {
+      if (nameEl) nameEl.textContent = 'Error de conexión';
+    }
   }
+}
 
   function aplicarDatosMedico(medico) {
     const titulo         = medico.titulo || 'Dr.';
@@ -1925,7 +1957,13 @@ INSTRUCCIONES:
     setTxt('sidebarNombre',       nombreCompleto);
     setTxt('sidebarEspecialidad', especialidad);
     setTxt('sidebarPlan',         plan === 'destacado' ? '⭐ Destacado' : 'Plan Gratuito');
-    setTxt('sidebarUrl',          url);
+    setTxt('sidebarUrl', url);
+    // URL completa en el área de Tu Link
+    const sidebarUrlEl = document.getElementById('sidebarUrl');
+    if (sidebarUrlEl) {
+      sidebarUrlEl.textContent = url;
+      sidebarUrlEl.title = 'https://' + url;
+    }
 
     // Avatar sidebar con foto o iniciales
     const avatarSmEl = document.getElementById('sidebarAvatar');
@@ -2001,6 +2039,13 @@ INSTRUCCIONES:
     activeSeguros.clear();
     (medico.seguros || []).forEach(s => activeSeguros.add(s));
     if (document.getElementById('segurosEditor')) renderSeguros();
+
+    // ── PAÍS Y CIUDAD ──
+    if (dashPaisSelect && pais) dashPaisSelect.setValue(pais, pais.charAt(0).toUpperCase()+pais.slice(1));
+    if (dashCiudadSelect && ciudad) {
+      const ciudadVal = ciudad.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'_');
+      dashCiudadSelect.setValue(ciudadVal, ciudad);
+    }
 
     // ── TOGGLES CONTACTO ──
     const waToggle = document.getElementById('waToggle');
@@ -2239,6 +2284,8 @@ async function cerrarSesionDash() {
   sessionStorage.removeItem('citadoc_user');
   window.location.href = 'index.html';
 }
+
+
 
 
 </script>
