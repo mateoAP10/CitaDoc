@@ -1328,6 +1328,8 @@ body {
 
 
 
+
+
 // ── DATE ──
 const now = new Date();
 const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -1936,52 +1938,61 @@ INSTRUCCIONES:
 // ══ MÉDICO SUPABASE ══
 // Cargar datos del médico al iniciar
   async function cargarMedico() {
+  console.log('[CitaDoc] cargarMedico() iniciando...');
   const nameEl = document.getElementById('sidebarNombre');
   if (nameEl) nameEl.textContent = 'Cargando...';
 
   try {
-    // 1. Verificar sesión Supabase
-    const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
+    // PASO 1: Sesión Supabase
+    console.log('[CitaDoc] Obteniendo sesión...');
+    const { data: sessionData, error: sessionError } = await _supabase.auth.getSession();
+    const session = sessionData?.session;
+    console.log('[CitaDoc] Sesión:', session ? session.user.email : 'NINGUNA', sessionError || '');
 
     if (!session) {
-      // Intentar desde sessionStorage antes de redirigir
       const cached = sessionStorage.getItem('citadoc_user');
       if (cached) {
-        const medico = JSON.parse(cached);
-        aplicarDatosMedico(medico);
+        console.log('[CitaDoc] Usando sessionStorage como fallback');
+        aplicarDatosMedico(JSON.parse(cached));
         return;
       }
+      console.log('[CitaDoc] Sin sesión, redirigiendo...');
       window.location.href = 'index.html';
       return;
     }
 
-    // 2. Cargar datos completos desde DB
-    const { data: medico, error } = await _supabase
+    // PASO 2: Cargar médico de DB
+    console.log('[CitaDoc] Cargando médico de DB para user_id:', session.user.id);
+    const { data: medico, error: dbError } = await _supabase
       .from('medicos')
       .select('*')
       .eq('user_id', session.user.id)
       .single();
 
-    if (error || !medico) {
-      // Intentar sessionStorage como fallback
+    console.log('[CitaDoc] Médico DB:', medico ? medico.nombre + ' ' + medico.apellido : 'NO ENCONTRADO', dbError || '');
+
+    if (dbError || !medico) {
       const cached = sessionStorage.getItem('citadoc_user');
       if (cached) {
+        console.log('[CitaDoc] DB falló, usando sessionStorage');
         aplicarDatosMedico(JSON.parse(cached));
         return;
       }
-      console.error('No se encontró perfil médico:', error);
       if (nameEl) nameEl.textContent = 'Error al cargar';
       return;
     }
 
+    // PASO 3: Aplicar datos
+    console.log('[CitaDoc] Aplicando datos del médico...');
     sessionStorage.setItem('citadoc_user', JSON.stringify(medico));
     aplicarDatosMedico(medico);
+    console.log('[CitaDoc] aplicarDatosMedico() completado');
 
   } catch(err) {
-    console.error('Error en cargarMedico:', err);
-    // Fallback: intentar sessionStorage
+    console.error('[CitaDoc] Error en cargarMedico:', err);
     const cached = sessionStorage.getItem('citadoc_user');
     if (cached) {
+      console.log('[CitaDoc] Usando sessionStorage tras error');
       aplicarDatosMedico(JSON.parse(cached));
     } else {
       if (nameEl) nameEl.textContent = 'Error de conexión';
@@ -1990,6 +2001,7 @@ INSTRUCCIONES:
 }
 
   function aplicarDatosMedico(medico) {
+  console.log('[CitaDoc] aplicarDatosMedico() llamado para:', medico.nombre, medico.apellido);
   // Extraer datos
   const titulo         = medico.titulo || 'Dr.';
   const nombre         = medico.nombre || '';
@@ -2311,51 +2323,137 @@ INSTRUCCIONES:
   }
 
   // Ejecutar al cargar
-  document.addEventListener('DOMContentLoaded', () => {
-  // Fecha en topbar
-  const topbarDate = document.getElementById('topbarDate');
-  if (topbarDate) {
-    topbarDate.textContent = days[now.getDay()] + ', ' + now.getDate() + ' de ' + months[now.getMonth()] + ' ' + now.getFullYear();
-  }
-  // Mini calendario
-  if (document.getElementById('miniCal')) renderMiniCal(miniCalYear, miniCalMonth);
-  // Slots horarios
-  if (document.getElementById('slotsGrid')) renderSlots();
+  document.addEventListener('DOMContentLoaded', async () => {
+  // 1. Fecha
+  try {
+    const el = document.getElementById('topbarDate');
+    if (el) el.textContent = days[now.getDay()] + ', ' + now.getDate() + ' de ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  } catch(e) {}
 
-  // Mostrar datos del sessionStorage INMEDIATAMENTE (sin esperar a Supabase)
-  const cached = sessionStorage.getItem('citadoc_user');
-  if (cached) {
+  // 2. Calendarios y slots
+  try { if (document.getElementById('miniCal')) renderMiniCal(miniCalYear, miniCalMonth); } catch(e) {}
+  try { if (document.getElementById('slotsGrid')) renderSlots(); } catch(e) {}
+
+  // 3. Cargar datos del médico - DIRECTO A SUPABASE, sin sessionStorage
+  try {
+    const { data: sessionData } = await _supabase.auth.getSession();
+    const session = sessionData?.session;
+
+    if (!session) {
+      // No hay sesión - redirigir al index
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // Cargar médico de Supabase
+    const { data: medico, error } = await _supabase
+      .from('medicos')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (error || !medico) {
+      console.error('Médico no encontrado:', error);
+      document.getElementById('sidebarNombre').textContent = 'Error al cargar';
+      return;
+    }
+
+    // Guardar en sessionStorage
+    sessionStorage.setItem('citadoc_user', JSON.stringify(medico));
+    window._medicoActual = medico;
+
+    // Aplicar datos al DOM directamente aquí - sin llamar función externa que puede fallar
+    const titulo    = medico.titulo || 'Dr.';
+    const nombre    = medico.nombre || '';
+    const apellido  = medico.apellido || '';
+    const nombreFull = titulo + ' ' + nombre + ' ' + apellido;
+    const esp       = (medico.especialidades || [])[0] || '—';
+    const plan      = medico.plan || 'gratuito';
+    const slug      = medico.slug || '';
+    const url       = 'citadoc.lat/medico/' + slug;
+    const ini       = (nombre[0]||'').toUpperCase() + (apellido[0]||'').toUpperCase();
+    const planLabel = plan === 'destacado' ? '⭐ Destacado' : 'Plan Gratuito';
+
+    // Sidebar
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    set('sidebarNombre',       nombreFull);
+    set('sidebarEspecialidad', esp);
+    set('sidebarPlan',         planLabel);
+    set('sidebarUrl',          url);
+
+    // Avatar sidebar
+    const av = document.getElementById('sidebarAvatar');
+    if (av) {
+      if (medico.foto_url) {
+        av.innerHTML = '<img src="' + medico.foto_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+      } else {
+        av.textContent = ini;
+        av.style.cssText = 'font-size:.75rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center';
+      }
+    }
+
+    // Topbar
+    set('topbarTitle',    'Bienvenido, ' + nombre);
+    set('topbarAvatar',   ini);
+    set('topbarUserName', nombreFull);
+    set('topbarUserPlan', planLabel);
+    const tp = document.getElementById('topbarVerPerfil');
+    if (tp && slug) tp.href = 'citadoc-perfil.html?slug=' + slug;
+
+    // URL del link
+    set('perfilUrlCard', url);
+
+    // Panel perfil - inputs
+    const sv = (id, v) => { const e = document.getElementById(id); if (e && v) e.value = v; };
+    sv('inf-nombre',       medico.nombre);
+    sv('inf-apellido',     medico.apellido);
+    sv('inf-titulo',       medico.titulo || 'Dr.');
+    sv('inf-especialidad', esp !== '—' ? esp : '');
+    sv('inf-precio',       medico.precio || '');
+    sv('inf-anos',         medico.anos_experiencia || '');
+    sv('inf-direccion',    medico.direccion || '');
+    sv('inf-senescyt',     medico.senescyt || '');
+    sv('inf-telefono',     medico.telefono || '');
+    const bio = document.getElementById('bioTextarea');
+    if (bio) bio.value = medico.bio || '';
+
+    // Seguros
     try {
-      const m = JSON.parse(cached);
-      const nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
-      const ini = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase();
-      const plan = m.plan==='destacado'?'⭐ Destacado':'Plan Gratuito';
-      const slug = m.slug||'';
-
-      // Sidebar
-      const setT = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-      setT('sidebarNombre', nombre);
-      setT('sidebarEspecialidad', (m.especialidades||[])[0]||'—');
-      setT('sidebarPlan', plan);
-      setT('sidebarUrl', 'citadoc.lat/medico/'+slug);
-
-      // Avatar sidebar
-      const av = document.getElementById('sidebarAvatar');
-      if (av && !m.foto_url) { av.textContent = ini; av.style.fontSize='.75rem'; av.style.fontWeight='700'; av.style.color='#fff'; }
-
-      // Topbar
-      setT('topbarTitle', 'Bienvenido, '+m.nombre);
-      setT('topbarAvatar', ini);
-      setT('topbarUserName', nombre);
-      setT('topbarUserPlan', plan);
-      if (document.getElementById('topbarVerPerfil') && slug)
-        document.getElementById('topbarVerPerfil').href = 'citadoc-perfil.html?slug='+slug;
+      activeSeguros.clear();
+      (medico.seguros || []).forEach(seg => activeSeguros.add(seg));
+      const segEl = document.getElementById('segurosEditor');
+      if (segEl) renderSeguros();
     } catch(e) {}
-  }
 
-  // Cargar datos frescos de Supabase
-  cargarMedico();
-});
+    // Toggles
+    try {
+      const waT = document.getElementById('waToggle');
+      const agT = document.getElementById('toggleAgendamiento');
+      const waN = document.getElementById('waNumber');
+      if (waT) waT.checked = !!(medico.whatsapp_activo);
+      if (agT) agT.checked = medico.agendamiento_citadoc !== false;
+      if (waN) waN.value   = medico.whatsapp || '';
+      updateContactMode();
+    } catch(e) {}
+
+    // Slots con horario real del médico
+    try { inicializarSlotsConMedico(medico); } catch(e) {}
+
+    // Cargar citas y stats
+    if (medico.id) {
+      cargarCitasHoy(medico.id);
+      cargarProximasCitas(medico.id);
+      cargarStatsExtras(medico.id);
+      cargarFormacionLogros(medico.id);
+      cargarCitasCalendario(medico.id);
+    }
+
+  } catch(err) {
+    console.error('[CitaDoc] Error cargando dashboard:', err);
+    const nameEl = document.getElementById('sidebarNombre');
+    if (nameEl) nameEl.textContent = 'Error - recarga la página';
+  }
+});;
 
 // ══ SESIÓN ══
 async function cerrarSesionDash() {
@@ -2363,6 +2461,8 @@ async function cerrarSesionDash() {
   sessionStorage.removeItem('citadoc_user');
   window.location.href = 'index.html';
 }
+
+
 
 
 
