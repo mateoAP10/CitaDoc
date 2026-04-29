@@ -225,9 +225,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   </nav>
   <div class="sidebar-bottom">
     <div class="url-card">
-      <div class="url-card-label">Tu link</div>
+      <div class="url-card-label">Tu link para redes</div>
       <div class="url-card-url" id="sidebarUrl">—</div>
-      <button class="btn-copy-url" onclick="copiarLink(this)">📋 Copiar link</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.4rem">
+        <button class="btn-copy-url" onclick="copiarLink(this)" title="Copiar link">📋 Copiar</button>
+        <button class="btn-copy-url" onclick="compartirWA()" title="Compartir por WhatsApp" style="background:rgba(37,211,102,.25);border-color:rgba(37,211,102,.3);color:#4ade80">💬 WhatsApp</button>
+      </div>
+      <button class="btn-copy-url" onclick="compartirIG()" style="width:100%;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)">📸 Copiar para Instagram</button>
     </div>
     <button class="btn-logout" onclick="cerrarSesion()">↩ Cerrar sesión</button>
   </div>
@@ -390,17 +394,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
             </div>
           </div>
           <div class="pf-section" id="ptab-contacto">
-            <div class="toggle-row">
-              <div class="toggle-label"><h4>Agendamiento CitaDoc</h4><p>Pacientes agendan desde tu perfil</p></div>
-              <label class="toggle-switch"><input type="checkbox" id="togAg" checked onchange="updatePreview()"><span class="toggle-slider"></span></label>
+            <div style="background:var(--teal-lite);border-radius:12px;padding:.9rem 1rem;margin-bottom:1rem;font-size:.82rem;color:var(--teal);line-height:1.6">
+              💡 <strong>Elige cómo quieres recibir pacientes.</strong> Puedes activar uno o ambos canales. Los cambios se guardan automáticamente.
             </div>
             <div class="toggle-row">
-              <div class="toggle-label"><h4>WhatsApp directo</h4><p>Pacientes te contactan por WhatsApp</p></div>
+              <div class="toggle-label">
+                <h4>📅 Agendamiento CitaDoc</h4>
+                <p>Los pacientes agendan desde tu perfil en la web. Tú ves las citas en el dashboard.</p>
+              </div>
+              <label class="toggle-switch"><input type="checkbox" id="togAg" checked onchange="guardarContacto()"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <h4>💬 WhatsApp directo</h4>
+                <p>Un botón verde en tu perfil abre WhatsApp directamente. Ideal para atención rápida.</p>
+              </div>
               <label class="toggle-switch"><input type="checkbox" id="togWA" onchange="toggleWaInput(this)"><span class="toggle-slider"></span></label>
             </div>
-            <input type="tel" class="wa-input" id="waNumber" placeholder="+593 99 123 4567">
-            <div style="margin-top:1rem;font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Vista previa</div>
+            <div id="waInputWrap" style="display:none;margin-top:.6rem">
+              <div style="font-size:.72rem;font-weight:700;color:var(--muted2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem">Tu número de WhatsApp</div>
+              <div style="display:flex;gap:.5rem">
+                <input type="tel" id="waNumber" placeholder="+593 99 123 4567" style="flex:1;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none">
+                <button onclick="guardarContacto()" style="padding:.6rem 1rem;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">Guardar</button>
+              </div>
+              <div style="font-size:.74rem;color:var(--muted2);margin-top:.35rem">Incluye el código de país. Ej: +593 99 123 4567</div>
+            </div>
+            <div style="margin-top:1.2rem;font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Vista previa en tu perfil público</div>
             <div class="contact-preview" id="previewBtns"></div>
+            <div style="margin-top:1rem;font-size:.75rem;color:var(--muted2);font-style:italic" id="contactSaveStatus"></div>
           </div>
           <div class="pf-section" id="ptab-formacion">
             <div id="formList"></div>
@@ -567,7 +588,12 @@ function renderSeguros(){
 function toggleSeg(el,s){ activeSeguros.has(s)?(activeSeguros.delete(s),el.classList.remove('on')):(activeSeguros.add(s),el.classList.add('on')); el.querySelector('.seg-dot').style.background=activeSeguros.has(s)?'var(--teal)':'var(--border)'; }
 
 // ══ CONTACTO ══
-function toggleWaInput(chk){ const w=$('waNumber'); if(w)w.style.display=(chk&&chk.checked)?'block':'none'; updatePreview(); }
+function toggleWaInput(chk){
+  const wrap=$('waInputWrap');
+  if(wrap) wrap.style.display=(chk&&chk.checked)?'block':'none';
+  updatePreview();
+  if(!chk||!chk.checked) guardarContacto(); // guardar al desactivar
+}
 function updatePreview(){
   const ag=$('togAg')?.checked, wa=$('togWA')?.checked, p=$('previewBtns'); if(!p) return;
   let h='';
@@ -640,6 +666,58 @@ async function subirFoto(input){
 }
 
 // ══ LINK ══
+// ══ COMPARTIR LINK ══
+function compartirWA(){
+  if(!slugActual) return;
+  const url = 'https://citadoc.lat/citadoc-perfil.html?slug='+slugActual;
+  const m   = M ? (M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido : 'mi médico';
+  const esp = M ? (M.especialidades||[])[0]||'' : '';
+  const txt = '🩺 Agenda tu cita con '+m+(esp?' — '+esp:'')+' directamente en CitaDoc:\n'+url;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt), '_blank');
+}
+
+function compartirIG(){
+  if(!slugActual) return;
+  const url = 'https://citadoc.lat/citadoc-perfil.html?slug='+slugActual;
+  const m   = M ? (M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido : 'mi médico';
+  const esp = M ? (M.especialidades||[])[0]||'' : '';
+  const txt = '🩺 Agenda tu cita conmigo en CitaDoc:\n'+url+'\n\n'+(esp?'#'+esp.replace(/\s+/g,'')+ ' ':'')+'#CitaDoc #medicina #salud';
+  navigator.clipboard.writeText(txt);
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.textContent = '✓ ¡Copiado para Instagram!';
+  setTimeout(()=>btn.textContent=orig, 3000);
+}
+
+async function guardarContacto(){
+  if(!M) return;
+  const ag  = $('togAg')?.checked ?? true;
+  const wa  = $('togWA')?.checked ?? false;
+  const num = $('waNumber')?.value?.trim() || '';
+  const status = $('contactSaveStatus');
+
+  if(wa && !num){ 
+    if(status) status.textContent = '⚠️ Ingresa tu número de WhatsApp';
+    return; 
+  }
+
+  const {error} = await _sb.from('medicos').update({
+    agendamiento_citadoc: ag,
+    whatsapp_activo:      wa,
+    whatsapp:             num,
+  }).eq('id', M.id);
+
+  if(!error){
+    M.agendamiento_citadoc = ag;
+    M.whatsapp_activo      = wa;
+    M.whatsapp             = num;
+    if(status) { status.textContent = '✓ Cambios guardados'; setTimeout(()=>status.textContent='', 3000); }
+  } else {
+    if(status) status.textContent = '✗ Error al guardar';
+  }
+  updatePreview();
+}
+
 function copiarLink(btn){
   const url=slugActual?'https://citadoc.lat/citadoc-perfil.html?slug='+slugActual:'https://citadoc.lat';
   navigator.clipboard.writeText(url);
@@ -777,7 +855,9 @@ function aplicarMedico(m) {
   const tWA=$('togWA'),tAg=$('togAg'),waN=$('waNumber');
   if(tWA)tWA.checked=!!(m.whatsapp_activo);
   if(tAg)tAg.checked=m.agendamiento_citadoc!==false;
-  if(waN){waN.value=m.whatsapp||'';waN.style.display=m.whatsapp_activo?'block':'none';}
+  if(waN) waN.value=m.whatsapp||'';
+  const wrap=$('waInputWrap');
+  if(wrap) wrap.style.display=m.whatsapp_activo?'block':'none';
   updatePreview();
 
   // Horarios
