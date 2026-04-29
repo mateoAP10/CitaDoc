@@ -1874,10 +1874,8 @@ INSTRUCCIONES:
   textarea.classList.remove('bio-generating');
 }
 
-</script>
-<script>
-
-  // Cargar datos del médico al iniciar
+// ══ MÉDICO SUPABASE ══
+// Cargar datos del médico al iniciar
   async function cargarMedico() {
     // Mostrar estado de carga en sidebar
     const nameEl = document.getElementById('sidebarNombre');
@@ -2222,9 +2220,8 @@ INSTRUCCIONES:
 
   // Ejecutar al cargar
   document.addEventListener('DOMContentLoaded', cargarMedico);
-</script>
 
-<script>
+// ══ SESIÓN ══
 async function cerrarSesionDash() {
   await _supabase.auth.signOut();
   sessionStorage.removeItem('citadoc_user');
