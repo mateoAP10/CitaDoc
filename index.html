@@ -900,7 +900,7 @@ nav {
         <label>Especialidad</label>
         <div class="select-wrap">
           <select id="sel-especialidad">
-            <option value=""">Todas las especialidades</option>
+            <option value="">Todas las especialidades</option>
             <option value="alergia_e_inmunologia">Alergia e Inmunología</option>
             <option value="anatomia_patologica">Anatomía Patológica</option>
             <option value="anestesiologia">Anestesiología</option>
@@ -1750,9 +1750,18 @@ class SearchableSelect {
 }
 
 const CIUDAD_MAP = {
-  ecuador: [{value:"ambato",label:"Ambato"},{value:"azogues",label:"Azogues"},{value:"babahoyo",label:"Babahoyo"},{value:"cuenca",label:"Cuenca"},{value:"esmeraldas",label:"Esmeraldas"},{value:"guaranda",label:"Guaranda"},{value:"guayaquil",label:"Guayaquil"},{value:"ibarra",label:"Ibarra"},{value:"latacunga",label:"Latacunga"},{value:"loja",label:"Loja"},{value:"macas",label:"Macas"},{value:"machala",label:"Machala"},{value:"manta",label:"Manta"},{value:"nueva loja",label:"Nueva Loja"},{value:"portoviejo",label:"Portoviejo"},{value:"puyo",label:"Puyo"},{value:"quito",label:"Quito"},{value:"riobamba",label:"Riobamba"},{value:"santa rosa",label:"Santa Rosa"},{value:"santo domingo",label:"Santo Domingo"},{value:"tena",label:"Tena"},{value:"tulcán",label:"Tulcán"},{value:"zamora",label:"Zamora"}],
-  colombia: [{value:"barranquilla",label:"Barranquilla"},{value:"bogotá",label:"Bogotá"},{value:"bucaramanga",label:"Bucaramanga"},{value:"cali",label:"Cali"},{value:"cartagena",label:"Cartagena"},{value:"cúcuta",label:"Cúcuta"},{value:"ibagué",label:"Ibagué"},{value:"manizales",label:"Manizales"},{value:"medellín",label:"Medellín"},{value:"montería",label:"Montería"},{value:"neiva",label:"Neiva"},{value:"pasto",label:"Pasto"},{value:"pereira",label:"Pereira"},{value:"santa marta",label:"Santa Marta"},{value:"villavicencio",label:"Villavicencio"}],
-  peru: [{value:"arequipa",label:"Arequipa"},{value:"ayacucho",label:"Ayacucho"},{value:"chiclayo",label:"Chiclayo"},{value:"cusco",label:"Cusco"},{value:"huancayo",label:"Huancayo"},{value:"iquitos",label:"Iquitos"},{value:"lima",label:"Lima"},{value:"piura",label:"Piura"},{value:"pucallpa",label:"Pucallpa"},{value:"tacna",label:"Tacna"},{value:"trujillo",label:"Trujillo"}]
+  ecuador:   [{value:"quito",label:"Quito"},{value:"guayaquil",label:"Guayaquil"},{value:"cuenca",label:"Cuenca"},{value:"manta",label:"Manta"},{value:"ambato",label:"Ambato"},{value:"portoviejo",label:"Portoviejo"},{value:"machala",label:"Machala"},{value:"santo domingo",label:"Santo Domingo"},{value:"ibarra",label:"Ibarra"},{value:"riobamba",label:"Riobamba"},{value:"loja",label:"Loja"},{value:"esmeraldas",label:"Esmeraldas"},{value:"babahoyo",label:"Babahoyo"},{value:"latacunga",label:"Latacunga"},{value:"tulcan",label:"Tulcán"},{value:"azogues",label:"Azogues"},{value:"nueva loja",label:"Nueva Loja"},{value:"guaranda",label:"Guaranda"},{value:"tena",label:"Tena"},{value:"puyo",label:"Puyo"},{value:"macas",label:"Macas"},{value:"santa rosa",label:"Santa Rosa"},{value:"zamora",label:"Zamora"}],
+  colombia:  [{value:"bogota",label:"Bogotá"},{value:"medellin",label:"Medellín"},{value:"cali",label:"Cali"},{value:"barranquilla",label:"Barranquilla"},{value:"cartagena",label:"Cartagena"},{value:"bucaramanga",label:"Bucaramanga"},{value:"cucuta",label:"Cúcuta"},{value:"pereira",label:"Pereira"},{value:"manizales",label:"Manizales"},{value:"ibague",label:"Ibagué"},{value:"santa marta",label:"Santa Marta"},{value:"villavicencio",label:"Villavicencio"},{value:"monteria",label:"Montería"},{value:"pasto",label:"Pasto"},{value:"neiva",label:"Neiva"},{value:"armenia",label:"Armenia"},{value:"sincelejo",label:"Sincelejo"},{value:"valledupar",label:"Valledupar"}],
+  peru:      [{value:"lima",label:"Lima"},{value:"arequipa",label:"Arequipa"},{value:"trujillo",label:"Trujillo"},{value:"chiclayo",label:"Chiclayo"},{value:"cusco",label:"Cusco"},{value:"iquitos",label:"Iquitos"},{value:"piura",label:"Piura"},{value:"huancayo",label:"Huancayo"},{value:"pucallpa",label:"Pucallpa"},{value:"tacna",label:"Tacna"},{value:"ayacucho",label:"Ayacucho"},{value:"ica",label:"Ica"},{value:"puno",label:"Puno"},{value:"tumbes",label:"Tumbes"},{value:"cajamarca",label:"Cajamarca"}],
+  argentina: [{value:"buenos aires",label:"Buenos Aires"},{value:"cordoba",label:"Córdoba"},{value:"rosario",label:"Rosario"},{value:"mendoza",label:"Mendoza"},{value:"tucuman",label:"Tucumán"},{value:"la plata",label:"La Plata"},{value:"mar del plata",label:"Mar del Plata"},{value:"salta",label:"Salta"},{value:"santa fe",label:"Santa Fe"},{value:"san juan",label:"San Juan"},{value:"resistencia",label:"Resistencia"},{value:"neuquen",label:"Neuquén"},{value:"santiago del estero",label:"Santiago del Estero"},{value:"corrientes",label:"Corrientes"},{value:"posadas",label:"Posadas"}],
+  chile:     [{value:"santiago",label:"Santiago"},{value:"valparaiso",label:"Valparaíso"},{value:"concepcion",label:"Concepción"},{value:"antofagasta",label:"Antofagasta"},{value:"vina del mar",label:"Viña del Mar"},{value:"temuco",label:"Temuco"},{value:"rancagua",label:"Rancagua"},{value:"talca",label:"Talca"},{value:"arica",label:"Arica"},{value:"iquique",label:"Iquique"},{value:"puerto montt",label:"Puerto Montt"},{value:"coquimbo",label:"Coquimbo"},{value:"la serena",label:"La Serena"},{value:"osorno",label:"Osorno"}],
+  venezuela: [{value:"caracas",label:"Caracas"},{value:"maracaibo",label:"Maracaibo"},{value:"valencia",label:"Valencia"},{value:"barquisimeto",label:"Barquisimeto"},{value:"maracay",label:"Maracay"},{value:"barcelona",label:"Barcelona"},{value:"ciudad guayana",label:"Ciudad Guayana"},{value:"merida",label:"Mérida"},{value:"san cristobal",label:"San Cristóbal"},{value:"cabimas",label:"Cabimas"},{value:"cumana",label:"Cumaná"}],
+  bolivia:   [{value:"santa cruz",label:"Santa Cruz"},{value:"la paz",label:"La Paz"},{value:"cochabamba",label:"Cochabamba"},{value:"sucre",label:"Sucre"},{value:"oruro",label:"Oruro"},{value:"potosi",label:"Potosí"},{value:"tarija",label:"Tarija"},{value:"beni",label:"Beni"},{value:"pando",label:"Pando"}],
+  paraguay:  [{value:"asuncion",label:"Asunción"},{value:"ciudad del este",label:"Ciudad del Este"},{value:"san lorenzo",label:"San Lorenzo"},{value:"luque",label:"Luque"},{value:"capiatá",label:"Capiatá"},{value:"lambare",label:"Lambaré"},{value:"fernando de la mora",label:"Fernando de la Mora"},{value:"caaguazu",label:"Caaguazú"}],
+  uruguay:   [{value:"montevideo",label:"Montevideo"},{value:"salto",label:"Salto"},{value:"paysandu",label:"Paysandú"},{value:"las piedras",label:"Las Piedras"},{value:"rivera",label:"Rivera"},{value:"maldonado",label:"Maldonado"},{value:"tacuarembo",label:"Tacuarembó"},{value:"melo",label:"Melo"}],
+  brasil:    [{value:"sao paulo",label:"São Paulo"},{value:"rio de janeiro",label:"Rio de Janeiro"},{value:"brasilia",label:"Brasília"},{value:"salvador",label:"Salvador"},{value:"fortaleza",label:"Fortaleza"},{value:"belo horizonte",label:"Belo Horizonte"},{value:"manaus",label:"Manaus"},{value:"curitiba",label:"Curitiba"},{value:"recife",label:"Recife"},{value:"porto alegre",label:"Porto Alegre"},{value:"belem",label:"Belém"},{value:"goiania",label:"Goiânia"},{value:"guarulhos",label:"Guarulhos"},{value:"campinas",label:"Campinas"}],
+  guyana:    [{value:"georgetown",label:"Georgetown"},{value:"linden",label:"Linden"},{value:"new amsterdam",label:"New Amsterdam"}],
+  suriname:  [{value:"paramaribo",label:"Paramaribo"},{value:"lelydorp",label:"Lelydorp"},{value:"nieuw nickerie",label:"Nieuw Nickerie"}]
 };
 
 let ssPais = null, ssCiudad = null;
@@ -1760,7 +1769,14 @@ let ssPais = null, ssCiudad = null;
 window.addEventListener('DOMContentLoaded', () => {
   ssPais = new SearchableSelect({
     wrap:'ss-pais-wrap', inputId:'ss-pais-input', dropdownId:'ss-pais-drop',
-    options:[{value:'ecuador',label:'Ecuador'},{value:'colombia',label:'Colombia'},{value:'peru',label:'Peru'}],
+    options:[
+      {value:'ecuador',label:'Ecuador'},{value:'colombia',label:'Colombia'},
+      {value:'peru',label:'Perú'},{value:'argentina',label:'Argentina'},
+      {value:'chile',label:'Chile'},{value:'venezuela',label:'Venezuela'},
+      {value:'bolivia',label:'Bolivia'},{value:'paraguay',label:'Paraguay'},
+      {value:'uruguay',label:'Uruguay'},{value:'brasil',label:'Brasil'},
+      {value:'guyana',label:'Guyana'},{value:'suriname',label:'Surinam'}
+    ],
     placeholder:'Ej: Ecuador',
     onChange: (val) => {
       currentFilter.pais = val || '';
