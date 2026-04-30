@@ -677,6 +677,47 @@ function aplicarPerfilPublico(m, formacion) {
   // Link compartir
   const shareUrl = 'https://citadoc.lat/citadoc-perfil.html?slug=' + slug;
   window._perfilUrl = shareUrl;
+
+  // ── CONECTAR HORARIOS REALES AL CALENDARIO ──
+  _medicoActual = m;
+
+  // Generar SLOT_TIMES desde horario_desde y horario_hasta del médico
+  SLOT_TIMES = [];
+  const desde = m.horario_desde || '09:00';
+  const hasta = m.horario_hasta || '17:00';
+  let [sh, sm] = desde.split(':').map(Number);
+  const [eh, em] = hasta.split(':').map(Number);
+  while (sh < eh || (sh === eh && sm < em)) {
+    SLOT_TIMES.push(String(sh).padStart(2,'0') + ':' + String(sm).padStart(2,'0'));
+    sm += 30; if (sm >= 60) { sm -= 60; sh++; }
+  }
+
+  // HAS_SLOTS_DAYS desde dias_atencion del médico
+  // Mapear abreviaciones a índices JS (0=dom,1=lun,...,6=sab)
+  const diasMap = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
+  const diasActivos = (m.dias_atencion || ['lun','mar','mie','jue','vie']).map(d => diasMap[d]).filter(d => d !== undefined);
+
+  // Calcular qué días del mes actual tienen slots
+  function calcHasSlotsDays(year, month) {
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const result = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = new Date(year, month, d).getDay();
+      if (diasActivos.includes(dow)) result.push(d);
+    }
+    return result;
+  }
+  HAS_SLOTS_DAYS = calcHasSlotsDays(calYear, calMonth);
+
+  // Guardar la función para recalcular cuando cambie el mes
+  window._calcHasSlotsDays = calcHasSlotsDays;
+  window._diasActivos = diasActivos;
+
+  // Cargar citas tomadas del mes actual desde Supabase
+  cargarCitasTomadas(m.id, calYear, calMonth);
+
+  // Renderizar el calendario con datos reales
+  renderCal();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -996,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
             <div class="review-stars">★★★★★</div>
           </div>
-          <p class="review-text">"Llevo 3 años con el Dr. Pérez para control de hipertensión. Siempre muy profesional, puntual y atento. El agendamiento por CitaDoc es muy conveniente."</p>
+          <p class="review-text">"Llevo 3 años con el médico para control de hipertensión. Siempre muy profesional, puntual y atento. El agendamiento por CitaDoc es muy conveniente."</p>
         </div>
         <div class="review-card">
           <div class="review-header">
@@ -1100,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     <!-- Compartir -->
     <div class="share-card">
-      <p>Comparte el perfil del Dr. Pérez</p>
+      <p>Comparte el perfil del médico</p>
       <div class="share-btns">
         <button class="share-network share-wa" onclick="shareWA()">WhatsApp</button>
         <button class="share-network share-ig" onclick="shareIG()">Instagram</button>
@@ -1124,7 +1165,7 @@ function showTab(id, btn) {
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const SLOT_TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30'];
 const TAKEN = ['09:00','10:30','14:00'];
-const HAS_SLOTS_DAYS = [1,2,4,5,8,9,11,12,15,16,18,19,22,23,25,26,29,30];
+HAS_SLOTS_DAYS = []; // se llena dinámicamente desde dias_atencion del médico
 
 let calYear, calMonth, selectedDate = null, selectedSlot = null;
 const now = new Date();
@@ -1158,21 +1199,48 @@ function renderCal() {
   document.getElementById('dateGrid').innerHTML = html;
 }
 
+async function cargarCitasTomadas(medicoId, year, month) {
+  const mesStr   = String(month + 1).padStart(2, '0');
+  const fechaIni = year + '-' + mesStr + '-01';
+  const lastDay  = new Date(year, month + 1, 0).getDate();
+  const fechaFin = year + '-' + mesStr + '-' + String(lastDay).padStart(2, '0');
+  const { data } = await _supabase
+    .from('citas')
+    .select('fecha,hora,estado')
+    .eq('medico_id', medicoId)
+    .gte('fecha', fechaIni)
+    .lte('fecha', fechaFin)
+    .neq('estado', 'cancelada');
+  // Guardar por fecha
+  window._citasPorFecha = {};
+  (data || []).forEach(c => {
+    if (!window._citasPorFecha[c.fecha]) window._citasPorFecha[c.fecha] = [];
+    window._citasPorFecha[c.fecha].push(c.hora);
+  });
+}
+
 function selectDate(d) {
-  selectedDate = `${calYear}-${calMonth}-${d}`;
+  const mesStr = String(calMonth + 1).padStart(2, '0');
+  const dStr   = String(d).padStart(2, '0');
+  selectedDate = calYear + '-' + mesStr + '-' + dStr;
   selectedSlot = null;
   renderCal();
 
-  const dow = new Date(calYear, calMonth, d).getDay();
-  const dateStr = `${d} de ${MONTHS[calMonth]}`;
-  document.getElementById('slotsTitle').textContent = `Horarios — ${dateStr}`;
+  // Slots tomados para este día específico
+  TAKEN = (window._citasPorFecha && window._citasPorFecha[selectedDate]) || [];
+
+  const dateStr = d + ' de ' + MONTHS[calMonth];
+  document.getElementById('slotsTitle').textContent = 'Horarios — ' + dateStr;
 
   const slotsPub = document.getElementById('slotsPub');
-  slotsPub.innerHTML = SLOT_TIMES.map(t => {
-    const taken = TAKEN.includes(t);
-    return `<div class="slot-pub${taken?' taken':''}" onclick="selectSlot(this,'${t}')">${t}</div>`;
-  }).join('');
-
+  if (SLOT_TIMES.length === 0) {
+    slotsPub.innerHTML = '<p style="font-size:.82rem;color:var(--muted2);text-align:center;padding:.5rem">Este médico no tiene horarios configurados aún.</p>';
+  } else {
+    slotsPub.innerHTML = SLOT_TIMES.map(t => {
+      const taken = TAKEN.includes(t);
+      return '<div class="slot-pub' + (taken ? ' taken' : '') + '" onclick="' + (taken ? '' : "selectSlot(this,'" + t + "')") + '">' + t + '</div>';
+    }).join('');
+  }
   document.getElementById('slotsWrap').style.display = 'block';
   document.getElementById('patientForm').style.display = 'none';
 }
@@ -1186,30 +1254,86 @@ function selectSlot(el, slot) {
 
 function calPrev() {
   calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (window._calcHasSlotsDays) HAS_SLOTS_DAYS = window._calcHasSlotsDays(calYear, calMonth);
+  if (_medicoActual) cargarCitasTomadas(_medicoActual.id, calYear, calMonth);
   renderCal();
 }
 function calNext() {
   calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (window._calcHasSlotsDays) HAS_SLOTS_DAYS = window._calcHasSlotsDays(calYear, calMonth);
+  if (_medicoActual) cargarCitasTomadas(_medicoActual.id, calYear, calMonth);
   renderCal();
 }
 
 // ── CONFIRM ──
-function confirmarCita() {
+async function confirmarCita() {
   const nombre = document.getElementById('b-nombre').value.trim();
   const tel    = document.getElementById('b-tel').value.trim();
-  const email  = document.getElementById('b-email').value.trim();
-  if (!nombre || !tel || !email) { alert('Por favor completa nombre, teléfono y correo.'); return; }
-  if (!selectedSlot) { alert('Selecciona un horario.'); return; }
+  const email  = document.getElementById('b-email') ? document.getElementById('b-email').value.trim() : '';
+  const motivo = document.getElementById('b-motivo') ? document.getElementById('b-motivo').value.trim() : '';
 
-  document.getElementById('bookingBody').querySelector('#patientForm').style.display = 'none';
-  document.getElementById('bookingBody').querySelector('.slots-wrap').style.display = 'none';
-  document.getElementById('bookingBody').querySelector('.date-nav') && null;
+  if (!nombre || !tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
+  if (!selectedSlot)   { alert('Selecciona un horario.'); return; }
+  if (!selectedDate)   { alert('Selecciona una fecha.'); return; }
+  if (!_medicoActual)  { alert('Error: médico no cargado. Recarga la página.'); return; }
 
-  const success = document.getElementById('bookingSuccess');
-  success.style.display = 'block';
+  const btn = document.querySelector('.btn-confirm-booking');
+  if (btn) { btn.textContent = 'Confirmando...'; btn.disabled = true; }
+
+  const nombreCompleto = (_medicoActual.titulo||'Dr.') + ' ' + _medicoActual.nombre + ' ' + _medicoActual.apellido;
   const parts = selectedDate.split('-');
-  document.getElementById('successMsg').textContent =
-    `${nombre}, tu cita con el Dr. Pérez está confirmada para el ${parseInt(parts[2])} de ${MONTHS[parseInt(parts[1])]} a las ${selectedSlot}. Te contactaremos al ${tel}.`;
+  const fechaLabel = parseInt(parts[2]) + ' de ' + MONTHS[parseInt(parts[1])-1] + ' ' + parts[0];
+
+  // 1. Guardar en Supabase
+  const { error } = await _supabase.from('citas').insert({
+    medico_id:      _medicoActual.id,
+    paciente_nombre: nombre,
+    paciente_email:  email || null,
+    paciente_tel:    tel,
+    motivo:          motivo || null,
+    fecha:           selectedDate,
+    hora:            selectedSlot,
+    estado:          'confirmada',
+  });
+  if (error) console.error('Error guardando cita:', error);
+
+  // 2. Enviar emails via EmailJS
+  if (typeof emailjs !== 'undefined') {
+    const tpl = {
+      medico_nombre:       nombreCompleto,
+      medico_especialidad: (_medicoActual.especialidades||[])[0]||'',
+      medico_ciudad:       _medicoActual.ciudad||'',
+      hora_cita:           selectedSlot,
+      fecha_cita:          fechaLabel,
+      paciente_nombre:     nombre,
+      paciente_tel:        tel,
+      motivo:              motivo || 'No especificado',
+    };
+    // Email al paciente
+    if (email) {
+      emailjs.send('service_63xln0n', 'template_e8t8qkq', {
+        ...tpl, to_name: nombre, to_email: email,
+        mensaje: 'Tu cita con ' + nombreCompleto + ' está confirmada para el ' + fechaLabel + ' a las ' + selectedSlot + '.',
+      }).catch(e => console.warn('Email paciente:', e));
+    }
+    // Email al médico
+    if (_medicoActual.email) {
+      emailjs.send('service_63xln0n', 'template_e8t8qkq', {
+        ...tpl, to_name: nombreCompleto, to_email: _medicoActual.email,
+        mensaje: 'Nueva cita: ' + nombre + ' · ' + tel + ' · ' + fechaLabel + ' a las ' + selectedSlot,
+      }).catch(e => console.warn('Email médico:', e));
+    }
+  }
+
+  // 3. Mostrar éxito
+  document.getElementById('patientForm').style.display = 'none';
+  document.getElementById('slotsWrap').style.display   = 'none';
+  const success = document.getElementById('bookingSuccess');
+  if (success) success.style.display = 'block';
+  const msgEl = document.getElementById('successMsg');
+  if (msgEl) msgEl.textContent = nombre + ', tu cita con ' + nombreCompleto + ' está confirmada para el ' + fechaLabel + ' a las ' + selectedSlot + '.' + (email ? ' Te enviamos confirmación a ' + email + '.' : ' Te contactaremos al ' + tel + '.');
+
+  if (btn) { btn.textContent = '✓ Confirmar cita'; btn.disabled = false; }
 }
 
 // ── SHARE ──
