@@ -7,8 +7,6 @@
 <meta name="description" content="Directorio médico de Latinoamérica. Busca por especialidad y ciudad, agenda tu cita en minutos.">
 <link rel="canonical" href="https://citadoc.lat/">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -121,8 +119,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .btn-close-modal:hover{background:var(--teal-lite);color:var(--teal)}
 
 /* ── DIRECTORIO ── */
-.directorio{padding:3rem 5%;opacity:0;transform:translateY(20px);transition:all .4s ease;pointer-events:none}
-.directorio.visible{opacity:1;transform:none;pointer-events:all}
+.directorio{padding:3rem 5%;opacity:0;transform:translateY(16px);transition:opacity .4s ease,transform .4s ease}
+.directorio.visible{opacity:1;transform:none}
 .dir-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem}
 .dir-title{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--ink)}
 .dir-title span{color:var(--teal)}
@@ -533,6 +531,8 @@ footer a{color:var(--teal-mid);text-decoration:none}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // ══ INIT ══
 emailjs.init('HwpQ3DPRMmtcVZVt1');
@@ -686,6 +686,9 @@ async function cargarMedicos() {
     ALL_DOCTORS = [];
   }
   applyFiltersAndRender();
+  // Hacer visible el directorio inmediatamente
+  const dir = document.getElementById('directorio');
+  if (dir) dir.classList.add('visible');
 }
 
 // ══ FILTRAR Y RENDERIZAR ══
