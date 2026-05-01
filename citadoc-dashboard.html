@@ -248,6 +248,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-ai{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;padding:.65rem 1.2rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:opacity .2s}
 .btn-ai:hover{opacity:.9}
 .btn-ai:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── PRO PAYWALL ── */
+.locked-feature{position:relative;opacity:.55;pointer-events:none;user-select:none;filter:blur(1px)}
+.locked-feature::after{content:'🔒 Pro';position:absolute;top:10px;right:10px;background:#0f1a18;color:#fff;padding:.3rem .7rem;border-radius:7px;font-size:.72rem;font-weight:700;letter-spacing:.04em;z-index:10}
+.pro-gate{background:linear-gradient(135deg,#0f1a18,#1a2e2b);border-radius:16px;padding:1.8rem;text-align:center;margin:.5rem 0}
+.pro-gate-icon{font-size:2rem;margin-bottom:.7rem}
+.pro-gate h3{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:.4rem}
+.pro-gate p{font-size:.84rem;color:rgba(255,255,255,.6);line-height:1.55;margin-bottom:1.2rem}
+.btn-upgrade{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;padding:.75rem 1.6rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .2s;text-decoration:none}
+.btn-upgrade:hover{opacity:.9}
+.pro-badge{display:inline-flex;align-items:center;gap:.3rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;letter-spacing:.05em;vertical-align:middle;margin-left:.4rem}
 </style>
 </head>
 <body>
@@ -1077,11 +1088,39 @@ var _hcCitaId = null;
 var _hcPacienteId = null;
 var _hcId = null;
 
+// ── PRO CHECK ──
+function esPro() {
+  return M && (M.plan === 'destacado' || M.plan === 'pro') && M.plan_activo === true;
+}
+
+function mostrarProGate(container, feature) {
+  var features = {
+    clinica:    { icon: '🧠', title: 'Herramienta clínica completa', desc: 'Gestiona historias clínicas, pacientes y análisis inteligente con AI. Mejora tu práctica médica.' },
+    pacientes:  { icon: '👥', title: 'Gestión de pacientes', desc: 'Accede al historial completo de tus pacientes, evolución clínica y análisis con AI.' },
+    ai:         { icon: '✨', title: 'AI Clínico', desc: 'Detecta patrones, evolución y señales de atención con inteligencia artificial basada en el historial.' },
+  };
+  var f = features[feature] || features.clinica;
+  if (!container) return;
+  container.innerHTML = '<div class="pro-gate">'
+    + '<div class="pro-gate-icon">'+f.icon+'</div>'
+    + '<h3>'+f.title+' <span class="pro-badge">PRO</span></h3>'
+    + '<p>'+f.desc+'</p>'
+    + '<button class="btn-upgrade" onclick="abrirStripe()">Desbloquear CitaDoc Pro — $19.99/mes</button>'
+    + '<p style="font-size:.72rem;color:rgba(255,255,255,.35);margin-top:.7rem">Cancela cuando quieras</p>'
+  + '</div>';
+}
+
+function abrirStripe() {
+  // Stripe checkout — próximamente
+  alert('Próximamente: pago con tarjeta. Escríbenos a hola@citadoc.lat para activar tu plan Pro.');
+}
+
 // ── CARGAR PACIENTES ──
 function cargarPacientes() {
   if (!M) return;
   var container = document.getElementById('pacientesList');
   if (!container) return;
+  if (!esPro()) { mostrarProGate(container, 'pacientes'); return; }
   container.innerHTML = '<div class="empty-citas">Cargando...</div>';
 
   // Query correcta: solo pacientes de este médico via citas
@@ -1128,6 +1167,22 @@ function cargarPacientes() {
 
 // ── ABRIR CONSULTA DESDE CITA ──
 function abrirConsulta(citaId, pacienteNombre, pacienteId) {
+  if (!esPro()) {
+    var container = document.createElement('div');
+    document.body.appendChild(container);
+    container.style.cssText = 'position:fixed;inset:0;z-index:900;background:rgba(15,26,24,.6);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:1rem';
+    container.innerHTML = '<div style="background:var(--white);border-radius:20px;max-width:420px;width:100%;padding:2rem;text-align:center;box-shadow:0 24px 64px rgba(15,26,24,.2)">'
+      + '<div style="font-size:2.5rem;margin-bottom:.8rem">🧠</div>'
+      + '<h3 style="font-family:Fraunces,serif;font-size:1.2rem;color:var(--ink);margin-bottom:.4rem">Historia Clínica <span class="pro-badge">PRO</span></h3>'
+      + '<p style="font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:1.4rem">Registra consultas, gestiona el historial de tus pacientes y analiza con AI clínico.</p>'
+      + '<button class="btn-upgrade" onclick="abrirStripe()" style="width:100%;justify-content:center;margin-bottom:.8rem">Desbloquear CitaDoc Pro — $19.99/mes</button>'
+      + '<button id="btnCancelProGate" style="background:none;border:none;font-size:.84rem;color:var(--muted);cursor:pointer;margin-top:.3rem">Cancelar</button>'
+    + '</div>';
+    container.addEventListener('click', function(e){ if(e.target===container)container.remove(); });
+    var btnCancel = container.querySelector('#btnCancelProGate');
+    if (btnCancel) btnCancel.addEventListener('click', function(){ container.remove(); });
+    return;
+  }
   _hcCitaId     = citaId;
   _hcPacienteId = pacienteId || null;
   _hcId         = null;
@@ -1357,6 +1412,7 @@ function obtenerHistorialPaciente(pacienteId) {
 
 // ── GENERAR AI CLÍNICO — ASISTENTE DE SEGUNDA CAPA ──
 function generarResumenAI() {
+  if (!esPro()) { alert('El AI clínico está disponible en CitaDoc Pro. Escríbenos a hola@citadoc.lat'); return; }
   var sintomas    = document.getElementById('hcSintomas').value.trim();
   var examen      = document.getElementById('hcExamen').value.trim();
   var diagnostico = document.getElementById('hcDiagnostico').value.trim();
