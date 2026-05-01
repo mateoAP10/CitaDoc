@@ -211,10 +211,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .hc-field label{display:block;font-size:.76rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.4rem}
 .hc-field textarea{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.55}
 .hc-field textarea:focus{border-color:var(--teal-mid);background:var(--white)}
-.hc-ai-box{background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:14px;padding:1.2rem;margin-top:1.2rem;display:none}
-.hc-ai-box h4{font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:.8rem}
-.hc-ai-row{margin-bottom:.6rem;font-size:.87rem;color:var(--ink2);line-height:1.55}
-.hc-ai-row strong{color:var(--teal);display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.15rem}
+.hc-ai-box{background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1.5px solid #e2e8f0;border-radius:16px;padding:1.4rem;margin-top:1.4rem;display:none;box-shadow:0 4px 20px rgba(15,26,24,.07)}
+.hc-ai-box-header{display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid #e2e8f0}
+.hc-ai-box-header span{font-size:.82rem;font-weight:700;color:#1e293b;letter-spacing:.02em}
+.hc-ai-box-header .ai-model{margin-left:auto;font-size:.7rem;color:#94a3b8;font-weight:500}
+.ai-block{margin-bottom:1rem;padding:.9rem 1rem;border-radius:11px;background:rgba(255,255,255,.8)}
+.ai-block:last-child{margin-bottom:0}
+.ai-block-title{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:.4rem}
+.ai-block-content{font-size:.87rem;color:#334155;line-height:1.6}
+.ai-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .9rem;border-radius:50px;font-size:.8rem;font-weight:700}
+.ai-low{background:#dcfce7;color:#166534}
+.ai-mid{background:#fef9c3;color:#854d0e}
+.ai-high{background:#fee2e2;color:#991b1b;animation:pulseRed 2s infinite}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+.ai-alert-box{background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:.75rem 1rem;font-size:.84rem;color:#9a3412;line-height:1.55}
+.ai-loading{display:flex;align-items:center;gap:.6rem;color:#64748b;font-size:.85rem;padding:.5rem 0}
+.ai-loading-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:aiDot 1.2s infinite}
+.ai-loading-dot:nth-child(2){animation-delay:.2s}
+.ai-loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes aiDot{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 .urgencia-alta{color:#dc2626;font-weight:700}
 .urgencia-media{color:var(--gold);font-weight:700}
 .urgencia-baja{color:var(--teal);font-weight:700}
@@ -533,15 +548,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         </div>
       </div>
       <div style="display:flex;gap:.8rem;margin-top:1rem;flex-wrap:wrap">
-        <button onclick="guardarHC()" style="flex:1;padding:.75rem;background:var(--teal);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">💾 Guardar consulta</button>
-        <button class="btn-ai" id="btnGenerarAI" onclick="generarResumenAI()">✨ Generar resumen AI</button>
+        <button id="btnGuardarHC" onclick="guardarHC(false)" style="flex:1;padding:.75rem;background:var(--teal);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s">💾 Guardar borrador</button>
+        <button onclick="guardarHC(true)" style="flex:0 0 auto;padding:.75rem 1.1rem;background:#059669;color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">✅ Finalizar</button>
+        <button class="btn-ai" id="btnGenerarAI" onclick="generarResumenAI()">✨ Analizar con AI</button>
       </div>
       <!-- Resultado AI -->
       <div class="hc-ai-box" id="hcAIBox">
-        <h4>✨ Resumen clínico generado por IA</h4>
-        <div class="hc-ai-row"><strong>Resumen</strong><span id="aiResumen"></span></div>
-        <div class="hc-ai-row"><strong>Nivel de urgencia</strong><span id="aiUrgencia"></span></div>
-        <div class="hc-ai-row"><strong>Recomendación</strong><span id="aiRecomendacion"></span></div>
+        <div class="hc-ai-box-header">
+          <span>✨ Análisis clínico con IA</span>
+          <span class="ai-model">Claude Sonnet · CitaDoc AI</span>
+        </div>
+        <div id="aiContent"></div>
       </div>
       <!-- Historial previo -->
       <div id="historialPrevio" style="margin-top:1.4rem;display:none">
@@ -583,17 +600,18 @@ const setVal  = (id,v) => { const e=$(id); if(e&&v!=null&&v!=='') e.value=v; };
 
 // ══ NAV ══
 function showPanel(id, el) {
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const panel = $('panel-'+id);
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var panel = $('panel-'+id);
   if (!panel) return;
   panel.classList.add('active');
   if (el) el.classList.add('active');
-  const titles = {inicio:'Panel médico',calendario:'Calendario',estadisticas:'Estadísticas',horarios:'Horarios',perfil:'Mi perfil'};
+  var titles = {inicio:'Panel medico',calendario:'Calendario',estadisticas:'Estadisticas',horarios:'Horarios',perfil:'Mi perfil',pacientes:'Pacientes'};
   setText('topbarTitle', titles[id]||id);
-  if (id==='calendario') { renderCal(); if(M) cargarCitasCal(M.id); }
-  if (id==='horarios')   renderSlots();
+  if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
+  if (id==='horarios')    renderSlots();
   if (id==='estadisticas' && M) cargarStats(M.id);
+  if (id==='pacientes')   cargarPacientes();
 }
 
 // ══ CALENDARIO ══
@@ -1049,6 +1067,409 @@ document.addEventListener('DOMContentLoaded', async () => {
     setText('sidebarNombre','Error - recarga');
   }
 });
+
+// ════════════════════════════════════════
+// MÓDULO PACIENTES + HISTORIA CLÍNICA
+// ════════════════════════════════════════
+
+var _medicoIdActual = null;
+var _hcCitaId = null;
+var _hcPacienteId = null;
+var _hcId = null;
+
+// ── CARGAR PACIENTES ──
+function cargarPacientes() {
+  if (!M) return;
+  var container = document.getElementById('pacientesList');
+  if (!container) return;
+  container.innerHTML = '<div class="empty-citas">Cargando...</div>';
+
+  // Query correcta: solo pacientes de este médico via citas
+  _sb.from('citas')
+    .select('paciente_id, pacientes(id, nombre, email, telefono)')
+    .eq('medico_id', M.id)
+    .not('paciente_id', 'is', null)
+    .then(function(r) {
+      if (r.error) {
+        console.error('Pacientes error:', r.error);
+        container.innerHTML = '<div class="empty-citas">Error: '+r.error.message+'</div>';
+        return;
+      }
+      // Deduplicar por paciente_id
+      var map = {};
+      (r.data||[]).forEach(function(row) {
+        if (row.pacientes && !map[row.pacientes.id]) {
+          map[row.pacientes.id] = row.pacientes;
+        }
+      });
+      var pacientes = Object.values(map);
+      console.log('Pacientes del medico:', pacientes.length);
+
+      if (!pacientes.length) {
+        container.innerHTML = '<div class="empty-citas">No hay pacientes aun. Aparecen cuando alguien agenda una cita.</div>';
+        return;
+      }
+      container.innerHTML = '';
+      pacientes.forEach(function(p) {
+        var ini = (p.nombre||'P').charAt(0).toUpperCase();
+        var div = document.createElement('div');
+        div.className = 'pac-item';
+        div.innerHTML = '<div class="pac-avatar-sm">'+ini+'</div>'
+          + '<div class="pac-info">'
+            + '<div class="pac-nombre">'+(p.nombre||'Sin nombre')+'</div>'
+            + '<div class="pac-meta">'+(p.email||'')+(p.telefono?' · '+p.telefono:'')+'</div>'
+          + '</div>'
+          + '<span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial →</span>';
+        div.addEventListener('click', function(){ abrirHistorialPaciente(p.id, p.nombre); });
+        container.appendChild(div);
+      });
+    });
+}
+
+// ── ABRIR CONSULTA DESDE CITA ──
+function abrirConsulta(citaId, pacienteNombre, pacienteId) {
+  _hcCitaId     = citaId;
+  _hcPacienteId = pacienteId || null;
+  _hcId         = null;
+  ['hcSintomas','hcExamen','hcDiagnostico','hcTratamiento'].forEach(function(id) {
+    var e=document.getElementById(id); if(e){e.value='';e.disabled=false;}
+  });
+  var aiBox = document.getElementById('hcAIBox');
+  if (aiBox) aiBox.style.display = 'none';
+  var btnAI = document.getElementById('btnGenerarAI');
+  if (btnAI) { btnAI.style.display=''; btnAI.textContent='✨ Generar resumen AI'; btnAI.disabled=false; }
+  document.getElementById('hcTitle').textContent    = 'Consulta — '+(pacienteNombre||'Paciente');
+  document.getElementById('hcSubtitle').textContent = '';
+  // Cargar historia existente si ya hay una
+  _sb.from('historias_clinicas').select('*').eq('cita_id', citaId).single()
+    .then(function(r) {
+      if (r.data) {
+        _hcId = r.data.id;
+        document.getElementById('hcSintomas').value    = r.data.sintomas||'';
+        document.getElementById('hcExamen').value      = r.data.examen_fisico||'';
+        document.getElementById('hcDiagnostico').value = r.data.diagnostico||'';
+        document.getElementById('hcTratamiento').value = r.data.tratamiento||'';
+        if (r.data.resumen_ai) mostrarAI(r.data);
+      }
+    });
+  // Cargar historial previo
+  if (pacienteId) cargarHistorialPrevio(pacienteId, citaId);
+  document.getElementById('hcOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+// ── ABRIR PACIENTE — historial completo + prefill última consulta ──
+function abrirHistorialPaciente(pacienteId, nombre) {
+  _hcPacienteId = pacienteId;
+  _hcCitaId     = null;
+  _hcId         = null;
+
+  // Limpiar campos y habilitar para nueva consulta
+  ['hcSintomas','hcExamen','hcDiagnostico','hcTratamiento'].forEach(function(id) {
+    var e = document.getElementById(id);
+    if (e) { e.value = ''; e.disabled = false; }
+  });
+
+  var aiBox = document.getElementById('hcAIBox');
+  if (aiBox) aiBox.style.display = 'none';
+  var btnAI = document.getElementById('btnGenerarAI');
+  if (btnAI) { btnAI.style.display = ''; btnAI.disabled = false; btnAI.textContent = '✨ Generar resumen AI'; }
+
+  document.getElementById('hcTitle').textContent    = 'Paciente — '+(nombre||'Paciente');
+  document.getElementById('hcSubtitle').textContent = 'Nueva consulta o ver historial';
+
+  // Cargar historial completo del paciente
+  _sb.from('historias_clinicas')
+    .select('*')
+    .eq('paciente_id', pacienteId)
+    .order('created_at', {ascending: false})
+    .then(function(r) {
+      var historias = r.data || [];
+      var wrap = document.getElementById('historialPrevio');
+      var list = document.getElementById('historialList');
+
+      // Prefill con la última consulta
+      if (historias.length) {
+        var ultima = historias[0];
+        _hcId = ultima.id; // editar la última si no hay cita específica
+        var s = document.getElementById('hcSintomas');
+        var e = document.getElementById('hcExamen');
+        var d = document.getElementById('hcDiagnostico');
+        var t = document.getElementById('hcTratamiento');
+        if (s) s.value = ultima.sintomas    || '';
+        if (e) e.value = ultima.examen_fisico || '';
+        if (d) d.value = ultima.diagnostico || '';
+        if (t) t.value = ultima.tratamiento || '';
+        if (ultima.resumen_ai) mostrarAI(ultima);
+        var fechaUlt = new Date(ultima.created_at).toLocaleDateString('es-EC');
+        if (ultima.estado === 'finalizada') {
+          bloquearEdicion();
+          document.getElementById('hcSubtitle').textContent = 'Ultima consulta: '+fechaUlt+' (finalizada)';
+        } else {
+          document.getElementById('hcSubtitle').textContent = 'Ultima consulta cargada · '+fechaUlt;
+        }
+      }
+
+      // Renderizar historial completo
+      if (!wrap || !list) return;
+      if (!historias.length) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block';
+      list.innerHTML = '';
+      historias.forEach(function(h) {
+        var fecha = h.created_at ? new Date(h.created_at).toLocaleDateString('es-EC') : '--';
+        var div   = document.createElement('div');
+        div.className = 'historial-item';
+        var estadoBadge = h.estado==='finalizada'
+          ? '<span style="font-size:.68rem;background:#d1fae5;color:#059669;padding:.15rem .5rem;border-radius:50px;font-weight:700;margin-left:.4rem">✅ Finalizada</span>'
+          : '<span style="font-size:.68rem;background:var(--cream);color:var(--muted);padding:.15rem .5rem;border-radius:50px;font-weight:600;margin-left:.4rem">Borrador</span>';
+        div.innerHTML = '<div class="historial-fecha">'+fecha+estadoBadge+'</div>'
+          + '<div class="historial-diag">'+(h.diagnostico||'Sin diagnostico')+'</div>'
+          + '<div class="historial-trat">'+(h.tratamiento||'')+'</div>'
+          + (h.resumen_ai ? '<div class="historial-ai">✨ '+h.resumen_ai+'</div>' : '');
+        list.appendChild(div);
+      });
+    });
+
+  document.getElementById('hcOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+// ── HISTORIAL PREVIO ──
+function cargarHistorialPrevio(pacienteId, citaActualId) {
+  _sb.from('historias_clinicas').select('*').eq('paciente_id', pacienteId)
+    .order('created_at', {ascending: false})
+    .then(function(r) {
+      var historias = (r.data||[]).filter(function(h){ return h.cita_id !== citaActualId; });
+      var wrap = document.getElementById('historialPrevio');
+      var list = document.getElementById('historialList');
+      if (!wrap||!list) return;
+      if (!historias.length) { wrap.style.display='none'; return; }
+      wrap.style.display = 'block';
+      list.innerHTML = '';
+      historias.forEach(function(h) {
+        var fecha = h.created_at ? new Date(h.created_at).toLocaleDateString('es-EC') : '--';
+        var div   = document.createElement('div');
+        div.className = 'historial-item';
+        var estadoBadge = h.estado==='finalizada'
+          ? '<span style="font-size:.68rem;background:#d1fae5;color:#059669;padding:.15rem .5rem;border-radius:50px;font-weight:700;margin-left:.4rem">✅ Finalizada</span>'
+          : '<span style="font-size:.68rem;background:var(--cream);color:var(--muted);padding:.15rem .5rem;border-radius:50px;font-weight:600;margin-left:.4rem">Borrador</span>';
+        div.innerHTML = '<div class="historial-fecha">'+fecha+estadoBadge+'</div>'
+          + '<div class="historial-diag">'+(h.diagnostico||'Sin diagnostico')+'</div>'
+          + '<div class="historial-trat">'+(h.tratamiento||'')+'</div>'
+          + (h.resumen_ai ? '<div class="historial-ai">✨ '+h.resumen_ai+'</div>' : '');
+        list.appendChild(div);
+      });
+    });
+}
+
+// ── GUARDAR HISTORIA CLÍNICA ──
+function guardarHC(finalizar) {
+  var sintomas    = document.getElementById('hcSintomas').value.trim();
+  var examen      = document.getElementById('hcExamen').value.trim();
+  var diagnostico = document.getElementById('hcDiagnostico').value.trim();
+  var tratamiento = document.getElementById('hcTratamiento').value.trim();
+  if (!diagnostico) { alert('Ingresa al menos el diagnostico.'); return; }
+  if (!M) { alert('Error: medico no identificado.'); return; }
+  if (!_hcPacienteId && !_hcCitaId) { alert('Error: no hay paciente vinculado.'); return; }
+
+  var estadoHC = finalizar ? 'finalizada' : 'borrador';
+  var payload = {
+    cita_id:       _hcCitaId     || null,
+    medico_id:     M.id,
+    paciente_id:   _hcPacienteId || null,
+    sintomas:      sintomas       || null,
+    examen_fisico: examen         || null,
+    diagnostico:   diagnostico,
+    tratamiento:   tratamiento    || null,
+    estado:        estadoHC,
+    updated_at:    new Date().toISOString()
+  };
+
+  // Siempre guardar por _hcId específico para no sobreescribir otras historias
+  var promise = _hcId
+    ? _sb.from('historias_clinicas').update(payload).eq('id', _hcId)
+    : _sb.from('historias_clinicas').insert(payload).select('id').single();
+
+  promise.then(function(r) {
+    if (r.error) { alert('Error al guardar: '+r.error.message); return; }
+    if (!_hcId && r.data) _hcId = r.data.id;
+    if (_hcCitaId) _sb.from('citas').update({estado:'completada'}).eq('id', _hcCitaId);
+
+    // Feedback visual fuerte
+    feedbackGuardado(finalizar);
+
+    // Si se finaliza — bloquear edición
+    if (finalizar) bloquearEdicion();
+  });
+}
+
+function feedbackGuardado(finalizado) {
+  var btn = document.getElementById('btnGuardarHC');
+  if (!btn) { mostrarToast(finalizado ? 'Consulta finalizada' : 'Borrador guardado'); return; }
+  var original = btn.textContent;
+  btn.style.background = finalizado ? '#059669' : 'var(--teal)';
+  btn.textContent = finalizado ? '✅ Consulta finalizada' : '✅ Guardado';
+  btn.disabled = true;
+  setTimeout(function() {
+    btn.textContent = original;
+    btn.disabled = finalizado;
+    if (!finalizado) btn.style.background = '';
+  }, 2500);
+  mostrarToast(finalizado ? 'Consulta finalizada y bloqueada' : 'Borrador guardado correctamente');
+}
+
+function bloquearEdicion() {
+  ['hcSintomas','hcExamen','hcDiagnostico','hcTratamiento'].forEach(function(id) {
+    var e = document.getElementById(id);
+    if (e) {
+      e.disabled = true;
+      e.style.background = 'var(--cream)';
+      e.style.color = 'var(--muted)';
+    }
+  });
+  var btnGuardar = document.getElementById('btnGuardarHC');
+  if (btnGuardar) { btnGuardar.disabled = true; btnGuardar.style.opacity = '.5'; }
+  var subtitulo = document.getElementById('hcSubtitle');
+  if (subtitulo) subtitulo.textContent = '🔒 Consulta finalizada — solo lectura';
+}
+
+// ── AI SUMMARY ──
+// ── OBTENER HISTORIAL COMPLETO DEL PACIENTE ──
+function obtenerHistorialPaciente(pacienteId) {
+  if (!pacienteId) return Promise.resolve('Sin historial previo.');
+  return _sb.from('historias_clinicas')
+    .select('created_at, sintomas, diagnostico, tratamiento, resumen_ai, estado')
+    .eq('paciente_id', pacienteId)
+    .order('created_at', {ascending: true})
+    .then(function(r) {
+      var historias = r.data || [];
+      if (!historias.length) return 'Sin historial previo registrado.';
+      return historias.map(function(h, idx) {
+        var fecha = h.created_at ? new Date(h.created_at).toLocaleDateString('es-EC') : '--';
+        return 'Consulta '+(idx+1)+' ('+fecha+'): '
+          + 'Sintomas: '+(h.sintomas||'No registrado')+'. '
+          + 'Diagnostico: '+(h.diagnostico||'No registrado')+'. '
+          + 'Tratamiento: '+(h.tratamiento||'No registrado')+'.'
+          + (h.resumen_ai ? ' Resumen previo: '+h.resumen_ai : '');
+      }).join(' | ');
+    });
+}
+
+// ── GENERAR AI CLÍNICO — ASISTENTE DE SEGUNDA CAPA ──
+function generarResumenAI() {
+  var sintomas    = document.getElementById('hcSintomas').value.trim();
+  var examen      = document.getElementById('hcExamen').value.trim();
+  var diagnostico = document.getElementById('hcDiagnostico').value.trim();
+  var tratamiento = document.getElementById('hcTratamiento').value.trim();
+  if (!sintomas && !diagnostico) { alert('Ingresa sintomas o diagnostico primero.'); return; }
+  var btn     = document.getElementById('btnGenerarAI');
+  var box     = document.getElementById('hcAIBox');
+  var content = document.getElementById('aiContent');
+  if (btn) { btn.disabled=true; btn.textContent='Analizando...'; }
+  if (box && content) {
+    box.style.display = 'block';
+    content.innerHTML = '<div class="ai-loading">'
+      + '<div class="ai-loading-dot"></div>'
+      + '<div class="ai-loading-dot"></div>'
+      + '<div class="ai-loading-dot"></div>'
+      + '<span>Analizando historial del paciente...</span>'
+      + '</div>';
+  }
+  obtenerHistorialPaciente(_hcPacienteId).then(function(historial) {
+    var prompt = 'Eres un asistente clinico de apoyo para medicos. NO emites diagnosticos ni reemplazas al medico.'
+      + ' Analiza el historial del paciente y la consulta actual para apoyar la decision medica.'
+      + ' HISTORIAL DEL PACIENTE: ' + historial
+      + ' CONSULTA ACTUAL - Sintomas: ' + (sintomas||'No especificados') + '.'
+      + ' Examen fisico: ' + (examen||'No especificado') + '.'
+      + ' Observacion del medico: ' + (diagnostico||'No especificado') + '.'
+      + ' Responde SOLO con JSON valido sin markdown ni backticks.'
+      + ' {"patrones":"recurrencias o sintomas repetidos observados en el historial",'
+      + '"evolucion":"si el paciente mejora empeora o se mantiene estable basado en el historial",'
+      + '"senales":"posibles riesgos o alertas que el medico deberia considerar",'
+      + '"observaciones":"contexto clinico util para el medico sin emitir diagnostico",'
+      + '"nota":"Este analisis es de apoyo informativo y no reemplaza el criterio medico profesional"}';
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        messages: [{role:'user', content: prompt}]
+      })
+    }).then(function(r){ return r.json(); })
+      .then(function(data) {
+        var text = (data.content&&data.content[0]) ? data.content[0].text : '';
+        try {
+          var parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+          renderAI(parsed);
+          if (_hcId) {
+            _sb.from('historias_clinicas').update({
+              resumen_ai:       parsed.observaciones || null,
+              urgencia_ai:      null,
+              recomendacion_ai: parsed.senales       || null
+            }).eq('id', _hcId);
+          }
+        } catch(e) {
+          console.error('AI parse error:', e, text);
+          if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.85rem">Error procesando respuesta. Intenta de nuevo.</p>';
+        }
+        if (btn) { btn.disabled=false; btn.textContent='✨ Analizar con AI'; }
+      })
+      .catch(function() {
+        if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.85rem">Error conectando con AI.</p>';
+        if (btn) { btn.disabled=false; btn.textContent='✨ Analizar con AI'; }
+      });
+  });
+}
+
+// ── RENDER AI — 4 bloques clínicos ──
+function renderAI(data) {
+  var box     = document.getElementById('hcAIBox');
+  var content = document.getElementById('aiContent');
+  if (!box || !content) return;
+  content.innerHTML = ''
+    + '<div style="font-size:.7rem;color:#94a3b8;margin-bottom:.8rem;padding:.5rem .7rem;background:rgba(148,163,184,.08);border-radius:7px">'
+      + '⚠️ Este análisis es generado por IA como apoyo informativo. No reemplaza el criterio médico profesional.'
+    + '</div>'
+    + '<div class="ai-block">'
+      + '<div class="ai-block-title" style="color:#1e40af">📊 Patrones detectados</div>'
+      + '<div class="ai-block-content">'+(data.patrones||'Sin historial suficiente para detectar patrones.')+'</div>'
+    + '</div>'
+    + '<div class="ai-block">'
+      + '<div class="ai-block-title" style="color:#166534">📈 Evolución clínica</div>'
+      + '<div class="ai-block-content">'+(data.evolucion||'Sin datos comparativos disponibles.')+'</div>'
+    + '</div>'
+    + '<div class="ai-block">'
+      + '<div class="ai-block-title" style="color:#9a3412">⚠️ Señales de atención</div>'
+      + '<div class="ai-block-content">'+(data.senales||'Sin señales de atención identificadas.')+'</div>'
+    + '</div>'
+    + '<div class="ai-block">'
+      + '<div class="ai-block-title" style="color:#374151">📌 Observaciones para el médico</div>'
+      + '<div class="ai-block-content">'+(data.observaciones||'--')+'</div>'
+    + '</div>';
+  box.style.display = 'block';
+}
+
+// ── MOSTRAR AI DESDE DATOS GUARDADOS ──
+function mostrarAI(data) {
+  renderAI({
+    patrones:      data.patrones      || '',
+    evolucion:     data.evolucion     || '',
+    senales:       data.senales       || data.recomendacion_ai || '',
+    observaciones: data.observaciones || data.resumen_ai       || ''
+  });
+}
+
+function cerrarHC() {
+  document.getElementById('hcOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  ['hcSintomas','hcExamen','hcDiagnostico','hcTratamiento'].forEach(function(id){
+    var e=document.getElementById(id); if(e)e.disabled=false;
+  });
+  var btnAI=document.getElementById('btnGenerarAI');
+  if(btnAI){btnAI.style.display='';btnAI.textContent='✨ Generar resumen AI';btnAI.disabled=false;}
+}
+
 </script>
 </body>
 </html>
