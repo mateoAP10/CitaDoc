@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CitaDoc — Encuentra tu médico, agenda en minutos</title>
 <meta name="description" content="Directorio médico de Latinoamérica. Busca por especialidad y ciudad, agenda tu cita en minutos.">
-<link rel="canonical" href="https://citadoc.lat/">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-<script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -21,330 +19,199 @@
 }
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);overflow-x:hidden}
-
-/* ── NAV ── */
 nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 5%;height:64px;background:rgba(247,244,239,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
 .logo{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:var(--ink);text-decoration:none;letter-spacing:-.03em}
 .logo span{color:var(--teal);font-style:italic}
 .nav-right{display:flex;align-items:center;gap:1.2rem}
-.nav-link{font-size:.88rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-link{font-size:.88rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s;cursor:pointer}
 .nav-link:hover{color:var(--teal)}
-.btn-nav{background:var(--teal);color:#fff;padding:.48rem 1.2rem;border-radius:50px;font-size:.85rem;font-weight:600;text-decoration:none;transition:background .2s;white-space:nowrap}
+.btn-nav{background:var(--teal);color:#fff;padding:.48rem 1.2rem;border-radius:50px;font-size:.85rem;font-weight:600;text-decoration:none;transition:background .2s}
 .btn-nav:hover{background:var(--teal-mid)}
-
-/* ── AUTH NAV ── */
-.nav-auth{display:flex;align-items:center;gap:.8rem}
-.nav-logged-out{display:flex;align-items:center;gap:.7rem}
-.nav-user-dropdown{position:relative}
-.nav-user-pill{display:none;align-items:center;gap:.5rem;padding:.38rem 1rem .38rem .5rem;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.25);border-radius:50px;cursor:pointer;transition:all .2s;user-select:none}
-.nav-user-pill:hover{background:var(--teal);border-color:var(--teal)}
-.nav-user-pill:hover .nav-user-name,.nav-user-pill:hover .nav-chevron{color:#fff}
-.nav-user-avatar{width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
-.nav-user-pill:hover .nav-user-avatar{background:rgba(255,255,255,.25)}
-.nav-user-name{font-size:.82rem;font-weight:600;color:var(--teal);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nav-chevron{font-size:.6rem;color:var(--teal-mid);transition:transform .2s}
-.nav-user-dropdown.open .nav-chevron{transform:rotate(180deg)}
-.nav-user-dropdown-menu{display:none;position:absolute;top:calc(100% + 10px);right:0;background:var(--white);border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);min-width:210px;z-index:500;overflow:hidden}
-.nav-user-dropdown.open .nav-user-dropdown-menu{display:block}
-.nav-dropdown-user-info{padding:.9rem 1rem .75rem;border-bottom:1px solid var(--border);background:var(--cream)}
-.nav-dropdown-user-info .ddu-name{font-size:.88rem;font-weight:700;color:var(--ink)}
-.nav-dropdown-user-info .ddu-plan{font-size:.72rem;color:var(--teal);font-weight:600;margin-top:.2rem}
-.nav-dropdown-item{display:flex;align-items:center;gap:.65rem;padding:.72rem 1rem;font-size:.84rem;font-weight:500;color:var(--ink2);text-decoration:none;cursor:pointer;transition:background .15s;border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;text-align:left}
-.nav-dropdown-item:hover{background:var(--cream);color:var(--teal)}
-.nav-dropdown-sep{height:1px;background:var(--border);margin:.25rem 0}
-.nav-dropdown-item.danger{color:#dc2626}
-.nav-dropdown-item.danger:hover{background:#fef2f2}
-
-/* ── HERO ── */
+.nav-user-pill{display:none;align-items:center;gap:.5rem;padding:.38rem 1rem .38rem .5rem;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.25);border-radius:50px;cursor:pointer}
+.nav-user-avatar{width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+.nav-user-name{font-size:.82rem;font-weight:600;color:var(--teal)}
+.nav-dropdown{position:absolute;top:70px;right:5%;background:var(--white);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);min-width:200px;z-index:300;display:none;overflow:hidden}
+.nav-dropdown.open{display:block}
+.nav-dropdown a,.nav-dropdown button{display:block;width:100%;padding:.7rem 1rem;font-size:.84rem;color:var(--ink2);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.nav-dropdown a:hover,.nav-dropdown button:hover{background:var(--cream)}
+.nav-dropdown .danger{color:#dc2626}
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 5% 4rem;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(14,157,140,.07) 0%,transparent 70%)}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:rgba(11,124,110,.08);border:1px solid rgba(11,124,110,.15);border-radius:50px;padding:.35rem 1rem;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:1.8rem}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--teal-mid);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .hero h1{font-family:'Fraunces',serif;font-size:clamp(2.4rem,6vw,4.2rem);font-weight:700;color:var(--ink);line-height:1.1;letter-spacing:-.03em;margin-bottom:.6rem}
 .hero h1 em{color:var(--teal);font-style:italic;font-weight:400}
 .hero-sub{font-size:1.05rem;color:var(--muted);max-width:520px;line-height:1.65;margin-bottom:2.5rem}
-.btn-triage{display:inline-flex;align-items:center;gap:.5rem;background:var(--white);border:1.5px solid var(--teal);color:var(--teal);padding:.65rem 1.4rem;border-radius:50px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;margin-bottom:1.8rem}
+.btn-triage{display:inline-flex;align-items:center;gap:.5rem;background:var(--white);border:1.5px solid var(--teal);color:var(--teal);padding:.65rem 1.4rem;border-radius:50px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:1.8rem;transition:all .2s}
 .btn-triage:hover{background:var(--teal);color:#fff}
-
-/* ── SEARCH BOX ── */
-.search-box{background:var(--white);border-radius:20px;padding:1.4rem 1.6rem;box-shadow:var(--shadow-md);border:1.5px solid var(--border);display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;width:100%;max-width:820px;margin:0 auto}
+.search-box{background:var(--white);border-radius:20px;padding:1.4rem 1.6rem;box-shadow:var(--shadow-md);border:1.5px solid var(--border);display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;width:100%;max-width:820px}
 .search-field{display:flex;flex-direction:column;gap:.4rem;flex:1;min-width:150px}
 .search-field label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
 .select-wrap{position:relative}
 .select-wrap select{width:100%;padding:.75rem 2rem .75rem 1rem;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);outline:none;cursor:pointer;appearance:none;transition:border-color .2s}
-.select-wrap::after{content:'▾';position:absolute;right:.9rem;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none;font-size:.8rem}
+.select-wrap::after{content:'v';position:absolute;right:.9rem;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none;font-size:.7rem}
 .select-wrap select:focus{border-color:var(--teal-mid)}
-.btn-search{display:flex;align-items:center;gap:.5rem;background:var(--teal);color:#fff;border:none;padding:.78rem 1.6rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s;white-space:nowrap;flex-shrink:0}
+.btn-search{display:flex;align-items:center;gap:.5rem;background:var(--teal);color:#fff;border:none;padding:.78rem 1.6rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .2s}
 .btn-search:hover{background:var(--teal-mid)}
-.btn-search svg{width:18px;height:18px;stroke:#fff;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
-
-/* ── SEARCHABLE SELECT ── */
 .ss-wrap{position:relative}
-.ss-input-row{display:flex;align-items:center;flex-wrap:wrap;gap:.35rem;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:12px;background:var(--white);cursor:text;min-height:46px;transition:border-color .2s}
-.ss-input-row:focus-within{border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)}
-.ss-tag{display:inline-flex;align-items:center;gap:.3rem;background:var(--teal-lite);color:var(--teal);font-size:.8rem;font-weight:600;padding:.18rem .55rem;border-radius:6px}
-.ss-tag-x{cursor:pointer;opacity:.6;font-size:.9rem;line-height:1}
-.ss-tag-x:hover{opacity:1}
-.ss-input{border:none;outline:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);min-width:80px;flex:1}
+.ss-input-row{display:flex;align-items:center;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:12px;background:var(--white);cursor:text;min-height:46px;transition:border-color .2s}
+.ss-input-row:focus-within{border-color:var(--teal-mid)}
+.ss-input{border:none;outline:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);width:100%}
 .ss-input::placeholder{color:var(--muted2)}
 .ss-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:400;background:var(--white);border:1.5px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);max-height:200px;overflow-y:auto;display:none}
 .ss-dropdown.open{display:block}
-.ss-option{padding:.55rem .9rem;font-size:.88rem;color:var(--ink2);cursor:pointer;transition:background .12s}
-.ss-option:hover,.ss-option.active{background:var(--teal-lite);color:var(--teal)}
+.ss-option{padding:.55rem .9rem;font-size:.88rem;color:var(--ink2);cursor:pointer}
+.ss-option:hover{background:var(--teal-lite);color:var(--teal)}
 .ss-empty{padding:.7rem .9rem;font-size:.82rem;color:var(--muted2);text-align:center}
-
-/* ── QUICK TAGS ── */
 .quick-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin-top:1.4rem;max-width:700px}
 .quick-tag{display:inline-flex;align-items:center;gap:.35rem;background:var(--white);border:1.5px solid var(--border);border-radius:50px;padding:.42rem 1rem;font-size:.82rem;font-weight:500;color:var(--ink2);cursor:pointer;transition:all .2s}
 .quick-tag:hover,.quick-tag.active{background:var(--teal-lite);border-color:var(--teal);color:var(--teal)}
-
-/* ── TRIAJE MODAL ── */
-.triage-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1.5rem}
-.triage-overlay.open{display:flex}
-.triage-modal{background:var(--white);border-radius:24px;width:100%;max-width:520px;padding:2rem;box-shadow:var(--shadow-lg);position:relative;max-height:calc(100vh - 3rem);overflow-y:auto}
-.triage-modal h3{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;color:var(--ink);margin-bottom:.3rem}
-.triage-chat{margin:1.2rem 0;display:flex;flex-direction:column;gap:.75rem;max-height:300px;overflow-y:auto}
-.triage-bubble{padding:.75rem 1rem;border-radius:14px;font-size:.88rem;line-height:1.55;max-width:85%}
-.triage-bubble.bot{background:var(--teal-lite);color:var(--ink2);align-self:flex-start;border-radius:4px 14px 14px 14px}
-.triage-bubble.user{background:var(--teal);color:#fff;align-self:flex-end;border-radius:14px 14px 4px 14px}
-.triage-input-row{display:flex;gap:.6rem}
-.triage-input{flex:1;padding:.65rem 1rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none}
-.triage-input:focus{border-color:var(--teal-mid)}
-.triage-send{padding:.65rem 1.1rem;background:var(--teal);color:#fff;border:none;border-radius:12px;cursor:pointer;font-size:.9rem;transition:background .2s}
-.triage-send:hover{background:var(--teal-mid)}
-.triage-result{background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:14px;padding:1rem;margin-top:.8rem;display:none}
-.triage-result h4{font-size:.9rem;font-weight:700;color:var(--teal);margin-bottom:.4rem}
-.triage-result p{font-size:.84rem;color:var(--ink2);line-height:1.55}
-.btn-close-modal{position:absolute;top:1.2rem;right:1.2rem;width:32px;height:32px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:1rem;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:background .2s}
-.btn-close-modal:hover{background:var(--teal-lite);color:var(--teal)}
-
-/* ── DIRECTORIO ── */
-.directorio{padding:3rem 5%;opacity:0;transform:translateY(16px);transition:opacity .4s ease,transform .4s ease}
-.directorio.visible{opacity:1;transform:none}
+.directorio{padding:3rem 5%}
 .dir-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem}
 .dir-title{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--ink)}
 .dir-title span{color:var(--teal)}
 .result-meta{font-size:.84rem;color:var(--muted2)}
-.sort-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-.sort-label{font-size:.78rem;color:var(--muted2);font-weight:500}
+.sort-row{display:flex;align-items:center;gap:.5rem}
 .sort-btn{padding:.35rem .75rem;border-radius:8px;border:1.5px solid var(--border);font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;background:var(--white);font-family:'DM Sans',sans-serif;transition:all .2s}
-.sort-btn:hover{border-color:var(--teal);color:var(--teal)}
 .sort-btn.active{background:var(--teal);border-color:var(--teal);color:#fff}
 .filter-bar{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;min-height:28px}
-.filter-chip{display:inline-flex;align-items:center;gap:.35rem;background:var(--teal-lite);border:1.5px solid var(--teal);color:var(--teal);font-size:.78rem;font-weight:600;padding:.28rem .75rem;border-radius:50px;cursor:pointer;transition:all .2s}
-.filter-chip:hover{background:var(--teal);color:#fff}
-.chip-x{font-size:.8rem;opacity:.7}
+.filter-chip{display:inline-flex;align-items:center;gap:.35rem;background:var(--teal-lite);border:1.5px solid var(--teal);color:var(--teal);font-size:.78rem;font-weight:600;padding:.28rem .75rem;border-radius:50px;cursor:pointer}
 .doctors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem}
 .empty-state{grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted2)}
-.empty-state .icon{font-size:2.5rem;margin-bottom:.8rem}
-.empty-state h3{font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:.4rem}
-
-/* ── DOCTOR CARD ── */
-.doctor-card{background:var(--white);border-radius:20px;border:1.5px solid var(--border);overflow:hidden;cursor:pointer;transition:all .25s;animation:cardIn .4s ease both;box-shadow:var(--shadow-sm)}
-.doctor-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:rgba(11,124,110,.25)}
-.doctor-card.featured{border-color:var(--gold);box-shadow:0 4px 20px rgba(245,158,11,.12)}
-@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.doctor-card{background:var(--white);border-radius:20px;border:1.5px solid var(--border);overflow:hidden;cursor:pointer;transition:all .25s;box-shadow:var(--shadow-sm)}
+.doctor-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.doctor-card.featured{border-color:var(--gold)}
 .featured-ribbon{background:linear-gradient(135deg,var(--gold),#d97706);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.35rem 1rem;text-align:center}
 .card-top{display:flex;align-items:center;gap:1rem;padding:1.2rem 1.2rem .8rem}
 .doc-avatar{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;overflow:hidden}
-.doc-main{flex:1;min-width:0}
-.doc-name{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-name{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.15rem}
 .doc-specialty{font-size:.8rem;color:var(--teal);font-weight:600;margin-bottom:.2rem}
 .doc-location{font-size:.76rem;color:var(--muted2)}
 .card-divider{height:1px;background:var(--border);margin:0 1.2rem}
 .card-mid{padding:.7rem 1.2rem}
-.insurance-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-.insurance-label{font-size:.72rem;color:var(--muted2);font-weight:600;flex-shrink:0}
-.insurance-tags{display:flex;flex-wrap:wrap;gap:.3rem}
-.ins-tag{font-size:.7rem;background:var(--cream);color:var(--muted);padding:.18rem .55rem;border-radius:5px;font-weight:500}
+.insurance-label{font-size:.72rem;color:var(--muted2);font-weight:600}
+.ins-tag{font-size:.7rem;background:var(--cream);color:var(--muted);padding:.18rem .55rem;border-radius:5px}
 .card-bottom{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem 1.2rem;gap:.6rem;flex-wrap:wrap}
-.doc-price{text-align:left}
 .price-num{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--ink);line-height:1}
 .price-label{font-size:.72rem;color:var(--muted2)}
-.btn-agendar{background:var(--teal);color:#fff;border:none;padding:.6rem 1.2rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-agendar{background:var(--teal);color:#fff;border:none;padding:.6rem 1.2rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
 .btn-agendar:hover{background:var(--teal-mid)}
-
-/* ── QUICK RESULTS ── */
-.quick-results{background:var(--white);border-radius:20px;border:1.5px solid var(--border);padding:1.2rem 1.6rem;margin:1.5rem 5% 0;box-shadow:var(--shadow-sm);opacity:0;transform:translateY(10px);transition:all .35s;pointer-events:none}
-.quick-results.visible{opacity:1;transform:none;pointer-events:all}
-.qr-label{font-size:.75rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.8rem}
-.qr-list{display:flex;flex-direction:column;gap:.5rem}
-.qr-card{display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;border-radius:12px;cursor:pointer;transition:background .15s}
-.qr-card:hover{background:var(--cream)}
-.qr-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden}
-.qr-info{flex:1;min-width:0}
-.qr-name{font-size:.85rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qr-meta{font-size:.75rem;color:var(--muted2)}
-.qr-price{font-size:.88rem;font-weight:700;color:var(--teal);flex-shrink:0}
-.qr-price span{font-size:.7rem;font-weight:400;color:var(--muted2);display:block;text-align:right}
-.badge-dest{font-size:.65rem;font-weight:700;background:var(--gold);color:#fff;padding:.1rem .4rem;border-radius:4px;margin-left:.3rem;vertical-align:middle}
-
-/* ── MODAL AGENDAMIENTO ── */
+.btn-wa{display:inline-flex;align-items:center;gap:.35rem;background:#25d366;color:#fff;padding:.55rem .9rem;border-radius:9px;font-size:.8rem;font-weight:700;text-decoration:none}
 .modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
 .modal-overlay.open{display:flex}
-.modal{background:var(--white);border-radius:20px;width:100%;max-width:460px;box-shadow:var(--shadow-lg);position:relative;animation:modalIn .25s ease;margin:auto;max-height:calc(100vh - 2rem);overflow-y:auto;flex-shrink:0}
-@keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.modal{background:var(--white);border-radius:20px;width:100%;max-width:460px;box-shadow:var(--shadow-lg);position:relative;margin:auto;max-height:calc(100vh - 2rem);overflow-y:auto;flex-shrink:0}
 .modal-header{padding:1.3rem 1.6rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);z-index:10;border-radius:20px 20px 0 0}
-.modal-header h3{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:var(--ink);margin-bottom:.15rem;padding-right:5rem}
-.modal-doc-meta{font-size:.8rem;color:var(--muted)}
-.modal-header-actions{position:absolute;top:1rem;right:1.2rem;display:flex;align-items:center;gap:.5rem}
-.btn-ver-perfil-modal{font-size:.73rem;font-weight:600;color:var(--teal);text-decoration:none;border:1.5px solid var(--teal);padding:.28rem .65rem;border-radius:7px;transition:all .2s;white-space:nowrap}
-.btn-ver-perfil-modal:hover{background:var(--teal);color:#fff}
-.modal-close{width:28px;height:28px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:.9rem;color:var(--muted);display:flex;align-items:center;justify-content:center}
-.modal-close:hover{background:var(--teal-lite);color:var(--teal)}
+.modal-header h3{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:var(--ink);margin-bottom:.15rem;padding-right:4rem}
+.modal-doc-meta{font-size:.79rem;color:var(--muted)}
+.modal-actions{position:absolute;top:1rem;right:1.2rem;display:flex;gap:.5rem;align-items:center}
+.btn-ver-perfil-modal{font-size:.72rem;font-weight:600;color:var(--teal);text-decoration:none;border:1.5px solid var(--teal);padding:.25rem .6rem;border-radius:7px}
+.modal-close{width:28px;height:28px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:.9rem;color:var(--muted)}
 .modal-body{padding:1.2rem 1.6rem 1.6rem}
-
-/* Modal steps */
 .modal-steps{display:flex;align-items:center;margin-bottom:1.2rem}
 .m-step{display:flex;align-items:center;gap:.4rem;flex:1}
 .m-step-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;border:2px solid var(--border);color:var(--muted2);background:var(--white);flex-shrink:0;transition:all .2s}
 .m-step-num.active{border-color:var(--teal);color:var(--teal);background:var(--teal-lite)}
 .m-step-num.done{border-color:var(--teal);background:var(--teal);color:#fff}
-.m-step-label{font-size:.7rem;font-weight:500;color:var(--muted2)}
+.m-step-label{font-size:.7rem;color:var(--muted2)}
 .m-step-label.active{color:var(--teal);font-weight:600}
 .m-connector{flex:1;height:2px;background:var(--border);margin:0 .3rem;border-radius:2px;transition:background .3s}
 .m-connector.done{background:var(--teal)}
-
-/* Modal form */
+.modal-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.modal-cal-title{font-size:.88rem;font-weight:700;color:var(--ink)}
+.modal-cal-nav{width:26px;height:26px;border-radius:7px;background:var(--cream);border:1px solid var(--border);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.modal-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:1rem}
+.modal-cal-dow{font-size:.62rem;font-weight:700;color:var(--muted2);text-align:center;padding:.2rem 0}
+.modal-cal-day{font-size:.78rem;text-align:center;padding:.35rem .1rem;border-radius:7px;color:var(--muted2)}
+.modal-cal-day.available{color:var(--ink2);cursor:pointer;font-weight:600}
+.modal-cal-day.available:hover,.modal-cal-day.selected{background:var(--teal);color:#fff}
+.modal-cal-day.today{background:var(--cream);color:var(--teal)}
+.modal-cal-day.past{opacity:.3}
+.modal-slots-label{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.6rem}
+.time-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem;margin-bottom:1.2rem}
+.time-slot{padding:.5rem .2rem;border-radius:9px;border:1.5px solid var(--border);background:var(--cream);font-size:.8rem;font-weight:500;color:var(--ink2);text-align:center;cursor:pointer;transition:all .2s}
+.time-slot:hover{border-color:var(--teal);color:var(--teal)}
+.time-slot.selected{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
+.time-slot.taken{opacity:.35;cursor:not-allowed;text-decoration:line-through}
 .modal-field{margin-bottom:.9rem}
 .modal-field label{display:block;font-size:.76rem;font-weight:600;color:var(--ink2);margin-bottom:.35rem}
 .modal-field input{width:100%;padding:.68rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none;transition:border-color .2s}
-.modal-field input:focus{border-color:var(--teal-mid);background:var(--white);box-shadow:0 0 0 3px rgba(11,124,110,.08)}
-.time-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem;margin-bottom:1.2rem}
-.time-slot{padding:.5rem .2rem;border-radius:9px;border:1.5px solid var(--border);background:var(--cream);font-size:.8rem;font-weight:500;color:var(--ink2);text-align:center;cursor:pointer;transition:all .2s}
-.time-slot:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-lite)}
-.time-slot.selected{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
-.time-slot.taken{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+.modal-field input:focus{border-color:var(--teal-mid);background:var(--white)}
 .btn-confirm{width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;cursor:pointer;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;transition:background .2s}
 .btn-confirm:hover{background:var(--teal-mid)}
-.btn-confirm:disabled{opacity:.45;cursor:not-allowed}
-.btn-back{flex:0 0 auto;padding:.72rem 1rem;background:var(--cream);border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;color:var(--ink2);transition:all .2s}
-.btn-back:hover{border-color:var(--teal);color:var(--teal)}
+.btn-confirm:disabled{opacity:.4;cursor:not-allowed}
+.btn-back{flex:0 0 auto;padding:.72rem 1rem;background:var(--cream);border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;color:var(--ink2)}
 .resumen-box{background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:13px;padding:1.1rem;margin-bottom:1.2rem}
 .resumen-label{font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--teal);margin-bottom:.65rem}
 .resumen-row{display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:.4rem}
-.resumen-row:last-child{margin-bottom:0}
 .resumen-key{color:var(--muted)}
 .resumen-val{font-weight:600;color:var(--ink)}
 .resumen-val.teal{color:var(--teal);font-weight:700}
 .success-state{text-align:center;padding:1.5rem 0;display:none}
 .success-check{width:60px;height:60px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .9rem}
-
-/* ── LOGIN MODAL ── */
 .login-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem}
 .login-overlay.open{display:flex}
-.login-modal{background:var(--white);border-radius:20px;width:100%;max-width:380px;padding:2rem;box-shadow:var(--shadow-lg);position:relative;animation:modalIn .25s ease}
-
-/* ── FOOTER ── */
+.login-modal{background:var(--white);border-radius:20px;width:100%;max-width:380px;padding:2rem;box-shadow:var(--shadow-lg);position:relative}
 footer{background:var(--ink);color:rgba(255,255,255,.5);text-align:center;padding:2rem 5%;font-size:.82rem;margin-top:4rem}
 footer a{color:var(--teal-mid);text-decoration:none}
-
-/* ── SPIN ── */
-@keyframes spin{to{transform:rotate(360deg)}}
-.spin{animation:spin .8s linear infinite;display:inline-block}
-
-/* ── RESPONSIVE ── */
 @media(max-width:640px){
   .search-box{flex-direction:column;gap:.8rem;padding:1.1rem 1.2rem}
   .search-field{min-width:0;width:100%}
   .btn-search{width:100%;justify-content:center}
   .time-slots{grid-template-columns:repeat(3,1fr)}
   .doctors-grid{grid-template-columns:1fr}
-  .modal-header h3{font-size:1rem}
 }
-
-/* ── MODAL CALENDARIO ── */
-.modal-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
-.modal-cal-title{font-size:.88rem;font-weight:700;color:var(--ink)}
-.modal-cal-nav{width:26px;height:26px;border-radius:7px;background:var(--cream);border:1px solid var(--border);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.modal-cal-nav:hover{background:var(--teal-lite);border-color:var(--teal);color:var(--teal)}
-.modal-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:1rem}
-.modal-cal-dow{font-size:.62rem;font-weight:700;color:var(--muted2);text-align:center;padding:.2rem 0}
-.modal-cal-day{font-size:.78rem;text-align:center;padding:.35rem .1rem;border-radius:7px;cursor:default;color:var(--muted2);transition:all .15s}
-.modal-cal-day.available{color:var(--ink2);cursor:pointer;font-weight:600}
-.modal-cal-day.available:hover{background:var(--teal-lite);color:var(--teal)}
-.modal-cal-day.selected{background:var(--teal)!important;color:#fff!important;font-weight:700}
-.modal-cal-day.today{background:var(--cream);color:var(--teal)}
-.modal-cal-day.today.available{font-weight:700}
-.modal-cal-day.past{opacity:.3}
-.modal-slots-label{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.6rem}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <a href="index.html" class="logo">Cita<span>Doc</span></a>
   <div class="nav-right">
     <a href="citadoc-registro.html" class="nav-link">Para médicos</a>
-    <div class="nav-auth">
-      <div class="nav-logged-out" id="navLoggedOut">
-        <a href="#" class="nav-link" onclick="openLogin(event)">Iniciar sesión</a>
-        <a href="citadoc-registro.html" class="btn-nav">Registrarme</a>
+    <span class="nav-link" id="btnLogin">Iniciar sesión</span>
+    <a href="citadoc-registro.html" class="btn-nav" id="btnRegistro">Registrarme</a>
+    <div style="position:relative">
+      <div class="nav-user-pill" id="navPill">
+        <div class="nav-user-avatar" id="navAvatar">--</div>
+        <span class="nav-user-name" id="navName">Mi cuenta</span>
       </div>
-      <div class="nav-user-dropdown" id="navUserDropdown">
-        <div class="nav-user-pill" id="navUserPill" onclick="toggleUserMenu()">
-          <div class="nav-user-avatar" id="navUserAvatar">—</div>
-          <div class="nav-user-name" id="navUserName">Mi cuenta</div>
-          <span class="nav-chevron">▾</span>
+      <div class="nav-dropdown" id="navDropdown">
+        <div style="padding:.8rem 1rem;border-bottom:1px solid var(--border);background:var(--cream)">
+          <div style="font-size:.88rem;font-weight:700;color:var(--ink)" id="ddNombre">--</div>
+          <div style="font-size:.72rem;color:var(--teal);margin-top:.2rem" id="ddPlan">--</div>
         </div>
-        <div class="nav-user-dropdown-menu" id="navDropdownMenu">
-          <div class="nav-dropdown-user-info">
-            <div class="ddu-name" id="ddNombre">—</div>
-            <div class="ddu-plan" id="ddPlan">—</div>
-          </div>
-          <a href="citadoc-dashboard.html" class="nav-dropdown-item">⚡ Mi dashboard</a>
-          <a href="#" class="nav-dropdown-item" id="navVerPerfil">👁 Ver mi perfil</a>
-          <div class="nav-dropdown-sep"></div>
-          <button class="nav-dropdown-item danger" onclick="cerrarSesion()">↩ Cerrar sesión</button>
-        </div>
+        <a href="citadoc-dashboard.html">⚡ Mi dashboard</a>
+        <a href="#" id="ddVerPerfil">👁 Ver mi perfil</a>
+        <button id="btnLogout" class="danger">↩ Cerrar sesión</button>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-eyebrow"><div class="live-dot"></div><span id="heroCount">Médicos disponibles ahora</span></div>
   <h1>Encuentra tu médico,<br><em>agenda en minutos</em></h1>
   <p class="hero-sub">Sin llamadas. Sin intermediarios. Elige especialidad, ciudad y reserva tu cita directamente.</p>
-  <button class="btn-triage" onclick="openTriage()">✨ No sé qué especialidad necesito — ayúdame con IA</button>
-
+  <button class="btn-triage" id="btnTriage">✨ No sé qué especialidad necesito — ayúdame con IA</button>
   <div class="search-box">
     <div class="search-field">
       <label>Especialidad</label>
       <div class="select-wrap">
-        <select id="selEspecialidad">
+        <select id="selEsp">
           <option value="">Todas las especialidades</option>
-          <option value="alergia_e_inmunologia">Alergia e Inmunología</option>
-          <option value="anestesiologia">Anestesiología</option>
           <option value="cardiologia">Cardiología</option>
           <option value="cirugia_general">Cirugía General</option>
-          <option value="cirugia_plastica_y_reconstructiva">Cirugía Plástica y Reconstructiva</option>
           <option value="dermatologia">Dermatología</option>
           <option value="endocrinologia">Endocrinología</option>
           <option value="gastroenterologia">Gastroenterología</option>
-          <option value="geriatria">Geriatría</option>
           <option value="ginecologia_y_obstetricia">Ginecología y Obstetricia</option>
-          <option value="hematologia">Hematología</option>
-          <option value="infectologia">Infectología</option>
-          <option value="medicina_del_deporte">Medicina del Deporte</option>
-          <option value="medicina_familiar_y_comunitaria">Medicina Familiar y Comunitaria</option>
+          <option value="medicina_familiar_y_comunitaria">Medicina General</option>
           <option value="medicina_interna">Medicina Interna</option>
-          <option value="nefrologia">Nefrología</option>
-          <option value="neumonologia">Neumonología</option>
-          <option value="neurocirugia">Neurocirugía</option>
           <option value="neurologia">Neurología</option>
-          <option value="nutricion_clinica">Nutrición Clínica</option>
-          <option value="odontologia_general">Odontología General</option>
           <option value="oftalmologia">Oftalmología</option>
           <option value="oncologia">Oncología</option>
-          <option value="ortodoncia_y_ortopedia_maxilar">Ortodoncia y Ortopedia Maxilar</option>
-          <option value="otorrinolaringologia">Otorrinolaringología</option>
           <option value="pediatria">Pediatría</option>
           <option value="psiquiatria">Psiquiatría</option>
-          <option value="radiologia_e_imagenes">Radiología e Imágenes</option>
-          <option value="reumatologia">Reumatología</option>
           <option value="traumatologia_y_ortopedia">Traumatología y Ortopedia</option>
           <option value="urologia">Urología</option>
         </select>
@@ -353,7 +220,7 @@ footer a{color:var(--teal-mid);text-decoration:none}
     <div class="search-field">
       <label>País</label>
       <div class="ss-wrap" id="wrapPais">
-        <div class="ss-input-row" onclick="document.getElementById('inputPais').focus()">
+        <div class="ss-input-row">
           <input class="ss-input" id="inputPais" autocomplete="off" placeholder="Ej: Ecuador">
         </div>
         <div class="ss-dropdown" id="dropPais"></div>
@@ -362,145 +229,99 @@ footer a{color:var(--teal-mid);text-decoration:none}
     <div class="search-field">
       <label>Ciudad</label>
       <div class="ss-wrap" id="wrapCiudad">
-        <div class="ss-input-row" onclick="document.getElementById('inputCiudad').focus()">
+        <div class="ss-input-row">
           <input class="ss-input" id="inputCiudad" autocomplete="off" placeholder="Ej: Quito">
         </div>
         <div class="ss-dropdown" id="dropCiudad"></div>
       </div>
     </div>
-    <button class="btn-search" onclick="buscar()">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Buscar
-    </button>
+    <button class="btn-search" id="btnBuscar">🔍 Buscar</button>
   </div>
-
-  <div class="quick-tags">
-    <div class="quick-tag" onclick="quickSearch('medicina_familiar_y_comunitaria',this)">🩺 Medicina General</div>
-    <div class="quick-tag" onclick="quickSearch('pediatria',this)">👶 Pediatría</div>
-    <div class="quick-tag" onclick="quickSearch('dermatologia',this)">✨ Dermatología</div>
-    <div class="quick-tag" onclick="quickSearch('cardiologia',this)">❤️ Cardiología</div>
-    <div class="quick-tag" onclick="quickSearch('ginecologia_y_obstetricia',this)">🌸 Ginecología</div>
-    <div class="quick-tag" onclick="quickSearch('psiquiatria',this)">🧠 Psiquiatría</div>
+  <div class="quick-tags" id="quickTags">
+    <div class="quick-tag" data-esp="medicina_familiar_y_comunitaria">🩺 Medicina General</div>
+    <div class="quick-tag" data-esp="pediatria">👶 Pediatría</div>
+    <div class="quick-tag" data-esp="dermatologia">✨ Dermatología</div>
+    <div class="quick-tag" data-esp="cardiologia">❤️ Cardiología</div>
+    <div class="quick-tag" data-esp="ginecologia_y_obstetricia">🌸 Ginecología</div>
+    <div class="quick-tag" data-esp="psiquiatria">🧠 Psiquiatría</div>
   </div>
 </section>
 
-<!-- QUICK RESULTS -->
-<div class="quick-results" id="quickResults">
-  <div class="qr-label" id="qrLabel">Mejores opciones</div>
-  <div class="qr-list" id="qrList"></div>
-</div>
-
-<!-- DIRECTORIO -->
 <section class="directorio" id="directorio">
   <div class="dir-header">
     <div>
       <div class="dir-title">Médicos en <span id="dirCiudad">Ecuador</span></div>
-      <div class="result-meta" id="resultCount">Cargando...</div>
+      <div class="result-meta" id="resultMeta">Cargando...</div>
     </div>
     <div class="sort-row">
-      <span class="sort-label">Ordenar:</span>
-      <button class="sort-btn active" onclick="sortDoctors('destacado',this)">Destacados</button>
-      <button class="sort-btn" onclick="sortDoctors('precio-asc',this)">Menor precio</button>
-      <button class="sort-btn" onclick="sortDoctors('precio-desc',this)">Mayor precio</button>
+      <button class="sort-btn active" data-sort="destacado">Destacados</button>
+      <button class="sort-btn" data-sort="precio-asc">Menor precio</button>
+      <button class="sort-btn" data-sort="precio-desc">Mayor precio</button>
     </div>
   </div>
   <div class="filter-bar" id="filterBar"></div>
   <div class="doctors-grid" id="doctorsGrid">
-    <div class="empty-state">
-      <div class="spin">⟳</div>
-      <p style="margin-top:.5rem">Cargando médicos...</p>
-    </div>
+    <div class="empty-state"><p>Cargando médicos...</p></div>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer>
-  <p>© 2025 CitaDoc · <a href="#">Términos</a> · <a href="#">Privacidad</a> · Hecho con ❤️ para Latinoamérica</p>
-</footer>
-
-<!-- TRIAGE MODAL -->
-<div class="triage-overlay" id="triageOverlay" onclick="closeTriage(event)">
-  <div class="triage-modal" onclick="event.stopPropagation()">
-    <button class="btn-close-modal" onclick="closeTriage()">✕</button>
-    <h3>✨ Ayuda con IA</h3>
-    <p style="font-size:.84rem;color:var(--muted);margin-bottom:.5rem">Cuéntame tus síntomas y te digo qué especialista necesitas.</p>
-    <div class="triage-chat" id="triageChat">
-      <div class="triage-bubble bot">Hola 👋 ¿Cuál es tu principal molestia o síntoma?</div>
-    </div>
-    <div class="triage-result" id="triageResult">
-      <h4 id="triageResultTitle">Especialidad recomendada</h4>
-      <p id="triageResultText"></p>
-      <button onclick="aplicarTriaje()" style="margin-top:.8rem;padding:.55rem 1.1rem;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer">Ver médicos →</button>
-    </div>
-    <div class="triage-input-row">
-      <input class="triage-input" id="triageInput" placeholder="Escribe tu síntoma..." onkeydown="if(event.key==='Enter')sendTriage()">
-      <button class="triage-send" onclick="sendTriage()">→</button>
-    </div>
-  </div>
-</div>
+<footer><p>© 2025 CitaDoc · <a href="#">Términos</a> · <a href="#">Privacidad</a> · Hecho para Latinoamérica</p></footer>
 
 <!-- MODAL AGENDAMIENTO -->
-<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-header">
       <h3 id="modalDocName">Agendar cita</h3>
       <div class="modal-doc-meta" id="modalDocMeta"></div>
-      <div class="modal-header-actions">
-        <a href="#" id="btnVerPerfilModal" class="btn-ver-perfil-modal" target="_blank">Ver perfil →</a>
-        <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-actions">
+        <a href="#" id="btnVerPerfil" class="btn-ver-perfil-modal" target="_blank">Ver perfil</a>
+        <button class="modal-close" id="btnCloseModal">✕</button>
       </div>
     </div>
     <div class="modal-body">
       <div id="bookingForm">
-        <!-- Steps -->
         <div class="modal-steps">
           <div class="m-step"><div class="m-step-num active" id="msn1">1</div><span class="m-step-label active" id="msl1">Horario</span></div>
           <div class="m-connector" id="msc1"></div>
-          <div class="m-step"><div class="m-step-num" id="msn2">2</div><span class="m-step-label" id="msl2">Tus datos</span></div>
+          <div class="m-step"><div class="m-step-num" id="msn2">2</div><span class="m-step-label" id="msl2">Datos</span></div>
           <div class="m-connector" id="msc2"></div>
           <div class="m-step"><div class="m-step-num" id="msn3">3</div><span class="m-step-label" id="msl3">Confirmar</span></div>
         </div>
-        <!-- Paso 1 -->
         <div id="mStep1">
-          <div id="waBannerWrap"></div>
-          <!-- Mini calendario -->
+          <div id="waBanner"></div>
           <div class="modal-cal-header">
-            <button class="modal-cal-nav" onclick="modalCalPrev()">‹</button>
-            <div class="modal-cal-title" id="modalCalTitle">—</div>
-            <button class="modal-cal-nav" onclick="modalCalNext()">›</button>
+            <button class="modal-cal-nav" id="btnCalPrev">&#8249;</button>
+            <div class="modal-cal-title" id="calTitle">--</div>
+            <button class="modal-cal-nav" id="btnCalNext">&#8250;</button>
           </div>
-          <div class="modal-cal-grid" id="modalCalGrid"></div>
-          <!-- Slots del día seleccionado -->
-          <div id="modalSlotsWrap" style="display:none">
-            <div class="modal-slots-label" id="modalSlotsLabel">Horarios disponibles</div>
+          <div class="modal-cal-grid" id="calGrid"></div>
+          <div id="slotsWrap" style="display:none">
+            <div class="modal-slots-label" id="slotsLabel">Horarios disponibles</div>
             <div class="time-slots" id="timeSlots"></div>
           </div>
-          <button class="btn-confirm" id="btnSig1" onclick="goStep(2)" disabled style="opacity:.4;cursor:not-allowed">Siguiente → Tus datos</button>
+          <button class="btn-confirm" id="btnSig1" disabled>Siguiente</button>
         </div>
-        <!-- Paso 2 -->
         <div id="mStep2" style="display:none">
-          <div class="modal-field"><label>Nombre completo *</label><input type="text" id="inpNombre" placeholder="Ej: María García"></div>
-          <div class="modal-field"><label>Teléfono / WhatsApp *</label><input type="tel" id="inpTel" placeholder="Ej: 0998 123 456"></div>
-          <div class="modal-field"><label>Correo electrónico</label><input type="email" id="inpEmail" placeholder="Ej: maria@email.com"></div>
-          <div class="modal-field"><label>Motivo de consulta (opcional)</label><input type="text" id="inpMotivo" placeholder="Ej: Control de rutina"></div>
+          <div class="modal-field"><label>Nombre completo *</label><input type="text" id="inpNombre" placeholder="María García"></div>
+          <div class="modal-field"><label>Teléfono *</label><input type="tel" id="inpTel" placeholder="0998 123 456"></div>
+          <div class="modal-field"><label>Email</label><input type="email" id="inpEmail" placeholder="maria@email.com"></div>
+          <div class="modal-field"><label>Motivo (opcional)</label><input type="text" id="inpMotivo" placeholder="Control de rutina"></div>
           <div style="display:flex;gap:.6rem">
-            <button class="btn-back" onclick="goStep(1)">← Atrás</button>
-            <button class="btn-confirm" onclick="goStep(3)" style="flex:1">Revisar cita →</button>
+            <button class="btn-back" id="btnBack2">← Atrás</button>
+            <button class="btn-confirm" id="btnSig2" style="flex:1">Revisar →</button>
           </div>
         </div>
-        <!-- Paso 3 -->
         <div id="mStep3" style="display:none">
           <div class="resumen-box">
             <div class="resumen-label">Resumen de tu cita</div>
-            <div class="resumen-row"><span class="resumen-key">Médico</span><span class="resumen-val" id="resMedico">—</span></div>
-            <div class="resumen-row"><span class="resumen-key">Horario</span><span class="resumen-val teal" id="resHora">—</span></div>
-            <div class="resumen-row"><span class="resumen-key">Paciente</span><span class="resumen-val" id="resNombre">—</span></div>
-            <div class="resumen-row"><span class="resumen-key">Teléfono</span><span class="resumen-val" id="resTel">—</span></div>
-            <div class="resumen-row" id="resEmailRow" style="display:none"><span class="resumen-key">Email</span><span class="resumen-val" id="resEmail">—</span></div>
+            <div class="resumen-row"><span class="resumen-key">Médico</span><span class="resumen-val" id="resMedico">--</span></div>
+            <div class="resumen-row"><span class="resumen-key">Horario</span><span class="resumen-val teal" id="resHora">--</span></div>
+            <div class="resumen-row"><span class="resumen-key">Paciente</span><span class="resumen-val" id="resNombre">--</span></div>
+            <div class="resumen-row"><span class="resumen-key">Teléfono</span><span class="resumen-val" id="resTel">--</span></div>
           </div>
           <div style="display:flex;gap:.6rem">
-            <button class="btn-back" onclick="goStep(2)">← Atrás</button>
-            <button class="btn-confirm" onclick="confirmarCita()" style="flex:1" id="btnConfirmar">✓ Confirmar cita</button>
+            <button class="btn-back" id="btnBack3">← Atrás</button>
+            <button class="btn-confirm" id="btnConfirmar" style="flex:1">✓ Confirmar cita</button>
           </div>
         </div>
       </div>
@@ -508,742 +329,629 @@ footer a{color:var(--teal-mid);text-decoration:none}
         <div class="success-check">✓</div>
         <h3 style="font-family:'Fraunces',serif;font-size:1.3rem;margin-bottom:.5rem">¡Cita agendada!</h3>
         <p id="successMsg" style="font-size:.88rem;color:var(--muted);line-height:1.6"></p>
-        <button onclick="closeModal()" style="margin-top:1.2rem;padding:.65rem 1.5rem;background:var(--teal);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Cerrar</button>
+        <button id="btnCloseSuccess" style="margin-top:1.2rem;padding:.65rem 1.5rem;background:var(--teal);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Cerrar</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- LOGIN MODAL -->
-<div class="login-overlay" id="loginOverlay" onclick="if(event.target===this)closeLogin()">
+<div class="login-overlay" id="loginOverlay">
   <div class="login-modal">
-    <button class="btn-close-modal" onclick="closeLogin()">✕</button>
+    <button id="btnCloseLogin" style="position:absolute;top:1.2rem;right:1.2rem;width:32px;height:32px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:1rem">✕</button>
     <h3 style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;color:var(--ink);margin-bottom:.25rem">Acceso médicos</h3>
     <p style="font-size:.84rem;color:var(--muted);margin-bottom:1.4rem">Entra a tu panel de CitaDoc</p>
-    <div id="loginForm">
-      <div class="modal-field"><label>Correo electrónico</label><input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="email"></div>
-      <div class="modal-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <p id="loginError" style="font-size:.82rem;color:#dc2626;margin-bottom:.8rem;display:none"></p>
-      <button onclick="doLogin()" style="width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:1rem">Entrar al dashboard →</button>
-      <p style="text-align:center;font-size:.84rem"><a href="citadoc-registro.html" style="color:var(--teal);font-weight:600;text-decoration:none">¿Aún no tienes cuenta? Regístrate gratis</a></p>
-      <p style="text-align:center;font-size:.82rem;color:var(--muted2);margin-top:.5rem;cursor:pointer" onclick="resetPass()">¿Olvidaste tu contraseña?</p>
-    </div>
+    <div class="modal-field"><label>Correo electrónico</label><input type="email" id="loginEmail" placeholder="tu@email.com"></div>
+    <div class="modal-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+    <p id="loginError" style="font-size:.82rem;color:#dc2626;margin-bottom:.8rem;display:none"></p>
+    <button id="btnDoLogin" style="width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:1rem">Entrar al dashboard →</button>
+    <p style="text-align:center;font-size:.84rem"><a href="citadoc-registro.html" style="color:var(--teal);font-weight:600;text-decoration:none">¿No tienes cuenta? Regístrate gratis</a></p>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <script>
-// ══ INIT ══
+// ── CONFIG ──
 emailjs.init('HwpQ3DPRMmtcVZVt1');
-const _supabase = supabase.createClient(
+var _sb = supabase.createClient(
   'https://qxoomcqaafogczrvsyhg.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 );
 
-// ══ PAÍSES Y CIUDADES ══
-const PAISES = [
-  {v:'ecuador',l:'Ecuador'},{v:'colombia',l:'Colombia'},{v:'peru',l:'Perú'},
+// ── DATOS ──
+var PAISES = [
+  {v:'ecuador',l:'Ecuador'},{v:'colombia',l:'Colombia'},{v:'peru',l:'Peru'},
   {v:'argentina',l:'Argentina'},{v:'chile',l:'Chile'},{v:'venezuela',l:'Venezuela'},
   {v:'bolivia',l:'Bolivia'},{v:'paraguay',l:'Paraguay'},{v:'uruguay',l:'Uruguay'},
   {v:'brasil',l:'Brasil'},{v:'guyana',l:'Guyana'},{v:'suriname',l:'Surinam'}
 ];
-const CIUDADES = {
-  ecuador:   ['Quito','Guayaquil','Cuenca','Manta','Ambato','Portoviejo','Machala','Santo Domingo','Ibarra','Riobamba','Loja','Esmeraldas','Latacunga','Tulcán','Nueva Loja','Babahoyo','Tena','Macas'],
-  colombia:  ['Bogotá','Medellín','Cali','Barranquilla','Cartagena','Bucaramanga','Cúcuta','Pereira','Manizales','Ibagué','Santa Marta','Villavicencio','Montería','Pasto','Neiva','Armenia','Valledupar'],
-  peru:      ['Lima','Arequipa','Trujillo','Chiclayo','Cusco','Iquitos','Piura','Huancayo','Pucallpa','Tacna','Ayacucho','Ica','Cajamarca'],
-  argentina: ['Buenos Aires','Córdoba','Rosario','Mendoza','Tucumán','La Plata','Mar del Plata','Salta','Santa Fe','San Juan','Neuquén','Corrientes','Posadas'],
-  chile:     ['Santiago','Valparaíso','Concepción','Antofagasta','Viña del Mar','Temuco','Rancagua','Talca','Arica','Iquique','Puerto Montt','La Serena'],
-  venezuela: ['Caracas','Maracaibo','Valencia','Barquisimeto','Maracay','Ciudad Guayana','Mérida','San Cristóbal','Cumaná'],
-  bolivia:   ['Santa Cruz','La Paz','Cochabamba','Sucre','Oruro','Potosí','Tarija'],
-  paraguay:  ['Asunción','Ciudad del Este','San Lorenzo','Luque','Lambaré','Fernando de la Mora','Caaguazú'],
-  uruguay:   ['Montevideo','Salto','Paysandú','Las Piedras','Rivera','Maldonado','Tacuarembó'],
-  brasil:    ['São Paulo','Rio de Janeiro','Brasília','Salvador','Fortaleza','Belo Horizonte','Manaus','Curitiba','Recife','Porto Alegre','Belém','Goiânia','Campinas'],
-  guyana:    ['Georgetown','Linden','New Amsterdam'],
-  suriname:  ['Paramaribo','Lelydorp','Nieuw Nickerie']
+var CIUDADES = {
+  ecuador:   ['Quito','Guayaquil','Cuenca','Manta','Ambato','Portoviejo','Machala','Santo Domingo','Ibarra','Riobamba','Loja','Esmeraldas'],
+  colombia:  ['Bogota','Medellin','Cali','Barranquilla','Cartagena','Bucaramanga','Cucuta','Pereira','Manizales'],
+  peru:      ['Lima','Arequipa','Trujillo','Chiclayo','Cusco','Iquitos','Piura','Huancayo'],
+  argentina: ['Buenos Aires','Cordoba','Rosario','Mendoza','Tucuman','La Plata','Mar del Plata','Salta'],
+  chile:     ['Santiago','Valparaiso','Concepcion','Antofagasta','Temuco','Rancagua'],
+  venezuela: ['Caracas','Maracaibo','Valencia','Barquisimeto','Maracay'],
+  bolivia:   ['Santa Cruz','La Paz','Cochabamba','Sucre','Oruro'],
+  paraguay:  ['Asuncion','Ciudad del Este','San Lorenzo'],
+  uruguay:   ['Montevideo','Salto','Paysandu'],
+  brasil:    ['Sao Paulo','Rio de Janeiro','Brasilia','Salvador','Fortaleza','Belo Horizonte','Manaus','Curitiba'],
+  guyana:    ['Georgetown'],
+  suriname:  ['Paramaribo']
 };
+var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var DIAS_SEM = ['dom','lun','mar','mie','jue','vie','sab'];
+var PAISES_LABEL = {ecuador:'Ecuador',colombia:'Colombia',peru:'Peru',argentina:'Argentina',chile:'Chile',venezuela:'Venezuela',bolivia:'Bolivia',paraguay:'Paraguay',uruguay:'Uruguay',brasil:'Brasil',guyana:'Guyana',suriname:'Surinam'};
+var BG = ['#d4f0ec','#e0fff4','#e8eaff','#ffe8e8','#f0ffe8','#e8f0ff'];
 
-// ══ SEARCHABLE SELECT — SIMPLE Y DIRECTO ══
-function makeSearchableSelect(inputId, dropId, options, onSelect) {
-  const input = document.getElementById(inputId);
-  const drop  = document.getElementById(dropId);
-  let selected = null;
+// ── ESTADO ──
+var ALL_DOCTORS = [];
+var filtered = [];
+var currentFilter = {esp:'', pais:'', ciudad:''};
+var currentSort = 'destacado';
+var selectedDoctor = null;
+var selectedDate = null;
+var selectedSlot = null;
+var currentStep = 1;
+var calYear = new Date().getFullYear();
+var calMonth = new Date().getMonth();
+var dispModal = {};
+var ssPais = null;
+var ssCiudad = null;
 
-  function render(q) {
-    const query = q.trim().toLowerCase();
-    const filtered = options.filter(o => (o.l||o).toLowerCase().includes(query));
-    if (filtered.length === 0) {
-      drop.innerHTML = '<div class="ss-empty">Sin resultados</div>';
-    } else {
-      drop.innerHTML = filtered.map(o => {
-        const val   = o.v || o;
-        const label = o.l || o;
-        return '<div class="ss-option" data-v="'+val+'" data-l="'+label+'">'+label+'</div>';
-      }).join('');
-      drop.querySelectorAll('.ss-option').forEach(el => {
-        el.addEventListener('mousedown', e => {
-          e.preventDefault();
-          select(el.dataset.v, el.dataset.l);
-        });
-      });
-    }
-    drop.classList.add('open');
-  }
-
-  function select(v, l) {
-    selected = { v, l };
-    input.value = l;
-    drop.classList.remove('open');
-    if (onSelect) onSelect(v, l);
-  }
-
-  function clear() {
-    selected = null;
-    input.value = '';
-    drop.classList.remove('open');
-  }
-
-  input.addEventListener('focus', () => render(input.value));
-  input.addEventListener('input', () => {
-    if (input.value === '') { selected = null; if (onSelect) onSelect(null, null); }
-    render(input.value);
-  });
-  input.addEventListener('blur', () => setTimeout(() => drop.classList.remove('open'), 150));
-
-  document.addEventListener('click', e => {
-    const wrap = input.closest('.ss-wrap');
-    if (wrap && !wrap.contains(e.target)) drop.classList.remove('open');
-  });
-
-  return {
-    getValue: () => selected ? selected.v : '',
-    getLabel: () => selected ? selected.l : '',
-    setOptions: (opts) => { options = opts; clear(); },
-    clear
-  };
-}
-
-// ══ ESTADO ══
-let ALL_DOCTORS = [];
-let filteredDoctors = [];
-let currentFilter = { especialidad: '', pais: '', ciudad: '' };
-let currentSort   = 'destacado';
-let ssPais, ssCiudad;
-
-// ══ BG PALETTE ══
-const BG_PALETTE = ['#d4f0ec','#e0fff4','#e8eaff','#ffe8e8','#f0ffe8','#e8f0ff'];
-
-// ══ HELPERS ══
-function generarSlots(desde, hasta) {
-  const slots = [];
-  let [h,m] = (desde||'09:00').split(':').map(Number);
-  const [hf,mf] = (hasta||'17:00').split(':').map(Number);
-  while (h < hf || (h===hf && m<mf)) {
-    slots.push(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'));
-    m+=30; if(m>=60){m-=60;h++;}
-  }
-  return slots;
-}
+// ── HELPERS ──
 function toSlug(s) {
   return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'_');
 }
-function dbToCard(d, i) {
-  const especialidad = (d.especialidades||[])[0]||'';
-  const nombre = (d.titulo||'Dr.')+' '+d.nombre+' '+d.apellido;
+function pad2(n) { return String(n).padStart(2,'0'); }
+function el(id) { return document.getElementById(id); }
+function setText(id, v) { var e=el(id); if(e) e.textContent=v; }
+
+// ── SEARCHABLE SELECT ──
+function makeSelect(inputId, dropId, options, onSelect) {
+  var inp = el(inputId);
+  var drp = el(dropId);
+  var sel = null;
+  function render(q) {
+    var q2 = q.trim().toLowerCase();
+    var hits = options.filter(function(o){ return (o.l||o).toLowerCase().indexOf(q2) > -1; });
+    drp.innerHTML = '';
+    if (!hits.length) {
+      var empty = document.createElement('div');
+      empty.className = 'ss-empty';
+      empty.textContent = 'Sin resultados';
+      drp.appendChild(empty);
+    } else {
+      hits.forEach(function(o) {
+        var div = document.createElement('div');
+        div.className = 'ss-option';
+        div.textContent = o.l || o;
+        div.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          sel = {v: o.v||o, l: o.l||o};
+          inp.value = o.l || o;
+          drp.classList.remove('open');
+          if (onSelect) onSelect(o.v||o, o.l||o);
+        });
+        drp.appendChild(div);
+      });
+    }
+    drp.classList.add('open');
+  }
+  inp.addEventListener('focus', function() { render(inp.value); });
+  inp.addEventListener('input', function() {
+    if (!inp.value) { sel=null; if(onSelect)onSelect(null,null); }
+    render(inp.value);
+  });
+  inp.addEventListener('blur', function() { setTimeout(function(){ drp.classList.remove('open'); }, 150); });
+  document.addEventListener('click', function(e) {
+    if (!inp.closest('.ss-wrap').contains(e.target)) drp.classList.remove('open');
+  });
   return {
-    id: d.id, name: nombre, specialty: especialidad,
-    city: d.ciudad||'', country: d.pais||'ecuador',
-    price: d.precio||0, avatar: '👨‍⚕️',
-    foto_url: d.foto_url||null, email: d.email||null,
-    bg: BG_PALETTE[i%BG_PALETTE.length],
+    getValue: function() { return sel ? sel.v : ''; },
+    getLabel: function() { return sel ? sel.l : ''; },
+    clear: function() { sel=null; inp.value=''; drp.classList.remove('open'); },
+    setOptions: function(opts) { options=opts; sel=null; inp.value=''; }
+  };
+}
+
+// ── DISPONIBILIDAD ──
+function generarDisponibilidad(medico, citas) {
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var disp = {};
+  for (var i=0; i<60; i++) {
+    var fecha = new Date(hoy);
+    fecha.setDate(hoy.getDate()+i);
+    var fechaStr = fecha.toISOString().split('T')[0];
+    var dia = DIAS_SEM[fecha.getDay()];
+    if ((medico.dias_atencion||[]).indexOf(dia) < 0) continue;
+    disp[fechaStr] = [];
+    var desde = medico.horario_desde || '09:00';
+    var hasta  = medico.horario_hasta || '17:00';
+    var hD = parseInt(desde.split(':')[0])*60+parseInt(desde.split(':')[1]);
+    var hH = parseInt(hasta.split(':')[0])*60+parseInt(hasta.split(':')[1]);
+    var min = hD;
+    var limHoy = 0;
+    if (i===0) { var n=new Date(); limHoy=n.getHours()*60+n.getMinutes()+120; }
+    while (min < hH) {
+      var horaStr = pad2(Math.floor(min/60))+':'+pad2(min%60);
+      var ocupado = citas.some(function(ct){ return ct.fecha===fechaStr && ct.hora===horaStr; });
+      if (!ocupado && !(i===0&&min<limHoy)) disp[fechaStr].push(horaStr);
+      min += 30;
+    }
+    if (!disp[fechaStr].length) delete disp[fechaStr];
+  }
+  return disp;
+}
+
+// ── CARGAR MÉDICOS ──
+function dbToCard(d, i) {
+  var esp = (d.especialidades||[])[0]||'';
+  return {
+    id: d.id,
+    name: (d.titulo||'Dr.')+' '+d.nombre+' '+d.apellido,
+    specialty: esp,
+    city: d.ciudad||'',
+    country: d.pais||'ecuador',
+    price: d.precio||0,
+    foto_url: d.foto_url||null,
+    email: d.email||null,
+    bg: BG[i%BG.length],
     featured: d.plan==='destacado',
-    whatsapp: d.whatsapp_activo&&d.whatsapp ? d.whatsapp : null,
+    whatsapp: (d.whatsapp_activo&&d.whatsapp) ? d.whatsapp : null,
     insurance: d.seguros||[],
-    slots: generarSlots(d.horario_desde, d.horario_hasta),
     slug: d.slug||'',
     especialidades: d.especialidades||[],
     horario_desde: d.horario_desde||'09:00',
     horario_hasta: d.horario_hasta||'17:00',
-    dias_atencion: d.dias_atencion||['lun','mar','mie','jue','vie'],
+    dias_atencion: d.dias_atencion||['lun','mar','mie','jue','vie']
   };
 }
 
-// ══ CARGA MÉDICOS ══
-async function cargarMedicos() {
-  try {
-    const { data, error } = await _supabase
-      .from('medicos')
-      .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,dias_atencion,slug,activo,email')
-      .eq('activo', true)
-      .order('plan', { ascending: false })
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    ALL_DOCTORS = (data||[]).map((d,i) => dbToCard(d,i));
-    const el = document.getElementById('heroCount');
-    if (el) el.textContent = '+'+ALL_DOCTORS.length+' médico'+(ALL_DOCTORS.length!==1?'s':'')+' disponible'+(ALL_DOCTORS.length!==1?'s':'');
-  } catch(err) {
-    console.error('Error cargando médicos:', err);
-    ALL_DOCTORS = [];
-  }
-  applyFiltersAndRender();
-  // Hacer visible el directorio inmediatamente
-  const dir = document.getElementById('directorio');
-  if (dir) dir.classList.add('visible');
+function cargarMedicos() {
+  _sb.from('medicos')
+    .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,dias_atencion,slug,activo,email')
+    .eq('activo', true)
+    .order('plan', {ascending:false})
+    .order('created_at', {ascending:false})
+    .then(function(res) {
+      if (res.error) { console.error(res.error); ALL_DOCTORS=[]; }
+      else {
+        ALL_DOCTORS = (res.data||[]).map(dbToCard);
+        var cnt = el('heroCount');
+        if (cnt) cnt.textContent = '+'+ALL_DOCTORS.length+' médico'+(ALL_DOCTORS.length!==1?'s':'')+' disponible'+(ALL_DOCTORS.length!==1?'s':'');
+      }
+      renderDir();
+    });
 }
 
-// ══ FILTRAR Y RENDERIZAR ══
-function buscar() {
-  currentFilter.especialidad = document.getElementById('selEspecialidad').value;
-  currentFilter.pais         = ssPais ? ssPais.getValue() : '';
-  currentFilter.ciudad       = ssCiudad ? ssCiudad.getLabel().toLowerCase() : '';
-  applyFiltersAndRender();
-  document.getElementById('directorio').scrollIntoView({ behavior:'smooth', block:'start' });
-}
-function quickSearch(esp, el) {
-  document.querySelectorAll('.quick-tag').forEach(t=>t.classList.remove('active'));
-  if (el) el.classList.add('active');
-  document.getElementById('selEspecialidad').value = esp;
-  currentFilter.especialidad = esp;
-  applyFiltersAndRender();
-}
-function applyFiltersAndRender() {
-  filteredDoctors = ALL_DOCTORS.filter(d => {
-    if (currentFilter.especialidad) {
-      const match = (d.especialidades||[]).some(e => toSlug(e)===currentFilter.especialidad);
-      if (!match) return false;
+// ── FILTRAR ──
+function aplicarFiltros() {
+  filtered = ALL_DOCTORS.filter(function(d) {
+    if (currentFilter.esp) {
+      var ok = d.especialidades.some(function(e){ return toSlug(e)===currentFilter.esp; });
+      if (!ok) return false;
     }
     if (currentFilter.pais && d.country !== currentFilter.pais) return false;
-    if (currentFilter.ciudad && d.city.toLowerCase() !== currentFilter.ciudad) return false;
+    if (currentFilter.ciudad && d.city.toLowerCase() !== currentFilter.ciudad.toLowerCase()) return false;
     return true;
   });
-  sortList();
-  renderQuickResults();
-  renderDirectory();
-}
-function sortList() {
-  if (currentSort==='destacado')   filteredDoctors.sort((a,b)=>b.featured-a.featured);
-  else if (currentSort==='precio-asc')  filteredDoctors.sort((a,b)=>a.price-b.price);
-  else filteredDoctors.sort((a,b)=>b.price-a.price);
-}
-function sortDoctors(mode, btn) {
-  currentSort = mode;
-  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  sortList();
-  renderDirectory();
+  if (currentSort==='precio-asc') filtered.sort(function(a,b){return a.price-b.price;});
+  else if (currentSort==='precio-desc') filtered.sort(function(a,b){return b.price-a.price;});
+  else filtered.sort(function(a,b){return b.featured-a.featured;});
 }
 
-// ══ QUICK RESULTS ══
-function renderQuickResults() {
-  var top3 = filteredDoctors.slice(0,3);
-  var box  = document.getElementById('quickResults');
-  var list = document.getElementById('qrList');
-  var lbl  = document.getElementById('qrLabel');
-  if (!top3.length) { if(box)box.classList.remove('visible'); return; }
-  var sel = document.getElementById('selEspecialidad');
-  var espLbl = sel && sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
-  if(lbl) lbl.textContent = 'Mejores opciones'+(espLbl&&espLbl!=='Todas las especialidades'?' - '+espLbl:'')+' ('+filteredDoctors.length+')';
-  if(!list) return;
-  list.innerHTML = '';
-  top3.forEach(function(d) {
-    var div = document.createElement('div');
-    div.className = 'qr-card';
-    var av = d.foto_url ? '<img src="'+d.foto_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : d.avatar;
-    var badge = d.featured ? '<span class="badge-dest">⭐ Dest.</span>' : '';
-    div.innerHTML = '<div class="qr-avatar" style="background:'+d.bg+'">'+av+'</div>'
-      + '<div class="qr-info"><div class="qr-name">'+d.name+badge+'</div><div class="qr-meta">'+d.specialty+' - '+d.city+'</div></div>'
-      + '<div class="qr-price">$'+d.price+'<span>consulta</span></div>';
-    div.addEventListener('click', function(){ openModal(d.id); });
-    list.appendChild(div);
-  });
-  if(box) box.classList.add('visible');
+function buscar() {
+  currentFilter.esp    = el('selEsp').value;
+  currentFilter.pais   = ssPais ? ssPais.getValue() : '';
+  currentFilter.ciudad = ssCiudad ? ssCiudad.getLabel() : '';
+  renderDir();
+  el('directorio').scrollIntoView({behavior:'smooth'});
 }
 
-// ══ DIRECTORIO ══
-function renderDirectory() {
-  const grid   = document.getElementById('doctorsGrid');
-  const dir    = document.getElementById('directorio');
-  const ciudad = document.getElementById('dirCiudad');
-  const count  = document.getElementById('resultCount');
-
-  if (ciudad) ciudad.textContent = currentFilter.ciudad
-    ? currentFilter.ciudad.charAt(0).toUpperCase()+currentFilter.ciudad.slice(1)
-    : currentFilter.pais
-      ? currentFilter.pais.charAt(0).toUpperCase()+currentFilter.pais.slice(1)
-      : 'Ecuador';
-
-  if (count) count.innerHTML = '<strong>'+filteredDoctors.length+'</strong> médico'+(filteredDoctors.length!==1?'s':'')+' encontrado'+(filteredDoctors.length!==1?'s':'');
-
+// ── RENDER DIRECTORIO ──
+function renderDir() {
+  aplicarFiltros();
+  var grid = el('doctorsGrid');
+  var meta = el('resultMeta');
+  var ciudadEl = el('dirCiudad');
+  if (ciudadEl) ciudadEl.textContent = currentFilter.ciudad || (currentFilter.pais ? PAISES_LABEL[currentFilter.pais]||currentFilter.pais : 'Ecuador');
+  if (meta) meta.innerHTML = '<strong>'+filtered.length+'</strong> médico'+(filtered.length!==1?'s':'')+' encontrado'+(filtered.length!==1?'s':'');
   renderFilterChips();
-
-  if (!filteredDoctors.length) {
-    grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><h3>No encontramos resultados</h3><p>Intenta con otra especialidad o ciudad</p></div>';
-  } else {
-    const PAISES_LABEL = {ecuador:'Ecuador',colombia:'Colombia',peru:'Perú',argentina:'Argentina',chile:'Chile',venezuela:'Venezuela',bolivia:'Bolivia',paraguay:'Paraguay',uruguay:'Uruguay',brasil:'Brasil',guyana:'Guyana',suriname:'Surinam'};
-    grid.innerHTML = filteredDoctors.map(function(d, i) {
-      const avatar = d.foto_url
-        ? '<img src="'+d.foto_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:14px">'
-        : d.avatar;
-      const insuranceTags = (d.insurance||[]).map(function(s){ return '<span class="ins-tag">'+s+'</span>'; }).join('') || '<span style="font-size:.75rem;color:var(--muted2)">Consultar</span>';
-      const paisLabel = PAISES_LABEL[d.country] || d.country;
-      const waBtn = d.whatsapp
-        ? '<a href="https://wa.me/'+d.whatsapp.replace(/[^0-9]/g,'')+'" target="_blank" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:.35rem;background:#25d366;color:#fff;padding:.55rem .9rem;border-radius:9px;font-size:.8rem;font-weight:700;text-decoration:none">💬 WA</a>'
-        : '';
-      const ribbon = d.featured ? '<div class="featured-ribbon">⭐ Médico Destacado</div>' : '';
-      return '<div class="doctor-card'+(d.featured?' featured':'')+'" style="animation-delay:'+(i*40)+'ms" data-docid="" + d.id + "">'
-        + ribbon
-        + '<div class="card-top">'
-          + '<div class="doc-avatar" style="background:'+d.bg+'">'+avatar+'</div>'
-          + '<div class="doc-main">'
-            + '<div class="doc-name">'+d.name+'</div>'
-            + '<div class="doc-specialty">'+d.specialty+'</div>'
-            + '<div class="doc-location">📍 '+d.city+', '+paisLabel+'</div>'
-          + '</div>'
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-state"><p>No encontramos resultados. Intenta con otra especialidad o ciudad.</p></div>';
+    return;
+  }
+  filtered.forEach(function(d, i) {
+    var card = document.createElement('div');
+    card.className = 'doctor-card' + (d.featured?' featured':'');
+    card.style.animationDelay = (i*40)+'ms';
+    var av = d.foto_url ? '<img src="'+d.foto_url+'" style="width:100%;height:100%;object-fit:cover;border-radius:14px">' : '👨‍⚕️';
+    var ins = (d.insurance||[]).map(function(s){return '<span class="ins-tag">'+s+'</span>';}).join('') || '<span style="font-size:.75rem;color:var(--muted2)">Consultar</span>';
+    var ribbon = d.featured ? '<div class="featured-ribbon">⭐ Medico Destacado</div>' : '';
+    card.innerHTML = ribbon
+      + '<div class="card-top">'
+        + '<div class="doc-avatar" style="background:'+d.bg+'">'+av+'</div>'
+        + '<div>'
+          + '<div class="doc-name">'+d.name+'</div>'
+          + '<div class="doc-specialty">'+d.specialty+'</div>'
+          + '<div class="doc-location">📍 '+d.city+', '+(PAISES_LABEL[d.country]||d.country)+'</div>'
         + '</div>'
-        + '<div class="card-divider"></div>'
-        + '<div class="card-mid"><div class="insurance-row"><span class="insurance-label">Seguros:</span><div class="insurance-tags">'+insuranceTags+'</div></div></div>'
-        + '<div class="card-divider"></div>'
-        + '<div class="card-bottom">'
-          + '<div class="doc-price"><div class="price-num">$'+d.price+'</div><div class="price-label">por consulta</div></div>'
-          + '<div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end">'
-            + waBtn
-            + '<button class="btn-agendar" onclick="event.stopPropagation()" data-docid="" + d.id + "">Agendar →</button>'
-          + '</div>'
+      + '</div>'
+      + '<div class="card-divider"></div>'
+      + '<div class="card-mid"><span class="insurance-label">Seguros: </span>'+ins+'</div>'
+      + '<div class="card-divider"></div>'
+      + '<div class="card-bottom">'
+        + '<div><div class="price-num">$'+d.price+'</div><div class="price-label">por consulta</div></div>'
+        + '<div style="display:flex;gap:.5rem;align-items:center">'
+          + (d.whatsapp ? '<a class="btn-wa" href="https://wa.me/'+d.whatsapp.replace(/[^0-9]/g,'')+'" target="_blank">💬 WA</a>' : '')
+          + '<button class="btn-agendar">Agendar →</button>'
         + '</div>'
       + '</div>';
-    }).join('');
-  }
+    // Eventos
+    card.addEventListener('click', function(){ openModal(d.id); });
+    var btnAg = card.querySelector('.btn-agendar');
+    if (btnAg) btnAg.addEventListener('click', function(e){ e.stopPropagation(); openModal(d.id); });
+    var btnWa = card.querySelector('.btn-wa');
+    if (btnWa) btnWa.addEventListener('click', function(e){ e.stopPropagation(); });
+    grid.appendChild(card);
+  });
+}
 
-  if (dir) dir.classList.add('visible');
-  grid.querySelectorAll('[data-docid]').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      if (!e.target.closest('a')) openModal(el.dataset.docid);
-    });
-  });
-  grid.querySelectorAll('.btn-agendar').forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      openModal(el.closest('[data-docid]').dataset.docid);
-    });
-  });
-}
 function renderFilterChips() {
-  const bar = document.getElementById('filterBar');
-  const chips = [];
-  const sel = document.getElementById('selEspecialidad');
-  if (currentFilter.especialidad) chips.push({ label: '🩺 '+sel.options[sel.selectedIndex]?.text, key:'especialidad' });
-  if (currentFilter.pais)    chips.push({ label: '🌍 '+currentFilter.pais.charAt(0).toUpperCase()+currentFilter.pais.slice(1), key:'pais' });
-  if (currentFilter.ciudad)  chips.push({ label: '📍 '+currentFilter.ciudad.charAt(0).toUpperCase()+currentFilter.ciudad.slice(1), key:'ciudad' });
-  bar.innerHTML = chips.map(function(chip) {
-    var div=document.createElement('div');
-    div.className='filter-chip';
-    div.innerHTML=chip.label+' <span class="chip-x">✕</span>';
-    div.addEventListener('click',function(){removeFilter(chip.key);});
-    return div.outerHTML;
-  }).join('');
+  var bar = el('filterBar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  var chips = [];
+  var sel = el('selEsp');
+  if (currentFilter.esp && sel) chips.push({label:'🩺 '+(sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:''), key:'esp'});
+  if (currentFilter.pais) chips.push({label:'🌍 '+(PAISES_LABEL[currentFilter.pais]||currentFilter.pais), key:'pais'});
+  if (currentFilter.ciudad) chips.push({label:'📍 '+currentFilter.ciudad, key:'ciudad'});
+  chips.forEach(function(chip) {
+    var div = document.createElement('div');
+    div.className = 'filter-chip';
+    div.textContent = chip.label + ' ✕';
+    div.addEventListener('click', function(){ removeFilter(chip.key); });
+    bar.appendChild(div);
+  });
 }
+
 function removeFilter(key) {
-  currentFilter[key]='';
+  currentFilter[key] = '';
   if (key==='pais') { currentFilter.ciudad=''; if(ssPais)ssPais.clear(); if(ssCiudad){ssCiudad.clear();ssCiudad.setOptions([]);} }
   if (key==='ciudad' && ssCiudad) ssCiudad.clear();
-  applyFiltersAndRender();
+  renderDir();
 }
 
-// ══ MODAL AGENDAMIENTO ══
-
-// ══ DISPONIBILIDAD REAL ══════════════════════════════════════
-const DIAS_SEMANA  = ['dom','lun','mar','mie','jue','vie','sab'];
-const MESES_ES     = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-
-function generarDisponibilidad(medico, citas) {
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const disp = {};
-  for (let i = 0; i < 60; i++) {
-    const fecha = new Date(hoy);
-    fecha.setDate(hoy.getDate() + i);
-    const fechaStr = fecha.toISOString().split('T')[0];
-    const dia      = DIAS_SEMANA[fecha.getDay()];
-    if (!(medico.dias_atencion||[]).includes(dia)) continue;
-    disp[fechaStr] = [];
-    const [hD,mD] = (medico.horario_desde||'09:00').split(':').map(Number);
-    const [hH,mH] = (medico.horario_hasta||'17:00').split(':').map(Number);
-    let min = hD*60+mD;
-    const minFin = hH*60+mH;
-    let minLimite = 0;
-    if (i===0) { const n=new Date(); minLimite=n.getHours()*60+n.getMinutes()+120; }
-    while (min < minFin) {
-      const horaStr = String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
-      const ocupado = citas.some(ct=>ct.fecha===fechaStr&&ct.hora===horaStr);
-      if (!ocupado && !(i===0&&min<minLimite)) disp[fechaStr].push(horaStr);
-      min+=30;
-    }
-    if (disp[fechaStr].length===0) delete disp[fechaStr];
+// ── MODAL ──
+function openModal(id) {
+  selectedDoctor = ALL_DOCTORS.find(function(d){ return d.id===id; });
+  if (!selectedDoctor) return;
+  setText('modalDocName', selectedDoctor.name);
+  setText('modalDocMeta', selectedDoctor.specialty+' · '+selectedDoctor.city+' · $'+selectedDoctor.price);
+  var pl = el('btnVerPerfil');
+  if (pl && selectedDoctor.slug) pl.href = 'citadoc-perfil.html?slug='+selectedDoctor.slug;
+  // Banner WA
+  var bw = el('waBanner');
+  if (bw) {
+    if (selectedDoctor.whatsapp) {
+      var waNum = selectedDoctor.whatsapp.replace(/[^0-9]/g,'');
+      var waMsg = 'Hola '+selectedDoctor.name+', vi tu perfil en CitaDoc y quisiera agendar una cita.';
+      var a = document.createElement('a');
+      a.href = 'https://wa.me/'+waNum+'?text='+encodeURIComponent(waMsg);
+      a.target = '_blank';
+      a.style.cssText = 'display:flex;align-items:center;gap:.6rem;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:10px;padding:.65rem .9rem;margin-bottom:.9rem;text-decoration:none';
+      a.innerHTML = '<span style="font-size:.82rem;font-weight:700;color:#16a34a">💬 Contactar por WhatsApp</span><span style="margin-left:auto;font-size:.78rem;color:#16a34a">Abrir →</span>';
+      bw.innerHTML = '';
+      bw.appendChild(a);
+    } else { bw.innerHTML = ''; }
   }
-  return disp;
-}
-// ═════════════════════════════════════════════════════════════
-
-let selectedSlot      = null;
-let selectedDoctor    = null;
-let selectedModalDate = null;
-let currentStep       = 1;
-let modalCalYear      = new Date().getFullYear();
-let modalCalMonth     = new Date().getMonth();
-let _dispModal        = {}; // disponibilidad calculada del médico activo
-
-async function cargarDisponibilidadModal(doctor) {
-  // Cargar citas confirmadas del médico (próximos 60 días)
-  const hoy = new Date().toISOString().split('T')[0];
-  const en60 = new Date(); en60.setDate(en60.getDate()+60);
-  const fin60 = en60.toISOString().split('T')[0];
-  const { data: citas } = await _supabase
-    .from('citas')
-    .select('fecha,hora')
-    .eq('medico_id', doctor.id)
-    .gte('fecha', hoy)
-    .lte('fecha', fin60)
-    .neq('estado','cancelada');
-  _dispModal = generarDisponibilidad(doctor, citas||[]);
-  renderModalCal();
+  // Reset
+  selectedDate = null; selectedSlot = null; currentStep = 1;
+  calYear = new Date().getFullYear(); calMonth = new Date().getMonth();
+  resetSteps();
+  el('slotsWrap').style.display = 'none';
+  el('bookingForm').style.display = 'block';
+  el('successState').style.display = 'none';
+  el('btnSig1').disabled = true;
+  el('btnSig1').style.opacity = '.4';
+  // Cargar disponibilidad
+  cargarDispModal();
+  el('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-function renderModalCal() {
-  const titleEl = document.getElementById('modalCalTitle');
-  if (titleEl) titleEl.textContent = MESES_ES[modalCalMonth]+' '+modalCalYear;
-
-  const firstDay    = new Date(modalCalYear, modalCalMonth, 1).getDay();
-  const daysInMonth = new Date(modalCalYear, modalCalMonth+1, 0).getDate();
-
-  let html = ['D','L','M','X','J','V','S'].map(function(d){ return '<div class="modal-cal-dow">'+d+'</div>'; }).join('');
-  for (let i=0;i<firstDay;i++) html+='<div class="modal-cal-day"></div>';
-
-  for (let d=1; d<=daysInMonth; d++) {
-    const mesStr  = String(modalCalMonth+1).padStart(2,'0');
-    const dStr    = String(d).padStart(2,'0');
-    const fechaStr= modalCalYear+'-'+mesStr+'-'+dStr;
-    const date    = new Date(modalCalYear, modalCalMonth, d);
-    const today   = new Date(); today.setHours(0,0,0,0);
-    const isPast  = date < today;
-    const isToday = date.getTime()===today.getTime();
-    const isAvail = !isPast && !!_dispModal[fechaStr];
-    const isSel   = selectedModalDate===fechaStr;
-
-    let cls = 'modal-cal-day';
-    if (isPast)  cls+=' past';
-    if (isToday) cls+=' today';
-    if (isAvail) cls+=' available';
-    if (isSel)   cls+=' selected';
-
-    // Usar data-fecha en vez de onclick con comillas
-    const dataAttr = isAvail ? ' data-fecha="'+fechaStr+'" data-d="'+d+'"' : '';
-    html+='<div class="'+cls+'"'+dataAttr+'>'+d+'</div>';
-  }
-  const grid=document.getElementById('modalCalGrid');
-  if (grid) {
-    grid.innerHTML=html;
-    // Agregar eventos click a los días disponibles
-    grid.querySelectorAll('.modal-cal-day.available').forEach(function(el) {
-      el.addEventListener('click', function() {
-        selectModalDate(el.dataset.fecha, parseInt(el.dataset.d));
-      });
-    });
+function resetSteps() {
+  [el('mStep1'),el('mStep2'),el('mStep3')].forEach(function(e,i){ if(e)e.style.display=i===0?'block':'none'; });
+  for (var i=1;i<=3;i++) {
+    var n=el('msn'+i), l=el('msl'+i);
+    if(n){n.className='m-step-num'+(i===1?' active':'');n.textContent=i;}
+    if(l){l.className='m-step-label'+(i===1?' active':'');}
+    if(i<=2&&el('msc'+i))el('msc'+i).className='m-connector';
   }
 }
-
-function selectModalDate(fechaStr, d) {
-  selectedModalDate = fechaStr;
-  selectedSlot      = null;
-  renderModalCal();
-
-  const slots = _dispModal[fechaStr] || [];
-  const [,mo] = fechaStr.split('-').map(Number);
-
-  const html = slots.length===0
-    ? '<p style="color:var(--muted2);font-size:.82rem;grid-column:1/-1;padding:.5rem 0">Sin horarios disponibles este día</p>'
-    : slots.map(t=>'<div class="time-slot" onclick="selectSlot(this,''+t+'')">'+t+'</div>').join('');
-
-  document.getElementById('timeSlots').innerHTML = html;
-  const lbl=document.getElementById('modalSlotsLabel');
-  if (lbl) lbl.textContent='Horarios — '+d+' '+MESES_CORTOS[mo-1];
-  const sw=document.getElementById('modalSlotsWrap'); if(sw)sw.style.display='block';
-  const b=document.getElementById('btnSig1'); if(b){b.disabled=true;b.style.opacity='.4';b.style.cursor='not-allowed';}
-}
-
-function modalCalPrev() {
-  modalCalMonth--; if(modalCalMonth<0){modalCalMonth=11;modalCalYear--;}
-  renderModalCal();
-}
-function modalCalNext() {
-  modalCalMonth++; if(modalCalMonth>11){modalCalMonth=0;modalCalYear++;}
-  renderModalCal();
-}
-
 
 function goStep(n) {
-  if (n===2 && !selectedSlot) { alert('Por favor selecciona un horario.'); return; }
+  if (n===2 && !selectedSlot) { alert('Selecciona un horario.'); return; }
   if (n===3) {
-    const nombre = document.getElementById('inpNombre').value.trim();
-    const tel    = document.getElementById('inpTel').value.trim();
-    if (!nombre||!tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
-    const email = document.getElementById('inpEmail').value.trim();
-    document.getElementById('resMedico').textContent = selectedDoctor.name;
-    // Formatear fecha real seleccionada
-    let fechaResumen = 'hoy';
-    if (selectedModalDate) {
-      const [y,mo,d] = selectedModalDate.split('-').map(Number);
-      fechaResumen = d+' '+MESES_CORTOS[mo-1]+' '+y;
-    }
-    document.getElementById('resHora').textContent = selectedSlot+' · '+fechaResumen;
-    document.getElementById('resNombre').textContent  = nombre;
-    document.getElementById('resTel').textContent     = tel;
-    const emailRow = document.getElementById('resEmailRow');
-    if (email) { document.getElementById('resEmail').textContent=email; emailRow.style.display='flex'; }
-    else emailRow.style.display='none';
+    var nom = el('inpNombre').value.trim();
+    var tel = el('inpTel').value.trim();
+    if (!nom||!tel) { alert('Completa nombre y teléfono.'); return; }
+    setText('resMedico', selectedDoctor.name);
+    var parts = selectedDate.split('-');
+    setText('resHora', selectedSlot+' · '+parseInt(parts[2])+' '+MESES[parseInt(parts[1])-1]);
+    setText('resNombre', nom);
+    setText('resTel', tel);
   }
-  document.getElementById('mStep'+currentStep).style.display = 'none';
-  document.getElementById('mStep'+n).style.display = 'block';
-  for (let i=1;i<=3;i++) {
-    const num=document.getElementById('msn'+i), lbl=document.getElementById('msl'+i);
-    if (i<n)       { num.className='m-step-num done'; num.textContent='✓'; lbl.className='m-step-label done'; }
-    else if (i===n){ num.className='m-step-num active'; num.textContent=i; lbl.className='m-step-label active'; }
-    else           { num.className='m-step-num'; num.textContent=i; lbl.className='m-step-label'; }
-    if (i<=2) document.getElementById('msc'+i).className='m-connector'+(i<n?' done':'');
+  el('mStep'+currentStep).style.display = 'none';
+  el('mStep'+n).style.display = 'block';
+  for (var i=1;i<=3;i++) {
+    var nm=el('msn'+i), lb=el('msl'+i), co=i<=2?el('msc'+i):null;
+    if (i<n) { nm.className='m-step-num done'; nm.textContent='✓'; lb.className='m-step-label done'; if(co)co.className='m-connector done'; }
+    else if (i===n) { nm.className='m-step-num active'; nm.textContent=i; lb.className='m-step-label active'; }
+    else { nm.className='m-step-num'; nm.textContent=i; lb.className='m-step-label'; }
   }
-  const mb = document.querySelector('.modal-body');
-  if (mb) mb.scrollTop = 0;
   currentStep = n;
 }
 
-function openModal(id) {
-  selectedDoctor = ALL_DOCTORS.find(d=>d.id===id);
-  if (!selectedDoctor) return;
-
-  // Header
-  document.getElementById('modalDocName').textContent = selectedDoctor.name;
-  document.getElementById('modalDocMeta').textContent = selectedDoctor.specialty+' · '+selectedDoctor.city+' · $'+selectedDoctor.price+' por consulta';
-  const pLink = document.getElementById('btnVerPerfilModal');
-  if (pLink && selectedDoctor.slug) pLink.href = 'citadoc-perfil.html?slug='+selectedDoctor.slug;
-
-  // Banner WhatsApp
-  const bw = document.getElementById('waBannerWrap');
-  if (bw) {
-    if (selectedDoctor.whatsapp) {
-      const waNum = selectedDoctor.whatsapp.replace(/[^0-9]/g,'');
-      const waUrl = 'https://wa.me/'+waNum+'?text='+encodeURIComponent('Hola '+selectedDoctor.name+', vi tu perfil en CitaDoc y quisiera agendar una cita.');
-      bw.innerHTML = '<a href="'+waUrl+'" target="_blank" style="display:flex;align-items:center;gap:.6rem;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:10px;padding:.65rem .9rem;margin-bottom:.9rem;text-decoration:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="#16a34a"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><div><div style="font-size:.8rem;font-weight:700;color:#16a34a">Contactar por WhatsApp</div><div style="font-size:.71rem;color:var(--muted)">Escríbele directamente al médico</div></div><span style="margin-left:auto;font-size:.78rem;font-weight:700;color:#16a34a">Abrir →</span></a>';
-    } else { bw.innerHTML=''; }
-  }
-
-  // Reset modal
-  selectedSlot = null; selectedModalDate = null; currentStep = 1;
-  modalCalYear  = new Date().getFullYear();
-  modalCalMonth = new Date().getMonth();
-  ['inpNombre','inpTel','inpEmail','inpMotivo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  for(let i=1;i<=3;i++){
-    const el=document.getElementById('mStep'+i);
-    if(el) el.style.display=i===1?'block':'none';
-    const n=document.getElementById('msn'+i),l=document.getElementById('msl'+i);
-    if(n&&l){
-      if(i===1){n.className='m-step-num active';n.textContent='1';l.className='m-step-label active';}
-      else{n.className='m-step-num';n.textContent=i;l.className='m-step-label';}
-    }
-    if(i<=2){const con=document.getElementById('msc'+i);if(con)con.className='m-connector';}
-  }
-  const sw=document.getElementById('modalSlotsWrap'); if(sw) sw.style.display='none';
-  const b=document.getElementById('btnSig1'); if(b){b.disabled=true;b.style.opacity='.4';b.style.cursor='not-allowed';}
-  document.getElementById('bookingForm').style.display='block';
-  document.getElementById('successState').style.display='none';
-
-  // Cargar disponibilidad real desde Supabase y renderizar
-  cargarDisponibilidadModal(selectedDoctor);
-
-  document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-
-function selectSlot(el, slot) {
-  if (el.classList.contains('taken')) return;
-  document.querySelectorAll('.time-slot').forEach(s=>s.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedSlot = slot;
-  const b=document.getElementById('btnSig1');
-  if(b){b.disabled=false;b.style.opacity='1';b.style.cursor='pointer';}
-}
 function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow='';
+  el('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
-async function confirmarCita() {
-  const nombre = document.getElementById('inpNombre').value.trim();
-  const tel    = document.getElementById('inpTel').value.trim();
-  const email  = document.getElementById('inpEmail').value.trim();
-  const motivo = document.getElementById('inpMotivo').value.trim();
-  if (!nombre||!tel||!selectedSlot||!selectedDoctor) return;
-
-  const btn = document.getElementById('btnConfirmar');
-  if (btn) { btn.textContent='Confirmando...'; btn.disabled=true; }
-
-  const fechaFinal = selectedModalDate || new Date().toISOString().split('T')[0];
-  const [fy,fmo,fd] = fechaFinal.split('-').map(Number);
-  const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const fechaLabel = fd+' de '+MESES_L[fmo-1]+' de '+fy;
-
-  // Guardar en Supabase
-  const { error } = await _supabase.from('citas').insert({
-    medico_id: selectedDoctor.id, paciente_nombre: nombre,
-    paciente_email: email||null, paciente_tel: tel,
-    motivo: motivo||null, fecha: fechaFinal,
-    hora: selectedSlot, estado: 'confirmada',
-  });
-  if (error) console.error('Error cita:', error);
-
-  // Emails
-  if (typeof emailjs !== 'undefined') {
-    const tpl = {
-      medico_nombre: selectedDoctor.name, medico_especialidad: selectedDoctor.specialty,
-      medico_ciudad: selectedDoctor.city, hora_cita: selectedSlot, fecha_cita: fechaLabel,
-      paciente_nombre: nombre, paciente_tel: tel,
-      motivo: motivo||'No especificado',
-    };
-    if (email) emailjs.send('service_63xln0n','template_e8t8qkq',{...tpl,to_name:nombre,to_email:email,mensaje:'Tu cita con '+selectedDoctor.name+' está confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'}).catch(console.warn);
-    if (selectedDoctor.email) emailjs.send('service_63xln0n','template_e8t8qkq',{...tpl,to_name:selectedDoctor.name,to_email:selectedDoctor.email,mensaje:'Nueva cita: '+nombre+' · '+tel+' · '+fechaLabel+' a las '+selectedSlot}).catch(console.warn);
-  }
-
-  document.getElementById('bookingForm').style.display='none';
-  document.getElementById('successState').style.display='block';
-  document.getElementById('successMsg').textContent = nombre+', tu cita con '+selectedDoctor.name+' está confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'+(email?' Te enviamos confirmación a '+email+'.':'');
-  if (btn){btn.textContent='✓ Confirmar cita';btn.disabled=false;}
-}
-
-// ══ TRIAJE IA ══
-let triageHistory = [];
-let triageSpecResult = '';
-function openTriage() { document.getElementById('triageOverlay').classList.add('open'); document.getElementById('triageInput').focus(); }
-function closeTriage(e) { if (!e||e.target===document.getElementById('triageOverlay')) document.getElementById('triageOverlay').classList.remove('open'); }
-async function sendTriage() {
-  const input = document.getElementById('triageInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-  const chat = document.getElementById('triageChat');
-  chat.innerHTML += '<div class="triage-bubble user">'+msg+'</div>';
-  input.value='';
-  triageHistory.push({role:'user',content:msg});
-  chat.scrollTop = chat.scrollHeight;
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:500,
-        system:'Eres un asistente médico de CitaDoc. Con máximo 2 preguntas identifica la especialidad médica que el paciente necesita. Responde en español, de forma empática y breve. Cuando tengas suficiente información, responde SOLO con: ESPECIALIDAD: [nombre exacto de la especialidad]. Especialidades disponibles: Cardiología, Dermatología, Ginecología y Obstetricia, Medicina Familiar y Comunitaria, Neurología, Pediatría, Psiquiatría, Traumatología y Ortopedia, entre otras.',
-        messages:triageHistory
-      })
+// ── CALENDARIO MODAL ──
+function cargarDispModal() {
+  var hoy = new Date().toISOString().split('T')[0];
+  var en60 = new Date(); en60.setDate(en60.getDate()+60);
+  var fin = en60.toISOString().split('T')[0];
+  _sb.from('citas').select('fecha,hora').eq('medico_id', selectedDoctor.id).gte('fecha',hoy).lte('fecha',fin).neq('estado','cancelada')
+    .then(function(res) {
+      dispModal = generarDisponibilidad(selectedDoctor, res.data||[]);
+      renderCal();
     });
-    const data = await resp.json();
-    const reply = data.content?.[0]?.text||'Lo siento, no pude procesar tu consulta.';
-    if (reply.includes('ESPECIALIDAD:')) {
-      const esp = reply.split('ESPECIALIDAD:')[1].trim();
-      triageSpecResult = esp;
-      document.getElementById('triageResultTitle').textContent = '✅ Especialidad recomendada';
-      document.getElementById('triageResultText').textContent = 'Basado en tus síntomas, te recomendamos consultar con un especialista en '+esp+'.';
-      document.getElementById('triageResult').style.display='block';
-    } else {
-      chat.innerHTML += '<div class="triage-bubble bot">'+reply+'</div>';
-      triageHistory.push({role:'assistant',content:reply});
-      chat.scrollTop = chat.scrollHeight;
+}
+
+function renderCal() {
+  var titleEl = el('calTitle');
+  if (titleEl) titleEl.textContent = MESES[calMonth]+' '+calYear;
+  var first = new Date(calYear, calMonth, 1).getDay();
+  var days  = new Date(calYear, calMonth+1, 0).getDate();
+  var today = new Date(); today.setHours(0,0,0,0);
+  var grid  = el('calGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  ['D','L','M','X','J','V','S'].forEach(function(d) {
+    var div = document.createElement('div');
+    div.className = 'modal-cal-dow';
+    div.textContent = d;
+    grid.appendChild(div);
+  });
+  for (var i=0;i<first;i++) {
+    var empty = document.createElement('div');
+    grid.appendChild(empty);
+  }
+  for (var d=1; d<=days; d++) {
+    var date = new Date(calYear, calMonth, d);
+    var ms   = pad2(calMonth+1);
+    var ds   = pad2(d);
+    var fStr = calYear+'-'+ms+'-'+ds;
+    var isPast  = date < today;
+    var isToday = date.getTime()===today.getTime();
+    var isAvail = !isPast && !!dispModal[fStr];
+    var isSel   = selectedDate===fStr;
+    var div = document.createElement('div');
+    div.className = 'modal-cal-day';
+    if (isPast)  div.className += ' past';
+    if (isToday) div.className += ' today';
+    if (isAvail) div.className += ' available';
+    if (isSel)   div.className += ' selected';
+    div.textContent = d;
+    if (isAvail) {
+      (function(fechaStr, dayNum) {
+        div.addEventListener('click', function() { selectFecha(fechaStr, dayNum); });
+      })(fStr, d);
     }
-  } catch(e) {
-    chat.innerHTML += '<div class="triage-bubble bot">Lo siento, hubo un error. Por favor intenta de nuevo.</div>';
+    grid.appendChild(div);
   }
 }
-function aplicarTriaje() {
-  if (!triageSpecResult) return;
-  const slug = toSlug(triageSpecResult);
-  const sel = document.getElementById('selEspecialidad');
-  for (let i=0;i<sel.options.length;i++) {
-    if (sel.options[i].value===slug) { sel.selectedIndex=i; break; }
+
+function selectFecha(fechaStr, d) {
+  selectedDate = fechaStr;
+  selectedSlot = null;
+  renderCal();
+  var slots = dispModal[fechaStr] || [];
+  var slotsEl = el('timeSlots');
+  slotsEl.innerHTML = '';
+  if (!slots.length) {
+    slotsEl.innerHTML = '<p style="font-size:.82rem;color:var(--muted2);grid-column:1/-1">Sin horarios este día</p>';
+  } else {
+    slots.forEach(function(t) {
+      var btn = document.createElement('div');
+      btn.className = 'time-slot';
+      btn.textContent = t;
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.time-slot').forEach(function(s){ s.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selectedSlot = t;
+        var b=el('btnSig1'); if(b){b.disabled=false;b.style.opacity='1';}
+      });
+      slotsEl.appendChild(btn);
+    });
   }
-  currentFilter.especialidad = slug;
-  document.getElementById('triageOverlay').classList.remove('open');
-  applyFiltersAndRender();
-  document.getElementById('directorio').scrollIntoView({behavior:'smooth'});
+  var parts = fechaStr.split('-');
+  setText('slotsLabel', 'Horarios - '+parseInt(parts[2])+' '+MESES[parseInt(parts[1])-1]);
+  el('slotsWrap').style.display = 'block';
+  el('btnSig1').disabled = true;
+  el('btnSig1').style.opacity = '.4';
 }
 
-// ══ LOGIN ══
-function openLogin(e) { if(e)e.preventDefault(); document.getElementById('loginOverlay').classList.add('open'); document.body.style.overflow='hidden'; }
-function closeLogin() { document.getElementById('loginOverlay').classList.remove('open'); document.body.style.overflow=''; }
-async function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPass').value;
-  const errEl = document.getElementById('loginError');
-  if (!email||!pass) { errEl.textContent='Por favor ingresa tu email y contraseña.'; errEl.style.display='block'; return; }
-  const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
-  if (error) { errEl.textContent='Credenciales incorrectas. Verifica tu email y contraseña.'; errEl.style.display='block'; return; }
-  window.location.href='citadoc-dashboard.html';
-}
-async function resetPass() {
-  const email = document.getElementById('loginEmail').value.trim();
-  if (!email) { alert('Ingresa tu email primero.'); return; }
-  await _supabase.auth.resetPasswordForEmail(email,{redirectTo:'https://citadoc.lat/citadoc-dashboard.html'});
-  alert('Te enviamos un link para restablecer tu contraseña a '+email);
+// ── CONFIRMAR CITA ──
+function confirmarCita() {
+  var nombre = el('inpNombre').value.trim();
+  var tel    = el('inpTel').value.trim();
+  var email  = el('inpEmail').value.trim();
+  var motivo = el('inpMotivo').value.trim();
+  if (!nombre||!tel||!selectedSlot||!selectedDate||!selectedDoctor) return;
+  var btn = el('btnConfirmar');
+  if (btn) { btn.textContent='Confirmando...'; btn.disabled=true; }
+  var parts = selectedDate.split('-');
+  var fechaLabel = parseInt(parts[2])+' de '+MESES[parseInt(parts[1])-1]+' '+parts[0];
+  _sb.from('citas').insert({
+    medico_id: selectedDoctor.id,
+    paciente_nombre: nombre,
+    paciente_email: email||null,
+    paciente_tel: tel,
+    motivo: motivo||null,
+    fecha: selectedDate,
+    hora: selectedSlot,
+    estado: 'confirmada'
+  }).then(function(res) {
+    if (res.error) console.error('Error cita:', res.error);
+  });
+  // Emails
+  var tpl = {
+    medico_nombre: selectedDoctor.name,
+    medico_especialidad: selectedDoctor.specialty,
+    hora_cita: selectedSlot,
+    fecha_cita: fechaLabel,
+    paciente_nombre: nombre,
+    paciente_tel: tel,
+    motivo: motivo||'No especificado'
+  };
+  if (email) {
+    var tplP = JSON.parse(JSON.stringify(tpl));
+    tplP.to_name = nombre; tplP.to_email = email;
+    tplP.mensaje = 'Tu cita con '+selectedDoctor.name+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.';
+    emailjs.send('service_63xln0n','template_e8t8qkq',tplP).catch(function(e){console.warn('email pac:',e);});
+  }
+  if (selectedDoctor.email) {
+    var tplM = JSON.parse(JSON.stringify(tpl));
+    tplM.to_name = selectedDoctor.name; tplM.to_email = selectedDoctor.email;
+    tplM.mensaje = 'Nueva cita: '+nombre+' - '+tel+' - '+fechaLabel+' a las '+selectedSlot;
+    emailjs.send('service_63xln0n','template_e8t8qkq',tplM).catch(function(e){console.warn('email med:',e);});
+  }
+  el('bookingForm').style.display = 'none';
+  el('successState').style.display = 'block';
+  setText('successMsg', nombre+', tu cita con '+selectedDoctor.name+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'+(email?' Enviamos confirmacion a '+email+'.':''));
+  if (btn) { btn.textContent='Confirmar cita'; btn.disabled=false; }
 }
 
-// ══ AUTH NAV ══
-async function initAuthNav() {
-  const cached = sessionStorage.getItem('citadoc_user');
-  if (cached) { try { showLoggedIn(JSON.parse(cached)); return; } catch(e){} }
-  const { data:{ session } } = await _supabase.auth.getSession();
-  if (session) {
-    const { data:m } = await _supabase.from('medicos').select('nombre,apellido,titulo,slug,plan').eq('user_id',session.user.id).single();
-    if (m) { sessionStorage.setItem('citadoc_user',JSON.stringify(m)); showLoggedIn(m); }
-  } else { showLoggedOut(); }
+// ── AUTH NAV ──
+function initAuth() {
+  _sb.auth.getSession().then(function(res) {
+    var session = res.data && res.data.session;
+    if (!session) { showLoggedOut(); return; }
+    _sb.from('medicos').select('nombre,apellido,titulo,slug,plan').eq('user_id', session.user.id).single()
+      .then(function(r) {
+        if (r.data) showLoggedIn(r.data);
+        else showLoggedOut();
+      });
+  });
 }
+
 function showLoggedIn(m) {
-  const nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
-  const ini = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase();
-  const plan = m.plan==='destacado'?'⭐ Plan Destacado':'Plan Gratuito';
-  const pill=document.getElementById('navUserPill'), out=document.getElementById('navLoggedOut');
-  if (pill) pill.style.display='flex';
-  if (out)  out.style.display='none';
-  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  s('navUserAvatar',ini); s('navUserName',nombre); s('ddNombre',nombre); s('ddPlan',plan);
-  const pl=document.getElementById('navVerPerfil');
-  if (pl&&m.slug) pl.href='citadoc-perfil.html?slug='+m.slug;
+  var nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  var ini = (m.nombre[0]||'').toUpperCase()+(m.apellido[0]||'').toUpperCase();
+  setText('navAvatar', ini);
+  setText('navName', nombre);
+  setText('ddNombre', nombre);
+  setText('ddPlan', m.plan==='destacado' ? 'Plan Destacado' : 'Plan Gratuito');
+  var pill = el('navPill'); if(pill)pill.style.display='flex';
+  var login = el('btnLogin'); if(login)login.style.display='none';
+  var reg = el('btnRegistro'); if(reg)reg.style.display='none';
+  var vp = el('ddVerPerfil'); if(vp&&m.slug)vp.href='citadoc-perfil.html?slug='+m.slug;
 }
+
 function showLoggedOut() {
-  const pill=document.getElementById('navUserPill'), out=document.getElementById('navLoggedOut');
-  if (pill) pill.style.display='none';
-  if (out)  out.style.display='flex';
-}
-function toggleUserMenu() { document.getElementById('navUserDropdown')?.classList.toggle('open'); }
-document.addEventListener('click', e => { if (!document.getElementById('navUserDropdown')?.contains(e.target)) document.getElementById('navUserDropdown')?.classList.remove('open'); });
-async function cerrarSesion() {
-  await _supabase.auth.signOut();
-  sessionStorage.removeItem('citadoc_user');
-  window.location.href='index.html';
+  var pill = el('navPill'); if(pill)pill.style.display='none';
+  var login = el('btnLogin'); if(login)login.style.display='';
+  var reg = el('btnRegistro'); if(reg)reg.style.display='';
 }
 
-// ══ INIT ══
-document.addEventListener('DOMContentLoaded', () => {
-  // Inicializar SearchableSelect de País
-  ssPais = makeSearchableSelect('inputPais','dropPais', PAISES, (v,l) => {
-    currentFilter.pais   = v||'';
+function doLogin() {
+  var email = el('loginEmail').value.trim();
+  var pass  = el('loginPass').value;
+  var errEl = el('loginError');
+  if (!email||!pass) { errEl.textContent='Ingresa email y contraseña.'; errEl.style.display='block'; return; }
+  _sb.auth.signInWithPassword({email:email, password:pass}).then(function(res) {
+    if (res.error) { errEl.textContent='Credenciales incorrectas.'; errEl.style.display='block'; }
+    else window.location.href = 'citadoc-dashboard.html';
+  });
+}
+
+function cerrarSesion() {
+  _sb.auth.signOut().then(function(){ window.location.href='index.html'; });
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
+  // Selectables
+  ssPais = makeSelect('inputPais','dropPais', PAISES, function(v) {
+    currentFilter.pais = v||'';
     currentFilter.ciudad = '';
-    if (ssCiudad) ssCiudad.setOptions(v&&CIUDADES[v] ? CIUDADES[v].map(c=>({v:c.toLowerCase(),l:c})) : []);
+    if (ssCiudad) ssCiudad.setOptions(v&&CIUDADES[v] ? CIUDADES[v].map(function(c){return {v:c.toLowerCase(),l:c};}) : []);
+  });
+  ssCiudad = makeSelect('inputCiudad','dropCiudad', [], function(v, l) {
+    currentFilter.ciudad = l||'';
   });
 
-  // Inicializar SearchableSelect de Ciudad
-  ssCiudad = makeSearchableSelect('inputCiudad','dropCiudad', [], (v,l) => {
-    currentFilter.ciudad = l ? l.toLowerCase() : '';
+  // Quick tags
+  document.querySelectorAll('.quick-tag').forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      document.querySelectorAll('.quick-tag').forEach(function(t){t.classList.remove('active');});
+      tag.classList.add('active');
+      el('selEsp').value = tag.dataset.esp;
+      currentFilter.esp = tag.dataset.esp;
+      renderDir();
+    });
   });
 
-  // Cargar médicos desde Supabase
+  // Sort buttons
+  document.querySelectorAll('.sort-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      currentSort = btn.dataset.sort;
+      renderDir();
+    });
+  });
+
+  // Buscar
+  el('btnBuscar').addEventListener('click', buscar);
+
+  // Modal steps
+  el('btnSig1').addEventListener('click', function(){ goStep(2); });
+  el('btnSig2').addEventListener('click', function(){ goStep(3); });
+  el('btnBack2').addEventListener('click', function(){ goStep(1); });
+  el('btnBack3').addEventListener('click', function(){ goStep(2); });
+  el('btnConfirmar').addEventListener('click', confirmarCita);
+  el('btnCloseModal').addEventListener('click', closeModal);
+  el('btnCloseSuccess').addEventListener('click', closeModal);
+  el('modalOverlay').addEventListener('click', function(e){ if(e.target===el('modalOverlay'))closeModal(); });
+
+  // Calendario
+  el('btnCalPrev').addEventListener('click', function(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); });
+  el('btnCalNext').addEventListener('click', function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); });
+
+  // Login
+  el('btnLogin').addEventListener('click', function(){ el('loginOverlay').classList.add('open'); document.body.style.overflow='hidden'; });
+  el('btnCloseLogin').addEventListener('click', function(){ el('loginOverlay').classList.remove('open'); document.body.style.overflow=''; });
+  el('loginOverlay').addEventListener('click', function(e){ if(e.target===el('loginOverlay')){ el('loginOverlay').classList.remove('open'); document.body.style.overflow=''; }});
+  el('loginPass').addEventListener('keydown', function(e){ if(e.key==='Enter')doLogin(); });
+  el('btnDoLogin').addEventListener('click', doLogin);
+  el('btnLogout').addEventListener('click', cerrarSesion);
+
+  // Nav dropdown
+  el('navPill').addEventListener('click', function(){ el('navDropdown').classList.toggle('open'); });
+  document.addEventListener('click', function(e){ if(!el('navPill').contains(e.target)&&!el('navDropdown').contains(e.target))el('navDropdown').classList.remove('open'); });
+
+  // Cargar datos
   cargarMedicos();
-
-  // Auth nav
-  initAuthNav();
+  initAuth();
 });
 </script>
 </body>
