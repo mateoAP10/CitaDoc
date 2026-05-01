@@ -254,6 +254,22 @@ footer a{color:var(--teal-mid);text-decoration:none}
   .doctors-grid{grid-template-columns:1fr}
   .modal-header h3{font-size:1rem}
 }
+
+/* ── MODAL CALENDARIO ── */
+.modal-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.modal-cal-title{font-size:.88rem;font-weight:700;color:var(--ink)}
+.modal-cal-nav{width:26px;height:26px;border-radius:7px;background:var(--cream);border:1px solid var(--border);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-cal-nav:hover{background:var(--teal-lite);border-color:var(--teal);color:var(--teal)}
+.modal-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:1rem}
+.modal-cal-dow{font-size:.62rem;font-weight:700;color:var(--muted2);text-align:center;padding:.2rem 0}
+.modal-cal-day{font-size:.78rem;text-align:center;padding:.35rem .1rem;border-radius:7px;cursor:default;color:var(--muted2);transition:all .15s}
+.modal-cal-day.available{color:var(--ink2);cursor:pointer;font-weight:600}
+.modal-cal-day.available:hover{background:var(--teal-lite);color:var(--teal)}
+.modal-cal-day.selected{background:var(--teal)!important;color:#fff!important;font-weight:700}
+.modal-cal-day.today{background:var(--cream);color:var(--teal)}
+.modal-cal-day.today.available{font-weight:700}
+.modal-cal-day.past{opacity:.3}
+.modal-slots-label{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.6rem}
 </style>
 </head>
 <body>
@@ -449,8 +465,18 @@ footer a{color:var(--teal-mid);text-decoration:none}
         <!-- Paso 1 -->
         <div id="mStep1">
           <div id="waBannerWrap"></div>
-          <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:.7rem">Horarios disponibles — hoy</div>
-          <div class="time-slots" id="timeSlots"></div>
+          <!-- Mini calendario -->
+          <div class="modal-cal-header">
+            <button class="modal-cal-nav" onclick="modalCalPrev()">‹</button>
+            <div class="modal-cal-title" id="modalCalTitle">—</div>
+            <button class="modal-cal-nav" onclick="modalCalNext()">›</button>
+          </div>
+          <div class="modal-cal-grid" id="modalCalGrid"></div>
+          <!-- Slots del día seleccionado -->
+          <div id="modalSlotsWrap" style="display:none">
+            <div class="modal-slots-label" id="modalSlotsLabel">Horarios disponibles</div>
+            <div class="time-slots" id="timeSlots"></div>
+          </div>
           <button class="btn-confirm" id="btnSig1" onclick="goStep(2)" disabled style="opacity:.4;cursor:not-allowed">Siguiente → Tus datos</button>
         </div>
         <!-- Paso 2 -->
@@ -636,6 +662,9 @@ function dbToCard(d, i) {
     slots: generarSlots(d.horario_desde, d.horario_hasta),
     slug: d.slug||'',
     especialidades: d.especialidades||[],
+    horario_desde: d.horario_desde||'09:00',
+    horario_hasta: d.horario_hasta||'17:00',
+    dias_atencion: d.dias_atencion||['lun','mar','mie','jue','vie'],
   };
 }
 
@@ -644,7 +673,7 @@ async function cargarMedicos() {
   try {
     const { data, error } = await _supabase
       .from('medicos')
-      .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,slug,activo,email')
+      .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,dias_atencion,slug,activo,email')
       .eq('activo', true)
       .order('plan', { ascending: false })
       .order('created_at', { ascending: false });
@@ -786,9 +815,126 @@ function removeFilter(key) {
 }
 
 // ══ MODAL AGENDAMIENTO ══
-let selectedSlot = null;
-let selectedDoctor = null;
-let currentStep = 1;
+
+// ══ DISPONIBILIDAD REAL ══════════════════════════════════════
+const DIAS_SEMANA  = ['dom','lun','mar','mie','jue','vie','sab'];
+const MESES_ES     = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function generarDisponibilidad(medico, citas) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const disp = {};
+  for (let i = 0; i < 60; i++) {
+    const fecha = new Date(hoy);
+    fecha.setDate(hoy.getDate() + i);
+    const fechaStr = fecha.toISOString().split('T')[0];
+    const dia      = DIAS_SEMANA[fecha.getDay()];
+    if (!(medico.dias_atencion||[]).includes(dia)) continue;
+    disp[fechaStr] = [];
+    const [hD,mD] = (medico.horario_desde||'09:00').split(':').map(Number);
+    const [hH,mH] = (medico.horario_hasta||'17:00').split(':').map(Number);
+    let min = hD*60+mD;
+    const minFin = hH*60+mH;
+    let minLimite = 0;
+    if (i===0) { const n=new Date(); minLimite=n.getHours()*60+n.getMinutes()+120; }
+    while (min < minFin) {
+      const horaStr = String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
+      const ocupado = citas.some(ct=>ct.fecha===fechaStr&&ct.hora===horaStr);
+      if (!ocupado && !(i===0&&min<minLimite)) disp[fechaStr].push(horaStr);
+      min+=30;
+    }
+    if (disp[fechaStr].length===0) delete disp[fechaStr];
+  }
+  return disp;
+}
+// ═════════════════════════════════════════════════════════════
+
+let selectedSlot      = null;
+let selectedDoctor    = null;
+let selectedModalDate = null;
+let currentStep       = 1;
+let modalCalYear      = new Date().getFullYear();
+let modalCalMonth     = new Date().getMonth();
+let _dispModal        = {}; // disponibilidad calculada del médico activo
+
+async function cargarDisponibilidadModal(doctor) {
+  // Cargar citas confirmadas del médico (próximos 60 días)
+  const hoy = new Date().toISOString().split('T')[0];
+  const en60 = new Date(); en60.setDate(en60.getDate()+60);
+  const fin60 = en60.toISOString().split('T')[0];
+  const { data: citas } = await _supabase
+    .from('citas')
+    .select('fecha,hora')
+    .eq('medico_id', doctor.id)
+    .gte('fecha', hoy)
+    .lte('fecha', fin60)
+    .neq('estado','cancelada');
+  _dispModal = generarDisponibilidad(doctor, citas||[]);
+  renderModalCal();
+}
+
+function renderModalCal() {
+  const titleEl = document.getElementById('modalCalTitle');
+  if (titleEl) titleEl.textContent = MESES_ES[modalCalMonth]+' '+modalCalYear;
+
+  const firstDay    = new Date(modalCalYear, modalCalMonth, 1).getDay();
+  const daysInMonth = new Date(modalCalYear, modalCalMonth+1, 0).getDate();
+
+  let html = ['D','L','M','X','J','V','S'].map(d=>'<div class="modal-cal-dow">'+d+'</div>').join('');
+  for (let i=0;i<firstDay;i++) html+='<div class="modal-cal-day"></div>';
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const mesStr  = String(modalCalMonth+1).padStart(2,'0');
+    const dStr    = String(d).padStart(2,'0');
+    const fechaStr= modalCalYear+'-'+mesStr+'-'+dStr;
+    const date    = new Date(modalCalYear, modalCalMonth, d);
+    const today   = new Date(); today.setHours(0,0,0,0);
+    const isPast  = date < today;
+    const isToday = date.getTime()===today.getTime();
+    const isAvail = !isPast && !!_dispModal[fechaStr];
+    const isSel   = selectedModalDate===fechaStr;
+
+    let cls = 'modal-cal-day';
+    if (isPast)  cls+=' past';
+    if (isToday) cls+=' today';
+    if (isAvail) cls+=' available';
+    if (isSel)   cls+=' selected';
+
+    const onclick = isAvail ? 'onclick="selectModalDate(''+fechaStr+'','+d+')"' : '';
+    html+='<div class="'+cls+'" '+onclick+'>'+d+'</div>';
+  }
+  const grid=document.getElementById('modalCalGrid');
+  if (grid) grid.innerHTML=html;
+}
+
+function selectModalDate(fechaStr, d) {
+  selectedModalDate = fechaStr;
+  selectedSlot      = null;
+  renderModalCal();
+
+  const slots = _dispModal[fechaStr] || [];
+  const [,mo] = fechaStr.split('-').map(Number);
+
+  const html = slots.length===0
+    ? '<p style="color:var(--muted2);font-size:.82rem;grid-column:1/-1;padding:.5rem 0">Sin horarios disponibles este día</p>'
+    : slots.map(t=>'<div class="time-slot" onclick="selectSlot(this,''+t+'')">'+t+'</div>').join('');
+
+  document.getElementById('timeSlots').innerHTML = html;
+  const lbl=document.getElementById('modalSlotsLabel');
+  if (lbl) lbl.textContent='Horarios — '+d+' '+MESES_CORTOS[mo-1];
+  const sw=document.getElementById('modalSlotsWrap'); if(sw)sw.style.display='block';
+  const b=document.getElementById('btnSig1'); if(b){b.disabled=true;b.style.opacity='.4';b.style.cursor='not-allowed';}
+}
+
+function modalCalPrev() {
+  modalCalMonth--; if(modalCalMonth<0){modalCalMonth=11;modalCalYear--;}
+  renderModalCal();
+}
+function modalCalNext() {
+  modalCalMonth++; if(modalCalMonth>11){modalCalMonth=0;modalCalYear++;}
+  renderModalCal();
+}
+
 
 function goStep(n) {
   if (n===2 && !selectedSlot) { alert('Por favor selecciona un horario.'); return; }
@@ -797,8 +943,14 @@ function goStep(n) {
     const tel    = document.getElementById('inpTel').value.trim();
     if (!nombre||!tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
     const email = document.getElementById('inpEmail').value.trim();
-    document.getElementById('resMedico').textContent  = selectedDoctor.name;
-    document.getElementById('resHora').textContent    = selectedSlot+' — hoy';
+    document.getElementById('resMedico').textContent = selectedDoctor.name;
+    // Formatear fecha real seleccionada
+    let fechaResumen = 'hoy';
+    if (selectedModalDate) {
+      const [y,mo,d] = selectedModalDate.split('-').map(Number);
+      fechaResumen = d+' '+MESES_CORTOS[mo-1]+' '+y;
+    }
+    document.getElementById('resHora').textContent = selectedSlot+' · '+fechaResumen;
     document.getElementById('resNombre').textContent  = nombre;
     document.getElementById('resTel').textContent     = tel;
     const emailRow = document.getElementById('resEmailRow');
@@ -822,6 +974,8 @@ function goStep(n) {
 function openModal(id) {
   selectedDoctor = ALL_DOCTORS.find(d=>d.id===id);
   if (!selectedDoctor) return;
+
+  // Header
   document.getElementById('modalDocName').textContent = selectedDoctor.name;
   document.getElementById('modalDocMeta').textContent = selectedDoctor.specialty+' · '+selectedDoctor.city+' · $'+selectedDoctor.price+' por consulta';
   const pLink = document.getElementById('btnVerPerfilModal');
@@ -833,40 +987,33 @@ function openModal(id) {
     if (selectedDoctor.whatsapp) {
       const waNum = selectedDoctor.whatsapp.replace(/[^0-9]/g,'');
       const waUrl = 'https://wa.me/'+waNum+'?text='+encodeURIComponent('Hola '+selectedDoctor.name+', vi tu perfil en CitaDoc y quisiera agendar una cita.');
-      bw.innerHTML = '<a href="'+waUrl+'" target="_blank" style="display:flex;align-items:center;gap:.7rem;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:11px;padding:.75rem 1rem;margin-bottom:1rem;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="#16a34a"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><div><div style="font-size:.82rem;font-weight:700;color:#16a34a">Contactar por WhatsApp</div><div style="font-size:.72rem;color:var(--muted)">Escríbele directamente al médico</div></div><span style="margin-left:auto;font-size:.8rem;font-weight:700;color:#16a34a">Abrir →</span></a>';
+      bw.innerHTML = '<a href="'+waUrl+'" target="_blank" style="display:flex;align-items:center;gap:.6rem;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:10px;padding:.65rem .9rem;margin-bottom:.9rem;text-decoration:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="#16a34a"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><div><div style="font-size:.8rem;font-weight:700;color:#16a34a">Contactar por WhatsApp</div><div style="font-size:.71rem;color:var(--muted)">Escríbele directamente al médico</div></div><span style="margin-left:auto;font-size:.78rem;font-weight:700;color:#16a34a">Abrir →</span></a>';
     } else { bw.innerHTML=''; }
   }
 
-  // Slots
-  const now = new Date();
-  const minTime = new Date(now.getTime()+6*60*60*1000);
-  const slots = selectedDoctor.slots||[];
-  document.getElementById('timeSlots').innerHTML = slots.length===0
-    ? '<p style="font-size:.82rem;color:var(--muted2);grid-column:1/-1">No hay horarios disponibles hoy.</p>'
-    : slots.map(s=>{
-        const [h,m] = s.split(':').map(Number);
-        const t = new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,m);
-        const tooSoon = t < minTime;
-        return '<div class="time-slot'+(tooSoon?' taken':'')+'" onclick="selectSlot(this,\''+s+'\')">'+(tooSoon?s+'<span style="font-size:.6rem;display:block;color:var(--muted2)">+6h</span>':s)+'</div>';
-      }).join('');
-
-  // Reset
-  selectedSlot=null; currentStep=1;
+  // Reset modal
+  selectedSlot = null; selectedModalDate = null; currentStep = 1;
+  modalCalYear  = new Date().getFullYear();
+  modalCalMonth = new Date().getMonth();
   ['inpNombre','inpTel','inpEmail','inpMotivo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   for(let i=1;i<=3;i++){
     const el=document.getElementById('mStep'+i);
-    if(el)el.style.display=i===1?'block':'none';
+    if(el) el.style.display=i===1?'block':'none';
     const n=document.getElementById('msn'+i),l=document.getElementById('msl'+i);
     if(n&&l){
       if(i===1){n.className='m-step-num active';n.textContent='1';l.className='m-step-label active';}
       else{n.className='m-step-num';n.textContent=i;l.className='m-step-label';}
     }
-    if(i<=2){const c=document.getElementById('msc'+i);if(c)c.className='m-connector';}
+    if(i<=2){const con=document.getElementById('msc'+i);if(con)con.className='m-connector';}
   }
-  const b=document.getElementById('btnSig1');
-  if(b){b.disabled=true;b.style.opacity='.4';b.style.cursor='not-allowed';}
+  const sw=document.getElementById('modalSlotsWrap'); if(sw) sw.style.display='none';
+  const b=document.getElementById('btnSig1'); if(b){b.disabled=true;b.style.opacity='.4';b.style.cursor='not-allowed';}
   document.getElementById('bookingForm').style.display='block';
   document.getElementById('successState').style.display='none';
+
+  // Cargar disponibilidad real desde Supabase y renderizar
+  cargarDisponibilidadModal(selectedDoctor);
+
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -894,14 +1041,16 @@ async function confirmarCita() {
   const btn = document.getElementById('btnConfirmar');
   if (btn) { btn.textContent='Confirmando...'; btn.disabled=true; }
 
-  const fechaHoy = new Date().toISOString().split('T')[0];
-  const fechaLabel = new Date().toLocaleDateString('es-EC',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const fechaFinal = selectedModalDate || new Date().toISOString().split('T')[0];
+  const [fy,fmo,fd] = fechaFinal.split('-').map(Number);
+  const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fechaLabel = fd+' de '+MESES_L[fmo-1]+' de '+fy;
 
   // Guardar en Supabase
   const { error } = await _supabase.from('citas').insert({
     medico_id: selectedDoctor.id, paciente_nombre: nombre,
     paciente_email: email||null, paciente_tel: tel,
-    motivo: motivo||null, fecha: fechaHoy,
+    motivo: motivo||null, fecha: fechaFinal,
     hora: selectedSlot, estado: 'confirmada',
   });
   if (error) console.error('Error cita:', error);
@@ -920,7 +1069,7 @@ async function confirmarCita() {
 
   document.getElementById('bookingForm').style.display='none';
   document.getElementById('successState').style.display='block';
-  document.getElementById('successMsg').textContent = nombre+', tu cita con '+selectedDoctor.name+' está confirmada para hoy a las '+selectedSlot+'.'+(email?' Te enviamos confirmación a '+email+'.':'');
+  document.getElementById('successMsg').textContent = nombre+', tu cita con '+selectedDoctor.name+' está confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'+(email?' Te enviamos confirmación a '+email+'.':'');
   if (btn){btn.textContent='✓ Confirmar cita';btn.disabled=false;}
 }
 
