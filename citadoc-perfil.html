@@ -411,6 +411,53 @@ function selectFecha(fechaStr, d) {
   if (b) { b.disabled=true; b.style.opacity='.4'; }
 }
 
+
+// ── BUSCAR O CREAR PACIENTE ──
+// Identifica al paciente por email (principal) o teléfono (secundario)
+// Si no existe lo crea. Siempre retorna el paciente_id.
+function buscarOCrearPaciente(nombre, email, telefono) {
+  return new Promise(function(resolve) {
+    // 1. Buscar por email si lo tiene
+    if (email) {
+      _sb.from('pacientes').select('id').eq('email', email).single()
+        .then(function(r) {
+          if (r.data) {
+            // Existe — actualizar nombre/tel por si cambió
+            _sb.from('pacientes').update({nombre:nombre, telefono:telefono||null}).eq('id', r.data.id);
+            resolve(r.data.id);
+          } else {
+            // No existe — crear
+            crearPaciente(nombre, email, telefono).then(resolve);
+          }
+        });
+    } else if (telefono) {
+      // Sin email — buscar por teléfono
+      _sb.from('pacientes').select('id').eq('telefono', telefono).single()
+        .then(function(r) {
+          if (r.data) {
+            resolve(r.data.id);
+          } else {
+            crearPaciente(nombre, null, telefono).then(resolve);
+          }
+        });
+    } else {
+      // Sin email ni teléfono — crear igual con nombre
+      crearPaciente(nombre, null, null).then(resolve);
+    }
+  });
+}
+
+function crearPaciente(nombre, email, telefono) {
+  return _sb.from('pacientes').insert({
+    nombre:   nombre,
+    email:    email||null,
+    telefono: telefono||null
+  }).select('id').single()
+    .then(function(r) {
+      return r.data ? r.data.id : null;
+    });
+}
+
 // ── CONFIRMAR ──
 function confirmarCita() {
   if (!_medico || !selectedDate || !selectedSlot) return;
@@ -424,16 +471,19 @@ function confirmarCita() {
   var parts = selectedDate.split('-');
   var fechaLabel = parseInt(parts[2])+' de '+MESES[parseInt(parts[1])-1]+' '+parts[0];
   var nombreMedico = (_medico.titulo||'Dr.')+' '+_medico.nombre+' '+_medico.apellido;
-  _sb.from('citas').insert({
-    medico_id: _medico.id,
-    paciente_nombre: nombre,
-    paciente_email: email||null,
-    paciente_tel: tel,
-    motivo: motivo||null,
-    fecha: selectedDate,
-    hora: selectedSlot,
-    estado: 'confirmada'
-  }).then(function(r){ if(r.error)console.error('cita:',r.error); });
+  buscarOCrearPaciente(nombre, email, tel).then(function(pacienteId) {
+    _sb.from('citas').insert({
+      medico_id:       _medico.id,
+      paciente_id:     pacienteId||null,
+      paciente_nombre: nombre,
+      paciente_email:  email||null,
+      paciente_tel:    tel,
+      motivo:          motivo||null,
+      fecha:           selectedDate,
+      hora:            selectedSlot,
+      estado:          'confirmada'
+    }).then(function(r){ if(r.error)console.error('cita:',r.error); });
+  });
   var tpl = {
     medico_nombre: nombreMedico,
     medico_especialidad: (_medico.especialidades||[])[0]||'',

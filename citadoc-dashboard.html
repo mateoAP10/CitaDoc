@@ -199,6 +199,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   .dash-grid,.cal-layout,.perfil-layout{grid-template-columns:1fr}
   .seguros-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ── MÓDULO PACIENTES / HISTORIA CLÍNICA ── */
+.hc-modal-overlay{position:fixed;inset:0;z-index:700;background:rgba(15,26,24,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
+.hc-modal-overlay.open{display:flex}
+.hc-modal{background:var(--white);border-radius:20px;width:100%;max-width:680px;margin:auto;box-shadow:0 24px 64px rgba(15,26,24,.2);max-height:calc(100vh - 2rem);overflow-y:auto;flex-shrink:0}
+.hc-modal-header{padding:1.4rem 1.8rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);z-index:10;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between}
+.hc-modal-header h3{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:var(--ink)}
+.hc-modal-body{padding:1.4rem 1.8rem 1.8rem}
+.hc-field{margin-bottom:1rem}
+.hc-field label{display:block;font-size:.76rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.4rem}
+.hc-field textarea{width:100%;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.55}
+.hc-field textarea:focus{border-color:var(--teal-mid);background:var(--white)}
+.hc-ai-box{background:var(--teal-lite);border:1.5px solid var(--teal);border-radius:14px;padding:1.2rem;margin-top:1.2rem;display:none}
+.hc-ai-box h4{font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:.8rem}
+.hc-ai-row{margin-bottom:.6rem;font-size:.87rem;color:var(--ink2);line-height:1.55}
+.hc-ai-row strong{color:var(--teal);display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.15rem}
+.urgencia-alta{color:#dc2626;font-weight:700}
+.urgencia-media{color:var(--gold);font-weight:700}
+.urgencia-baja{color:var(--teal);font-weight:700}
+.historial-item{padding:.9rem 1rem;border:1.5px solid var(--border);border-radius:12px;margin-bottom:.7rem;background:var(--white)}
+.historial-item:hover{border-color:rgba(11,124,110,.3)}
+.historial-fecha{font-size:.75rem;color:var(--muted2);margin-bottom:.3rem}
+.historial-diag{font-size:.88rem;font-weight:600;color:var(--ink);margin-bottom:.2rem}
+.historial-trat{font-size:.82rem;color:var(--muted)}
+.historial-ai{font-size:.79rem;color:var(--teal);margin-top:.3rem;font-style:italic}
+.pac-item{display:flex;align-items:center;gap:.9rem;padding:.8rem 1rem;border:1.5px solid var(--border);border-radius:12px;margin-bottom:.6rem;background:var(--white);cursor:pointer;transition:all .2s}
+.pac-item:hover{border-color:rgba(11,124,110,.3);background:var(--teal-lite)}
+.pac-avatar-sm{width:38px;height:38px;border-radius:10px;background:var(--teal-lite);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;flex-shrink:0}
+.pac-info{flex:1;min-width:0}
+.pac-nombre{font-size:.9rem;font-weight:600;color:var(--ink)}
+.pac-meta{font-size:.76rem;color:var(--muted2)}
+.btn-ai{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;padding:.65rem 1.2rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-ai:hover{opacity:.9}
+.btn-ai:disabled{opacity:.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -219,6 +253,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div class="nav-item active" onclick="showPanel('inicio',this)"><span class="nav-icon">🏠</span>Inicio<span class="nav-badge" id="badge-citas">0</span></div>
     <div class="nav-item" onclick="showPanel('calendario',this)"><span class="nav-icon">📅</span>Calendario</div>
     <div class="nav-item" onclick="showPanel('estadisticas',this)"><span class="nav-icon">📊</span>Estadísticas</div>
+    <div class="nav-section-label" style="margin-top:.4rem">Clínica</div>
+    <div class="nav-item" onclick="showPanel('pacientes',this)"><span class="nav-icon">👥</span>Pacientes</div>
     <div class="nav-section-label" style="margin-top:.4rem">Configuración</div>
     <div class="nav-item" onclick="showPanel('horarios',this)"><span class="nav-icon">🕐</span>Horarios</div>
     <div class="nav-item" onclick="showPanel('perfil',this)"><span class="nav-icon">👤</span>Mi perfil</div>
@@ -446,7 +482,75 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     </div>
 
   </div>
+
+  <!-- PANEL PACIENTES -->
+  <div class="panel" id="panel-pacientes">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">Pacientes</h2>
+        <p class="panel-sub">Historial clínico y consultas</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="card" style="margin-bottom:1rem">
+        <input type="text" id="pacBuscar" placeholder="Buscar paciente por nombre o email..." 
+          style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;background:var(--cream)">
+      </div>
+      <div id="pacientesList">
+        <div class="empty-citas">Cargando pacientes...</div>
+      </div>
+    </div>
+  </div>
 </main>
+
+<!-- MODAL HISTORIA CLÍNICA -->
+<div class="hc-modal-overlay" id="hcOverlay">
+  <div class="hc-modal">
+    <div class="hc-modal-header">
+      <div>
+        <h3 id="hcTitle">Consulta médica</h3>
+        <div id="hcSubtitle" style="font-size:.8rem;color:var(--muted);margin-top:.15rem"></div>
+      </div>
+      <button onclick="cerrarHC()" style="width:30px;height:30px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:.9rem">✕</button>
+    </div>
+    <div class="hc-modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="hc-field">
+          <label>Síntomas</label>
+          <textarea id="hcSintomas" placeholder="Describe los síntomas del paciente..."></textarea>
+        </div>
+        <div class="hc-field">
+          <label>Examen físico</label>
+          <textarea id="hcExamen" placeholder="Hallazgos del examen físico..."></textarea>
+        </div>
+        <div class="hc-field">
+          <label>Diagnóstico</label>
+          <textarea id="hcDiagnostico" placeholder="Diagnóstico principal..."></textarea>
+        </div>
+        <div class="hc-field">
+          <label>Tratamiento</label>
+          <textarea id="hcTratamiento" placeholder="Plan de tratamiento..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:.8rem;margin-top:1rem;flex-wrap:wrap">
+        <button onclick="guardarHC()" style="flex:1;padding:.75rem;background:var(--teal);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">💾 Guardar consulta</button>
+        <button class="btn-ai" id="btnGenerarAI" onclick="generarResumenAI()">✨ Generar resumen AI</button>
+      </div>
+      <!-- Resultado AI -->
+      <div class="hc-ai-box" id="hcAIBox">
+        <h4>✨ Resumen clínico generado por IA</h4>
+        <div class="hc-ai-row"><strong>Resumen</strong><span id="aiResumen"></span></div>
+        <div class="hc-ai-row"><strong>Nivel de urgencia</strong><span id="aiUrgencia"></span></div>
+        <div class="hc-ai-row"><strong>Recomendación</strong><span id="aiRecomendacion"></span></div>
+      </div>
+      <!-- Historial previo -->
+      <div id="historialPrevio" style="margin-top:1.4rem;display:none">
+        <div style="font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.7rem">Historial anterior</div>
+        <div id="historialList"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ══ SUPABASE ══
@@ -733,27 +837,67 @@ async function cerrarSesion(){
 }
 
 // ══ CITAS ══
-async function cargarCitas(medicoId){
-  const hoy=new Date().toISOString().split('T')[0];
-  const {data:citas}=await _sb.from('citas').select('*').eq('medico_id',medicoId).eq('fecha',hoy).order('hora');
-  const list=$('citasList'), count=$('citasCount'), badge=$('badge-citas'), stat=$('statHoy');
-  if(!list) return;
-  const n=citas?.length||0;
-  if(count)count.textContent=n+' cita'+(n!==1?'s':'');
-  if(badge)badge.textContent=n;
-  if(stat)stat.textContent=n;
-  if(!citas||n===0){list.innerHTML='<div class="empty-citas">No hay citas para hoy</div>';return;}
-  const avs=['👩','👨','👴','🧑','👩‍💼'];
-  const now=new Date();
-  list.innerHTML=citas.map(c=>{
-    const slotT=new Date(hoy+'T'+c.hora);
-    const past=slotT<now;
-    const est=c.estado||'confirmada';
-    const stMap={confirmada:'confirmed',cancelada:'done',completada:'done',pendiente:'pending'};
-    const lbMap={confirmada:'Confirmada',cancelada:'Cancelada',completada:'Completada',pendiente:'Pendiente'};
-    const av=avs[c.paciente_nombre.charCodeAt(0)%avs.length];
-    return `<div class="cita-item"><div class="cita-time ${past?'past':''}">${c.hora}</div><div class="cita-avatar">${av}</div><div class="cita-info"><div class="cita-name">${c.paciente_nombre}</div><div class="cita-motivo">${c.motivo||'Sin motivo'}</div></div><span class="cita-status ${stMap[est]||'confirmed'}">${lbMap[est]||est}</span>${est==='confirmada'?`<button class="btn-icon danger" onclick="cancelarCita('${c.id}')" title="Cancelar">✕</button>`:''}</div>`;
-  }).join('');
+async function cargarCitas(medicoId) {
+  var hoy = new Date().toISOString().split('T')[0];
+  _sb.from('citas').select('*').eq('medico_id', medicoId).eq('fecha', hoy).order('hora')
+    .then(function(r) {
+      var citas = r.data || [];
+      var list  = document.getElementById('citasList');
+      var count = document.getElementById('citasCount');
+      var badge = document.getElementById('badge-citas');
+      var stat  = document.getElementById('statHoy');
+      if (!list) return;
+      var n = citas.length;
+      if (count) count.textContent = n + ' cita' + (n!==1?'s':'');
+      if (badge) badge.textContent = n;
+      if (stat)  stat.textContent  = n;
+      if (!n) { list.innerHTML='<div class="empty-citas">No hay citas para hoy</div>'; return; }
+      var now  = new Date();
+      var avs  = ['👩','👨','👴','🧑','👩‍💼'];
+      var stMap = {confirmada:'confirmed',cancelada:'done',completada:'done',pendiente:'pending'};
+      var lbMap = {confirmada:'Confirmada',cancelada:'Cancelada',completada:'Completada',pendiente:'Pendiente'};
+      list.innerHTML = '';
+      citas.forEach(function(cita) {
+        var slotT = new Date(hoy + 'T' + cita.hora);
+        var past  = slotT < now;
+        var est   = cita.estado || 'confirmada';
+        var av    = avs[(cita.paciente_nombre||'P').charCodeAt(0) % avs.length];
+        var div   = document.createElement('div');
+        div.className = 'cita-item';
+        div.innerHTML = '<div class="cita-time '+(past?'past':'')+'">'+cita.hora+'</div>'
+          + '<div class="cita-avatar">'+av+'</div>'
+          + '<div class="cita-info">'
+            + '<div class="cita-name">'+(cita.paciente_nombre||'Paciente')+'</div>'
+            + '<div class="cita-motivo">'+(cita.motivo||'Sin motivo')+'</div>'
+          + '</div>'
+          + '<span class="cita-status '+(stMap[est]||'confirmed')+'">'+(lbMap[est]||est)+'</span>';
+        // Botón consulta
+        var btnConsulta = document.createElement('button');
+        btnConsulta.className = 'btn-icon';
+        btnConsulta.title = 'Registrar consulta';
+        btnConsulta.textContent = '📋';
+        btnConsulta.style.background = 'var(--teal-lite)';
+        btnConsulta.style.color = 'var(--teal)';
+        (function(cit) {
+          btnConsulta.addEventListener('click', function() {
+            abrirConsulta(cit.id, cit.paciente_nombre, cit.paciente_id||null);
+          });
+        })(cita);
+        div.appendChild(btnConsulta);
+        // Botón cancelar
+        if (est === 'confirmada') {
+          var btnCancelar = document.createElement('button');
+          btnCancelar.className = 'btn-icon danger';
+          btnCancelar.title = 'Cancelar cita';
+          btnCancelar.textContent = '✕';
+          (function(citaId) {
+            btnCancelar.addEventListener('click', function() { cancelarCita(citaId); });
+          })(cita.id);
+          div.appendChild(btnCancelar);
+        }
+        list.appendChild(div);
+      });
+    });
 }
 async function cancelarCita(id){
   if(!confirm('¿Cancelar esta cita?')) return;
