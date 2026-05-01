@@ -269,8 +269,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
 /* ── PRO BLUR PREMIUM ── */
 .pro-preview{position:relative;border-radius:16px;overflow:hidden}
-.pro-content{filter:blur(5px);pointer-events:none;user-select:none;transition:filter .3s}
-.pro-overlay{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(15,26,24,.25);border-radius:16px;backdrop-filter:blur(1px)}
+.pro-content{pointer-events:none;user-select:none;position:relative}
+.pro-content::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%, rgba(247,244,239,0) 0%, rgba(247,244,239,.5) 50%, rgba(247,244,239,.92) 100%);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);mask-image:none}
+.pro-overlay{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;border-radius:16px}
 .pro-overlay-card{background:var(--white);border-radius:18px;padding:1.8rem 1.6rem;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(15,26,24,.25);border:1.5px solid rgba(11,124,110,.15)}
 .pro-overlay-icon{font-size:2rem;display:block;margin-bottom:.6rem}
 .pro-overlay-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2}
@@ -284,6 +285,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-pro-upgrade:hover{opacity:.9}
 .btn-pro-cancel{background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;display:block;width:100%}
 .btn-pro-cancel:hover{color:var(--ink)}
+
+/* ── AI RESUMEN EDITABLE ── */
+.ai-editable-box{background:linear-gradient(135deg,#f8fafc,#f0f9ff);border:1.5px solid #bae6fd;border-radius:16px;padding:1.4rem;margin-top:1.2rem;display:none}
+.ai-disclaimer-box{background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:.65rem 1rem;font-size:.75rem;color:#9a3412;line-height:1.5;margin-bottom:1.1rem;display:flex;gap:.5rem;align-items:flex-start}
+.ai-editable-section{margin-bottom:.9rem}
+.ai-editable-label{font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#0369a1;margin-bottom:.3rem;display:flex;align-items:center;justify-content:space-between}
+.ai-editable-label span{color:#94a3b8;font-weight:400;text-transform:none;letter-spacing:0;font-size:.68rem}
+.ai-editable-area{width:100%;padding:.6rem .8rem;border:1.5px solid #e2e8f0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:#334155;background:var(--white);outline:none;resize:vertical;min-height:60px;line-height:1.55;transition:border-color .2s}
+.ai-editable-area:focus{border-color:#0369a1;background:#fff}
+.ai-editable-area.tall{min-height:80px}
+.ai-actions-row{display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap}
+.btn-usar-ai{flex:1;padding:.65rem;background:var(--teal);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .2s;min-width:120px}
+.btn-usar-ai:hover{background:var(--teal-mid)}
+.btn-enviar-ai{flex:0 0 auto;padding:.65rem 1rem;background:#0369a1;color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-enviar-ai:hover{opacity:.9}
+.ai-loading-inline{display:flex;align-items:center;gap:.5rem;color:#64748b;font-size:.84rem;padding:.5rem 0}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:600px){.ai-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -588,13 +607,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         <button onclick="guardarHC(true)" style="flex:0 0 auto;padding:.75rem 1.1rem;background:#059669;color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">✅ Finalizar</button>
         <button class="btn-ai" id="btnGenerarAI" onclick="generarResumenAI()">✨ Analizar con AI</button>
       </div>
-      <!-- Resultado AI -->
-      <div class="hc-ai-box" id="hcAIBox">
-        <div class="hc-ai-box-header">
-          <span>✨ Análisis clínico con IA</span>
-          <span class="ai-model">Claude Sonnet · CitaDoc AI</span>
+      <!-- Resultado AI editable -->
+      <div class="ai-editable-box" id="hcAIBox">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+          <span style="font-size:.85rem;font-weight:700;color:#0f1a18">✨ Resumen clínico con AI</span>
+          <span style="font-size:.7rem;color:#94a3b8">Claude Sonnet · CitaDoc AI</span>
         </div>
-        <div id="aiContent"></div>
+        <div class="ai-disclaimer-box">
+          <span>⚠️</span>
+          <span>Contenido generado por IA como apoyo clínico. Basado en prácticas médicas generales. <strong>Debe ser validado y editado por el médico tratante antes de usar.</strong></span>
+        </div>
+        <div id="aiContent">
+          <!-- Campos editables generados dinámicamente -->
+        </div>
+        <div class="ai-actions-row" id="aiActionsRow" style="display:none">
+          <button class="btn-usar-ai" onclick="usarAIEnConsulta()">📋 Usar en consulta</button>
+          <button class="btn-enviar-ai" onclick="enviarIndicacionesPaciente()">📩 Enviar al paciente</button>
+        </div>
       </div>
       <!-- Historial previo -->
       <div id="historialPrevio" style="margin-top:1.4rem;display:none">
@@ -1122,6 +1151,38 @@ function esPro() {
   return M && (M.plan === 'destacado' || M.plan === 'pro') && M.plan_activo === true;
 }
 
+// Guard global — llámalo en CUALQUIER función Pro
+function requirePro(feature) {
+  if (esPro()) return true;
+  // Mostrar blur en el contenedor más relevante
+  var targets = {
+    pacientes:   'pacientesList',
+    clinica:     'bookingForm',
+    ai:          'hcAIBox',
+    historial_ai:'aiHistorialBox'
+  };
+  var feat = feature || 'clinica';
+  var targetId = targets[feat] || 'bookingForm';
+  var wrap = document.getElementById(targetId);
+  // Si el modal HC está abierto, mostrar blur ahí
+  if (feat === 'clinica' && document.getElementById('hcOverlay').classList.contains('open')) {
+    showProBlur('bookingForm', getGhostHTML(feat), feat);
+  } else if (wrap) {
+    showProBlur(targetId, getGhostHTML(feat), feat);
+  }
+  return false;
+}
+
+function getGhostHTML(feature) {
+  var ghosts = {
+    pacientes: '<div class="pac-item"><div class="pac-avatar-sm">M</div><div class="pac-info"><div class="pac-nombre">Maria Garcia</div><div class="pac-meta">maria@email.com · 0998 123 456</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div><div class="pac-item"><div class="pac-avatar-sm">C</div><div class="pac-info"><div class="pac-nombre">Carlos Mendoza</div><div class="pac-meta">carlos@email.com</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div><div class="pac-item"><div class="pac-avatar-sm">A</div><div class="pac-info"><div class="pac-nombre">Ana Torres</div><div class="pac-meta">ana@email.com</div></div></div>',
+    clinica: '<div class="hc-field"><label>Sintomas</label><textarea style="height:70px;width:100%" disabled>Cefalea intensa, mareos frecuentes, nauseas matutinas desde hace 3 dias...</textarea></div><div class="hc-field"><label>Diagnostico</label><textarea style="height:60px;width:100%" disabled>Probable crisis hipertensiva. Pendiente confirmacion...</textarea></div><div style="margin-top:.8rem;padding:.8rem;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:12px"><div style="font-size:.72rem;font-weight:700;color:#0369a1;margin-bottom:.4rem">📊 Patrones detectados por AI</div><div style="font-size:.83rem;color:#334155">Cefalea recurrente en 3 consultas previas. Posible patron de tension arterial elevada...</div></div>',
+    ai: '<div class="ai-block"><div class="ai-block-title" style="color:#1e40af">📊 Patrones</div><div class="ai-block-content">Cefalea recurrente en 3 de 4 consultas. Patron en zona occipital con intervalos de 15-20 dias...</div></div><div class="ai-block"><div class="ai-block-title" style="color:#166534">📈 Evolucion</div><div class="ai-block-content">Empeoramiento progresivo. Intensidad del dolor ha aumentado...</div></div>',
+    historial_ai: '<div class="ai-block"><div class="ai-block-title" style="color:#1e40af">📊 Patrones detectados</div><div class="ai-block-content">Cefalea recurrente en 3 de 4 consultas. Patron de dolor occipital con intervalos de 15-20 dias...</div></div><div class="ai-block"><div class="ai-block-title" style="color:#166534">📈 Evolucion clinica</div><div class="ai-block-content">Empeoramiento progresivo en los ultimos 2 meses...</div></div><div class="ai-block"><div class="ai-block-title" style="color:#9a3412">⚠️ Señales</div><div class="ai-block-content">Frecuencia de consultas aumentando. Considerar derivacion a especialista...</div></div>'
+  };
+  return ghosts[feature] || ghosts.clinica;
+}
+
 function mostrarProGate(container, feature) {
   var features = {
     clinica:    { icon: '🧠', title: 'Herramienta clínica completa', desc: 'Gestiona historias clínicas, pacientes y análisis inteligente con AI. Mejora tu práctica médica.' },
@@ -1252,6 +1313,14 @@ function abrirConsulta(citaId, pacienteNombre, pacienteId) {
 
 // ── ABRIR PACIENTE — historial completo + prefill última consulta ──
 function abrirHistorialPaciente(pacienteId, nombre) {
+  if (!requirePro('clinica')) {
+    // Abrir el modal para mostrar el blur dentro
+    document.getElementById('hcTitle').textContent = 'Historial del Paciente';
+    document.getElementById('hcSubtitle').textContent = 'Vista previa Pro';
+    document.getElementById('hcOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
+  }
   _hcPacienteId = pacienteId;
   _hcCitaId     = null;
   _hcId         = null;
@@ -1356,6 +1425,7 @@ function cargarHistorialPrevio(pacienteId, citaActualId) {
 
 // ── GUARDAR HISTORIA CLÍNICA ──
 function guardarHC(finalizar) {
+  if (!requirePro('clinica')) return;
   var sintomas    = document.getElementById('hcSintomas').value.trim();
   var examen      = document.getElementById('hcExamen').value.trim();
   var diagnostico = document.getElementById('hcDiagnostico').value.trim();
@@ -1447,9 +1517,9 @@ function obtenerHistorialPaciente(pacienteId) {
     });
 }
 
-// ── GENERAR AI CLÍNICO — ASISTENTE DE SEGUNDA CAPA ──
+// ── GENERAR RESUMEN AI — EDITABLE ──
 function generarResumenAI() {
-  if (!esPro()) { alert('El AI clínico está disponible en CitaDoc Pro. Escríbenos a hola@citadoc.lat'); return; }
+  if (!requirePro('ai')) return;
   var sintomas    = document.getElementById('hcSintomas').value.trim();
   var examen      = document.getElementById('hcExamen').value.trim();
   var diagnostico = document.getElementById('hcDiagnostico').value.trim();
@@ -1458,35 +1528,37 @@ function generarResumenAI() {
   var btn     = document.getElementById('btnGenerarAI');
   var box     = document.getElementById('hcAIBox');
   var content = document.getElementById('aiContent');
+  var actions = document.getElementById('aiActionsRow');
   if (btn) { btn.disabled=true; btn.textContent='Analizando...'; }
-  if (box && content) {
-    box.style.display = 'block';
-    content.innerHTML = '<div class="ai-loading">'
-      + '<div class="ai-loading-dot"></div>'
-      + '<div class="ai-loading-dot"></div>'
-      + '<div class="ai-loading-dot"></div>'
-      + '<span>Analizando historial del paciente...</span>'
-      + '</div>';
-  }
+  if (box) box.style.display = 'block';
+  if (actions) actions.style.display = 'none';
+  if (content) content.innerHTML = '<div class="ai-loading-inline">'
+    + '<div class="ai-loading-dot"></div><div class="ai-loading-dot"></div><div class="ai-loading-dot"></div>'
+    + '<span>Claude analizando historial completo...</span></div>';
+
   obtenerHistorialPaciente(_hcPacienteId).then(function(historial) {
-    var prompt = 'Eres un asistente clinico de apoyo para medicos. NO emites diagnosticos ni reemplazas al medico.'
-      + ' Analiza el historial del paciente y la consulta actual para apoyar la decision medica.'
-      + ' HISTORIAL DEL PACIENTE: ' + historial
+    var prompt = 'Eres un asistente clinico de apoyo para medicos. NO emites diagnosticos ni tratamientos definitivos. NO reemplazas al medico.'
+      + ' Tus respuestas deben alinearse con practicas medicas generales. Usa lenguaje condicional y prudente.'
+      + ' HISTORIAL PREVIO: ' + historial
       + ' CONSULTA ACTUAL - Sintomas: ' + (sintomas||'No especificados') + '.'
       + ' Examen fisico: ' + (examen||'No especificado') + '.'
       + ' Observacion del medico: ' + (diagnostico||'No especificado') + '.'
-      + ' Responde SOLO con JSON valido sin markdown ni backticks.'
-      + ' {"patrones":"recurrencias o sintomas repetidos observados en el historial",'
-      + '"evolucion":"si el paciente mejora empeora o se mantiene estable basado en el historial",'
-      + '"senales":"posibles riesgos o alertas que el medico deberia considerar",'
-      + '"observaciones":"contexto clinico util para el medico sin emitir diagnostico",'
-      + '"nota":"Este analisis es de apoyo informativo y no reemplaza el criterio medico profesional"}';
+      + ' Tratamiento indicado: ' + (tratamiento||'No especificado') + '.'
+      + ' Responde SOLO con JSON valido sin markdown.'
+      + ' {"resumen":"resumen del paciente en 2-3 oraciones",'
+      + '"evolucion":"observaciones de evolucion basadas en historial",'
+      + '"alertas":"puntos a considerar o señales de atencion",'
+      + '"sugerencias_tratamiento":"sugerencias generales de manejo si aplica",'
+      + '"laboratorios":"examenes de laboratorio sugeridos si aplica o ninguno",'
+      + '"imagenes":"estudios de imagen sugeridos si aplica o ninguno",'
+      + '"indicaciones":"indicaciones generales para el paciente"}';
+
     fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
+        max_tokens: 1000,
         messages: [{role:'user', content: prompt}]
       })
     }).then(function(r){ return r.json(); })
@@ -1495,70 +1567,172 @@ function generarResumenAI() {
         try {
           var parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
           renderAI(parsed);
+          // Guardar resumen en DB
           if (_hcId) {
             _sb.from('historias_clinicas').update({
-              resumen_ai:       parsed.observaciones || null,
+              resumen_ai:       parsed.resumen           || null,
               urgencia_ai:      null,
-              recomendacion_ai: parsed.senales       || null
+              recomendacion_ai: parsed.sugerencias_tratamiento || null
             }).eq('id', _hcId);
           }
         } catch(e) {
-          console.error('AI parse error:', e, text);
-          if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.85rem">Error procesando respuesta. Intenta de nuevo.</p>';
+          if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.84rem">Error procesando respuesta. Intenta de nuevo.</p>';
         }
         if (btn) { btn.disabled=false; btn.textContent='✨ Analizar con AI'; }
       })
       .catch(function() {
-        if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.85rem">Error conectando con AI.</p>';
+        if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.84rem">Error conectando con AI.</p>';
         if (btn) { btn.disabled=false; btn.textContent='✨ Analizar con AI'; }
       });
   });
 }
 
-// ── RENDER AI — 4 bloques clínicos ──
+// ── RENDER AI — CAMPOS EDITABLES ──
 function renderAI(data) {
   var box     = document.getElementById('hcAIBox');
   var content = document.getElementById('aiContent');
+  var actions = document.getElementById('aiActionsRow');
   if (!box || !content) return;
-  content.innerHTML = ''
-    + '<div style="font-size:.7rem;color:#94a3b8;margin-bottom:.8rem;padding:.5rem .7rem;background:rgba(148,163,184,.08);border-radius:7px">'
-      + '⚠️ Este análisis es generado por IA como apoyo informativo. No reemplaza el criterio médico profesional.'
-    + '</div>'
-    + '<div class="ai-block">'
-      + '<div class="ai-block-title" style="color:#1e40af">📊 Patrones detectados</div>'
-      + '<div class="ai-block-content">'+(data.patrones||'Sin historial suficiente para detectar patrones.')+'</div>'
-    + '</div>'
-    + '<div class="ai-block">'
-      + '<div class="ai-block-title" style="color:#166534">📈 Evolución clínica</div>'
-      + '<div class="ai-block-content">'+(data.evolucion||'Sin datos comparativos disponibles.')+'</div>'
-    + '</div>'
-    + '<div class="ai-block">'
-      + '<div class="ai-block-title" style="color:#9a3412">⚠️ Señales de atención</div>'
-      + '<div class="ai-block-content">'+(data.senales||'Sin señales de atención identificadas.')+'</div>'
-    + '</div>'
-    + '<div class="ai-block">'
-      + '<div class="ai-block-title" style="color:#374151">📌 Observaciones para el médico</div>'
-      + '<div class="ai-block-content">'+(data.observaciones||'--')+'</div>'
-    + '</div>';
+
+  var campos = [
+    {id:'aiResumen',     label:'🧠 Resumen del paciente',         val: data.resumen,                 tall: true},
+    {id:'aiEvolucion',   label:'📊 Observaciones de evolución',   val: data.evolucion,               tall: false},
+    {id:'aiAlertas',     label:'⚠️ Puntos a considerar',          val: data.alertas,                 tall: false},
+    {id:'aiTratamiento', label:'💊 Sugerencias de manejo',        val: data.sugerencias_tratamiento, tall: false, hint:'Editable · requiere validación médica'},
+    {id:'aiLabs',        label:'🧪 Laboratorios sugeridos',       val: data.laboratorios,            tall: false},
+    {id:'aiImagenes',    label:'🩻 Estudios de imagen',           val: data.imagenes,                tall: false},
+    {id:'aiIndicaciones',label:'📌 Indicaciones para el paciente',val: data.indicaciones,            tall: true,  hint:'Este campo se puede enviar al paciente'}
+  ];
+
+  // Organizar en grid: resumen full, luego pares
+  var html = '';
+  campos.forEach(function(campo, idx) {
+    var hintHTML = campo.hint
+      ? '<span>✏️ '+campo.hint+'</span>'
+      : '';
+    if (idx === 0 || idx === 6) {
+      // Resumen e indicaciones: full width
+      html += '<div class="ai-editable-section">'
+        + '<div class="ai-editable-label">'+campo.label+hintHTML+'</div>'
+        + '<textarea class="ai-editable-area'+(campo.tall?' tall':'')+'" id="'+campo.id+'">'+(campo.val||'')+'</textarea>'
+      + '</div>';
+    } else if (idx % 2 === 1) {
+      // Inicio de par
+      html += '<div class="ai-grid">'
+        + '<div class="ai-editable-section">'
+          + '<div class="ai-editable-label">'+campo.label+hintHTML+'</div>'
+          + '<textarea class="ai-editable-area" id="'+campo.id+'">'+(campo.val||'')+'</textarea>'
+        + '</div>';
+    } else {
+      // Fin de par
+      html += '<div class="ai-editable-section">'
+          + '<div class="ai-editable-label">'+campo.label+hintHTML+'</div>'
+          + '<textarea class="ai-editable-area" id="'+campo.id+'">'+(campo.val||'')+'</textarea>'
+        + '</div>'
+      + '</div>';
+    }
+  });
+
+  content.innerHTML = html;
   box.style.display = 'block';
+  if (actions) actions.style.display = 'flex';
+}
+
+// ── USAR AI EN CONSULTA ──
+function usarAIEnConsulta() {
+  var trat = document.getElementById('aiTratamiento');
+  var hcTrat = document.getElementById('hcTratamiento');
+  var resumen = document.getElementById('aiResumen');
+  var hcDiag = document.getElementById('hcDiagnostico');
+  if (trat && hcTrat && trat.value.trim()) {
+    hcTrat.value = trat.value;
+    hcTrat.style.borderColor = 'var(--teal)';
+    setTimeout(function(){ hcTrat.style.borderColor=''; }, 2000);
+  }
+  if (resumen && hcDiag && !hcDiag.value.trim() && resumen.value.trim()) {
+    hcDiag.value = resumen.value;
+  }
+  mostrarToast('Sugerencias aplicadas a la consulta — revisa y valida');
+}
+
+// ── ENVIAR INDICACIONES AL PACIENTE ──
+function enviarIndicacionesPaciente() {
+  var indicaciones = document.getElementById('aiIndicaciones');
+  if (!indicaciones || !indicaciones.value.trim()) {
+    alert('No hay indicaciones para enviar.');
+    return;
+  }
+  if (!_hcPacienteId) { alert('No hay paciente vinculado.'); return; }
+
+  // Obtener email del paciente
+  _sb.from('pacientes').select('nombre, email').eq('id', _hcPacienteId).single()
+    .then(function(r) {
+      if (!r.data || !r.data.email) {
+        alert('Este paciente no tiene email registrado.');
+        return;
+      }
+      var paciente = r.data;
+      var nombreMedico = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Tu medico';
+      var tpl = {
+        to_name:  paciente.nombre,
+        to_email: paciente.email,
+        medico_nombre: nombreMedico,
+        mensaje: indicaciones.value.trim(),
+        hora_cita: '',
+        fecha_cita: new Date().toLocaleDateString('es-EC'),
+        paciente_nombre: paciente.nombre,
+        paciente_tel: '',
+        motivo: 'Indicaciones medicas'
+      };
+      emailjs.send('service_63xln0n', 'template_e8t8qkq', tpl)
+        .then(function() { mostrarToast('Indicaciones enviadas a '+paciente.email); })
+        .catch(function(e) { console.error('Email error:', e); alert('Error enviando email. Verifica EmailJS.'); });
+    });
 }
 
 // ── MOSTRAR AI DESDE DATOS GUARDADOS ──
 function mostrarAI(data) {
   renderAI({
-    patrones:      data.patrones      || '',
-    evolucion:     data.evolucion     || '',
-    senales:       data.senales       || data.recomendacion_ai || '',
-    observaciones: data.observaciones || data.resumen_ai       || ''
+    resumen:                data.resumen          || data.resumen_ai         || '',
+    evolucion:              data.evolucion        || '',
+    alertas:                data.alertas          || data.recomendacion_ai   || '',
+    sugerencias_tratamiento:data.sugerencias_tratamiento || '',
+    laboratorios:           data.laboratorios     || '',
+    imagenes:               data.imagenes         || '',
+    indicaciones:           data.indicaciones     || ''
   });
 }
 
 // ── PRO BLUR — ver pero no tocar ──
 var PRO_FEATURES = {
-  pacientes: {icon:'👥',title:'Gestión de Pacientes',desc:'Historial completo de cada paciente con evolución clínica y análisis AI.',features:['Historial clínico acumulativo','Búsqueda de pacientes','Análisis de evolución']},
-  clinica:   {icon:'🧠',title:'Historia Clínica Digital',desc:'Documenta cada consulta con síntomas, examen y diagnóstico.',features:['Síntomas, examen y diagnóstico','Estado borrador / finalizada','Trazabilidad completa']},
-  ai:        {icon:'✨',title:'AI Clínico',desc:'Detecta patrones y señales de atención basadas en el historial real.',features:['Análisis de consulta actual','Patrones longitudinales','Señales de atención']},
-  historial_ai:{icon:'📊',title:'Análisis de Evolución AI',desc:'AI que lee todo el historial y detecta tendencias reales.',features:['Patrones de síntomas repetidos','Tendencia de mejora o empeoramiento','Seguimiento sugerido']}
+  pacientes: {
+    icon:'👥',
+    title:'Gestión Inteligente de Pacientes',
+    desc:'Historial clínico completo con análisis de evolución asistido por AI. Ahorra tiempo en cada consulta.',
+    features:['Historial clínico acumulativo automático','Resumen inteligente con AI en cada consulta','Detección de patrones del paciente','Seguimiento clínico más preciso'],
+    demo:'Paciente con recurrencia de dolor cervical en 3 consultas. Se observa patrón de sobrecarga muscular progresiva.'
+  },
+  clinica: {
+    icon:'🧠',
+    title:'Historia Clínica Digital',
+    desc:'Documenta consultas en segundos. AI que resume, detecta patrones y sugiere seguimiento.',
+    features:['Síntomas, examen y diagnóstico estructurado','AI que analiza cada consulta al instante','Historial acumulativo del paciente','Estado borrador y finalizada con trazabilidad'],
+    demo:'Diagnóstico documentado en 30 segundos. AI detectó patrón de hipertensión en 2 consultas previas.'
+  },
+  ai: {
+    icon:'✨',
+    title:'AI Clínico Inteligente',
+    desc:'Claude analiza el historial completo del paciente y detecta lo que el ojo humano puede pasar por alto.',
+    features:['Patrones de síntomas en todo el historial','Evolución clínica con tendencias reales','Señales de atención automáticas','Observaciones para el médico sin diagnosticar'],
+    demo:'Cefalea recurrente detectada en 3 de 4 consultas. Patrón occipital con intervalos de 15-20 días. Considerar evaluación neurológica.'
+  },
+  historial_ai: {
+    icon:'📊',
+    title:'Análisis Longitudinal con AI',
+    desc:'AI que lee TODO el historial y encuentra lo que las consultas individuales no muestran.',
+    features:['Patrones de síntomas a lo largo del tiempo','Tendencia de mejora o empeoramiento con evidencia','Frecuencia de visitas y señales de alerta','Seguimiento sugerido basado en historial real'],
+    demo:'Paciente con 4 consultas en 6 meses. Empeoramiento progresivo detectado. Frecuencia de visitas aumentando. Se sugiere seguimiento prioritario.'
+  }
 };
 
 function showProBlur(wrapId, ghostHTML, feature) {
@@ -1575,14 +1749,22 @@ function showProBlur(wrapId, ghostHTML, feature) {
   var overlay = document.createElement('div');
   overlay.className = 'pro-overlay';
   var itemsHTML = f.features.map(function(item){ return '<li>'+item+'</li>'; }).join('');
+  var demoHTML = f.demo
+    ? '<div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:9px;padding:.7rem .9rem;margin-bottom:1rem;text-align:left">'
+        + '<div style="font-size:.67rem;font-weight:700;color:#0369a1;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.06em">✨ Ejemplo de análisis AI</div>'
+        + '<div style="font-size:.79rem;color:#334155;line-height:1.5;font-style:italic">'+f.demo+'</div>'
+      + '</div>'
+    : '';
   overlay.innerHTML = '<div class="pro-overlay-card">'
+    + '<div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem">🔒 Vista previa Pro</div>'
     + '<span class="pro-overlay-icon">'+f.icon+'</span>'
     + '<div class="pro-overlay-title">'+f.title+' <span class="pro-badge">PRO</span></div>'
     + '<div class="pro-overlay-desc">'+f.desc+'</div>'
+    + demoHTML
     + '<ul class="pro-overlay-features">'+itemsHTML+'</ul>'
     + '<div class="pro-overlay-price">$19.99</div>'
-    + '<div class="pro-overlay-price-sub">por mes · cancela cuando quieras</div>'
-    + '<button class="btn-pro-upgrade">✨ Activar CitaDoc Pro</button>'
+    + '<div class="pro-overlay-price-sub">Acceso completo a herramientas clínicas · cancela cuando quieras</div>'
+    + '<button class="btn-pro-upgrade">✨ Desbloquear herramienta clínica</button>'
     + '<button class="btn-pro-cancel">Ahora no</button>'
   + '</div>';
   var btnUp = overlay.querySelector('.btn-pro-upgrade');
@@ -1598,7 +1780,7 @@ function showProBlur(wrapId, ghostHTML, feature) {
 
 // ── ANALIZAR HISTORIAL COMPLETO CON AI ──
 function analizarHistorialAI() {
-  if (!esPro()) {
+  if (!requirePro('historial_ai')) {
     var ghostAI = ''
       + '<div class="ai-block"><div class="ai-block-title" style="color:#1e40af">📊 Patrones detectados</div>'
         + '<div class="ai-block-content">Cefalea recurrente en 3 de 4 consultas. Patron de dolor en zona occipital con intervalos de 15-20 dias...</div></div>'
