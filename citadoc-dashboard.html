@@ -303,6 +303,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .ai-loading-inline{display:flex;align-items:center;gap:.5rem;color:#64748b;font-size:.84rem;padding:.5rem 0}
 .ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
 @media(max-width:600px){.ai-grid{grid-template-columns:1fr}}
+
+/* ── PRO BLOCK FULL PANEL ── */
+.pro-block-full{position:absolute;inset:0;z-index:200;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(247,244,239,.7);display:flex;align-items:center;justify-content:center;padding:1.5rem;border-radius:inherit}
+.pro-block-card{background:var(--white);border-radius:20px;padding:2rem 1.8rem;max-width:400px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(15,26,24,.2);border:1.5px solid rgba(11,124,110,.1)}
+.pro-block-eyebrow{display:inline-block;background:var(--cream);border:1.5px solid var(--border);border-radius:50px;padding:.28rem .8rem;font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.9rem}
+.pro-block-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2}
+.pro-block-sub{font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:.9rem}
+.pro-block-demo{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:10px;padding:.75rem 1rem;margin-bottom:.9rem;font-size:.8rem;color:#0369a1;line-height:1.55;text-align:left;font-style:italic}
+.pro-block-features{list-style:none;padding:0;margin:0 0 1.1rem;text-align:left}
+.pro-block-features li{font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem}
+.pro-block-features li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0}
+.pro-block-price{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:700;color:var(--teal);line-height:1;margin-bottom:.2rem}
+.pro-block-price-sub{font-size:.72rem;color:var(--muted2);margin-bottom:1.1rem}
+.btn-pro-block{width:100%;padding:.8rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;transition:opacity .2s}
+.btn-pro-block:hover{opacity:.9}
+.panel.panel-locked{position:relative;overflow:hidden}
+@keyframes proFadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes proShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.pro-block-full{animation:proFadeIn .25s ease}
+.pro-block-card.shake{animation:proShake .35s ease}
 </style>
 </head>
 <body>
@@ -555,6 +575,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
   <!-- PANEL PACIENTES -->
   <div class="panel" id="panel-pacientes">
+    <!-- PRO BLOCK OVERLAY — se activa si Free -->
+    <div class="pro-block-full" id="proBlockPacientes" style="display:none">
+      <div class="pro-block-card">
+        <div class="pro-block-eyebrow">🔒 Vista previa Pro</div>
+        <div class="pro-block-title">🧠 Gestión Inteligente de Pacientes</div>
+        <div class="pro-block-sub">Historial clínico completo con análisis de evolución asistido por AI</div>
+        <div class="pro-block-demo">✨ Paciente con recurrencia de dolor cervical en 3 consultas. Patrón de sobrecarga muscular detectado automáticamente.</div>
+        <ul class="pro-block-features">
+          <li>Historial clínico acumulativo automático</li>
+          <li>Resumen inteligente con AI en cada consulta</li>
+          <li>Detección de patrones del paciente</li>
+          <li>Seguimiento clínico más preciso</li>
+        </ul>
+        <div class="pro-block-price">$19.99</div>
+        <div class="pro-block-price-sub">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
+        <button class="btn-pro-block" id="btnProBlockUpgrade">✨ Desbloquear herramienta clínica</button>
+      </div>
+    </div>
     <div class="panel-header">
       <div>
         <h2 class="panel-title">Pacientes</h2>
@@ -680,7 +718,18 @@ function showPanel(id, el) {
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
   if (id==='horarios')    renderSlots();
   if (id==='estadisticas' && M) cargarStats(M.id);
-  if (id==='pacientes')   cargarPacientes();
+  if (id==='pacientes') {
+    // Fix flash: mostrar overlay inmediatamente si es Free
+    if (!esPro()) {
+      var ov = document.getElementById('proBlockPacientes');
+      var pn = document.getElementById('panel-pacientes');
+      if (ov) ov.style.display = 'flex';
+      if (pn) pn.classList.add('panel-locked');
+      var btnUp = document.getElementById('btnProBlockUpgrade');
+      if (btnUp) btnUp.onclick = abrirStripe;
+    }
+    cargarPacientes();
+  }
 }
 
 // ══ CALENDARIO ══
@@ -1131,6 +1180,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     aplicarMedico(medico);
+
+    // Micro interacción: shake al click en panel bloqueado
+    var panelPac = document.getElementById('panel-pacientes');
+    if (panelPac) {
+      panelPac.addEventListener('click', function(e) {
+        if (!esPro()) {
+          var card = document.querySelector('#panel-pacientes .pro-block-card');
+          if (card && !card.contains(e.target)) {
+            card.classList.remove('shake');
+            void card.offsetWidth;
+            card.classList.add('shake');
+            setTimeout(function(){ card.classList.remove('shake'); }, 400);
+          }
+        }
+      });
+    }
   } catch(err) {
     console.error('Error al cargar dashboard:',err);
     setText('sidebarNombre','Error - recarga');
@@ -1152,9 +1217,15 @@ function esPro() {
 }
 
 // Guard global — llámalo en CUALQUIER función Pro
+var PRO_CONTEXT_MSG = {
+  pacientes:    'Desbloquea gestión de pacientes con historial clínico y AI',
+  clinica:      'Desbloquea registro de consultas y análisis con AI',
+  ai:           'Desbloquea el AI clínico con análisis de historial completo',
+  historial_ai: 'Desbloquea el análisis longitudinal del paciente con AI'
+};
+
 function requirePro(feature) {
   if (esPro()) return true;
-  // Mostrar blur en el contenedor más relevante
   var targets = {
     pacientes:   'pacientesList',
     clinica:     'bookingForm',
@@ -1211,14 +1282,21 @@ function cargarPacientes() {
   var container = document.getElementById('pacientesList');
   if (!container) return;
   if (!esPro()) {
-    var ghostPac = ''
-      + '<div class="pac-item"><div class="pac-avatar-sm">M</div><div class="pac-info"><div class="pac-nombre">Maria Garcia</div><div class="pac-meta">maria@email.com · 0998 123 456</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>'
-      + '<div class="pac-item"><div class="pac-avatar-sm">C</div><div class="pac-info"><div class="pac-nombre">Carlos Mendoza</div><div class="pac-meta">carlos@email.com</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>'
-      + '<div class="pac-item"><div class="pac-avatar-sm">A</div><div class="pac-info"><div class="pac-nombre">Ana Torres</div><div class="pac-meta">ana@email.com · 0987 321 654</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>'
-      + '<div class="pac-item"><div class="pac-avatar-sm">R</div><div class="pac-info"><div class="pac-nombre">Roberto Jimenez</div><div class="pac-meta">roberto@email.com</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>';
-    showProBlur('pacientesList', ghostPac, 'pacientes');
+    // Activar overlay full sobre el panel
+    var overlay = document.getElementById('proBlockPacientes');
+    var panel   = document.getElementById('panel-pacientes');
+    if (overlay) overlay.style.display = 'flex';
+    if (panel)   panel.classList.add('panel-locked');
+    // Evento del botón upgrade
+    var btnUp = document.getElementById('btnProBlockUpgrade');
+    if (btnUp) btnUp.addEventListener('click', abrirStripe);
     return;
   }
+  // Es Pro — asegurar que el overlay no está activo
+  var overlay = document.getElementById('proBlockPacientes');
+  var panel   = document.getElementById('panel-pacientes');
+  if (overlay) overlay.style.display = 'none';
+  if (panel)   panel.classList.remove('panel-locked');
   container.innerHTML = '<div class="empty-citas">Cargando...</div>';
 
   // Query correcta: solo pacientes de este médico via citas
@@ -1314,11 +1392,11 @@ function abrirConsulta(citaId, pacienteNombre, pacienteId) {
 // ── ABRIR PACIENTE — historial completo + prefill última consulta ──
 function abrirHistorialPaciente(pacienteId, nombre) {
   if (!requirePro('clinica')) {
-    // Abrir el modal para mostrar el blur dentro
-    document.getElementById('hcTitle').textContent = 'Historial del Paciente';
-    document.getElementById('hcSubtitle').textContent = 'Vista previa Pro';
+    document.getElementById('hcTitle').textContent = 'Historia Clinica — '+nombre;
+    document.getElementById('hcSubtitle').textContent = PRO_CONTEXT_MSG.clinica;
     document.getElementById('hcOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    showProBlur('bookingForm', getGhostHTML('clinica'), 'clinica');
     return;
   }
   _hcPacienteId = pacienteId;
