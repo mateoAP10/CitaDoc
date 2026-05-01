@@ -566,7 +566,22 @@ async function cargarPerfilPublico() {
   const { data: formacion } = await _supabase
     .from('formacion').select('*').eq('medico_id', m.id).order('orden');
 
-  aplicarPerfilPublico(m, formacion || []);
+  // Cargar citas confirmadas (próximos 60 días) para calcular disponibilidad real
+  const hoyStr = new Date().toISOString().split('T')[0];
+  const en60   = new Date(); en60.setDate(en60.getDate()+60);
+  const fin60  = en60.toISOString().split('T')[0];
+  const { data: citas } = await _supabase
+    .from('citas')
+    .select('fecha,hora')
+    .eq('medico_id', m.id)
+    .gte('fecha', hoyStr)
+    .lte('fecha', fin60)
+    .neq('estado','cancelada');
+
+  // Calcular disponibilidad real
+  _dispPerfil = generarDisponibilidad(m, citas||[]);
+
+  aplicarPerfilPublico(m, formacion||[]);
 }
 
 function aplicarPerfilPublico(m, formacion) {
@@ -678,45 +693,12 @@ function aplicarPerfilPublico(m, formacion) {
   const shareUrl = 'https://citadoc.lat/citadoc-perfil.html?slug=' + slug;
   window._perfilUrl = shareUrl;
 
-  // ── CONECTAR HORARIOS REALES AL CALENDARIO ──
+  // ── CALENDARIO CON DISPONIBILIDAD REAL ──
+  // _dispPerfil ya fue calculado en cargarPerfilPublico()
+  // Solo inicializar el calendario
   _medicoActual = m;
-
-  // Generar SLOT_TIMES desde horario_desde y horario_hasta del médico
-  SLOT_TIMES = [];
-  const desde = m.horario_desde || '09:00';
-  const hasta = m.horario_hasta || '17:00';
-  let [sh, sm] = desde.split(':').map(Number);
-  const [eh, em] = hasta.split(':').map(Number);
-  while (sh < eh || (sh === eh && sm < em)) {
-    SLOT_TIMES.push(String(sh).padStart(2,'0') + ':' + String(sm).padStart(2,'0'));
-    sm += 30; if (sm >= 60) { sm -= 60; sh++; }
-  }
-
-  // HAS_SLOTS_DAYS desde dias_atencion del médico
-  // Mapear abreviaciones a índices JS (0=dom,1=lun,...,6=sab)
-  const diasMap = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
-  const diasActivos = (m.dias_atencion || ['lun','mar','mie','jue','vie']).map(d => diasMap[d]).filter(d => d !== undefined);
-
-  // Calcular qué días del mes actual tienen slots
-  function calcHasSlotsDays(year, month) {
-    const daysInMonth = new Date(year, month+1, 0).getDate();
-    const result = [];
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dow = new Date(year, month, d).getDay();
-      if (diasActivos.includes(dow)) result.push(d);
-    }
-    return result;
-  }
-  HAS_SLOTS_DAYS = calcHasSlotsDays(calYear, calMonth);
-
-  // Guardar la función para recalcular cuando cambie el mes
-  window._calcHasSlotsDays = calcHasSlotsDays;
-  window._diasActivos = diasActivos;
-
-  // Cargar citas tomadas del mes actual desde Supabase
-  cargarCitasTomadas(m.id, calYear, calMonth);
-
-  // Renderizar el calendario con datos reales
+  calYear  = new Date().getFullYear();
+  calMonth = new Date().getMonth();
   renderCal();
 }
 
@@ -1167,82 +1149,98 @@ const SLOT_TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:
 const TAKEN = ['09:00','10:30','14:00'];
 HAS_SLOTS_DAYS = []; // se llena dinámicamente desde dias_atencion del médico
 
+
+// ══ DISPONIBILIDAD REAL ══════════════════════════════════════
+const DIAS_SEMANA  = ['dom','lun','mar','mie','jue','vie','sab'];
+const MESES_ES     = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function generarDisponibilidad(medico, citas) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const disp = {};
+  for (let i = 0; i < 60; i++) {
+    const fecha = new Date(hoy);
+    fecha.setDate(hoy.getDate() + i);
+    const fechaStr = fecha.toISOString().split('T')[0];
+    const dia      = DIAS_SEMANA[fecha.getDay()];
+    if (!(medico.dias_atencion||[]).includes(dia)) continue;
+    disp[fechaStr] = [];
+    const [hD,mD] = (medico.horario_desde||'09:00').split(':').map(Number);
+    const [hH,mH] = (medico.horario_hasta||'17:00').split(':').map(Number);
+    let min = hD*60+mD;
+    const minFin = hH*60+mH;
+    let minLimite = 0;
+    if (i===0) { const n=new Date(); minLimite=n.getHours()*60+n.getMinutes()+120; }
+    while (min < minFin) {
+      const horaStr = String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
+      const ocupado = citas.some(ct=>ct.fecha===fechaStr&&ct.hora===horaStr);
+      if (!ocupado && !(i===0&&min<minLimite)) disp[fechaStr].push(horaStr);
+      min+=30;
+    }
+    if (disp[fechaStr].length===0) delete disp[fechaStr];
+  }
+  return disp;
+}
+// ═════════════════════════════════════════════════════════════
+
 let calYear, calMonth, selectedDate = null, selectedSlot = null;
+let _dispPerfil = {}; // disponibilidad calculada del médico
 const now = new Date();
 calYear = now.getFullYear(); calMonth = now.getMonth();
 
 function renderCal() {
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const titleEl = document.getElementById('dateMonthLabel');
+  if (titleEl) titleEl.textContent = MESES_ES[calMonth]+' '+calYear;
+
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const prevDays = new Date(calYear, calMonth, 0).getDate();
-  document.getElementById('dateMonthLabel').textContent = `${MONTHS[calMonth]} ${calYear}`;
+  const today       = new Date(); today.setHours(0,0,0,0);
 
-  let html = ['D','L','M','X','J','V','S'].map(d => `<div class="date-dow">${d}</div>`).join('');
-  for (let i = 0; i < firstDay; i++) {
-    html += `<div class="date-day other">${prevDays - firstDay + 1 + i}</div>`;
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(calYear, calMonth, d);
-    const isToday = d === now.getDate() && calMonth === now.getMonth() && calYear === now.getFullYear();
-    const isPast  = date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const dow = date.getDay();
-    const isWeekend = dow === 0 || dow === 6;
-    const hasSlots = HAS_SLOTS_DAYS.includes(d) && !isWeekend;
-    const isSelected = selectedDate === `${calYear}-${calMonth}-${d}`;
+  let html = ['D','L','M','X','J','V','S'].map(d=>'<div class="date-dow">'+d+'</div>').join('');
+  for (let i=0;i<firstDay;i++) html+='<div class="date-day other"></div>';
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const mesStr  = String(calMonth+1).padStart(2,'0');
+    const dStr    = String(d).padStart(2,'0');
+    const fechaStr= calYear+'-'+mesStr+'-'+dStr;
+    const date    = new Date(calYear, calMonth, d);
+    const isPast  = date < today;
+    const isToday = date.getTime()===today.getTime();
+    const isAvail = !isPast && !!_dispPerfil[fechaStr];
+    const isSel   = selectedDate===fechaStr;
+
     let cls = 'date-day';
-    if (isPast || isWeekend) cls += ' inactive';
-    if (isToday) cls += ' today';
-    if (hasSlots) cls += ' has-slots';
-    if (isSelected) cls += ' selected';
-    html += `<div class="${cls}" onclick="selectDate(${d})">${d}</div>`;
+    if (isPast)   cls+=' inactive';
+    if (isToday)  cls+=' today';
+    if (isAvail)  cls+=' has-slots';
+    if (isSel)    cls+=' selected';
+
+    const onclick = isAvail ? 'onclick="selectDate(''+fechaStr+'','+d+')"' : '';
+    html+='<div class="'+cls+'" '+onclick+'>'+d+'</div>';
   }
-  document.getElementById('dateGrid').innerHTML = html;
+  const grid=document.getElementById('dateGrid');
+  if (grid) grid.innerHTML=html;
 }
 
-async function cargarCitasTomadas(medicoId, year, month) {
-  const mesStr   = String(month + 1).padStart(2, '0');
-  const fechaIni = year + '-' + mesStr + '-01';
-  const lastDay  = new Date(year, month + 1, 0).getDate();
-  const fechaFin = year + '-' + mesStr + '-' + String(lastDay).padStart(2, '0');
-  const { data } = await _supabase
-    .from('citas')
-    .select('fecha,hora,estado')
-    .eq('medico_id', medicoId)
-    .gte('fecha', fechaIni)
-    .lte('fecha', fechaFin)
-    .neq('estado', 'cancelada');
-  // Guardar por fecha
-  window._citasPorFecha = {};
-  (data || []).forEach(c => {
-    if (!window._citasPorFecha[c.fecha]) window._citasPorFecha[c.fecha] = [];
-    window._citasPorFecha[c.fecha].push(c.hora);
-  });
-}
-
-function selectDate(d) {
-  const mesStr = String(calMonth + 1).padStart(2, '0');
-  const dStr   = String(d).padStart(2, '0');
-  selectedDate = calYear + '-' + mesStr + '-' + dStr;
+function selectDate(fechaStr, d) {
+  selectedDate = fechaStr;
   selectedSlot = null;
   renderCal();
 
-  // Slots tomados para este día específico
-  TAKEN = (window._citasPorFecha && window._citasPorFecha[selectedDate]) || [];
-
-  const dateStr = d + ' de ' + MONTHS[calMonth];
-  document.getElementById('slotsTitle').textContent = 'Horarios — ' + dateStr;
+  const slots = _dispPerfil[fechaStr] || [];
+  const [,mo]  = fechaStr.split('-').map(Number);
 
   const slotsPub = document.getElementById('slotsPub');
-  if (SLOT_TIMES.length === 0) {
-    slotsPub.innerHTML = '<p style="font-size:.82rem;color:var(--muted2);text-align:center;padding:.5rem">Este médico no tiene horarios configurados aún.</p>';
-  } else {
-    slotsPub.innerHTML = SLOT_TIMES.map(t => {
-      const taken = TAKEN.includes(t);
-      return '<div class="slot-pub' + (taken ? ' taken' : '') + '" onclick="' + (taken ? '' : "selectSlot(this,'" + t + "')") + '">' + t + '</div>';
-    }).join('');
+  if (slotsPub) {
+    slotsPub.innerHTML = slots.length===0
+      ? '<p style="font-size:.82rem;color:var(--muted2);text-align:center">Sin horarios disponibles</p>'
+      : slots.map(t=>'<div class="slot-pub" onclick="selectSlot(this,''+t+'')">'+t+'</div>').join('');
   }
-  document.getElementById('slotsWrap').style.display = 'block';
-  document.getElementById('patientForm').style.display = 'none';
+
+  const lbl = document.getElementById('slotsTitle');
+  if (lbl) lbl.textContent='Horarios — '+d+' de '+MESES_ES[mo-1];
+  const sw=document.getElementById('slotsWrap'); if(sw)sw.style.display='block';
+  const pf=document.getElementById('patientForm'); if(pf)pf.style.display='none';
 }
 
 function selectSlot(el, slot) {
@@ -1253,15 +1251,11 @@ function selectSlot(el, slot) {
 }
 
 function calPrev() {
-  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
-  if (window._calcHasSlotsDays) HAS_SLOTS_DAYS = window._calcHasSlotsDays(calYear, calMonth);
-  if (_medicoActual) cargarCitasTomadas(_medicoActual.id, calYear, calMonth);
+  calMonth--; if(calMonth<0){calMonth=11;calYear--;}
   renderCal();
 }
 function calNext() {
-  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
-  if (window._calcHasSlotsDays) HAS_SLOTS_DAYS = window._calcHasSlotsDays(calYear, calMonth);
-  if (_medicoActual) cargarCitasTomadas(_medicoActual.id, calYear, calMonth);
+  calMonth++; if(calMonth>11){calMonth=0;calYear++;}
   renderCal();
 }
 
@@ -1359,8 +1353,9 @@ function shareIG() {
   alert('Link copiado. Pégalo en tu historia de Instagram.');
 }
 
-// Init
-renderCal();
+// Init — renderCal() se llama desde aplicarPerfilPublico() 
+// después de cargar dias_atencion del médico
+cargarPerfilPublico();
 
 
 
