@@ -1240,28 +1240,32 @@ function abrirStripe() {
 // ── MODAL PRO GLOBAL ──
 var PRO_MODAL_CONTENT = {
   pacientes: {
-    icon:'👥', title:'Gestión Inteligente de Pacientes',
-    desc:'Historial clínico completo con análisis de evolución asistido por AI.',
-    demo:'✨ Paciente con recurrencia de dolor cervical en 3 consultas. Patrón de sobrecarga muscular detectado.',
+    icon:'👥',
+    title:'Convierte tus citas en inteligencia clínica',
+    desc:'Gestiona pacientes con historial clínico completo. Detecta patrones automáticamente con AI.',
+    demo:'✨ Paciente con recurrencia de dolor cervical en 3 consultas. Patrón de sobrecarga muscular detectado automáticamente.',
     features:['Historial clínico acumulativo automático','Resumen inteligente con AI en cada consulta','Detección de patrones del paciente','Seguimiento clínico más preciso']
   },
   clinica: {
-    icon:'🧠', title:'Historia Clínica Digital',
-    desc:'Documenta cada consulta con síntomas, examen y diagnóstico. AI que analiza al instante.',
-    demo:'✨ Diagnóstico documentado en 30 segundos. AI detectó patrón en 2 consultas previas.',
-    features:['Síntomas, examen y diagnóstico estructurado','AI que analiza cada consulta al instante','Historial acumulativo del paciente','Estado borrador y finalizada']
+    icon:'🧠',
+    title:'Consultas profesionales con continuidad clínica',
+    desc:'Registra consultas con síntomas, examen y diagnóstico. Evolución automática del paciente.',
+    demo:'✨ Historia clínica documentada en 30 segundos. AI detectó patrón de hipertensión en 2 consultas previas.',
+    features:['Síntomas, examen y diagnóstico en segundos','AI que analiza cada consulta al instante','Evolución automática del paciente','Historial completo siempre disponible']
   },
   ai: {
-    icon:'✨', title:'AI Clínico Inteligente',
-    desc:'Claude analiza el historial completo y detecta lo que el ojo humano puede pasar por alto.',
-    demo:'✨ Cefalea recurrente en 3 de 4 consultas. Patrón occipital con intervalos de 15-20 días.',
-    features:['Patrones de síntomas en todo el historial','Evolución clínica con tendencias reales','Señales de atención automáticas','7 campos clínicos editables']
+    icon:'✨',
+    title:'Detecta patrones que podrías pasar por alto',
+    desc:'Seguimiento clínico asistido por inteligencia. Claude analiza el historial completo del paciente.',
+    demo:'✨ Cefalea recurrente en 3 de 4 consultas. Patrón occipital con intervalos de 15-20 días detectado.',
+    features:['Patrones de síntomas en todo el historial','Evolución clínica con tendencias reales','Señales de atención automáticas','7 campos clínicos editables y enviables']
   },
   historial_ai: {
-    icon:'📊', title:'Análisis Longitudinal con AI',
-    desc:'AI que lee TODO el historial y encuentra lo que las consultas individuales no muestran.',
-    demo:'✨ Paciente con 4 consultas en 6 meses. Empeoramiento progresivo detectado. Seguimiento prioritario sugerido.',
-    features:['Patrones de síntomas a lo largo del tiempo','Tendencia de mejora o empeoramiento','Frecuencia de visitas y alertas','Seguimiento sugerido basado en historial']
+    icon:'📊',
+    title:'El historial completo analizado en segundos',
+    desc:'AI que lee TODAS las consultas y encuentra lo que las visitas individuales no muestran.',
+    demo:'✨ Paciente con 4 consultas en 6 meses. Empeoramiento progresivo. Seguimiento prioritario sugerido.',
+    features:['Patrones de síntomas a lo largo del tiempo','Tendencia de mejora o empeoramiento con evidencia','Frecuencia de visitas y señales de alerta','Seguimiento sugerido basado en historial real']
   }
 };
 
@@ -1845,7 +1849,7 @@ function showProBlur(wrapId, ghostHTML, feature) {
     + '<ul class="pro-overlay-features">'+itemsHTML+'</ul>'
     + '<div class="pro-overlay-price">$19.99</div>'
     + '<div class="pro-overlay-price-sub">Acceso completo a herramientas clínicas · cancela cuando quieras</div>'
-    + '<button class="btn-pro-upgrade">✨ Desbloquear herramienta clínica</button>'
+    + '<button class="btn-pro-upgrade">✨ Desbloquear sistema clínico completo</button>'
     + '<button class="btn-pro-cancel">Ahora no</button>'
   + '</div>';
   var btnUp = overlay.querySelector('.btn-pro-upgrade');
@@ -1967,6 +1971,31 @@ function cerrarHC() {
   var btnAI=document.getElementById('btnGenerarAI');
   if(btnAI){btnAI.style.display='';btnAI.textContent='✨ Generar resumen AI';btnAI.disabled=false;}
 }
+
+</script>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL PRO GLOBAL — fixed, sobre todo   -->
+<!-- ═══════════════════════════════════════ -->
+<div id="proModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
+  <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
+    <div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">🔒 Vista previa Pro</div>
+    <div id="proModalIcon" style="font-size:2.2rem;margin-bottom:.6rem">🧠</div>
+    <div id="proModalTitle" style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2">Gestión Inteligente de Pacientes</div>
+    <div id="proModalDesc" style="font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:.9rem">Historial clínico completo con análisis de evolución asistido por AI</div>
+    <div id="proModalDemo" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:10px;padding:.75rem 1rem;margin-bottom:.9rem;font-size:.8rem;color:#0369a1;line-height:1.55;text-align:left;font-style:italic">✨ Paciente con recurrencia de dolor cervical en 3 consultas. Patrón de sobrecarga muscular detectado automáticamente.</div>
+    <ul id="proModalFeatures" style="list-style:none;padding:0;margin:0 0 1.1rem;text-align:left">
+      <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Historial clínico acumulativo automático</li>
+      <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Resumen inteligente con AI en cada consulta</li>
+      <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Detección de patrones del paciente</li>
+      <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Seguimiento clínico más preciso</li>
+    </ul>
+    <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$19.99</div>
+    <div style="font-size:.72rem;color:var(--muted2);margin:.15rem 0 1.2rem">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
+    <button id="btnProModalUpgrade" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem">✨ Desbloquear sistema clínico completo</button>
+    <button id="btnProModalCancel" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
+  </div>
+</div>
 
 </script>
 </body>
