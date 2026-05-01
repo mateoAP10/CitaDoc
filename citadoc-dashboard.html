@@ -266,6 +266,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-ai-historial:disabled{opacity:.5;cursor:not-allowed}
 .ai-historial-box{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid #bae6fd;border-radius:14px;padding:1.2rem;margin-top:.8rem;display:none}
 .ai-historial-box .ai-block-title{color:#0369a1}
+
+/* ── PRO BLUR PREMIUM ── */
+.pro-preview{position:relative;border-radius:16px;overflow:hidden}
+.pro-content{filter:blur(5px);pointer-events:none;user-select:none;transition:filter .3s}
+.pro-overlay{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(15,26,24,.25);border-radius:16px;backdrop-filter:blur(1px)}
+.pro-overlay-card{background:var(--white);border-radius:18px;padding:1.8rem 1.6rem;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(15,26,24,.25);border:1.5px solid rgba(11,124,110,.15)}
+.pro-overlay-icon{font-size:2rem;display:block;margin-bottom:.6rem}
+.pro-overlay-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2}
+.pro-overlay-desc{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem}
+.pro-overlay-features{text-align:left;list-style:none;margin:0 0 1.2rem;padding:0}
+.pro-overlay-features li{font-size:.79rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem}
+.pro-overlay-features li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0}
+.pro-overlay-price{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:700;color:var(--teal);line-height:1}
+.pro-overlay-price-sub{font-size:.72rem;color:var(--muted2);margin:.15rem 0 1.2rem}
+.btn-pro-upgrade{width:100%;padding:.78rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;transition:opacity .2s;display:block}
+.btn-pro-upgrade:hover{opacity:.9}
+.btn-pro-cancel{background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;display:block;width:100%}
+.btn-pro-cancel:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1131,7 +1149,15 @@ function cargarPacientes() {
   if (!M) return;
   var container = document.getElementById('pacientesList');
   if (!container) return;
-  if (!esPro()) { mostrarProGate(container, 'pacientes'); return; }
+  if (!esPro()) {
+    var ghostPac = ''
+      + '<div class="pac-item"><div class="pac-avatar-sm">M</div><div class="pac-info"><div class="pac-nombre">Maria Garcia</div><div class="pac-meta">maria@email.com · 0998 123 456</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>'
+      + '<div class="pac-item"><div class="pac-avatar-sm">C</div><div class="pac-info"><div class="pac-nombre">Carlos Mendoza</div><div class="pac-meta">carlos@email.com</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>'
+      + '<div class="pac-item"><div class="pac-avatar-sm">A</div><div class="pac-info"><div class="pac-nombre">Ana Torres</div><div class="pac-meta">ana@email.com · 0987 321 654</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>'
+      + '<div class="pac-item"><div class="pac-avatar-sm">R</div><div class="pac-info"><div class="pac-nombre">Roberto Jimenez</div><div class="pac-meta">roberto@email.com</div></div><span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial</span></div>';
+    showProBlur('pacientesList', ghostPac, 'pacientes');
+    return;
+  }
   container.innerHTML = '<div class="empty-citas">Cargando...</div>';
 
   // Query correcta: solo pacientes de este médico via citas
@@ -1179,19 +1205,19 @@ function cargarPacientes() {
 // ── ABRIR CONSULTA DESDE CITA ──
 function abrirConsulta(citaId, pacienteNombre, pacienteId) {
   if (!esPro()) {
-    var container = document.createElement('div');
-    document.body.appendChild(container);
-    container.style.cssText = 'position:fixed;inset:0;z-index:900;background:rgba(15,26,24,.6);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:1rem';
-    container.innerHTML = '<div style="background:var(--white);border-radius:20px;max-width:420px;width:100%;padding:2rem;text-align:center;box-shadow:0 24px 64px rgba(15,26,24,.2)">'
-      + '<div style="font-size:2.5rem;margin-bottom:.8rem">🧠</div>'
-      + '<h3 style="font-family:Fraunces,serif;font-size:1.2rem;color:var(--ink);margin-bottom:.4rem">Historia Clínica <span class="pro-badge">PRO</span></h3>'
-      + '<p style="font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:1.4rem">Registra consultas, gestiona el historial de tus pacientes y analiza con AI clínico.</p>'
-      + '<button class="btn-upgrade" onclick="abrirStripe()" style="width:100%;justify-content:center;margin-bottom:.8rem">Desbloquear CitaDoc Pro — $19.99/mes</button>'
-      + '<button id="btnCancelProGate" style="background:none;border:none;font-size:.84rem;color:var(--muted);cursor:pointer;margin-top:.3rem">Cancelar</button>'
-    + '</div>';
-    container.addEventListener('click', function(e){ if(e.target===container)container.remove(); });
-    var btnCancel = container.querySelector('#btnCancelProGate');
-    if (btnCancel) btnCancel.addEventListener('click', function(){ container.remove(); });
+    var ghostHC = ''
+      + '<div class="hc-field"><label>Sintomas</label><textarea style="height:70px;width:100%" disabled>Cefalea intensa, mareos frecuentes, nauseas matutinas desde hace 3 dias...</textarea></div>'
+      + '<div class="hc-field"><label>Diagnostico</label><textarea style="height:60px;width:100%" disabled>Probable crisis hipertensiva. Pendiente confirmacion con examenes...</textarea></div>'
+      + '<div style="margin-top:.8rem;padding:.8rem;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:12px">'
+        + '<div style="font-size:.72rem;font-weight:700;color:#0369a1;margin-bottom:.4rem">📊 Patrones detectados por AI</div>'
+        + '<div style="font-size:.83rem;color:#334155">Cefalea recurrente en 3 consultas previas. Posible patron de tension arterial elevada...</div>'
+      + '</div>';
+    // Abrir el modal primero para que se vea detrás del blur
+    document.getElementById('hcTitle').textContent = 'Historia Clinica — '+pacienteNombre;
+    document.getElementById('hcSubtitle').textContent = 'Vista previa Pro';
+    document.getElementById('hcOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    showProBlur('bookingForm', ghostHC, 'clinica');
     return;
   }
   _hcCitaId     = citaId;
@@ -1527,10 +1553,64 @@ function mostrarAI(data) {
   });
 }
 
+// ── PRO BLUR — ver pero no tocar ──
+var PRO_FEATURES = {
+  pacientes: {icon:'👥',title:'Gestión de Pacientes',desc:'Historial completo de cada paciente con evolución clínica y análisis AI.',features:['Historial clínico acumulativo','Búsqueda de pacientes','Análisis de evolución']},
+  clinica:   {icon:'🧠',title:'Historia Clínica Digital',desc:'Documenta cada consulta con síntomas, examen y diagnóstico.',features:['Síntomas, examen y diagnóstico','Estado borrador / finalizada','Trazabilidad completa']},
+  ai:        {icon:'✨',title:'AI Clínico',desc:'Detecta patrones y señales de atención basadas en el historial real.',features:['Análisis de consulta actual','Patrones longitudinales','Señales de atención']},
+  historial_ai:{icon:'📊',title:'Análisis de Evolución AI',desc:'AI que lee todo el historial y detecta tendencias reales.',features:['Patrones de síntomas repetidos','Tendencia de mejora o empeoramiento','Seguimiento sugerido']}
+};
+
+function showProBlur(wrapId, ghostHTML, feature) {
+  var wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  var f = PRO_FEATURES[feature] || PRO_FEATURES.clinica;
+  wrap.innerHTML = '';
+  var preview = document.createElement('div');
+  preview.className = 'pro-preview';
+  var content = document.createElement('div');
+  content.className = 'pro-content';
+  content.innerHTML = ghostHTML;
+  preview.appendChild(content);
+  var overlay = document.createElement('div');
+  overlay.className = 'pro-overlay';
+  var itemsHTML = f.features.map(function(item){ return '<li>'+item+'</li>'; }).join('');
+  overlay.innerHTML = '<div class="pro-overlay-card">'
+    + '<span class="pro-overlay-icon">'+f.icon+'</span>'
+    + '<div class="pro-overlay-title">'+f.title+' <span class="pro-badge">PRO</span></div>'
+    + '<div class="pro-overlay-desc">'+f.desc+'</div>'
+    + '<ul class="pro-overlay-features">'+itemsHTML+'</ul>'
+    + '<div class="pro-overlay-price">$19.99</div>'
+    + '<div class="pro-overlay-price-sub">por mes · cancela cuando quieras</div>'
+    + '<button class="btn-pro-upgrade">✨ Activar CitaDoc Pro</button>'
+    + '<button class="btn-pro-cancel">Ahora no</button>'
+  + '</div>';
+  var btnUp = overlay.querySelector('.btn-pro-upgrade');
+  var btnCn = overlay.querySelector('.btn-pro-cancel');
+  if (btnUp) btnUp.addEventListener('click', abrirStripe);
+  if (btnCn) btnCn.addEventListener('click', function() {
+    preview.remove();
+    wrap.innerHTML = '<div class="empty-citas">Activa CitaDoc Pro para acceder.</div>';
+  });
+  preview.appendChild(overlay);
+  wrap.appendChild(preview);
+}
+
 // ── ANALIZAR HISTORIAL COMPLETO CON AI ──
 function analizarHistorialAI() {
   if (!esPro()) {
-    mostrarToast('Disponible en CitaDoc Pro');
+    var ghostAI = ''
+      + '<div class="ai-block"><div class="ai-block-title" style="color:#1e40af">📊 Patrones detectados</div>'
+        + '<div class="ai-block-content">Cefalea recurrente en 3 de 4 consultas. Patron de dolor en zona occipital con intervalos de 15-20 dias...</div></div>'
+      + '<div class="ai-block"><div class="ai-block-title" style="color:#166534">📈 Evolucion clinica</div>'
+        + '<div class="ai-block-content">Empeoramiento progresivo en los ultimos 2 meses. Intensidad del dolor ha aumentado segun reportes del paciente...</div></div>'
+      + '<div class="ai-block"><div class="ai-block-title" style="color:#9a3412">⚠️ Señales de atencion</div>'
+        + '<div class="ai-block-content">Frecuencia de consultas aumentando. Considerar derivacion a especialista si persiste...</div></div>';
+    var box = document.getElementById('aiHistorialBox');
+    if (box) {
+      box.style.display = 'block';
+      showProBlur('aiHistorialBox', ghostAI, 'historial_ai');
+    }
     return;
   }
   if (!_hcPacienteId) { alert('No hay paciente seleccionado.'); return; }
