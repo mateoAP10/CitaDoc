@@ -1215,7 +1215,7 @@ function renderCal() {
     if (isAvail)  cls+=' has-slots';
     if (isSel)    cls+=' selected';
 
-    const onclick = isAvail ? 'onclick="selectDate(''+fechaStr+'','+d+')"' : '';
+    const onclick = isAvail ? 'onclick="selectDate(\'' + fechaStr + '\',' + d + ')"' : '';
     html+='<div class="'+cls+'" '+onclick+'>'+d+'</div>';
   }
   const grid=document.getElementById('dateGrid');

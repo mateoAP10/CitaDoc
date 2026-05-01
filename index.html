@@ -903,7 +903,7 @@ function renderModalCal() {
     if (isAvail) cls+=' available';
     if (isSel)   cls+=' selected';
 
-    const onclick = isAvail ? 'onclick="selectModalDate(''+fechaStr+'','+d+')"' : '';
+    const onclick = isAvail ? 'onclick="selectModalDate(\'' + fechaStr + '\',' + d + ')"' : '';
     html+='<div class="'+cls+'" '+onclick+'>'+d+'</div>';
   }
   const grid=document.getElementById('modalCalGrid');
