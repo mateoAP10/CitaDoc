@@ -259,6 +259,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-upgrade{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;padding:.75rem 1.6rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .2s;text-decoration:none}
 .btn-upgrade:hover{opacity:.9}
 .pro-badge{display:inline-flex;align-items:center;gap:.3rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;letter-spacing:.05em;vertical-align:middle;margin-left:.4rem}
+
+/* ── AI HISTORIAL ── */
+.btn-ai-historial{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border:none;padding:.6rem 1.1rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer;transition:opacity .2s;margin-bottom:1rem;width:100%;justify-content:center}
+.btn-ai-historial:hover{opacity:.9}
+.btn-ai-historial:disabled{opacity:.5;cursor:not-allowed}
+.ai-historial-box{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid #bae6fd;border-radius:14px;padding:1.2rem;margin-top:.8rem;display:none}
+.ai-historial-box .ai-block-title{color:#0369a1}
 </style>
 </head>
 <body>
@@ -573,7 +580,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       </div>
       <!-- Historial previo -->
       <div id="historialPrevio" style="margin-top:1.4rem;display:none">
-        <div style="font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.7rem">Historial anterior</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem">
+          <div style="font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)">Historial anterior</div>
+          <button class="btn-ai-historial" id="btnAnalizarHistorial" style="width:auto;padding:.45rem .9rem;font-size:.78rem">✨ Analizar evolución del paciente</button>
+        </div>
+        <div class="ai-historial-box" id="aiHistorialBox"></div>
         <div id="historialList"></div>
       </div>
     </div>
@@ -1514,6 +1525,94 @@ function mostrarAI(data) {
     senales:       data.senales       || data.recomendacion_ai || '',
     observaciones: data.observaciones || data.resumen_ai       || ''
   });
+}
+
+// ── ANALIZAR HISTORIAL COMPLETO CON AI ──
+function analizarHistorialAI() {
+  if (!esPro()) {
+    mostrarToast('Disponible en CitaDoc Pro');
+    return;
+  }
+  if (!_hcPacienteId) { alert('No hay paciente seleccionado.'); return; }
+
+  var btn = document.getElementById('btnAnalizarHistorial');
+  var box = document.getElementById('aiHistorialBox');
+  if (!box) return;
+
+  if (btn) { btn.disabled=true; btn.textContent='Analizando...'; }
+  box.style.display = 'block';
+  box.innerHTML = '<div class="ai-loading">'
+    + '<div class="ai-loading-dot"></div>'
+    + '<div class="ai-loading-dot"></div>'
+    + '<div class="ai-loading-dot"></div>'
+    + '<span>Analizando evolución del paciente...</span>'
+    + '</div>';
+
+  obtenerHistorialPaciente(_hcPacienteId).then(function(historial) {
+    if (historial === 'Sin historial previo registrado.' || historial === 'Sin historial previo.') {
+      box.innerHTML = '<p style="font-size:.84rem;color:var(--muted2);text-align:center;padding:.5rem">No hay suficiente historial para analizar evolución.</p>';
+      if (btn) { btn.disabled=false; btn.textContent='✨ Analizar evolución del paciente'; }
+      return;
+    }
+
+    var prompt = 'Eres un asistente clinico de apoyo para medicos. NO emites diagnosticos ni reemplazas al medico.'
+      + ' Analiza el historial COMPLETO del paciente para identificar patrones y evolución a lo largo del tiempo.'
+      + ' HISTORIAL COMPLETO: ' + historial
+      + ' Responde SOLO con JSON valido sin markdown ni backticks.'
+      + ' {"patrones":"sintomas o problemas que se repiten en múltiples consultas",'
+      + '"evolucion":"tendencia general del paciente mejora empeora o se mantiene con ejemplos concretos del historial",'
+      + '"senales":"alertas o señales que el medico deberia considerar basadas en el historial",'
+      + '"seguimiento":"recomendacion de seguimiento sugerida sin emitir diagnostico"}';
+
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 700,
+        messages: [{role:'user', content: prompt}]
+      })
+    }).then(function(r){ return r.json(); })
+      .then(function(data) {
+        var text = (data.content&&data.content[0]) ? data.content[0].text : '';
+        try {
+          var parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
+          renderHistorialAI(parsed);
+        } catch(e) {
+          box.innerHTML = '<p style="color:#dc2626;font-size:.84rem">Error procesando respuesta. Intenta de nuevo.</p>';
+        }
+        if (btn) { btn.disabled=false; btn.textContent='✨ Analizar evolución del paciente'; }
+      })
+      .catch(function() {
+        box.innerHTML = '<p style="color:#dc2626;font-size:.84rem">Error conectando con AI.</p>';
+        if (btn) { btn.disabled=false; btn.textContent='✨ Analizar evolución del paciente'; }
+      });
+  });
+}
+
+function renderHistorialAI(data) {
+  var box = document.getElementById('aiHistorialBox');
+  if (!box) return;
+  box.innerHTML = ''
+    + '<div style="font-size:.7rem;color:#64748b;margin-bottom:.8rem;padding:.45rem .7rem;background:rgba(255,255,255,.6);border-radius:7px">'
+      + '⚠️ Análisis longitudinal de apoyo. No reemplaza el criterio médico.'
+    + '</div>'
+    + '<div class="ai-block" style="background:rgba(255,255,255,.7)">'
+      + '<div class="ai-block-title" style="color:#1e40af">📊 Patrones detectados</div>'
+      + '<div class="ai-block-content">'+(data.patrones||'Sin patrones detectados.')+'</div>'
+    + '</div>'
+    + '<div class="ai-block" style="background:rgba(255,255,255,.7)">'
+      + '<div class="ai-block-title" style="color:#166534">📈 Evolución clínica</div>'
+      + '<div class="ai-block-content">'+(data.evolucion||'Sin datos comparativos.')+'</div>'
+    + '</div>'
+    + '<div class="ai-block" style="background:rgba(255,255,255,.7)">'
+      + '<div class="ai-block-title" style="color:#9a3412">⚠️ Señales de atención</div>'
+      + '<div class="ai-block-content">'+(data.senales||'Sin señales de atención.')+'</div>'
+    + '</div>'
+    + '<div class="ai-block" style="background:rgba(255,255,255,.7)">'
+      + '<div class="ai-block-title" style="color:#374151">📌 Seguimiento sugerido</div>'
+      + '<div class="ai-block-content">'+(data.seguimiento||'--')+'</div>'
+    + '</div>';
 }
 
 function cerrarHC() {
