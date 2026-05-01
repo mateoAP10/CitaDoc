@@ -668,7 +668,7 @@ function showLoggedIn(m) {
   var nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   var ini = (m.nombre[0]||'').toUpperCase()+(m.apellido[0]||'').toUpperCase();
   setText('navAvatar',ini); setText('navName',nombre);
-  setText('ddNombre',nombre); setText('ddPlan',m.plan==='destacado'?'Plan Destacado':'Plan Gratuito');
+  setText('ddNombre',nombre); setText('ddPlan',m.plan==='destacado'||m.plan==='pro'?'⭐ PRO':'Plan Gratuito');
   var pill=el('navPill'); if(pill)pill.style.display='flex';
   var login=el('btnLogin'); if(login)login.style.display='none';
   var reg=el('btnRegistro'); if(reg)reg.style.display='none';

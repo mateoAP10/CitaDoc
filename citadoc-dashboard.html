@@ -1184,6 +1184,11 @@ function esPro() {
   return M && (M.plan === 'destacado' || M.plan === 'pro') && M.plan_activo === true;
 }
 
+function getPlanLabel(plan) {
+  if (plan === 'destacado' || plan === 'pro') return '⭐ PRO';
+  return 'Plan Gratuito';
+}
+
 // Guard global — llámalo en CUALQUIER función Pro
 var PRO_CONTEXT_MSG = {
   pacientes:    'Desbloquea gestión de pacientes con historial clínico y AI',
