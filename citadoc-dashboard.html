@@ -321,8 +321,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .panel.panel-locked{position:relative;overflow:hidden}
 @keyframes proFadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 @keyframes proShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-.pro-block-full{animation:proFadeIn .25s ease}
-.pro-block-card.shake{animation:proShake .35s ease}
+@keyframes proModalIn{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 </style>
 </head>
 <body>
@@ -575,24 +574,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
   <!-- PANEL PACIENTES -->
   <div class="panel" id="panel-pacientes">
-    <!-- PRO BLOCK OVERLAY — se activa si Free -->
-    <div class="pro-block-full" id="proBlockPacientes" style="display:none">
-      <div class="pro-block-card">
-        <div class="pro-block-eyebrow">🔒 Vista previa Pro</div>
-        <div class="pro-block-title">🧠 Gestión Inteligente de Pacientes</div>
-        <div class="pro-block-sub">Historial clínico completo con análisis de evolución asistido por AI</div>
-        <div class="pro-block-demo">✨ Paciente con recurrencia de dolor cervical en 3 consultas. Patrón de sobrecarga muscular detectado automáticamente.</div>
-        <ul class="pro-block-features">
-          <li>Historial clínico acumulativo automático</li>
-          <li>Resumen inteligente con AI en cada consulta</li>
-          <li>Detección de patrones del paciente</li>
-          <li>Seguimiento clínico más preciso</li>
-        </ul>
-        <div class="pro-block-price">$19.99</div>
-        <div class="pro-block-price-sub">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
-        <button class="btn-pro-block" id="btnProBlockUpgrade">✨ Desbloquear herramienta clínica</button>
-      </div>
-    </div>
+
     <div class="panel-header">
       <div>
         <h2 class="panel-title">Pacientes</h2>
@@ -719,16 +701,8 @@ function showPanel(id, el) {
   if (id==='horarios')    renderSlots();
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='pacientes') {
-    // Fix flash: mostrar overlay inmediatamente si es Free
-    if (!esPro()) {
-      var ov = document.getElementById('proBlockPacientes');
-      var pn = document.getElementById('panel-pacientes');
-      if (ov) ov.style.display = 'flex';
-      if (pn) pn.classList.add('panel-locked');
-      var btnUp = document.getElementById('btnProBlockUpgrade');
-      if (btnUp) btnUp.onclick = abrirStripe;
-    }
-    cargarPacientes();
+    if (!esPro()) mostrarProModal('pacientes');
+    else cargarPacientes();
   }
 }
 
@@ -1181,21 +1155,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     aplicarMedico(medico);
 
-    // Micro interacción: shake al click en panel bloqueado
-    var panelPac = document.getElementById('panel-pacientes');
-    if (panelPac) {
-      panelPac.addEventListener('click', function(e) {
-        if (!esPro()) {
-          var card = document.querySelector('#panel-pacientes .pro-block-card');
-          if (card && !card.contains(e.target)) {
-            card.classList.remove('shake');
-            void card.offsetWidth;
-            card.classList.add('shake');
-            setTimeout(function(){ card.classList.remove('shake'); }, 400);
-          }
-        }
-      });
-    }
+    // Eventos del modal Pro global
+    var btnUpgrade = document.getElementById('btnProModalUpgrade');
+    var btnCancel  = document.getElementById('btnProModalCancel');
+    var proModal   = document.getElementById('proModal');
+    if (btnUpgrade) btnUpgrade.addEventListener('click', abrirStripe);
+    if (btnCancel)  btnCancel.addEventListener('click', cerrarProModal);
+    if (proModal)   proModal.addEventListener('click', function(e) {
+      if (e.target === proModal) cerrarProModal();
+    });
   } catch(err) {
     console.error('Error al cargar dashboard:',err);
     setText('sidebarNombre','Error - recarga');
@@ -1233,14 +1201,8 @@ function requirePro(feature) {
     historial_ai:'aiHistorialBox'
   };
   var feat = feature || 'clinica';
-  var targetId = targets[feat] || 'bookingForm';
-  var wrap = document.getElementById(targetId);
-  // Si el modal HC está abierto, mostrar blur ahí
-  if (feat === 'clinica' && document.getElementById('hcOverlay').classList.contains('open')) {
-    showProBlur('bookingForm', getGhostHTML(feat), feat);
-  } else if (wrap) {
-    showProBlur(targetId, getGhostHTML(feat), feat);
-  }
+  // Mostrar modal global — limpio, centrado, premium
+  mostrarProModal(feat);
   return false;
 }
 
@@ -1272,8 +1234,61 @@ function mostrarProGate(container, feature) {
 }
 
 function abrirStripe() {
-  // Stripe checkout — próximamente
-  alert('Próximamente: pago con tarjeta. Escríbenos a hola@citadoc.lat para activar tu plan Pro.');
+  alert('Proximamente: pago con tarjeta. Escribenos a hola@citadoc.lat para activar tu plan Pro.');
+}
+
+// ── MODAL PRO GLOBAL ──
+var PRO_MODAL_CONTENT = {
+  pacientes: {
+    icon:'👥', title:'Gestión Inteligente de Pacientes',
+    desc:'Historial clínico completo con análisis de evolución asistido por AI.',
+    demo:'✨ Paciente con recurrencia de dolor cervical en 3 consultas. Patrón de sobrecarga muscular detectado.',
+    features:['Historial clínico acumulativo automático','Resumen inteligente con AI en cada consulta','Detección de patrones del paciente','Seguimiento clínico más preciso']
+  },
+  clinica: {
+    icon:'🧠', title:'Historia Clínica Digital',
+    desc:'Documenta cada consulta con síntomas, examen y diagnóstico. AI que analiza al instante.',
+    demo:'✨ Diagnóstico documentado en 30 segundos. AI detectó patrón en 2 consultas previas.',
+    features:['Síntomas, examen y diagnóstico estructurado','AI que analiza cada consulta al instante','Historial acumulativo del paciente','Estado borrador y finalizada']
+  },
+  ai: {
+    icon:'✨', title:'AI Clínico Inteligente',
+    desc:'Claude analiza el historial completo y detecta lo que el ojo humano puede pasar por alto.',
+    demo:'✨ Cefalea recurrente en 3 de 4 consultas. Patrón occipital con intervalos de 15-20 días.',
+    features:['Patrones de síntomas en todo el historial','Evolución clínica con tendencias reales','Señales de atención automáticas','7 campos clínicos editables']
+  },
+  historial_ai: {
+    icon:'📊', title:'Análisis Longitudinal con AI',
+    desc:'AI que lee TODO el historial y encuentra lo que las consultas individuales no muestran.',
+    demo:'✨ Paciente con 4 consultas en 6 meses. Empeoramiento progresivo detectado. Seguimiento prioritario sugerido.',
+    features:['Patrones de síntomas a lo largo del tiempo','Tendencia de mejora o empeoramiento','Frecuencia de visitas y alertas','Seguimiento sugerido basado en historial']
+  }
+};
+
+function mostrarProModal(feature) {
+  var modal = document.getElementById('proModal');
+  if (!modal) return;
+  var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
+  document.getElementById('proModalIcon').textContent  = feat.icon;
+  document.getElementById('proModalTitle').textContent = feat.title;
+  document.getElementById('proModalDesc').textContent  = feat.desc;
+  document.getElementById('proModalDemo').textContent  = feat.demo;
+  var ul = document.getElementById('proModalFeatures');
+  if (ul) {
+    ul.innerHTML = feat.features.map(function(f) {
+      return '<li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>'+f+'</li>';
+    }).join('');
+  }
+  var card = document.getElementById('proModalCard');
+  if (card) { card.style.animation='none'; void card.offsetWidth; card.style.animation='proModalIn .25s ease'; }
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarProModal() {
+  var modal = document.getElementById('proModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 // ── CARGAR PACIENTES ──
@@ -1282,21 +1297,9 @@ function cargarPacientes() {
   var container = document.getElementById('pacientesList');
   if (!container) return;
   if (!esPro()) {
-    // Activar overlay full sobre el panel
-    var overlay = document.getElementById('proBlockPacientes');
-    var panel   = document.getElementById('panel-pacientes');
-    if (overlay) overlay.style.display = 'flex';
-    if (panel)   panel.classList.add('panel-locked');
-    // Evento del botón upgrade
-    var btnUp = document.getElementById('btnProBlockUpgrade');
-    if (btnUp) btnUp.addEventListener('click', abrirStripe);
+    mostrarProModal('pacientes');
     return;
   }
-  // Es Pro — asegurar que el overlay no está activo
-  var overlay = document.getElementById('proBlockPacientes');
-  var panel   = document.getElementById('panel-pacientes');
-  if (overlay) overlay.style.display = 'none';
-  if (panel)   panel.classList.remove('panel-locked');
   container.innerHTML = '<div class="empty-citas">Cargando...</div>';
 
   // Query correcta: solo pacientes de este médico via citas
