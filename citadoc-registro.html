@@ -523,9 +523,9 @@ function updatePaymentStep() {
   document.getElementById('sum-desc').textContent  = f ? 'Primero en búsquedas · Badge Destacado' : 'Perfil básico · Link para compartir';
   document.getElementById('payment-form').style.display = f ? 'block' : 'none';
   if (f && typeof window.initPayPhoneRegistro === 'function') {
-    var emailVal = document.getElementById('regEmail') ? document.getElementById('regEmail').value : '';
-    var telVal   = document.getElementById('regTelefono') ? document.getElementById('regTelefono').value : '';
-    setTimeout(function(){ window.initPayPhoneRegistro(emailVal, telVal); }, 200);
+    var emailVal = document.getElementById('f-email') ? document.getElementById('f-email').value.trim() : '';
+    var telVal   = document.getElementById('f-tel')   ? document.getElementById('f-tel').value.trim()   : '';
+    setTimeout(function(){ window.initPayPhoneRegistro(emailVal, telVal); }, 300);
   }
   document.getElementById('free-note').style.display    = f ? 'none' : 'block';
   document.getElementById('btn-activar').textContent    = f ? 'Empezar 30 días gratis →' : 'Activar mi perfil gratis →';
@@ -832,18 +832,17 @@ document.addEventListener('DOMContentLoaded', initAuthNav);
       el.innerHTML = '<p style="color:red;font-size:.85rem">Error cargando sistema de pago. Recarga la página.</p>';
       return;
     }
+    // Sin email ni teléfono — el usuario los llena en la cajita
     new PPaymentButtonBox({
       token:               PAYPHONE_TOKEN,
       storeId:             PAYPHONE_STOREID,
-      clientTransactionId: 'reg' + Date.now(),
+      clientTransactionId: 'cdreg' + Date.now(),
       amount:              1999,
       amountWithoutTax:    1999,
       currency:            'USD',
-      reference:           'CitaDoc PRO - Registro',
+      reference:           'CitaDoc Pro',
       lang:                'es',
-      defaultMethod:       'card',
-      email:               email    || '',
-      phoneNumber:         telefono || ''
+      defaultMethod:       'card'
     }).render('pp-button-registro');
   }
 
