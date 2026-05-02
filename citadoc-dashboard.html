@@ -19,20 +19,71 @@
 }
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);display:flex;min-height:100vh}
-.sidebar{width:var(--sidebar-w);background:var(--teal-dark);min-height:100vh;position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100;transition:transform .3s}
-.sidebar-logo{display:block;padding:1.4rem 1.4rem 1rem;font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:-.5px;border-bottom:1px solid rgba(255,255,255,.08)}
-.sidebar-logo span{color:rgba(255,255,255,.6);font-style:italic}
-.sidebar-doctor{padding:1.1rem 1.4rem;display:flex;align-items:center;gap:.75rem;border-bottom:1px solid rgba(255,255,255,.08)}
-.doc-avatar-sm{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden}
-.doc-info-sm .name{font-size:.85rem;font-weight:700;color:#fff;margin-bottom:.1rem}
-.doc-info-sm .role{font-size:.72rem;color:rgba(255,255,255,.55)}
-.plan-badge-sm{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);padding:.15rem .5rem;border-radius:50px;margin-top:.3rem}
-.sidebar-nav{flex:1;padding:.8rem 0;overflow-y:auto}
-.nav-section-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);padding:.4rem 1.4rem .6rem}
-.nav-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.4rem;font-size:.88rem;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer;transition:all .15s;position:relative}
-.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
-.nav-item.active{background:rgba(255,255,255,.13);color:#fff;font-weight:600}
-.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#fff;border-radius:0 3px 3px 0}
+.sidebar{
+  width:var(--sidebar-w);min-height:100vh;position:fixed;top:0;left:0;
+  display:flex;flex-direction:column;z-index:100;transition:transform .3s;
+  background:linear-gradient(180deg,#062e2b 0%,#021b1a 100%);
+  color:#d1fae5;overflow:hidden
+}
+.sidebar::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 20% 10%,rgba(255,255,255,.04),transparent 40%),
+             radial-gradient(circle at 80% 90%,rgba(52,211,153,.03),transparent 50%)
+}
+.sidebar-logo{
+  display:block;padding:1.4rem 1.4rem 1rem;text-decoration:none;
+  font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;color:#fff;
+  letter-spacing:-.5px;border-bottom:1px solid rgba(255,255,255,.06);
+  position:relative;z-index:1;display:flex;align-items:center;gap:.5rem
+}
+.sidebar-logo span{color:rgba(255,255,255,.55);font-style:italic}
+.sidebar-logo::after{
+  content:'PRO';font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;
+  letter-spacing:.06em;padding:.18rem .55rem;border-radius:50px;
+  background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)
+}
+.sidebar-doctor{
+  padding:1rem 1.2rem;display:flex;align-items:center;gap:.75rem;
+  border-bottom:1px solid rgba(255,255,255,.06);position:relative;z-index:1
+}
+.doc-avatar-sm{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(52,211,153,.15);border:1.5px solid rgba(52,211,153,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:700;color:#34d399;flex-shrink:0
+}
+.doc-info-sm .name{font-size:.86rem;font-weight:600;color:#fff;line-height:1.2}
+.doc-info-sm .role{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:.1rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.plan-badge-sm{
+  display:inline-block;margin-top:.3rem;font-size:.62rem;font-weight:700;
+  padding:.15rem .55rem;border-radius:50px;letter-spacing:.05em;
+  background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)
+}
+.sidebar-nav{
+  flex:1;padding:.8rem 0;overflow-y:auto;position:relative;z-index:1;
+  scrollbar-width:none
+}
+.sidebar-nav::-webkit-scrollbar{display:none}
+.nav-section-label{
+  font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.3);padding:.6rem 1.2rem .3rem
+}
+.nav-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.65rem 1.1rem;margin:0 .5rem;border-radius:10px;
+  font-size:.85rem;font-weight:500;color:rgba(255,255,255,.65);
+  cursor:pointer;transition:all .18s ease;position:relative
+}
+.nav-item .nav-icon{font-size:.95rem;flex-shrink:0;opacity:.8}
+.nav-item:hover{
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.9)
+}
+.nav-item.active{
+  background:rgba(52,211,153,.12);color:#d1fae5;font-weight:600;
+  box-shadow:inset 0 0 0 1px rgba(52,211,153,.2)
+}
+.nav-item.active .nav-icon{opacity:1}
 .nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
 .nav-badge{margin-left:auto;background:var(--teal-mid);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:50px;min-width:18px;text-align:center}
 .sidebar-bottom{padding:1rem 1.2rem;border-top:1px solid rgba(255,255,255,.08)}
@@ -199,6 +250,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   .dash-grid,.cal-layout,.perfil-layout{grid-template-columns:1fr}
   .seguros-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ── TARJETAS PACIENTES ── */
+.patient-card{background:var(--white);border-radius:14px;padding:1rem 1.25rem;margin-bottom:.65rem;border:1.5px solid var(--border);border-left:3px solid transparent;cursor:pointer;transition:all .18s ease;display:flex;flex-direction:column;gap:.5rem}
+.patient-card:hover{box-shadow:0 6px 20px rgba(15,26,24,.08);border-color:var(--teal);border-left-color:var(--teal)}
+.patient-card:active{transform:scale(.995);box-shadow:none}
+.patient-card.selected{background:#f0fdfa;border-color:var(--teal);border-left-color:var(--teal)}
+.patient-card-top{display:flex;align-items:center;gap:.9rem}
+.patient-ini{width:40px;height:40px;border-radius:50%;background:var(--teal-lite);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;flex-shrink:0;border:1.5px solid rgba(11,124,110,.15)}
+.patient-name{font-size:.92rem;font-weight:700;color:var(--ink)}
+.patient-contact{font-size:.76rem;color:var(--muted2);margin-top:.1rem}
+.patient-card-body{padding-left:3.3rem}
+.patient-last-hc{font-size:.79rem;color:var(--ink2);display:flex;align-items:center;gap:.4rem}
+.patient-last-hc .hc-diag{font-weight:500;color:#0b7c6e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;display:inline-block;vertical-align:bottom}
+.patient-last-date{font-size:.73rem;color:var(--muted2)}
+.patient-cta{font-size:.78rem;font-weight:600;color:var(--teal);margin-left:auto;flex-shrink:0;align-self:center}
+.patient-empty{text-align:center;padding:2.5rem 1rem;color:var(--muted2)}
+.patient-empty-icon{font-size:2rem;margin-bottom:.7rem}
+.patient-empty-title{font-size:.95rem;font-weight:600;color:var(--ink2);margin-bottom:.35rem}
+.patient-empty-sub{font-size:.82rem;line-height:1.55}
 
 /* ── MÓDULO PACIENTES / HISTORIA CLÍNICA ── */
 .hc-modal-overlay{position:fixed;inset:0;z-index:700;background:rgba(15,26,24,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
@@ -609,7 +679,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         style="flex:1;min-width:200px;max-width:320px;padding:.6rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;background:var(--cream);transition:border-color .2s"
         onfocus="this.style.borderColor='var(--teal-mid)'" onblur="this.style.borderColor='var(--border)'">
     </div>
-    <div style="padding:1.2rem 1.6rem">
+    <div style="padding:1.2rem 1.6rem;overflow-y:auto;scroll-behavior:smooth">
       <div id="pacientesList">
         <div class="empty-citas">Cargando pacientes...</div>
       </div>
@@ -1384,49 +1454,122 @@ function cargarPacientes() {
   }
   container.innerHTML = '<div class="empty-citas">Cargando...</div>';
 
-  // Query correcta: solo pacientes de este médico via citas
-  _sb.from('citas')
-    .select('paciente_id, pacientes(id, nombre, email, telefono)')
+  // Query único: citas + pacientes + historias_clinicas
+  _sb.from('historias_clinicas')
+    .select('paciente_id, diagnostico, created_at, pacientes(id, nombre, email, telefono)')
     .eq('medico_id', M.id)
     .not('paciente_id', 'is', null)
+    .order('created_at', {ascending: false})
     .then(function(r) {
-      if (r.error) {
-        console.error('Pacientes error:', r.error);
-        container.innerHTML = '<div class="empty-citas">Error: '+r.error.message+'</div>';
-        return;
-      }
-      // Deduplicar por paciente_id
+      if (r.error) { container.innerHTML='<div class="empty-citas">Error: '+r.error.message+'</div>'; return; }
+
+      // Construir mapa: paciente_id → {paciente, última HC}
       var map = {};
       (r.data||[]).forEach(function(row) {
-        if (row.pacientes && !map[row.pacientes.id]) {
-          map[row.pacientes.id] = row.pacientes;
+        if (!row.pacientes) return;
+        if (!map[row.paciente_id]) {
+          map[row.paciente_id] = {
+            paciente: row.pacientes,
+            ultimaHC: { diagnostico: row.diagnostico, created_at: row.created_at }
+          };
         }
       });
-      var pacientes = Object.values(map);
-      console.log('Pacientes del medico:', pacientes.length);
 
-      if (!pacientes.length) {
-        container.innerHTML = '<div class="empty-citas">No hay pacientes aun. Aparecen cuando alguien agenda una cita.</div>';
-        return;
-      }
-      // Actualizar conteo
-      var countEl = document.getElementById('pacCount');
-      if (countEl) countEl.textContent = pacientes.length + ' paciente' + (pacientes.length!==1?'s':'');
-      container.innerHTML = '';
-      pacientes.forEach(function(p) {
-        var ini = (p.nombre||'P').charAt(0).toUpperCase();
-        var div = document.createElement('div');
-        div.className = 'pac-item';
-        div.innerHTML = '<div class="pac-avatar-sm">'+ini+'</div>'
-          + '<div class="pac-info">'
-            + '<div class="pac-nombre">'+(p.nombre||'Sin nombre')+'</div>'
-            + '<div class="pac-meta">'+(p.email||'')+(p.telefono?' · '+p.telefono:'')+'</div>'
-          + '</div>'
-          + '<span style="font-size:.78rem;color:var(--teal);font-weight:600">Ver historial →</span>';
-        div.addEventListener('click', function(){ abrirHistorialPaciente(p.id, p.nombre); });
-        container.appendChild(div);
-      });
+      // Incluir pacientes de citas sin historia clínica
+      _sb.from('citas')
+        .select('paciente_id, pacientes(id, nombre, email, telefono)')
+        .eq('medico_id', M.id)
+        .not('paciente_id', 'is', null)
+        .then(function(r2) {
+          (r2.data||[]).forEach(function(row) {
+            if (row.pacientes && !map[row.paciente_id]) {
+              map[row.paciente_id] = { paciente: row.pacientes, ultimaHC: null };
+            }
+          });
+
+          var pacientes = Object.values(map);
+          var countEl = document.getElementById('pacCount');
+          if (countEl) countEl.textContent = pacientes.length+' paciente'+(pacientes.length!==1?'s':'');
+
+          if (!pacientes.length) {
+            container.innerHTML = '<div class="patient-empty">'
+              + '<div class="patient-empty-icon">🧠</div>'
+              + '<div class="patient-empty-title">Empieza a construir tu base clínica</div>'
+              + '<div class="patient-empty-sub">Cada paciente que atiendas aparecerá aquí con su historial y evolución.</div>'
+              + '</div>';
+            return;
+          }
+
+          var ultimaHC = {};
+          pacientes.forEach(function(entry) {
+            if (entry.ultimaHC) ultimaHC[entry.paciente.id] = entry.ultimaHC;
+          });
+          // Ordenar: con HC primero (más reciente), luego sin HC
+          var conHC  = pacientes.filter(function(e){ return  e.ultimaHC; });
+          var sinHC  = pacientes.filter(function(e){ return !e.ultimaHC; });
+          conHC.sort(function(a,b){ return new Date(b.ultimaHC.created_at)-new Date(a.ultimaHC.created_at); });
+          var ordenados = conHC.concat(sinHC);
+          renderPacientesCards(ordenados.map(function(e){ return e.paciente; }), ultimaHC, container);
+        });
     });
+}
+
+// ── RENDER TARJETAS PACIENTES ──
+function renderPacientesCards(pacientes, ultimaHC, container) {
+  container.innerHTML = '';
+  pacientes.forEach(function(p) {
+    var ini     = (p.nombre||'P').charAt(0).toUpperCase();
+    var hc      = ultimaHC[p.id];
+    // 3. Formato fecha humano — "1 may"
+    var fechaHC = hc ? new Date(hc.created_at).toLocaleDateString('es-EC',{day:'numeric',month:'short'}) : null;
+    // 2. Estado sin historia
+    var diagText = hc ? (hc.diagnostico||'Sin diagnóstico registrado') : null;
+    var sinHistoria = !hc;
+
+    var card = document.createElement('div');
+    card.className = 'patient-card';
+    // 4. Jerarquía visual + 6. Color diagnóstico clínico
+    card.innerHTML = '<div class="patient-card-top">'
+        + '<div class="patient-ini">'+ini+'</div>'
+        + '<div style="flex:1;min-width:0">'
+          + '<div class="patient-name">'+(p.nombre||'Sin nombre')+'</div>'
+          + '<div class="patient-contact">'
+            + (p.email?'✉️ '+p.email:'')
+            + (p.email&&p.telefono?' · ':'')
+            + (p.telefono?'📱 '+p.telefono:'')
+          + '</div>'
+        + '</div>'
+        + '<span class="patient-cta">Ver historial →</span>'
+      + '</div>'
+      + '<div class="patient-card-body">'
+        + (sinHistoria
+          ? '<div class="patient-last-hc" style="color:var(--muted2)">🟡 Primera consulta pendiente</div>'
+          : '<div class="patient-last-hc">🧠 <span class="hc-diag" style="color:#0b7c6e;font-weight:500">'+diagText+'</span></div>'
+            + '<div class="patient-last-date">🕒 '+fechaHC+'</div>')
+      + '</div>';
+    // Click completo — feedback selected + abrir historial
+    card.addEventListener('click', function(){
+      container.querySelectorAll('.patient-card').forEach(function(el){ el.classList.remove('selected'); });
+      card.classList.add('selected');
+      abrirHistorialPaciente(p.id, p.nombre);
+    });
+    container.appendChild(card);
+  });
+
+  // Búsqueda en tiempo real
+  var allCards = Array.from(container.querySelectorAll('.patient-card'));
+  var inp = document.getElementById('pacBuscar');
+  if (inp) {
+    inp.oninput = function() {
+      var q = inp.value.toLowerCase();
+      allCards.forEach(function(card, i) {
+        var p = pacientes[i];
+        var match = (p.nombre||'').toLowerCase().indexOf(q) > -1
+                 || (p.email||'').toLowerCase().indexOf(q) > -1;
+        card.style.display = match ? '' : 'none';
+      });
+    };
+  }
 }
 
 // ── ABRIR CONSULTA DESDE CITA ──
