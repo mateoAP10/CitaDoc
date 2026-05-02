@@ -2040,29 +2040,49 @@ function testPayPhone() {
 // Las credenciales están en el bloque <script> antes de </body>
 
 function mostrarCajitaPro() {
-  // Ocultar beneficios — dejar solo precio y cajita
-  var btnDecision = document.getElementById('btnProModalUpgrade');
-  var ppContainer = document.getElementById('pp-button');
-  var modalIcon   = document.getElementById('proModalIcon');
-  var modalTitle  = document.getElementById('proModalTitle');
-  var modalDesc   = document.getElementById('proModalDesc');
-  var modalDemo   = document.getElementById('proModalDemo');
-  var modalFeats  = document.getElementById('proModalFeats');
-  // Ocultar sección de beneficios
-  [modalIcon, modalTitle, modalDesc, modalDemo, modalFeats].forEach(function(el){
+  // Asegurar que el modal esté abierto
+  var modal = document.getElementById('proModal');
+  if (modal && modal.style.display !== 'flex') {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Ocultar beneficios
+  ['proModalIcon','proModalTitle','proModalDesc','proModalDemo','proModalFeats','proModalFeatures'].forEach(function(id){
+    var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+
+  // Ocultar botón de decisión y mostrar cajita
+  var btnDecision = document.getElementById('btnProModalUpgrade');
+  var ppContainer = document.getElementById('pp-button');
   if (btnDecision) btnDecision.style.display = 'none';
-  if (ppContainer) ppContainer.style.display = 'block';
-  // Scroll al top del modal
-  var card = document.getElementById('proModalCard');
-  if (card) card.scrollTop = 0;
+  if (ppContainer) {
+    ppContainer.style.display = 'block';
+    ppContainer.innerHTML = '';
+  }
+
   // Renderizar PayPhone
   var medicoId = window.M ? window.M.id : '';
   var email    = window.M ? window.M.email : '';
   if (typeof window.renderPayPhone === 'function') {
     window.renderPayPhone('pp-button', medicoId, email);
+  } else if (typeof PPaymentButtonBox !== 'undefined') {
+    new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: 'cd' + Date.now(),
+      amount:              1999,
+      amountWithoutTax:    1999,
+      currency:            'USD',
+      reference:           'CitaDoc Pro',
+      lang:                'es',
+      defaultMethod:       'card'
+    }).render('pp-button');
   }
+
+  var card = document.getElementById('proModalCard');
+  if (card) card.scrollTop = 0;
 }
 
 function initPayPhone() {
