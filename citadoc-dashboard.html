@@ -491,7 +491,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 </style>
   <!-- PayPhone SDK -->
   <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
-  <script src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
+  <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
 </head>
 <body>
 
@@ -3433,39 +3433,58 @@ function cerrarHC() {
   </div>
   <button onclick="ppTest()" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:#059669;color:#fff;border:none;padding:.6rem 1.1rem;border-radius:10px;font-family:sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F9EA; Test PP</button>
 
-  <!-- Script PayPhone AISLADO -->
-  <script>
-  var PAYPHONE_TOKEN   = 'PAYPHONE_TOKEN'; // ← REEMPLAZA ESTE VALOR
-  var PAYPHONE_STOREID = 'PAYPHONE_STORE_ID'; // ← REEMPLAZA ESTE VALOR
+    <!-- PayPhone — implementación según doc oficial -->
+  <script type="module">
+  // REEMPLAZA ESTOS 2 VALORES:
+  var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';    // ← tu token
+  var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef'; // ← tu storeId
 
+  // Render en el modal Pro cuando se abre
+  function renderPayPhone(containerId) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = '';
+    new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: 'citadoc-' + Date.now(),
+      amount:              1999,
+      amountWithoutTax:    1999,
+      currency:            'USD',
+      reference:           'CitaDoc Pro',
+      lang:                'es',
+      defaultMethod:       'card'
+    }).render(containerId);
+  }
+
+  // Test button
   function ppTest() {
     console.log('ppTest ejecutado');
     var wrap = document.getElementById('pp-test-wrap');
     if (wrap) wrap.style.display = 'block';
-    var container = document.getElementById('pp-test');
-    if (!container) { console.error('No existe #pp-test'); return; }
-    container.innerHTML = '';
-    if (typeof PPaymentButtonBox === 'undefined') {
-      container.innerHTML = '<p style="color:red">ERROR: PPaymentButtonBox no definido</p>';
-      console.error('PPaymentButtonBox no definido');
-      return;
-    }
-    try {
-      new PPaymentButtonBox({
-        token:               PAYPHONE_TOKEN,
-        storeId:             PAYPHONE_STOREID,
-        clientTransactionId: 'test-' + Date.now(),
-        amount:              100,
-        amountWithoutTax:    100,
-        currency:            'USD',
-        reference:           'Test CitaDoc',
-        lang:                'es'
-      }).render('pp-test');
-      console.log('PayPhone render llamado');
-    } catch(e) {
-      container.innerHTML = '<p style="color:red">ERROR: ' + e.message + '</p>';
-      console.error('PayPhone error:', e);
-    }
+    renderPayPhone('pp-test');
   }
+
+  // Exponer al scope global para que onclick funcione
+  window.ppTest       = ppTest;
+  window.renderPayPhone = renderPayPhone;
+
+  // Cuando se abre el modal Pro, renderizar la cajita
+  window.addEventListener('DOMContentLoaded', function() {
+    // Observar cuando el modal Pro se hace visible
+    var modal = document.getElementById('proModal');
+    if (modal) {
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          if (m.type === 'attributes' && m.attributeName === 'style') {
+            if (modal.style.display !== 'none' && modal.style.display !== '') {
+              setTimeout(function() { renderPayPhone('pp-button'); }, 200);
+            }
+          }
+        });
+      });
+      observer.observe(modal, { attributes: true });
+    }
+  });
   </script>
 </body>
