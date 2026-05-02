@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v9</title>
+<title>CitaDoc — Dashboard v10</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -2207,6 +2207,7 @@ function mostrarProModal(feature) {
 }
 
 function cerrarProModal() {
+  console.trace('cerrarProModal llamado desde:');
   var modal = document.getElementById('proModal');
   if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
