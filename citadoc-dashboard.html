@@ -2040,6 +2040,31 @@ function testPayPhone() {
 var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
 var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef';
 
+function renderPayPhoneGlobal(containerId) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  if (typeof PPaymentButtonBox === 'undefined') {
+    el.innerHTML = '<p style="color:#dc2626;font-size:.82rem;padding:1rem">Error cargando PayPhone. Recarga la página.</p>';
+    return;
+  }
+  try {
+    new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: 'cd' + Date.now(),
+      amount:              1999,
+      amountWithoutTax:    1999,
+      currency:            'USD',
+      reference:           'CitaDoc Pro',
+      lang:                'es',
+      defaultMethod:       'card'
+    }).render(containerId);
+  } catch(e) {
+    el.innerHTML = '<p style="color:#dc2626;font-size:.82rem;padding:1rem">Error: ' + e.message + '</p>';
+  }
+}
+
 function mostrarCajitaPro() {
   // Asegurar que el modal esté abierto
   var modal = document.getElementById('proModal');
