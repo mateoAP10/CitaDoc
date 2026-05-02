@@ -527,6 +527,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       </div>
       <button class="btn-copy-url" onclick="compartirIG()" style="width:100%;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)">📸 Copiar para Instagram</button>
     </div>
+    <!-- Banner PRO — visible solo en plan free -->
+    <div id="sidebarProBanner" style="margin:.5rem .6rem .5rem;padding:.9rem 1rem;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:12px;display:none">
+      <div style="font-size:.68rem;font-weight:700;color:#34d399;letter-spacing:.06em;margin-bottom:.25rem">UPGRADE A PRO</div>
+      <div style="font-size:.76rem;color:rgba(255,255,255,.65);margin-bottom:.5rem">Historia clínica, AI y más</div>
+      <div style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:.55rem">$19.99<span style="font-size:.7rem;font-weight:400;color:rgba(255,255,255,.45)">/mes</span></div>
+      <button onclick="mostrarProModal('pacientes')" style="width:100%;padding:.48rem;background:#34d399;color:#064e3b;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.79rem;font-weight:700;cursor:pointer">✨ Activar PRO</button>
+    </div>
     <button class="btn-logout" onclick="cerrarSesion()">↩ Cerrar sesión</button>
   </div>
 </aside>
@@ -1862,7 +1869,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     var btnUpgrade = document.getElementById('btnProModalUpgrade');
     var btnCancel  = document.getElementById('btnProModalCancel');
     var proModal   = document.getElementById('proModal');
-    if (btnUpgrade) btnUpgrade.addEventListener('click', abrirStripe);
+    if (btnUpgrade) btnUpgrade.addEventListener('click', initPayPhone);
     if (btnCancel)  btnCancel.addEventListener('click', cerrarProModal);
     if (proModal)   proModal.addEventListener('click', function(e) {
       if (e.target === proModal) cerrarProModal();
@@ -1937,7 +1944,8 @@ function mostrarProGate(container, feature) {
     + '<div class="pro-gate-icon">'+f.icon+'</div>'
     + '<h3>'+f.title+' <span class="pro-badge">PRO</span></h3>'
     + '<p>'+f.desc+'</p>'
-    + '<button class="btn-upgrade" onclick="abrirStripe()">Desbloquear CitaDoc Pro — $19.99/mes</button>'
+    + '<div id="pp-button" style="margin:.5rem 0"></div>'
+    + '<button class="btn-upgrade" id="btnUpgradePro" onclick="initPayPhone()" style="display:none">💬 Activar PRO por WhatsApp</button>'
     + '<p style="font-size:.72rem;color:rgba(255,255,255,.35);margin-top:.7rem">Cancela cuando quieras</p>'
   + '</div>';
 }
@@ -2066,7 +2074,7 @@ function checkStripeSuccess() {
 
 function mostrarProModal(feature) {
   // Inicializar PayPhone cuando se abre el modal
-  setTimeout(initPayPhone, 100);
+  setTimeout(initPayPhone, 300);
   var modal = document.getElementById('proModal');
   if (!modal) return;
   var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
@@ -3371,7 +3379,8 @@ function cerrarHC() {
     </ul>
     <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$19.99</div>
     <div style="font-size:.72rem;color:var(--muted2);margin:.15rem 0 1.2rem">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
-    <button id="btnProModalUpgrade" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem">✨ Desbloquear sistema clínico completo</button>
+    <div id="pp-button" style="margin-bottom:.5rem"></div>
+          <button id="btnProModalUpgrade" onclick="initPayPhone()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none">💬 Activar PRO por WhatsApp</button>
     <button id="btnProModalCancel" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
   </div>
 </div>
