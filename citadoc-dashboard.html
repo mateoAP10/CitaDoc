@@ -3444,19 +3444,20 @@ function cerrarHC() {
     var el = document.getElementById(containerId);
     if (!el) return;
     el.innerHTML = '';
-    new PPaymentButtonBox({
+    var ppConfig = {
       token:               PAYPHONE_TOKEN,
       storeId:             PAYPHONE_STOREID,
-      clientTransactionId: 'citadoc-' + Date.now(),
+      clientTransactionId: 'cd' + Date.now(),
       amount:              1999,
       amountWithoutTax:    1999,
       currency:            'USD',
-      reference:           'CitaDoc Pro - ' + (medicoId || ''),
+      reference:           'CitaDoc Pro',
       lang:                'es',
-      defaultMethod:       'card',
-      email:               email || '',
-      optionalParameter:   medicoId || ''
-    }).render(containerId);
+      defaultMethod:       'card'
+    };
+    // Solo agregar email si es válido
+    if (email && email.indexOf('@') > 0) ppConfig.email = email;
+    new PPaymentButtonBox(ppConfig).render(containerId);
   }
 
   // ── ACTIVAR PRO DESPUÉS DEL PAGO ──
