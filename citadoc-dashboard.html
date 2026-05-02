@@ -242,6 +242,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-add:hover{background:var(--teal-mid)}
 .contact-preview{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;min-height:32px}
 .wa-input{width:100%;margin-top:.6rem;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;display:none}
+/* Sidebar inteligente — hover en tablet */
+@media(max-width:1100px) and (min-width:769px){
+  .sidebar{transform:translateX(-85%);transition:transform .25s ease}
+  .sidebar:hover{transform:translateX(0)}
+  .main{margin-left:calc(var(--sidebar-w) * .15)}
+  .topbar{left:calc(var(--sidebar-w) * .15)}
+  /* Zona activadora invisible */
+  .sidebar-trigger{position:fixed;left:0;top:0;width:14px;height:100vh;z-index:99}
+}
 @media(max-width:768px){
   .main{margin-left:0}
   .sidebar{transform:translateX(-100%)}
@@ -417,6 +426,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-remove-item{position:absolute;top:0;right:0;background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--muted2);padding:.2rem;transition:color .15s}
 .btn-remove-item:hover{color:#dc2626}
 .ai-prefill-badge{font-size:.71rem;color:var(--teal);font-weight:600;padding:.2rem .5rem;background:var(--teal-lite);border-radius:6px;display:none}
+
+/* ── GRID HORARIOS ── */
+.horarios-table{width:100%;border-collapse:collapse;min-width:600px}
+.horarios-table th{padding:.6rem .4rem;font-size:.78rem;font-weight:700;color:var(--muted);text-align:center;border-bottom:1.5px solid var(--border);background:var(--white);position:sticky;top:0;z-index:2}
+.horarios-table .col-hora{width:64px;font-size:.74rem;font-weight:600;color:var(--muted2);text-align:right;padding:.4rem .8rem .4rem 0;vertical-align:middle;white-space:nowrap}
+.hora-slot{margin:2px 6px;height:36px;border-radius:8px;cursor:pointer;transition:all .12s ease;border:1.5px solid transparent;user-select:none}
+.hora-slot.off{background:var(--cream);border-color:var(--border)}
+.hora-slot.off:hover{background:#e0f5f2;border-color:rgba(11,124,110,.2)}
+.hora-slot.on{background:#4ade80;border-color:#22c55e}
+.hora-slot.on:hover{background:#22c55e}
+.hora-slot.selecting{background:#93c5fd;border-color:#60a5fa}
+.hora-slot.busy{background:#fca5a5;border-color:#f87171;cursor:not-allowed;position:relative}
+.hora-slot.busy::after{content:'✕';display:flex;align-items:center;justify-content:center;height:100%;font-size:.7rem;color:#dc2626;font-weight:700}
 </style>
 </head>
 <body>
@@ -536,31 +558,52 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
     <!-- HORARIOS -->
     <div class="panel" id="panel-horarios">
-      <div class="section-header"><h2>Gestión de horarios</h2><p>Activa o desactiva slots de 30 min por día.</p></div>
-      <div class="card" style="margin-bottom:1.2rem">
-        <div style="font-size:.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.7rem">Duración de cita</div>
-        <div class="dur-btns">
-          <button class="dur-btn active" onclick="setDur(30,this)">30 min</button>
-          <button class="dur-btn" onclick="setDur(45,this)">45 min</button>
-          <button class="dur-btn" onclick="setDur(60,this)">60 min</button>
+      <div class="section-header">
+        <div>
+          <h2>Mis horarios</h2>
+          <p>Selecciona los horarios en los que estarás disponible para atender citas.</p>
         </div>
       </div>
-      <div class="card">
-        <div class="days-tabs">
-          <div class="day-tab active" onclick="selectDay('lun',this)">Lun</div>
-          <div class="day-tab" onclick="selectDay('mar',this)">Mar</div>
-          <div class="day-tab" onclick="selectDay('mie',this)">Mié</div>
-          <div class="day-tab" onclick="selectDay('jue',this)">Jue</div>
-          <div class="day-tab" onclick="selectDay('vie',this)">Vie</div>
-          <div class="day-tab" onclick="selectDay('sab',this)">Sáb</div>
-          <div class="day-tab" onclick="selectDay('dom',this)">Dom</div>
+
+      <!-- Controles -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.2rem;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:.9rem 1.2rem">
+        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
+          <div style="font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2)">DURACIÓN DE CITA</div>
+          <div class="dur-btns" style="display:flex;gap:.4rem">
+            <button class="dur-btn active" onclick="setDur(30,this)">30 minutos</button>
+            <button class="dur-btn" onclick="setDur(60,this)">1 hora</button>
+          </div>
         </div>
-        <div class="slots-grid" id="slotsGrid"></div>
-        <div class="slots-actions">
-          <button class="btn-slots" onclick="activarTodos()">✓ Activar todos</button>
-          <button class="btn-slots" onclick="desactivarTodos()">✗ Desactivar todos</button>
-          <button class="btn-slots primary" onclick="guardarHorarios(this)">Guardar horarios</button>
+        <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted)">
+            <div style="width:14px;height:14px;border-radius:4px;background:#4ade80"></div>Disponible
+            <div style="width:14px;height:14px;border-radius:4px;background:var(--cream);border:1.5px solid var(--border);margin-left:.5rem"></div>No disponible
+            <div style="width:14px;height:14px;border-radius:4px;background:#93c5fd;margin-left:.5rem"></div>Seleccionando
+          </div>
+          <button onclick="aplicarTodaSemana()" style="display:flex;align-items:center;gap:.4rem;padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--ink2)">📋 Aplicar a toda la semana</button>
         </div>
+      </div>
+
+      <!-- Grid semanal -->
+      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
+        <div id="horariosGrid" style="overflow-x:auto">
+          <!-- generado por JS -->
+        </div>
+        <div style="padding:.75rem 1.4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem">
+          <div style="font-size:.78rem;color:var(--muted2);display:flex;align-items:center;gap:.4rem">
+            <span>👆</span> Haz clic y arrastra para seleccionar múltiples horarios
+          </div>
+          <div style="font-size:.74rem;color:var(--teal);font-weight:600" id="horariosSaved" style="display:none">✓ Cambios guardados automáticamente</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.2rem;flex-wrap:wrap;gap:.8rem">
+        <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted2)">
+          <span style="font-size:1.1rem">📅</span>
+          <div><div style="font-weight:600;color:var(--ink2)">Cambios guardados automáticamente</div><div id="horariosFecha" style="font-size:.74rem">Última actualización: --</div></div>
+        </div>
+        <button onclick="guardarHorarios(this)" style="padding:.75rem 1.6rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .2s" id="btnGuardarHorarios">Guardar horarios</button>
       </div>
     </div>
 
@@ -679,8 +722,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         style="flex:1;min-width:200px;max-width:320px;padding:.6rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;background:var(--cream);transition:border-color .2s"
         onfocus="this.style.borderColor='var(--teal-mid)'" onblur="this.style.borderColor='var(--border)'">
     </div>
-    <div style="padding:1.2rem 1.6rem;overflow-y:auto;scroll-behavior:smooth">
-      <div id="pacientesList">
+    <div style="padding:1rem 1.4rem;overflow-y:auto;scroll-behavior:smooth">
+      <div id="pacientesList" style="max-width:720px;display:flex;flex-direction:column;gap:0">
         <div class="empty-citas">Cargando pacientes...</div>
       </div>
     </div>
@@ -840,7 +883,7 @@ function showPanel(id, el) {
   var titles = {inicio:'Panel medico',calendario:'Calendario',estadisticas:'Estadisticas',horarios:'Horarios',perfil:'Mi perfil',pacientes:'Pacientes'};
   setText('topbarTitle', titles[id]||id);
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
-  if (id==='horarios')    renderSlots();
+  if (id==='horarios')    { renderGridHorarios(); }
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='pacientes') {
     if (!esPro()) mostrarProModal('pacientes');
@@ -896,36 +939,133 @@ function inicializarSlots(m) {
   const desde = m.horario_desde || '09:00';
   const hasta = m.horario_hasta || '17:00';
   const dMin  = toMin(desde), hMin = toMin(hasta);
-  ['lun','mar','mie','jue','vie','sab','dom'].forEach(dia=>{
-    TIMES.forEach(t=>{
+  ['lun','mar','mie','jue','vie','sab','dom'].forEach(function(dia){
+    TIMES.forEach(function(t){
       slotsState[dia][t] = (!dias.includes(dia)||toMin(t)<dMin||toMin(t)>=hMin) ? 'off' : 'on';
     });
   });
+  renderGridHorarios();
 }
 function toMin(t){ const [h,m]=t.split(':'); return parseInt(h)*60+parseInt(m); }
-function renderSlots(){
-  const g=$('slotsGrid'); if(!g) return;
-  g.innerHTML=TIMES.map(t=>{
-    const st=(slotsState[currentDay]&&slotsState[currentDay][t])||'off';
-    return `<button class="slot-btn ${st}" onclick="toggleSlot('${t}')" ${st==='busy'?'disabled':''}>${t}</button>`;
-  }).join('');
+// ── GRID HORARIOS SEMANAL ──
+var DIAS_GRID = [
+  {key:'lun',label:'Lunes'},
+  {key:'mar',label:'Martes'},
+  {key:'mie',label:'Miércoles'},
+  {key:'jue',label:'Jueves'},
+  {key:'vie',label:'Viernes'},
+  {key:'sab',label:'Sábado'},
+  {key:'dom',label:'Domingo'}
+];
+var _isDragging  = false;
+var _dragValue   = null; // 'on' o 'off' — el valor que se está pintando
+
+function renderGridHorarios() {
+  var grid = document.getElementById('horariosGrid');
+  if (!grid) return;
+
+  // Construir tabla
+  var html = '<table class="horarios-table"><thead><tr>'
+    + '<th class="col-hora"></th>';
+  DIAS_GRID.forEach(function(d) {
+    html += '<th>'+d.label+'</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  TIMES.forEach(function(t) {
+    html += '<tr><td class="col-hora">'+t+'</td>';
+    DIAS_GRID.forEach(function(d) {
+      var st = (slotsState[d.key]&&slotsState[d.key][t]) || 'off';
+      html += '<td><div class="hora-slot '+st+'" data-dia="'+d.key+'" data-hora="'+t+'"></div></td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  grid.innerHTML = html;
+
+  // Eventos drag
+  grid.querySelectorAll('.hora-slot').forEach(function(slot) {
+    slot.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      var dia  = slot.dataset.dia;
+      var hora = slot.dataset.hora;
+      if (slotsState[dia][hora] === 'busy') return;
+      _isDragging = true;
+      // Si está on → drag pone off; si está off → drag pone on
+      _dragValue  = slotsState[dia][hora] === 'on' ? 'off' : 'on';
+      slotsState[dia][hora] = _dragValue;
+      slot.className = 'hora-slot ' + _dragValue;
+    });
+    slot.addEventListener('mouseenter', function() {
+      if (!_isDragging) return;
+      var dia  = slot.dataset.dia;
+      var hora = slot.dataset.hora;
+      if (slotsState[dia][hora] === 'busy') return;
+      slotsState[dia][hora] = _dragValue;
+      slot.className = 'hora-slot ' + _dragValue;
+    });
+  });
 }
-function toggleSlot(t){
-  if(!slotsState[currentDay]||slotsState[currentDay][t]==='busy') return;
-  slotsState[currentDay][t]=slotsState[currentDay][t]==='on'?'off':'on';
-  renderSlots();
+
+document.addEventListener('mouseup', function() { _isDragging = false; });
+
+function aplicarTodaSemana() {
+  // Copiar lunes a todos los días
+  var base = 'lun';
+  DIAS_GRID.forEach(function(d) {
+    if (d.key === base) return;
+    TIMES.forEach(function(t) {
+      if (slotsState[d.key][t] !== 'busy') {
+        slotsState[d.key][t] = slotsState[base][t];
+      }
+    });
+  });
+  renderGridHorarios();
+  mostrarToast('Horario de lunes aplicado a toda la semana');
 }
-function selectDay(d,el){ currentDay=d; document.querySelectorAll('.day-tab').forEach(x=>x.classList.remove('active')); if(el)el.classList.add('active'); renderSlots(); }
-function activarTodos(){ TIMES.forEach(t=>{if(slotsState[currentDay][t]!=='busy')slotsState[currentDay][t]='on';}); renderSlots(); }
-function desactivarTodos(){ TIMES.forEach(t=>{if(slotsState[currentDay][t]!=='busy')slotsState[currentDay][t]='off';}); renderSlots(); }
-function setDur(m,btn){ document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('active')); if(btn)btn.classList.add('active'); }
-async function guardarHorarios(btn){
-  if(!M) return;
-  const o=btn.textContent; btn.textContent='Guardando...'; btn.disabled=true;
-  const activos=['lun','mar','mie','jue','vie','sab','dom'].filter(d=>TIMES.some(t=>slotsState[d][t]==='on'));
-  await _sb.from('medicos').update({dias_atencion:activos}).eq('id',M.id);
-  btn.textContent='✓ Guardado'; btn.style.background='var(--green)';
-  setTimeout(()=>{btn.textContent=o;btn.style.background='';btn.disabled=false;},2000);
+
+function setDur(m,btn) {
+  document.querySelectorAll('.dur-btn').forEach(function(b){b.classList.remove('active');});
+  if (btn) btn.classList.add('active');
+}
+
+// Alias para compatibilidad
+function renderSlots() { renderGridHorarios(); }
+function selectDay(d,el) { /* ya no necesario con grid */ }
+function activarTodos() {}
+function desactivarTodos() {}
+
+async function guardarHorarios(btn) {
+  if (!M) return;
+  var orig = btn.textContent;
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  var activos = DIAS_GRID.map(function(d){ return d.key; })
+    .filter(function(d){ return TIMES.some(function(t){ return slotsState[d][t]==='on'; }); });
+  // Calcular horario_desde y horario_hasta del lunes (o primer día activo)
+  var primerDia = activos[0] || 'lun';
+  var slotsActivos = TIMES.filter(function(t){ return slotsState[primerDia][t]==='on'; });
+  var desde = slotsActivos[0] || '09:00';
+  var ultimo = slotsActivos[slotsActivos.length-1] || '17:00';
+  // hasta = último slot + 30 min
+  var partes = ultimo.split(':');
+  var minHasta = parseInt(partes[0])*60+parseInt(partes[1])+30;
+  var hasta = String(Math.floor(minHasta/60)).padStart(2,'0')+':'+String(minHasta%60).padStart(2,'0');
+
+  await _sb.from('medicos').update({
+    dias_atencion: activos,
+    horario_desde: desde,
+    horario_hasta: hasta
+  }).eq('id', M.id);
+
+  btn.textContent = '✓ Guardado'; btn.style.background = '#059669';
+  var fechaEl = document.getElementById('horariosFaved');
+  var savedEl = document.getElementById('horariosSaved');
+  var fechaLabel = document.getElementById('horariosFecha');
+  if (fechaLabel) fechaLabel.textContent = 'Última actualización: hoy, '+new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
+  if (savedEl) savedEl.style.display = 'block';
+  setTimeout(function(){
+    btn.textContent = orig; btn.style.background = ''; btn.disabled = false;
+  }, 2000);
 }
 
 // ══ PERFIL TABS ══
@@ -1198,7 +1338,7 @@ function aplicarMedico(m) {
   slugActual = m.slug || '';
   const nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   const esp    = (m.especialidades||[])[0]||'—';
-  const plan   = m.plan==='destacado'?'⭐ Destacado':'Plan Gratuito';
+  const plan   = getPlanLabel(m.plan);
   const url    = 'citadoc.lat/medico/'+slugActual;
   const ini    = (m.nombre[0]||'').toUpperCase()+(m.apellido[0]||'').toUpperCase();
 
@@ -1296,6 +1436,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     aplicarMedico(medico);
+
+    // Sidebar trigger — hover en tablet
+    var sidebarTriggerEl = document.getElementById('sidebarTrigger');
+    var sidebarEl = document.getElementById('sidebar');
+    if (sidebarTriggerEl && sidebarEl) {
+      sidebarTriggerEl.addEventListener('mouseenter', function() {
+        sidebarEl.style.transform = 'translateX(0)';
+      });
+      sidebarEl.addEventListener('mouseleave', function() {
+        if (window.innerWidth <= 1100 && window.innerWidth > 768) {
+          sidebarEl.style.transform = 'translateX(-85%)';
+        }
+      });
+    }
 
     // Eventos del modal Pro global
     var btnUpgrade = document.getElementById('btnProModalUpgrade');
@@ -2700,6 +2854,9 @@ function cerrarHC() {
 }
 
 </script>
+
+<!-- SIDEBAR TRIGGER — zona activadora invisible en tablet -->
+<div class="sidebar-trigger" id="sidebarTrigger"></div>
 
 <!-- ═══════════════════════════════════════ -->
 <!-- MODAL PRO GLOBAL — fixed, sobre todo   -->
