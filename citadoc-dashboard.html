@@ -477,7 +477,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .bloqueo-item-motivo{font-size:.76rem;color:var(--muted2);margin-top:.1rem}
 .btn-eliminar-bloqueo{background:none;border:1.5px solid #fca5a5;color:#dc2626;font-size:.75rem;font-weight:600;padding:.28rem .6rem;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .btn-eliminar-bloqueo:hover{background:#fef2f2}
+
+/* ── DIRECCIÓN CONSULTORIO ── */
+.dir-wrap{position:relative}
+.dir-suggestions{position:absolute;top:100%;left:0;right:0;background:var(--white);border:1.5px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:100;max-height:200px;overflow-y:auto;display:none}
+.dir-suggestions.open{display:block}
+.dir-suggestion{padding:.6rem .9rem;font-size:.85rem;color:var(--ink2);cursor:pointer;border-bottom:1px solid var(--border)}
+.dir-suggestion:last-child{border-bottom:none}
+.dir-suggestion:hover{background:var(--teal-lite);color:var(--teal)}
+.dir-preview{display:flex;align-items:center;justify-content:space-between;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.2);border-radius:10px;padding:.65rem .9rem;margin-top:.6rem;font-size:.84rem;color:var(--teal)}
+.dir-preview a{font-size:.78rem;font-weight:600;color:var(--teal);text-decoration:none;border:1.5px solid var(--teal);padding:.2rem .6rem;border-radius:7px}
+.dir-preview a:hover{background:var(--teal);color:#fff}
 </style>
+  <!-- PayPhone SDK -->
+  <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
+  <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
 </head>
 <body>
 
@@ -682,6 +696,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
               <div class="pf-field"><label>Teléfono</label><input type="tel" id="inf-telefono" placeholder="+593..."></div>
             </div>
             <div class="pf-field full" style="margin-bottom:1rem">
+              <label>Dirección del consultorio</label>
+                <div class="dir-wrap">
+                  <input type="text" id="pfDireccion" class="form-input" placeholder="Ej: Av. Amazonas 1234, Quito, Ecuador" autocomplete="off" style="width:100%;padding:.68rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none">
+                  <div class="dir-suggestions" id="dirSuggestions"></div>
+                </div>
+                <div id="dirPreview" style="display:none" class="dir-preview">
+                  <span id="dirTexto">📍 --</span>
+                  <a id="dirLink" href="#" target="_blank">Ver en Maps →</a>
+                </div>
+              </div>
+
+              <div class="form-group">
               <label>Bio profesional</label>
               <textarea id="bioTextarea" placeholder="Tu presentación profesional..." style="margin-top:.4rem"></textarea>
             </div>
@@ -1272,7 +1298,183 @@ async function guardarHorarios(btn) {
   }, 2000);
 }
 
+// ── DIRECCIÓN CONSULTORIO (OpenStreetMap Nominatim) ──
+var _dirTimeout = null;
+
+function initDireccionInput() {
+  var inp = document.getElementById('pfDireccion');
+  var sug = document.getElementById('dirSuggestions');
+  if (!inp) return;
+
+  inp.addEventListener('input', function() {
+    clearTimeout(_dirTimeout);
+    var q = inp.value.trim();
+    if (q.length < 4) { sug.classList.remove('open'); return; }
+    _dirTimeout = setTimeout(function() { buscarDireccion(q); }, 400);
+  });
+
+  inp.addEventListener('blur', function() {
+    setTimeout(function(){ sug.classList.remove('open'); }, 200);
+  });
+
+  // Actualizar preview si hay dirección guardada
+  if (M && M.direccion) {
+    inp.value = M.direccion;
+    mostrarDirPreview(M.direccion, M.maps_url);
+  }
+}
+
+function buscarDireccion(query) {
+  var sug = document.getElementById('dirSuggestions');
+  if (!sug) return;
+  sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Buscando...</div>';
+  sug.classList.add('open');
+
+  fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(query)+'&limit=5&accept-language=es', {
+    headers: {'User-Agent': 'CitaDoc/1.0'}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    sug.innerHTML = '';
+    if (!data.length) {
+      sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Sin resultados. Intenta con más detalle.</div>';
+      return;
+    }
+    data.forEach(function(place) {
+      var div = document.createElement('div');
+      div.className = 'dir-suggestion';
+      div.textContent = place.display_name;
+      div.addEventListener('click', function() {
+        var inp2 = document.getElementById('pfDireccion');
+        if (inp2) inp2.value = place.display_name;
+        sug.classList.remove('open');
+        var url = 'https://www.google.com/maps?q='+place.lat+','+place.lon;
+        mostrarDirPreview(place.display_name, url);
+        // Guardar inmediatamente si médico está cargado
+        if (M) guardarDireccionDB(place.display_name, url);
+      });
+      sug.appendChild(div);
+    });
+  })
+  .catch(function() {
+    sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Error buscando. Intenta de nuevo.</div>';
+  });
+}
+
+function mostrarDirPreview(direccion, url) {
+  var preview = document.getElementById('dirPreview');
+  var texto   = document.getElementById('dirTexto');
+  var link    = document.getElementById('dirLink');
+  if (!preview) return;
+  if (texto) texto.textContent = '📍 '+direccion;
+  if (link)  { link.href = url || 'https://www.google.com/maps?q='+encodeURIComponent(direccion); }
+  preview.style.display = 'flex';
+}
+
+function guardarDireccionDB(direccion, url, lat, lon) {
+  var payload = { direccion: direccion, maps_url: url };
+  // Guardar coords si disponibles (para futura migración a Google Maps)
+  if (lat) payload.lat = parseFloat(lat);
+  if (lon) payload.lng = parseFloat(lon);
+  _sb.from('medicos').update(payload).eq('id', M.id)
+    .then(function(r) {
+      if (!r.error) {
+        // Actualizar estado local
+        if (M) { M.direccion = direccion; M.maps_url = url; }
+        mostrarToast('Dirección guardada');
+      }
+    });
+}
+
 // ══ PERFIL TABS ══
+// ── DIRECCIÓN CONSULTORIO (OpenStreetMap Nominatim) ──
+var _dirTimeout = null;
+
+function initDireccionInput() {
+  var inp = document.getElementById('pfDireccion');
+  var sug = document.getElementById('dirSuggestions');
+  if (!inp) return;
+
+  inp.addEventListener('input', function() {
+    clearTimeout(_dirTimeout);
+    var q = inp.value.trim();
+    if (q.length < 4) { sug.classList.remove('open'); return; }
+    _dirTimeout = setTimeout(function() { buscarDireccion(q); }, 400);
+  });
+
+  inp.addEventListener('blur', function() {
+    setTimeout(function(){ sug.classList.remove('open'); }, 200);
+  });
+
+  // Actualizar preview si hay dirección guardada
+  if (M && M.direccion) {
+    inp.value = M.direccion;
+    mostrarDirPreview(M.direccion, M.maps_url);
+  }
+}
+
+function buscarDireccion(query) {
+  var sug = document.getElementById('dirSuggestions');
+  if (!sug) return;
+  sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Buscando...</div>';
+  sug.classList.add('open');
+
+  fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(query)+'&limit=5&accept-language=es', {
+    headers: {'User-Agent': 'CitaDoc/1.0'}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    sug.innerHTML = '';
+    if (!data.length) {
+      sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Sin resultados. Intenta con más detalle.</div>';
+      return;
+    }
+    data.forEach(function(place) {
+      var div = document.createElement('div');
+      div.className = 'dir-suggestion';
+      div.textContent = place.display_name;
+      div.addEventListener('click', function() {
+        var inp2 = document.getElementById('pfDireccion');
+        if (inp2) inp2.value = place.display_name;
+        sug.classList.remove('open');
+        var url = 'https://www.google.com/maps?q='+place.lat+','+place.lon;
+        mostrarDirPreview(place.display_name, url);
+        // Guardar inmediatamente si médico está cargado
+        if (M) guardarDireccionDB(place.display_name, url);
+      });
+      sug.appendChild(div);
+    });
+  })
+  .catch(function() {
+    sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Error buscando. Intenta de nuevo.</div>';
+  });
+}
+
+function mostrarDirPreview(direccion, url) {
+  var preview = document.getElementById('dirPreview');
+  var texto   = document.getElementById('dirTexto');
+  var link    = document.getElementById('dirLink');
+  if (!preview) return;
+  if (texto) texto.textContent = '📍 '+direccion;
+  if (link)  { link.href = url || 'https://www.google.com/maps?q='+encodeURIComponent(direccion); }
+  preview.style.display = 'flex';
+}
+
+function guardarDireccionDB(direccion, url, lat, lon) {
+  var payload = { direccion: direccion, maps_url: url };
+  // Guardar coords si disponibles (para futura migración a Google Maps)
+  if (lat) payload.lat = parseFloat(lat);
+  if (lon) payload.lng = parseFloat(lon);
+  _sb.from('medicos').update(payload).eq('id', M.id)
+    .then(function(r) {
+      if (!r.error) {
+        // Actualizar estado local
+        if (M) { M.direccion = direccion; M.maps_url = url; }
+        mostrarToast('Dirección guardada');
+      }
+    });
+}
+
 // ══ PERFIL TABS ══
 function showTab(tab,el){
   document.querySelectorAll('.pf-section').forEach(s=>s.classList.remove('active'));
@@ -1776,7 +1978,95 @@ var PRO_MODAL_CONTENT = {
   }
 };
 
+// ── STRIPE — UPGRADE A PRO ──
+// ── PAYPHONE — COBRO PRO ──
+// REEMPLAZA SOLO ESTOS 2 VALORES:
+var PAYPHONE_TOKEN   = '0yeIlUg0l1x20JWTiS9pm8jWwFrrAzzHEpXWd2wSxqidpF0JMqm-BO0j2xZ4xYU0kmI1nUEhwzv1PKNYB9vLahDQkF2O7SGNQd2rOzgFWe4cGwzDv-u7rwKEql-L4_Y3YZXLGQw98Tg0SWxUBS_NJIv5Tj8Je8BDVxCbVF37mRoyUIE9fpwWiAhXhpzUIqz5muuYhfkzJbungaU4CEfoRTvnhPH1Fap3UtAHkhQ9hqFdyE5eG0cwsi1yRw7dfG2p41ppZGYPGUTfsJ-qhzPPUfsOwm5rkx1EFIdjWwK5E8ftrF4ONI4mPxEcnhRSUsjT1QKsvg';    // ← tu token real
+var PAYPHONE_STOREID = 'DxgNiYE2IaLkCfxlQA'; // ← tu storeId real
+
+function initPayPhone() {
+  if (!M) return;
+  var container = document.getElementById('pp-button');
+  if (!container) return;
+  container.innerHTML = ''; // limpiar si se reabre el modal
+
+  if (typeof PPaymentButtonBox === 'undefined') {
+    showProFallback();
+    return;
+  }
+
+  try {
+    var transactionId = 'citadoc-' + Date.now();
+    var ppb = new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: transactionId,
+      amount:              1999,
+      amountWithoutTax:    1999,
+      currency:            'USD',
+      reference:           'CitaDoc Pro - ' + M.id,
+      lang:                'es',
+      defaultMethod:       'card',
+      email:               M.email     || '',
+      phoneNumber:         M.whatsapp  || ''
+    });
+    ppb.render('pp-button');
+
+    // Activación optimista — click en la cajita después del pago
+    container.addEventListener('click', function() {
+      setTimeout(activarProLocal, 4000);
+    }, { once: true });
+
+  } catch(e) {
+    console.error('PayPhone error:', e);
+    showProFallback();
+  }
+}
+
+function showProFallback() {
+  var fbBtn = document.getElementById('btnUpgradePro');
+  if (fbBtn) fbBtn.style.display = 'block';
+  var ppBtn = document.getElementById('pp-button');
+  if (ppBtn) ppBtn.style.display = 'none';
+}
+
+async function activarProLocal() {
+  if (!M) return;
+  var res = await _sb.from('medicos').update({
+    plan:        'pro',
+    plan_activo: true
+  }).eq('id', M.id);
+
+  if (!res.error) {
+    M.plan = 'pro'; M.plan_activo = true;
+    cerrarProModal();
+    mostrarToast('🎉 Plan PRO activado. Bienvenido!');
+    // Actualizar UI sin recargar
+    var planEl = document.getElementById('sidebarPlan');
+    if (planEl) planEl.textContent = getPlanLabel('pro');
+  }
+}
+
+// Fallback WhatsApp si PayPhone falla
+function irAPro() {
+  if (!M) return;
+  var nombre = (M.titulo||'Dr.')+' '+(M.nombre||'')+' '+(M.apellido||'');
+  var msg = 'Hola, soy '+nombre.trim()+' y quiero activar CitaDoc PRO ($19.99/mes). Email: '+(M.email||'')+'. ID: '+M.id;
+  window.open('https://wa.me/593989173062?text='+encodeURIComponent(msg), '_blank');
+  cerrarProModal();
+  mostrarToast('Te contactaremos en menos de 24h para activar tu PRO');
+}
+
+// ── SUCCESS HANDLER — activación manual por admin ──
+function checkStripeSuccess() {
+  // Placeholder para cuando se integre pasarela de pagos
+  // Por ahora la activación es manual via Supabase:
+  // UPDATE medicos SET plan='pro', plan_activo=true WHERE email='...';
+}
+
 function mostrarProModal(feature) {
+  // Inicializar PayPhone cuando se abre el modal
+  setTimeout(initPayPhone, 100);
   var modal = document.getElementById('proModal');
   if (!modal) return;
   var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
