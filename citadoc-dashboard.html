@@ -1255,8 +1255,18 @@ function desactivarTodos() {}
 // MOTOR CENTRAL DE DISPONIBILIDAD
 // ══════════════════════════════════════════════
 
+// 3. Cache por día — reduce llamadas a DB
+var _agendaCache = {};
+function invalidarCacheRango(medicoId, desde, hasta) {
+  Object.keys(_agendaCache).forEach(function(k) {
+    if (k.startsWith(medicoId)) delete _agendaCache[k];
+  });
+}
+
 // Función única — usada por dashboard Y perfil público
 async function obtenerAgendaDia(medicoId, fecha, horarioBase) {
+  // 7. Log para debugging
+  console.log('AGENDA:', medicoId.slice(0,8), fecha);
   // horarioBase = {dayConfig, slotsState, TIMES} del médico
 
   // 1. Verificar vacaciones
@@ -1322,6 +1332,7 @@ function padHora(min) {
   return String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
 }
 function getDiaSemana(fecha) {
+  // 1. TZ fix: usar T12:00:00 para evitar offset que cambie el día
   var dias = ['dom','lun','mar','mie','jue','vie','sab'];
   return dias[new Date(fecha+'T12:00:00').getDay()];
 }
@@ -1332,12 +1343,14 @@ function crearBloqueo() {
   var desde  = document.getElementById('bloqueoDesde').value;
   var hasta  = document.getElementById('bloqueoHasta').value;
   var motivo = document.getElementById('bloqueoMotivo').value.trim();
-  if (!desde || !hasta) { mostrarToast('Selecciona fecha de inicio y fin'); return; }
-  if (desde > hasta) { mostrarToast('La fecha de inicio debe ser menor al fin'); return; }
 
-  // Verificar citas existentes en ese rango
+  // 6. Validación de rango
+  if (!desde || !hasta) { mostrarToast('Selecciona fecha de inicio y fin'); return; }
+  if (desde > hasta) { mostrarToast('Rango invalido: el inicio debe ser menor al fin'); return; }
+
+  // 2. Opción A — NO permitir si hay citas activas
   _sb.from('citas')
-    .select('id, fecha, paciente_nombre')
+    .select('id, fecha, paciente_nombre, hora')
     .eq('medico_id', M.id)
     .gte('fecha', desde)
     .lte('fecha', hasta)
@@ -1345,22 +1358,41 @@ function crearBloqueo() {
     .then(function(r) {
       var citas = r.data || [];
       if (citas.length > 0) {
-        var confirmar = confirm('Tienes '+citas.length+' cita(s) en ese rango. ¿Bloquear de todas formas? Las citas NO se cancelan automáticamente.');
-        if (!confirmar) return;
+        var lista = citas.slice(0,3).map(function(ct){
+          return ct.paciente_nombre+' - '+ct.fecha+' '+ct.hora;
+        }).join(', ');
+        var extra = citas.length > 3 ? ' y '+(citas.length-3)+' mas' : '';
+        alert('No puedes bloquear ese rango porque tienes '+citas.length+' cita(s) activa(s): '+lista+extra+'. Reprograma o cancela las citas primero.');
+        return;
       }
-      _sb.from('bloqueos_medico').insert({
-        medico_id:    M.id,
-        fecha_inicio: desde,
-        fecha_fin:    hasta,
-        motivo:       motivo || null
-      }).then(function(res) {
-        if (res.error) { mostrarToast('Error: '+res.error.message); return; }
-        document.getElementById('bloqueoDesde').value  = '';
-        document.getElementById('bloqueoHasta').value  = '';
-        document.getElementById('bloqueoMotivo').value = '';
-        cargarBloqueos();
-        mostrarToast('Fechas bloqueadas correctamente');
-      });
+
+      // 5. Verificar solapamiento con bloqueos existentes
+      _sb.from('bloqueos_medico')
+        .select('id, fecha_inicio, fecha_fin')
+        .eq('medico_id', M.id)
+        .lte('fecha_inicio', hasta)
+        .gte('fecha_fin', desde)
+        .then(function(r2) {
+          if (r2.data && r2.data.length > 0) {
+            var confirmar = confirm('Ya existe un bloqueo que se solapa con ese rango. ¿Crear de todas formas?');
+            if (!confirmar) return;
+          }
+          _sb.from('bloqueos_medico').insert({
+            medico_id:    M.id,
+            fecha_inicio: desde,
+            fecha_fin:    hasta,
+            motivo:       motivo || null
+          }).then(function(res) {
+            if (res.error) { mostrarToast('Error: '+res.error.message); return; }
+            // Limpiar cache de esas fechas
+            invalidarCacheRango(M.id, desde, hasta);
+            document.getElementById('bloqueoDesde').value  = '';
+            document.getElementById('bloqueoHasta').value  = '';
+            document.getElementById('bloqueoMotivo').value = '';
+            cargarBloqueos();
+            mostrarToast('Fechas bloqueadas correctamente');
+          });
+        });
     });
 }
 
