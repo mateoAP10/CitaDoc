@@ -427,6 +427,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-remove-item:hover{color:#dc2626}
 .ai-prefill-badge{font-size:.71rem;color:var(--teal);font-weight:600;padding:.2rem .5rem;background:var(--teal-lite);border-radius:6px;display:none}
 
+/* ── CONFIGURACIÓN DÍAS ── */
+.day-config-bar{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:.8rem 1.1rem;margin-bottom:1rem;overflow-x:auto}
+.day-config-row{display:flex;align-items:center;gap:.8rem;padding:.5rem 0;border-bottom:1px solid var(--border)}
+.day-config-row:last-child{border-bottom:none}
+.day-config-name{width:90px;font-size:.84rem;font-weight:600;color:var(--ink2);flex-shrink:0}
+.day-config-row.inactive .day-config-name{color:var(--muted2)}
+.day-toggle{position:relative;width:36px;height:20px;flex-shrink:0}
+.day-toggle input{opacity:0;width:0;height:0;position:absolute}
+.day-toggle-track{position:absolute;inset:0;border-radius:50px;background:var(--border);cursor:pointer;transition:background .2s}
+.day-toggle input:checked + .day-toggle-track{background:var(--teal)}
+.day-toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.day-toggle input:checked + .day-toggle-track::after{transform:translateX(16px)}
+.day-time-inputs{display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted)}
+.day-time-inputs input[type=time]{padding:.35rem .6rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--ink);background:var(--cream);outline:none;width:90px;transition:border-color .2s}
+.day-time-inputs input[type=time]:focus{border-color:var(--teal-mid);background:var(--white)}
+.day-config-row.inactive .day-time-inputs{opacity:.35;pointer-events:none}
+.day-slots-preview{font-size:.73rem;color:var(--teal);font-weight:600;margin-left:.3rem}
+.day-copy-btn{font-size:.72rem;color:var(--muted2);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:.2rem .5rem;border-radius:6px;transition:all .15s}
+.day-copy-btn:hover{background:var(--teal-lite);color:var(--teal)}
+
 /* ── GRID HORARIOS ── */
 .horarios-table{width:100%;border-collapse:collapse;min-width:600px}
 .horarios-table th{padding:.6rem .4rem;font-size:.78rem;font-weight:700;color:var(--muted);text-align:center;border-bottom:1.5px solid var(--border);background:var(--white);position:sticky;top:0;z-index:2}
@@ -580,8 +600,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
             <div style="width:14px;height:14px;border-radius:4px;background:var(--cream);border:1.5px solid var(--border);margin-left:.5rem"></div>No disponible
             <div style="width:14px;height:14px;border-radius:4px;background:#93c5fd;margin-left:.5rem"></div>Seleccionando
           </div>
-          <button onclick="aplicarTodaSemana()" style="display:flex;align-items:center;gap:.4rem;padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--ink2)">📋 Aplicar a toda la semana</button>
+          <button onclick="aplicarTodaSemana()" style="display:flex;align-items:center;gap:.4rem;padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--ink2)">📅 Copiar lunes a toda la semana</button>
         </div>
+      </div>
+
+      <!-- Configuración por día -->
+      <div class="day-config-bar" id="dayConfigBar">
+        <!-- generado por JS -->
       </div>
 
       <!-- Grid semanal -->
@@ -883,7 +908,7 @@ function showPanel(id, el) {
   var titles = {inicio:'Panel medico',calendario:'Calendario',estadisticas:'Estadisticas',horarios:'Horarios',perfil:'Mi perfil',pacientes:'Pacientes'};
   setText('topbarTitle', titles[id]||id);
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
-  if (id==='horarios')    { renderGridHorarios(); }
+  if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); }
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='pacientes') {
     if (!esPro()) mostrarProModal('pacientes');
@@ -943,10 +968,139 @@ function inicializarSlots(m) {
     TIMES.forEach(function(t){
       slotsState[dia][t] = (!dias.includes(dia)||toMin(t)<dMin||toMin(t)>=hMin) ? 'off' : 'on';
     });
+    // Sincronizar dayConfig con los datos del médico
+    dayConfig[dia].activo = dias.includes(dia);
+    dayConfig[dia].desde  = desde;
+    dayConfig[dia].hasta  = hasta;
   });
+  renderDayConfigBar();
   renderGridHorarios();
 }
 function toMin(t){ const [h,m]=t.split(':'); return parseInt(h)*60+parseInt(m); }
+// ── CONFIGURACIÓN POR DÍA ──
+var dayConfig = {
+  lun: {activo:true,  desde:'09:00', hasta:'17:00'},
+  mar: {activo:true,  desde:'09:00', hasta:'17:00'},
+  mie: {activo:true,  desde:'09:00', hasta:'17:00'},
+  jue: {activo:true,  desde:'09:00', hasta:'17:00'},
+  vie: {activo:true,  desde:'09:00', hasta:'17:00'},
+  sab: {activo:false, desde:'09:00', hasta:'13:00'},
+  dom: {activo:false, desde:'09:00', hasta:'13:00'}
+};
+
+function renderDayConfigBar() {
+  var bar = document.getElementById('dayConfigBar');
+  if (!bar) return;
+  bar.innerHTML = '';
+
+  DIAS_GRID.forEach(function(d) {
+    var cfg = dayConfig[d.key];
+    var row = document.createElement('div');
+    row.className = 'day-config-row' + (cfg.activo ? '' : ' inactive');
+    row.id = 'dcrow_' + d.key;
+
+    // Calcular slots preview
+    var nSlots = 0;
+    if (cfg.activo) {
+      var dMin = toMin(cfg.desde), hMin = toMin(cfg.hasta);
+      nSlots = Math.max(0, Math.floor((hMin - dMin) / 30));
+    }
+
+    row.innerHTML = '<div class="day-config-name">'+d.label+'</div>'
+      + '<label class="day-toggle">'
+        + '<input type="checkbox"'+(cfg.activo?' checked':'')+' id="toggle_'+d.key+'">'
+        + '<div class="day-toggle-track"></div>'
+      + '</label>'
+      + '<div class="day-time-inputs">'
+        + '<input type="time" id="desde_'+d.key+'" value="'+cfg.desde+'">'
+        + '<span style="color:var(--muted2)">—</span>'
+        + '<input type="time" id="hasta_'+d.key+'" value="'+cfg.hasta+'">'
+        + (cfg.activo ? '<span class="day-slots-preview">'+nSlots+' slots</span>' : '')
+      + '</div>'
+      + (cfg.activo && d.key !== 'lun'
+        ? '<button class="day-copy-btn" data-dia="'+d.key+'">← Copiar lunes</button>'
+        : '');
+
+    bar.appendChild(row);
+
+    // Eventos toggle
+    var toggle = document.getElementById('toggle_'+d.key);
+    if (toggle) {
+      (function(dia) {
+        toggle.addEventListener('change', function() {
+          dayConfig[dia].activo = toggle.checked;
+          aplicarDayConfigASlots(dia);
+          renderDayConfigBar();
+          renderGridHorarios();
+        });
+      })(d.key);
+    }
+
+    // Eventos time inputs
+    var desdeEl = document.getElementById('desde_'+d.key);
+    var hastaEl = document.getElementById('hasta_'+d.key);
+    if (desdeEl && hastaEl) {
+      (function(dia) {
+        function onTimeChange() {
+          dayConfig[dia].desde = desdeEl.value || '09:00';
+          dayConfig[dia].hasta = hastaEl.value || '17:00';
+          aplicarDayConfigASlots(dia);
+          renderDayConfigBar();
+          renderGridHorarios();
+        }
+        desdeEl.addEventListener('change', onTimeChange);
+        hastaEl.addEventListener('change', onTimeChange);
+      })(d.key);
+    }
+
+    // Botón copiar lunes
+    var copyBtn = row.querySelector('.day-copy-btn');
+    if (copyBtn) {
+      (function(dia) {
+        copyBtn.addEventListener('click', function() {
+          dayConfig[dia].activo = dayConfig['lun'].activo;
+          dayConfig[dia].desde  = dayConfig['lun'].desde;
+          dayConfig[dia].hasta  = dayConfig['lun'].hasta;
+          aplicarDayConfigASlots(dia);
+          renderDayConfigBar();
+          renderGridHorarios();
+          mostrarToast('Horario de lunes copiado a '+dia);
+        });
+      })(d.key);
+    }
+  });
+}
+
+function aplicarDayConfigASlots(dia) {
+  var cfg = dayConfig[dia];
+  if (!slotsState[dia]) return;
+  if (!cfg.activo) {
+    TIMES.forEach(function(t) {
+      if (slotsState[dia][t] !== 'busy') slotsState[dia][t] = 'off';
+    });
+  } else {
+    var dMin = toMin(cfg.desde), hMin = toMin(cfg.hasta);
+    TIMES.forEach(function(t) {
+      if (slotsState[dia][t] === 'busy') return;
+      var tMin = toMin(t);
+      slotsState[dia][t] = (tMin >= dMin && tMin < hMin) ? 'on' : 'off';
+    });
+  }
+}
+
+function aplicarTodaSemana() {
+  DIAS_GRID.forEach(function(d) {
+    if (d.key === 'lun') return;
+    dayConfig[d.key].activo = dayConfig['lun'].activo;
+    dayConfig[d.key].desde  = dayConfig['lun'].desde;
+    dayConfig[d.key].hasta  = dayConfig['lun'].hasta;
+    aplicarDayConfigASlots(d.key);
+  });
+  renderDayConfigBar();
+  renderGridHorarios();
+  mostrarToast('Horario de lunes copiado a toda la semana');
+}
+
 // ── GRID HORARIOS SEMANAL ──
 var DIAS_GRID = [
   {key:'lun',label:'Lunes'},
@@ -1040,16 +1194,11 @@ async function guardarHorarios(btn) {
   var orig = btn.textContent;
   btn.textContent = 'Guardando...'; btn.disabled = true;
   var activos = DIAS_GRID.map(function(d){ return d.key; })
-    .filter(function(d){ return TIMES.some(function(t){ return slotsState[d][t]==='on'; }); });
-  // Calcular horario_desde y horario_hasta del lunes (o primer día activo)
+    .filter(function(d){ return dayConfig[d].activo; });
+  // Usar el rango del primer día activo para compatibilidad con el sistema existente
   var primerDia = activos[0] || 'lun';
-  var slotsActivos = TIMES.filter(function(t){ return slotsState[primerDia][t]==='on'; });
-  var desde = slotsActivos[0] || '09:00';
-  var ultimo = slotsActivos[slotsActivos.length-1] || '17:00';
-  // hasta = último slot + 30 min
-  var partes = ultimo.split(':');
-  var minHasta = parseInt(partes[0])*60+parseInt(partes[1])+30;
-  var hasta = String(Math.floor(minHasta/60)).padStart(2,'0')+':'+String(minHasta%60).padStart(2,'0');
+  var desde = dayConfig[primerDia].desde || '09:00';
+  var hasta  = dayConfig[primerDia].hasta  || '17:00';
 
   await _sb.from('medicos').update({
     dias_atencion: activos,
