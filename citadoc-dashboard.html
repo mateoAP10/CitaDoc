@@ -2030,7 +2030,7 @@ function testPayPhone() {
 // ── PAYPHONE — COBRO PRO ──
 // REEMPLAZA SOLO ESTOS 2 VALORES:
 var PAYPHONE_TOKEN   = '0yeIlUg0l1x20JWTiS9pm8jWwFrrAzzHEpXWd2wSxqidpF0JMqm-BO0j2xZ4xYU0kmI1nUEhwzv1PKNYB9vLahDQkF2O7SGNQd2rOzgFWe4cGwzDv-u7rwKEql-L4_Y3YZXLGQw98Tg0SWxUBS_NJIv5Tj8Je8BDVxCbVF37mRoyUIE9fpwWiAhXhpzUIqz5muuYhfkzJbungaU4CEfoRTvnhPH1Fap3UtAHkhQ9hqFdyE5eG0cwsi1yRw7dfG2p41ppZGYPGUTfsJ-qhzPPUfsOwm5rkx1EFIdjWwK5E8ftrF4ONI4mPxEcnhRSUsjT1QKsvg';    // ← tu token real
-var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef; // ← tu storeId real
+var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef'; // ← tu storeId real
 
 function initPayPhone() {
   if (!M) return;
@@ -3425,13 +3425,49 @@ function cerrarHC() {
 </div>
 
 </script>
-  <!-- Test PayPhone -->
-  <div id="pp-test-wrap" style="display:none;position:fixed;bottom:80px;right:20px;z-index:9999;background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:280px">
+  <!-- Test PayPhone — HTML -->
+  <div id="pp-test-wrap" style="display:none;position:fixed;bottom:80px;right:20px;z-index:9999;background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:300px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
       <div style="font-size:.75rem;font-weight:600;color:#6b7280">TEST PAYPHONE ($1)</div>
-      <button onclick="document.getElementById('pp-test-wrap').style.display='none'" style="background:none;border:none;cursor:pointer">&#x2715;</button>
+      <button onclick="document.getElementById('pp-test-wrap').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1rem">&#x2715;</button>
     </div>
     <div id="pp-test"></div>
   </div>
-  <button id="btnTestPP" onclick="testPayPhone()" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:#0b7c6e;color:#fff;border:none;padding:.6rem 1rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer">&#x1F9EA; Test PP</button>
+  <button onclick="ppTest()" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:#059669;color:#fff;border:none;padding:.6rem 1.1rem;border-radius:10px;font-family:sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F9EA; Test PP</button>
+
+  <!-- Script PayPhone AISLADO -->
+  <script>
+  var PP_TOKEN   = 'PAYPHONE_TOKEN';
+  var PP_STOREID = 'PAYPHONE_STORE_ID';
+
+  function ppTest() {
+    console.log('ppTest ejecutado');
+    var wrap = document.getElementById('pp-test-wrap');
+    if (wrap) wrap.style.display = 'block';
+    var container = document.getElementById('pp-test');
+    if (!container) { console.error('No existe #pp-test'); return; }
+    container.innerHTML = '';
+    if (typeof PPaymentButtonBox === 'undefined') {
+      container.innerHTML = '<p style="color:red">ERROR: PPaymentButtonBox no definido</p>';
+      console.error('PPaymentButtonBox no definido');
+      return;
+    }
+    try {
+      new PPaymentButtonBox({
+        token:               PP_TOKEN,
+        storeId:             PP_STOREID,
+        clientTransactionId: 'test-' + Date.now(),
+        amount:              100,
+        amountWithoutTax:    100,
+        currency:            'USD',
+        reference:           'Test CitaDoc',
+        lang:                'es'
+      }).render('pp-test');
+      console.log('PayPhone render llamado');
+    } catch(e) {
+      container.innerHTML = '<p style="color:red">ERROR: ' + e.message + '</p>';
+      console.error('PayPhone error:', e);
+    }
+  }
+  </script>
 </body>
