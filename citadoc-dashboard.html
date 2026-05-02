@@ -493,7 +493,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
   <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
 </head>
-<body>
+<body onkeydown="if(event.key==='Escape')cerrarProModal()">
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
@@ -2141,8 +2141,6 @@ function checkStripeSuccess() {
 }
 
 function mostrarProModal(feature) {
-  // Inicializar PayPhone cuando se abre el modal
-  setTimeout(initPayPhone, 300);
   var modal = document.getElementById('proModal');
   if (!modal) return;
   var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
@@ -3441,7 +3439,7 @@ function cerrarHC() {
 <!-- ═══════════════════════════════════════ -->
 <!-- MODAL PRO GLOBAL — fixed, sobre todo   -->
 <!-- ═══════════════════════════════════════ -->
-<div id="proModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
+<div id="proModal" onclick="if(event.target===this)cerrarProModal()" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
   <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
     <div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">🔒 Vista previa Pro</div>
     <div id="proModalIcon" style="font-size:2.2rem;margin-bottom:.6rem">🧠</div>
@@ -3460,7 +3458,7 @@ function cerrarHC() {
           <button id="btnProModalUpgrade" onclick="mostrarCajitaPro()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem">💳 Pagar con tarjeta — $19.99</button>
           <!-- Cajita PayPhone (oculta hasta que el usuario decide) -->
           <div id="pp-button" style="display:none;margin-bottom:.5rem"></div>
-    <button id="btnProModalCancel" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
+    <button id="btnProModalCancel" onclick="cerrarProModal()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;padding:.5rem 1rem">Ahora no</button>
   </div>
 </div>
 
