@@ -322,6 +322,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 @keyframes proFadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 @keyframes proShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 @keyframes proModalIn{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ── DOCUMENTOS CLÍNICOS ── */
+.docs-section{margin-top:1.2rem;border-top:1.5px solid var(--border);padding-top:1rem}
+.docs-section-title{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.8rem}
+.doc-block{border:1.5px solid var(--border);border-radius:12px;margin-bottom:.7rem;overflow:hidden;transition:border-color .2s}
+.doc-block.active{border-color:rgba(11,124,110,.3)}
+.doc-block-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;cursor:pointer;background:var(--cream);transition:background .15s;user-select:none}
+.doc-block-header:hover{background:var(--teal-lite)}
+.doc-block-label{display:flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:600;color:var(--ink2)}
+.doc-block-badge{font-size:.68rem;background:var(--teal);color:#fff;padding:.15rem .5rem;border-radius:50px;font-weight:700}
+.doc-block-toggle{font-size:.75rem;color:var(--muted2);transition:transform .2s}
+.doc-block.active .doc-block-toggle{transform:rotate(180deg)}
+.doc-block-body{display:none;padding:.8rem 1rem 1rem;background:var(--white)}
+.doc-block.active .doc-block-body{display:block}
+.doc-item{display:grid;gap:.5rem;margin-bottom:.7rem;padding-bottom:.7rem;border-bottom:1px solid var(--border);position:relative}
+.doc-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.doc-item-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.doc-field label{font-size:.7rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.25rem}
+.doc-field input,.doc-field select,.doc-field textarea{width:100%;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:var(--ink);background:var(--cream);outline:none;transition:border-color .2s}
+.doc-field input:focus,.doc-field select:focus,.doc-field textarea:focus{border-color:var(--teal-mid);background:var(--white)}
+.btn-add-item{display:flex;align-items:center;gap:.4rem;background:none;border:1.5px dashed var(--border);color:var(--muted2);font-size:.8rem;font-weight:600;padding:.45rem .8rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;justify-content:center;margin-top:.3rem}
+.btn-add-item:hover{border-color:var(--teal);color:var(--teal)}
+.btn-remove-item{position:absolute;top:0;right:0;background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--muted2);padding:.2rem;transition:color .15s}
+.btn-remove-item:hover{color:#dc2626}
+.ai-prefill-badge{font-size:.71rem;color:var(--teal);font-weight:600;padding:.2rem .5rem;background:var(--teal-lite);border-radius:6px;display:none}
 </style>
 </head>
 <body>
@@ -625,7 +650,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       <div style="display:flex;gap:.8rem;margin-top:1rem;flex-wrap:wrap">
         <button id="btnGuardarHC" onclick="guardarHC(false)" style="flex:1;padding:.75rem;background:var(--teal);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s">💾 Guardar borrador</button>
         <button onclick="guardarHC(true)" style="flex:0 0 auto;padding:.75rem 1.1rem;background:#059669;color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">✅ Finalizar</button>
-        <button class="btn-ai" id="btnGenerarAI" onclick="generarResumenAI()">✨ Analizar con AI</button>
+        <button class="btn-ai" id="btnGenerarAI" onclick="generarResumenAI()">✨ Sugerir con AI</button>
       </div>
       <!-- Resultado AI editable -->
       <div class="ai-editable-box" id="hcAIBox">
@@ -643,6 +668,54 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         <div class="ai-actions-row" id="aiActionsRow" style="display:none">
           <button class="btn-usar-ai" onclick="usarAIEnConsulta()">📋 Usar en consulta</button>
           <button class="btn-enviar-ai" onclick="enviarIndicacionesPaciente()">📩 Enviar al paciente</button>
+        </div>
+      </div>
+
+      <!-- DOCUMENTOS CLÍNICOS -->
+      <div class="docs-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+          <div class="docs-section-title">📄 Documentos clínicos</div>
+          <span class="ai-prefill-badge" id="aiPrefillBadge">✓ Sugerencias aplicadas — puedes editar libremente</span>
+        </div>
+
+        <!-- Receta -->
+        <div class="doc-block" id="docReceta">
+          <div class="doc-block-header" onclick="toggleDocBlock('docReceta')">
+            <span class="doc-block-label">💊 Receta médica <span class="doc-block-badge" id="badgeReceta" style="display:none">0</span></span>
+            <span class="doc-block-toggle">▾</span>
+          </div>
+          <div class="doc-block-body">
+            <div id="recetaItems"></div>
+            <button class="btn-add-item" onclick="addDocItem('receta')">+ Agregar medicamento</button>
+            <div class="doc-field" style="margin-top:.7rem">
+              <label>Notas generales</label>
+              <input type="text" id="recetaNotas" placeholder="Ej: Tomar después de comidas">
+            </div>
+          </div>
+        </div>
+
+        <!-- Laboratorios -->
+        <div class="doc-block" id="docLabs">
+          <div class="doc-block-header" onclick="toggleDocBlock('docLabs')">
+            <span class="doc-block-label">🧪 Orden de laboratorio <span class="doc-block-badge" id="badgeLabs" style="display:none">0</span></span>
+            <span class="doc-block-toggle">▾</span>
+          </div>
+          <div class="doc-block-body">
+            <div id="labsItems"></div>
+            <button class="btn-add-item" onclick="addDocItem('labs')">+ Agregar examen</button>
+          </div>
+        </div>
+
+        <!-- Imágenes -->
+        <div class="doc-block" id="docImagenes">
+          <div class="doc-block-header" onclick="toggleDocBlock('docImagenes')">
+            <span class="doc-block-label">🩻 Orden de imágenes <span class="doc-block-badge" id="badgeImagenes" style="display:none">0</span></span>
+            <span class="doc-block-toggle">▾</span>
+          </div>
+          <div class="doc-block-body">
+            <div id="imagenesItems"></div>
+            <button class="btn-add-item" onclick="addDocItem('imagenes')">+ Agregar estudio</button>
+          </div>
         </div>
       </div>
       <!-- Historial previo -->
@@ -1178,6 +1251,7 @@ var _medicoIdActual = null;
 var _hcCitaId = null;
 var _hcPacienteId = null;
 var _hcId = null;
+var _hcCurrentDocs = null; // docs actuales para versionado
 
 // ── PRO CHECK ──
 function esPro() {
@@ -1393,6 +1467,20 @@ function abrirConsulta(citaId, pacienteNombre, pacienteId) {
         document.getElementById('hcDiagnostico').value = r.data.diagnostico||'';
         document.getElementById('hcTratamiento').value = r.data.tratamiento||'';
         if (r.data.resumen_ai) mostrarAI(r.data);
+        if (r.data.estado === 'finalizada') {
+          bloquearEdicion();
+          setTimeout(function() {
+            document.querySelectorAll('.doc-field input,.doc-field select,.doc-field textarea').forEach(function(el){el.disabled=true;el.style.background='var(--cream)';el.style.color='var(--muted)';});
+            document.querySelectorAll('.btn-add-item,.btn-remove-item').forEach(function(el){el.disabled=true;el.style.opacity='.4';});
+          }, 100);
+        }
+        // Cargar documentos clínicos
+        _hcCurrentDocs = {
+          receta:       r.data.receta       || null,
+          laboratorios: r.data.laboratorios || null,
+          imagenes:     r.data.imagenes     || null
+        };
+        cargarDocumentos(_hcCurrentDocs);
       }
     });
   // Cargar historial previo
@@ -1455,6 +1543,16 @@ function abrirHistorialPaciente(pacienteId, nombre) {
         var fechaUlt = new Date(ultima.created_at).toLocaleDateString('es-EC');
         if (ultima.estado === 'finalizada') {
           bloquearEdicion();
+          // Bloquear también los documentos clínicos
+          setTimeout(function() {
+            document.querySelectorAll('.doc-field input,.doc-field select,.doc-field textarea').forEach(function(el){
+              el.disabled = true;
+              el.style.background = 'var(--cream)';
+              el.style.color = 'var(--muted)';
+            });
+            document.querySelectorAll('.btn-add-item, .btn-remove-item').forEach(function(el){ el.disabled=true; el.style.opacity='.4'; });
+            document.querySelectorAll('#btnGuardarHC').forEach(function(el){ el.disabled=true; });
+          }, 100);
           document.getElementById('hcSubtitle').textContent = 'Ultima consulta: '+fechaUlt+' (finalizada)';
         } else {
           document.getElementById('hcSubtitle').textContent = 'Ultima consulta cargada · '+fechaUlt;
@@ -1628,20 +1726,23 @@ function generarResumenAI() {
 
   obtenerHistorialPaciente(_hcPacienteId).then(function(historial) {
     var prompt = 'Eres un asistente clinico de apoyo para medicos. NO emites diagnosticos ni tratamientos definitivos. NO reemplazas al medico.'
-      + ' Tus respuestas deben alinearse con practicas medicas generales. Usa lenguaje condicional y prudente.'
+      + ' Usa lenguaje condicional y prudente. Tus sugerencias son orientativas y deben ser validadas por el medico.'
       + ' HISTORIAL PREVIO: ' + historial
       + ' CONSULTA ACTUAL - Sintomas: ' + (sintomas||'No especificados') + '.'
       + ' Examen fisico: ' + (examen||'No especificado') + '.'
       + ' Observacion del medico: ' + (diagnostico||'No especificado') + '.'
       + ' Tratamiento indicado: ' + (tratamiento||'No especificado') + '.'
-      + ' Responde SOLO con JSON valido sin markdown.'
+      + ' Responde SOLO con JSON valido sin markdown ni backticks.'
       + ' {"resumen":"resumen del paciente en 2-3 oraciones",'
       + '"evolucion":"observaciones de evolucion basadas en historial",'
       + '"alertas":"puntos a considerar o señales de atencion",'
       + '"sugerencias_tratamiento":"sugerencias generales de manejo si aplica",'
-      + '"laboratorios":"examenes de laboratorio sugeridos si aplica o ninguno",'
-      + '"imagenes":"estudios de imagen sugeridos si aplica o ninguno",'
-      + '"indicaciones":"indicaciones generales para el paciente"}';
+      + '"laboratorios":"examenes de laboratorio sugeridos si aplica o vacio",'
+      + '"imagenes":"estudios de imagen sugeridos si aplica o vacio",'
+      + '"indicaciones":"indicaciones generales para el paciente",'
+      + '"receta_items":"array JSON de medicamentos sugeridos con formato [{medicamento,dosis,frecuencia,duracion}] o array vacio []",'
+      + '"lab_items":"array JSON de examenes con formato [{nombre,prioridad}] o array vacio []",'
+      + '"img_items":"array JSON de estudios con formato [{estudio,zona,motivo}] o array vacio []"}';
 
     fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1657,10 +1758,12 @@ function generarResumenAI() {
         try {
           var parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
           renderAI(parsed);
+          // Prellenar documentos si el AI sugirió algo
+          prefillDocumentosAI(parsed);
           // Guardar resumen en DB
           if (_hcId) {
             _sb.from('historias_clinicas').update({
-              resumen_ai:       parsed.resumen           || null,
+              resumen_ai:       parsed.resumen                 || null,
               urgencia_ai:      null,
               recomendacion_ai: parsed.sugerencias_tratamiento || null
             }).eq('id', _hcId);
@@ -1668,11 +1771,11 @@ function generarResumenAI() {
         } catch(e) {
           if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.84rem">Error procesando respuesta. Intenta de nuevo.</p>';
         }
-        if (btn) { btn.disabled=false; btn.textContent='✨ Analizar con AI'; }
+        if (btn) { btn.disabled=false; btn.textContent='✨ Sugerir con AI'; }
       })
       .catch(function() {
         if (content) content.innerHTML = '<p style="color:#dc2626;font-size:.84rem">Error conectando con AI.</p>';
-        if (btn) { btn.disabled=false; btn.textContent='✨ Analizar con AI'; }
+        if (btn) { btn.disabled=false; btn.textContent='✨ Sugerir con AI'; }
       });
   });
 }
@@ -1747,9 +1850,26 @@ function usarAIEnConsulta() {
 
 // ── ENVIAR INDICACIONES AL PACIENTE ──
 function enviarIndicacionesPaciente() {
-  var indicaciones = document.getElementById('aiIndicaciones');
+  // Snapshot del estado actual — evita bugs si el médico edita mientras se envía
+  var snapshot = {
+    indicaciones: (document.getElementById('aiIndicaciones')||{}).value || '',
+    resumen:      (document.getElementById('aiResumen')||{}).value || '',
+    docs:         JSON.parse(JSON.stringify(leerDocumentos())),
+    hcId:         _hcId,
+    pacienteId:   _hcPacienteId,
+    medicoId:     M ? M.id : null,
+    timestamp:    new Date().toISOString()
+  };
+  var indicaciones = {value: snapshot.indicaciones};
+  var docs = snapshot.docs;
+  var tieneContenido = (indicaciones && indicaciones.value.trim())
+    || docs.receta || docs.laboratorios || docs.imagenes;
+  if (!tieneContenido) {
+    alert('No hay documentos ni indicaciones para enviar.');
+    return;
+  }
   if (!indicaciones || !indicaciones.value.trim()) {
-    alert('No hay indicaciones para enviar.');
+    alert('No hay indicaciones para enviar. Usa el AI o escribe indicaciones primero.');
     return;
   }
   if (!_hcPacienteId) { alert('No hay paciente vinculado.'); return; }
@@ -1868,6 +1988,223 @@ function showProBlur(wrapId, ghostHTML, feature) {
   wrap.appendChild(preview);
 }
 
+// ══════════════════════════════════════════
+// DOCUMENTOS CLÍNICOS
+// ══════════════════════════════════════════
+
+function toggleDocBlock(id) {
+  var block = document.getElementById(id);
+  if (block) block.classList.toggle('active');
+}
+
+// ── TEMPLATES POR TIPO ──
+function getDocItemHTML(tipo, idx) {
+  var id = tipo + '_' + idx;
+  if (tipo === 'receta') {
+    return '<div class="doc-item" id="item_'+id+'">'
+      + '<button class="btn-remove-item" data-remove="'+id+'">✕</button>'
+      + '<div class="doc-field"><label>Medicamento</label><input type="text" id="'+id+'_med" placeholder="Ej: Ibuprofeno"></div>'
+      + '<div class="doc-item-grid">'
+        + '<div class="doc-field"><label>Dosis</label><input type="text" id="'+id+'_dosis" placeholder="Ej: 400mg"></div>'
+        + '<div class="doc-field"><label>Frecuencia</label><input type="text" id="'+id+'_freq" placeholder="Ej: cada 8h"></div>'
+        + '<div class="doc-field"><label>Duración</label><input type="text" id="'+id+'_dur" placeholder="Ej: 5 días"></div>'
+        + '<div class="doc-field"><label>Vía</label><select id="'+id+'_via"><option value="oral">Oral</option><option value="topica">Tópica</option><option value="inyectable">Inyectable</option><option value="inhalatoria">Inhalatoria</option></select></div>'
+      + '</div>'
+    + '</div>';
+  }
+  if (tipo === 'labs') {
+    return '<div class="doc-item" id="item_'+id+'">'
+      + '<button class="btn-remove-item" data-remove="'+id+'">✕</button>'
+      + '<div class="doc-item-grid">'
+        + '<div class="doc-field"><label>Examen</label><input type="text" id="'+id+'_nombre" placeholder="Ej: Hemograma completo"></div>'
+        + '<div class="doc-field"><label>Prioridad</label><select id="'+id+'_prior"><option value="normal">Normal</option><option value="urgente">Urgente</option><option value="stat">STAT</option></select></div>'
+      + '</div>'
+      + '<div class="doc-field"><label>Indicación clínica</label><input type="text" id="'+id+'_ind" placeholder="Ej: Control post-tratamiento"></div>'
+    + '</div>';
+  }
+  if (tipo === 'imagenes') {
+    return '<div class="doc-item" id="item_'+id+'">'
+      + '<button class="btn-remove-item" data-remove="'+id+'">✕</button>'
+      + '<div class="doc-item-grid">'
+        + '<div class="doc-field"><label>Estudio</label><input type="text" id="'+id+'_est" placeholder="Ej: Rx de tórax"></div>'
+        + '<div class="doc-field"><label>Zona</label><input type="text" id="'+id+'_zona" placeholder="Ej: Tórax AP"></div>'
+      + '</div>'
+      + '<div class="doc-field"><label>Motivo clínico</label><input type="text" id="'+id+'_mot" placeholder="Ej: Dolor torácico persistente"></div>'
+    + '</div>';
+  }
+  return '';
+}
+
+var _docCounters = {receta:0, labs:0, imagenes:0};
+
+function addDocItem(tipo) {
+  _docCounters[tipo]++;
+  var idx   = _docCounters[tipo];
+  var containerId = tipo === 'receta' ? 'recetaItems' : tipo === 'labs' ? 'labsItems' : 'imagenesItems';
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var div = document.createElement('div');
+  div.innerHTML = getDocItemHTML(tipo, idx);
+  var item = div.firstChild;
+  container.appendChild(item);
+  // Evento del botón remover via data-remove
+  var btnRem = item.querySelector('[data-remove]');
+  if (btnRem) {
+    (function(removeId) {
+      btnRem.addEventListener('click', function() { removeDocItem(removeId); });
+    })(btnRem.dataset.remove);
+  }
+  actualizarBadge(tipo);
+  // Abrir el bloque si estaba cerrado
+  var blockId = tipo === 'receta' ? 'docReceta' : tipo === 'labs' ? 'docLabs' : 'docImagenes';
+  var block = document.getElementById(blockId);
+  if (block && !block.classList.contains('active')) block.classList.add('active');
+}
+
+function removeDocItem(id) {
+  var el = document.getElementById('item_'+id);
+  if (el) el.remove();
+  var tipo = id.split('_')[0];
+  actualizarBadge(tipo);
+}
+
+function actualizarBadge(tipo) {
+  var containerId = tipo==='receta'?'recetaItems':tipo==='labs'?'labsItems':'imagenesItems';
+  var badgeId     = tipo==='receta'?'badgeReceta':tipo==='labs'?'badgeLabs':'badgeImagenes';
+  var container   = document.getElementById(containerId);
+  var badge       = document.getElementById(badgeId);
+  if (!container || !badge) return;
+  var count = container.querySelectorAll('.doc-item').length;
+  if (count > 0) { badge.textContent = count; badge.style.display='inline'; }
+  else            { badge.style.display = 'none'; }
+}
+
+// ── LEER DOCUMENTOS DEL DOM ──
+function leerDocumentos() {
+  // Receta
+  var recetaItems = [];
+  document.querySelectorAll('#recetaItems .doc-item').forEach(function(el) {
+    var id = el.id.replace('item_','');
+    recetaItems.push({
+      medicamento: (document.getElementById(id+'_med')  || {}).value || '',
+      dosis:       (document.getElementById(id+'_dosis')|| {}).value || '',
+      frecuencia:  (document.getElementById(id+'_freq') || {}).value || '',
+      duracion:    (document.getElementById(id+'_dur')  || {}).value || '',
+      via:         (document.getElementById(id+'_via')  || {}).value || 'oral'
+    });
+  });
+  // Leer version previa si existe
+  var prevReceta = _hcCurrentDocs ? _hcCurrentDocs.receta : null;
+  var receta = recetaItems.length ? {
+    items: recetaItems,
+    notas: (document.getElementById('recetaNotas')||{}).value || '',
+    created_at: new Date().toISOString(),
+    version: prevReceta ? ((prevReceta.version || 0) + 1) : 1,
+    updated_at: new Date().toISOString()
+  } : null;
+
+  // Labs
+  var labItems = [];
+  document.querySelectorAll('#labsItems .doc-item').forEach(function(el) {
+    var id = el.id.replace('item_','');
+    labItems.push({
+      nombre:    (document.getElementById(id+'_nombre')||{}).value || '',
+      prioridad: (document.getElementById(id+'_prior') ||{}).value || 'normal',
+      indicacion:(document.getElementById(id+'_ind')   ||{}).value || ''
+    });
+  });
+  var prevLabs = _hcCurrentDocs ? _hcCurrentDocs.laboratorios : null;
+  var laboratorios = labItems.length ? {
+    items: labItems,
+    created_at: new Date().toISOString(),
+    version: prevLabs ? ((prevLabs.version || 0) + 1) : 1,
+    updated_at: new Date().toISOString()
+  } : null;
+
+  // Imágenes
+  var imgItems = [];
+  document.querySelectorAll('#imagenesItems .doc-item').forEach(function(el) {
+    var id = el.id.replace('item_','');
+    imgItems.push({
+      estudio: (document.getElementById(id+'_est') ||{}).value || '',
+      zona:    (document.getElementById(id+'_zona')||{}).value || '',
+      motivo:  (document.getElementById(id+'_mot') ||{}).value || ''
+    });
+  });
+  var prevImg = _hcCurrentDocs ? _hcCurrentDocs.imagenes : null;
+  var imagenes = imgItems.length ? {
+    items: imgItems,
+    created_at: new Date().toISOString(),
+    version: prevImg ? ((prevImg.version || 0) + 1) : 1,
+    updated_at: new Date().toISOString()
+  } : null;
+
+  // No incluir documentos sin items
+  return {
+    receta:       (receta       && receta.items.length)       ? receta       : null,
+    laboratorios: (laboratorios && laboratorios.items.length) ? laboratorios : null,
+    imagenes:     (imagenes     && imagenes.items.length)     ? imagenes     : null
+  };
+}
+
+// ── CARGAR DOCUMENTOS EN EL DOM ──
+function cargarDocumentos(data) {
+  _docCounters = {receta:0, labs:0, imagenes:0};
+  ['recetaItems','labsItems','imagenesItems'].forEach(function(id) {
+    var el = document.getElementById(id); if(el) el.innerHTML='';
+  });
+  if (!data) return;
+
+  if (data.receta && data.receta.items) {
+    data.receta.items.forEach(function(item) {
+      addDocItem('receta');
+      var idx = _docCounters.receta;
+      var id = 'receta_' + idx;
+      var s = function(fid, val) { var e=document.getElementById(id+fid); if(e)e.value=val||''; };
+      s('_med', item.medicamento); s('_dosis', item.dosis);
+      s('_freq', item.frecuencia); s('_dur', item.duracion); s('_via', item.via||'oral');
+    });
+    var rn = document.getElementById('recetaNotas');
+    if (rn) rn.value = data.receta.notas || '';
+  }
+
+  if (data.laboratorios && data.laboratorios.items) {
+    data.laboratorios.items.forEach(function(item) {
+      addDocItem('labs');
+      var idx = _docCounters.labs;
+      var id = 'labs_' + idx;
+      var s = function(fid,val){var e=document.getElementById(id+fid);if(e)e.value=val||'';};
+      s('_nombre',item.nombre); s('_prior',item.prioridad||'normal'); s('_ind',item.indicacion);
+    });
+  }
+
+  if (data.imagenes && data.imagenes.items) {
+    data.imagenes.items.forEach(function(item) {
+      addDocItem('imagenes');
+      var idx = _docCounters.imagenes;
+      var id = 'imagenes_' + idx;
+      var s = function(fid,val){var e=document.getElementById(id+fid);if(e)e.value=val||'';};
+      s('_est',item.estudio); s('_zona',item.zona); s('_mot',item.motivo);
+    });
+  }
+}
+
+// ── RESET DOCUMENTOS ──
+function resetDocumentos() {
+  _docCounters = {receta:0, labs:0, imagenes:0};
+  ['recetaItems','labsItems','imagenesItems'].forEach(function(id) {
+    var el = document.getElementById(id); if(el) el.innerHTML='';
+  });
+  ['badgeReceta','badgeLabs','badgeImagenes'].forEach(function(id) {
+    var el = document.getElementById(id); if(el) el.style.display='none';
+  });
+  var rn = document.getElementById('recetaNotas'); if(rn) rn.value='';
+  var badge = document.getElementById('aiPrefillBadge'); if(badge) badge.style.display='none';
+  ['docReceta','docLabs','docImagenes'].forEach(function(id) {
+    var el = document.getElementById(id); if(el) el.classList.remove('active');
+  });
+}
+
 // ── ANALIZAR HISTORIAL COMPLETO CON AI ──
 function analizarHistorialAI() {
   if (!requirePro('historial_ai')) {
@@ -1965,6 +2302,241 @@ function renderHistorialAI(data) {
       + '<div class="ai-block-title" style="color:#374151">📌 Seguimiento sugerido</div>'
       + '<div class="ai-block-content">'+(data.seguimiento||'--')+'</div>'
     + '</div>';
+}
+
+// ── PRELLENAR DOCUMENTOS DESDE AI ──
+// ── GENERAR PDF (Fase 1 — window.print) ──
+function generarPDF() {
+  // Recopilar datos del modal actual
+  var pacNombre  = (document.getElementById('hcTitle')||{}).textContent.replace('Consulta — ','').replace('Historia Clinica — ','') || 'Paciente';
+  var sintomas   = (document.getElementById('hcSintomas')||{}).value    || '';
+  var examen     = (document.getElementById('hcExamen')||{}).value      || '';
+  var diagnostico= (document.getElementById('hcDiagnostico')||{}).value || '';
+  var tratamiento= (document.getElementById('hcTratamiento')||{}).value || '';
+  var docs       = leerDocumentos();
+  var medNombre  = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico CitaDoc';
+  var medEsp     = M ? ((M.especialidades||[])[0]||'') : '';
+  var medReg     = M && M.senescyt ? 'Reg. SENESCYT: '+M.senescyt : '';
+  var fecha      = new Date().toLocaleDateString('es-EC', {year:'numeric',month:'long',day:'numeric'});
+
+  // Receta HTML
+  var recetaHTML = '';
+  if (docs.receta && docs.receta.items && docs.receta.items.length) {
+    recetaHTML = '<div class="pdf-section">'
+      + '<div class="pdf-section-title">RECETA MÉDICA</div>';
+    docs.receta.items.forEach(function(item, i) {
+      recetaHTML += '<div class="pdf-item">'
+        + '<span class="pdf-item-num">'+(i+1)+'.</span>'
+        + '<div><strong>'+item.medicamento+'</strong>'
+        + (item.dosis ? ' — '+item.dosis : '')
+        + (item.frecuencia ? ', '+item.frecuencia : '')
+        + (item.duracion ? ', por '+item.duracion : '')
+        + (item.via && item.via!=='oral' ? ' ('+item.via+')' : '')
+        + '</div>'
+      + '</div>';
+    });
+    if (docs.receta.notas) {
+      recetaHTML += '<div class="pdf-notas">📌 '+docs.receta.notas+'</div>';
+    }
+    recetaHTML += '</div>';
+  }
+
+  // Labs HTML
+  var labsHTML = '';
+  if (docs.laboratorios && docs.laboratorios.items && docs.laboratorios.items.length) {
+    labsHTML = '<div class="pdf-section">'
+      + '<div class="pdf-section-title">ORDEN DE LABORATORIO</div>';
+    docs.laboratorios.items.forEach(function(item, i) {
+      var prior = item.prioridad === 'urgente' ? ' <span class="pdf-badge-urgente">URGENTE</span>' : item.prioridad === 'stat' ? ' <span class="pdf-badge-stat">STAT</span>' : '';
+      labsHTML += '<div class="pdf-item"><span class="pdf-item-num">'+(i+1)+'.</span><div>'+item.nombre+prior+(item.indicacion?'<br><span class="pdf-ind">Indicación: '+item.indicacion+'</span>':'')+'</div></div>';
+    });
+    labsHTML += '</div>';
+  }
+
+  // Imágenes HTML
+  var imgHTML = '';
+  if (docs.imagenes && docs.imagenes.items && docs.imagenes.items.length) {
+    imgHTML = '<div class="pdf-section">'
+      + '<div class="pdf-section-title">ORDEN DE IMÁGENES</div>';
+    docs.imagenes.items.forEach(function(item, i) {
+      imgHTML += '<div class="pdf-item"><span class="pdf-item-num">'+(i+1)+'.</span><div><strong>'+item.estudio+'</strong>'+(item.zona?' — '+item.zona:'')+(item.motivo?'<br><span class="pdf-ind">Motivo: '+item.motivo+'</span>':'')+'</div></div>';
+    });
+    imgHTML += '</div>';
+  }
+
+  // Indicaciones generales
+  var indicHTML = '';
+  var indText = (document.getElementById('aiIndicaciones')||{}).value || '';
+  if (indText.trim()) {
+        var indLines = indText.split('\n').join('<br>');
+    indicHTML = '<div class="pdf-section"><div class="pdf-section-title">INDICACIONES GENERALES</div><p class="pdf-ind-text">'+indLines+'</p></div>';
+  }
+
+  var sinReceta = !recetaHTML && !labsHTML && !imgHTML && !indicHTML;
+
+  // Construir HTML del documento
+  var html = '<!DOCTYPE html><html lang="es"><head>'
+    + '<meta charset="UTF-8">'
+    + '<title>Documento Clínico — '+pacNombre+'</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;margin:0;padding:0}'
+    + 'body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:0}'
+    + '.page{padding:32px 40px;max-width:700px;margin:0 auto}'
+    + '.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:2px solid #0b7c6e;margin-bottom:20px}'
+    + '.logo{font-size:22px;font-weight:800;color:#0b7c6e;letter-spacing:-0.03em}'
+    + '.logo em{font-style:italic;font-weight:400}'
+    + '.medico-info{text-align:right}'
+    + '.medico-nombre{font-size:14px;font-weight:700;color:#0f1a18}'
+    + '.medico-esp{font-size:11px;color:#6b7c79;margin-top:2px}'
+    + '.medico-reg{font-size:10px;color:#a0b0ae;margin-top:1px}'
+    + '.doc-meta{background:#f7f4ef;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap}'
+    + '.meta-item{font-size:11px;color:#6b7c79}'
+    + '.meta-item strong{display:block;font-size:12px;color:#0f1a18;margin-bottom:1px}'
+    + '.pdf-section{margin-bottom:18px;break-inside:avoid}'
+    + '.pdf-section-title{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#0b7c6e;border-bottom:1px solid #e0f5f2;padding-bottom:4px;margin-bottom:10px}'
+    + '.pdf-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}'
+    + '.pdf-item-num{font-weight:700;color:#0b7c6e;flex-shrink:0;min-width:16px}'
+    + '.pdf-ind{font-size:11px;color:#6b7c79;display:block;margin-top:2px}'
+    + '.pdf-notas{font-size:11px;color:#6b7c79;margin-top:6px;padding:6px 10px;background:#f0fff4;border-radius:5px}'
+    + '.pdf-badge-urgente{background:#fef2f2;color:#dc2626;font-size:9px;font-weight:700;padding:1px 6px;border-radius:50px;border:1px solid #fca5a5}'
+    + '.pdf-badge-stat{background:#fffbeb;color:#d97706;font-size:9px;font-weight:700;padding:1px 6px;border-radius:50px;border:1px solid #fcd34d}'
+    + '.pdf-ind-text{font-size:12px;color:#334155;line-height:1.6}'
+    + '.sin-docs{text-align:center;padding:30px;color:#a0b0ae;font-size:12px}'
+    + '.footer{border-top:1px solid #e5e7eb;padding-top:12px;margin-top:20px;display:flex;justify-content:space-between;align-items:flex-end}'
+    + '.footer-left{font-size:10px;color:#a0b0ae;line-height:1.5}'
+    + '.firma-line{width:140px;border-top:1.5px solid #0f1a18;padding-top:4px;font-size:10px;color:#6b7c79;text-align:center}'
+    + '.btn-print{display:block;margin:20px auto 0;padding:10px 24px;background:#0b7c6e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial}'
+    + '@media print{'
+    + '.btn-print{display:none}'
+    + 'body{padding:0}'
+    + '.page{padding:20px 24px}'
+    + '}'
+    + '</style></head><body>'
+    + '<div class="page">'
+    + '<div class="header">'
+      + '<div class="logo">Cita<em>Doc</em></div>'
+      + '<div class="medico-info">'
+        + '<div class="medico-nombre">'+medNombre+'</div>'
+        + (medEsp?'<div class="medico-esp">'+medEsp+'</div>':'')
+        + (medReg?'<div class="medico-reg">'+medReg+'</div>':'')
+      + '</div>'
+    + '</div>'
+    + '<div class="doc-meta">'
+      + '<div class="meta-item"><strong>Paciente</strong>'+pacNombre+'</div>'
+      + '<div class="meta-item"><strong>Fecha</strong>'+fecha+'</div>'
+      + (diagnostico?'<div class="meta-item"><strong>Diagnóstico</strong>'+diagnostico+'</div>':'')
+    + '</div>'
+    + (sinReceta ? '<div class="sin-docs">No hay documentos clínicos registrados en esta consulta.</div>' : '')
+    + recetaHTML + labsHTML + imgHTML + indicHTML
+    + '<div class="footer">'
+      + '<div class="footer-left">'
+        + 'Documento generado por CitaDoc — citadoc.lat<br>'
+        + 'Este documento es de uso clínico. Validado por el médico tratante.'
+      + '</div>'
+      + '<div class="firma-line">'+medNombre+'<br>Firma</div>'
+    + '</div>'
+    + '</div>'
+    + '<button class="btn-print" onclick="window.print()">🖨 Imprimir / Guardar como PDF</button>'
+    + '</body></html>';
+
+  var ventana = window.open('', '_blank', 'width=800,height=900');
+  if (!ventana) { alert('Activa las ventanas emergentes para generar el PDF.'); return; }
+  ventana.document.write(html);
+  ventana.document.close();
+  // Auto-trigger print después de que cargue
+  ventana.onload = function() { ventana.focus(); };
+}
+
+function prefillDocumentosAI(data) {
+  var tuvoSugerencias = false;
+
+  // Receta
+  try {
+    var recetaItems = typeof data.receta_items === 'string'
+      ? JSON.parse(data.receta_items)
+      : (data.receta_items || []);
+    if (Array.isArray(recetaItems) && recetaItems.length) {
+      // Limpiar items existentes si vienen del AI
+      document.getElementById('recetaItems').innerHTML = '';
+      _docCounters.receta = 0;
+      recetaItems.forEach(function(item) {
+        addDocItem('receta');
+        var idx = _docCounters.receta;
+        var id = 'receta_' + idx;
+        var s = function(fid,val){var e=document.getElementById(id+fid);if(e)e.value=val||'';};
+        s('_med',item.medicamento||item.med||'');
+        s('_dosis',item.dosis||'');
+        s('_freq',item.frecuencia||item.freq||'');
+        s('_dur',item.duracion||item.dur||'');
+      });
+      tuvoSugerencias = true;
+    }
+  } catch(e) { console.warn('AI receta parse:', e); }
+
+  // Labs
+  try {
+    var labItems = typeof data.lab_items === 'string'
+      ? JSON.parse(data.lab_items)
+      : (data.lab_items || []);
+    if (Array.isArray(labItems) && labItems.length) {
+      document.getElementById('labsItems').innerHTML = '';
+      _docCounters.labs = 0;
+      labItems.forEach(function(item) {
+        addDocItem('labs');
+        var idx = _docCounters.labs;
+        var id = 'labs_' + idx;
+        var s = function(fid,val){var e=document.getElementById(id+fid);if(e)e.value=val||'';};
+        s('_nombre',item.nombre||item.examen||'');
+        s('_prior',item.prioridad||'normal');
+        s('_ind',item.indicacion||'');
+      });
+      tuvoSugerencias = true;
+    }
+  } catch(e) { console.warn('AI labs parse:', e); }
+
+  // Imágenes
+  try {
+    var imgItems = typeof data.img_items === 'string'
+      ? JSON.parse(data.img_items)
+      : (data.img_items || []);
+    if (Array.isArray(imgItems) && imgItems.length) {
+      document.getElementById('imagenesItems').innerHTML = '';
+      _docCounters.imagenes = 0;
+      imgItems.forEach(function(item) {
+        addDocItem('imagenes');
+        var idx = _docCounters.imagenes;
+        var id = 'imagenes_' + idx;
+        var s = function(fid,val){var e=document.getElementById(id+fid);if(e)e.value=val||'';};
+        s('_est',item.estudio||'');
+        s('_zona',item.zona||'');
+        s('_mot',item.motivo||'');
+      });
+      tuvoSugerencias = true;
+    }
+  } catch(e) { console.warn('AI imagenes parse:', e); }
+
+  // Feedback visual — highlight + badge + siempre editable
+  if (tuvoSugerencias) {
+    var badge = document.getElementById('aiPrefillBadge');
+    if (badge) badge.style.display = 'inline';
+    // Highlight temporal en los campos prellenados
+    document.querySelectorAll('.doc-field input, .doc-field select, .doc-field textarea').forEach(function(el) {
+      el.disabled = false;
+      if (el.value) {
+        el.style.background = '#ecfeff';
+        el.style.borderColor = '#06b6d4';
+        el.style.transition = 'all 0.3s';
+        setTimeout(function() {
+          el.style.background = '';
+          el.style.borderColor = '';
+        }, 2500);
+      }
+    });
+    // Abrir bloques con contenido
+    if (docs && docs.receta)       { var b=document.getElementById('docReceta');    if(b)b.classList.add('active'); }
+    if (docs && docs.laboratorios) { var b=document.getElementById('docLabs');      if(b)b.classList.add('active'); }
+    if (docs && docs.imagenes)     { var b=document.getElementById('docImagenes');  if(b)b.classList.add('active'); }
+  }
 }
 
 function cerrarHC() {
