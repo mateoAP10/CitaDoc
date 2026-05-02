@@ -940,8 +940,8 @@ for (let h=7; h<20; h++) { TIMES.push(h2(h)+':00'); TIMES.push(h2(h)+':30'); }
 function h2(n){ return String(n).padStart(2,'0'); }
 
 // ══ HELPERS ══
-const $ = id => document.getElementById(id);
-const setText = (id,v) => { const e=$(id); if(e) e.textContent=v; };
+function $(id) { return document.getElementById(id); }
+var setText = (id,v) => { const e=$(id); if(e) e.textContent=v; };
 const setVal  = (id,v) => { const e=$(id); if(e&&v!=null&&v!=='') e.value=v; };
 
 // ══ NAV ══
@@ -974,7 +974,7 @@ function renderCal() {
   renderBigCal();
 }
 function renderMiniCal() {
-  const el = $('miniCal'); if (!el) return;
+  var el = $('miniCal'); if (!el) return;
   const first = new Date(calYear,calMonth,1).getDay();
   const days  = new Date(calYear,calMonth+1,0).getDate();
   const today = new Date();
