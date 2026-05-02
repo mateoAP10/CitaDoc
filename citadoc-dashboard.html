@@ -37,10 +37,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   position:relative;z-index:1;display:flex;align-items:center;gap:.5rem
 }
 .sidebar-logo span{color:rgba(255,255,255,.55);font-style:italic}
-.sidebar-logo::after{
-  content:'PRO';font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;
+.sidebar-logo .logo-plan-badge{
+  font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;
   letter-spacing:.06em;padding:.18rem .55rem;border-radius:50px;
-  background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)
+  display:none
+}
+.sidebar-logo .logo-plan-badge.pro{
+  display:inline;background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)
+}
+.sidebar-logo .logo-plan-badge.free{
+  display:inline;background:rgba(255,255,255,.08);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.1)
 }
 .sidebar-doctor{
   padding:1rem 1.2rem;display:flex;align-items:center;gap:.75rem;
@@ -2174,6 +2180,12 @@ function cerrarProModal() {
   var ppContainer = document.getElementById('pp-button');
   if (btnDecision) btnDecision.style.display = 'block';
   if (ppContainer) { ppContainer.style.display = 'none'; ppContainer.innerHTML = ''; }
+  // Volver a inicio si estaba en panel bloqueado
+  var activePanel = document.querySelector('.panel.active') || document.querySelector('.panel[style*="block"]');
+  var blockedPanels = ['panel-pacientes','panel-clinica'];
+  if (activePanel && blockedPanels.indexOf(activePanel.id) > -1) {
+    showPanel('inicio', document.querySelector('.nav-item[onclick*="inicio"]'));
+  }
 }
 
 // ── CARGAR PACIENTES ──
