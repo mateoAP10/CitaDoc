@@ -339,6 +339,99 @@ function setText(id, v) { var e=el(id); if(e) e.textContent=v; }
 function pad2(n) { return String(n).padStart(2,'0'); }
 
 // ── DISPONIBILIDAD ──
+// ── DISPONIBILIDAD CON BLOQUEOS ──
+// Función asíncrona que consulta bloqueos antes de generar slots
+function cargarDisponibilidadConBloqueos(medico, citas, sbClient) {
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var en60 = new Date(hoy); en60.setDate(hoy.getDate()+60);
+  var fechaHoy = hoy.toISOString().split('T')[0];
+  var fecha60  = en60.toISOString().split('T')[0];
+
+  // Cargar bloqueos y excepciones en paralelo
+  return Promise.all([
+    sbClient.from('bloqueos_medico')
+      .select('fecha_inicio, fecha_fin')
+      .eq('medico_id', medico.id)
+      .gte('fecha_fin', fechaHoy)
+      .lte('fecha_inicio', fecha60),
+    sbClient.from('excepciones_medico')
+      .select('fecha, tipo, desde, hasta')
+      .eq('medico_id', medico.id)
+      .gte('fecha', fechaHoy)
+      .lte('fecha', fecha60)
+  ]).then(function(results) {
+    var bloqueos    = results[0].data || [];
+    var excepciones = results[1].data || [];
+
+    // Mapa de fechas bloqueadas
+    var fechasBloqueadas = {};
+    bloqueos.forEach(function(b) {
+      var cur = new Date(b.fecha_inicio+'T12:00:00');
+      var fin = new Date(b.fecha_fin+'T12:00:00');
+      while (cur <= fin) {
+        fechasBloqueadas[cur.toISOString().split('T')[0]] = true;
+        cur.setDate(cur.getDate()+1);
+      }
+    });
+
+    // Mapa de excepciones
+    var excMap = {};
+    excepciones.forEach(function(e) { excMap[e.fecha] = e; });
+
+    // Generar disponibilidad con capas
+    var DIAS_SEM_LOC = ['dom','lun','mar','mie','jue','vie','sab'];
+    var disp = {};
+
+    for (var i=0; i<60; i++) {
+      var fecha = new Date(hoy);
+      fecha.setDate(hoy.getDate()+i);
+      var fechaStr = fecha.toISOString().split('T')[0];
+
+      // Capa 1: vacaciones/bloqueos
+      if (fechasBloqueadas[fechaStr]) continue;
+
+      var dia = DIAS_SEM_LOC[fecha.getDay()];
+
+      // Capa 2: excepción puntual
+      if (excMap[fechaStr]) {
+        var exc = excMap[fechaStr];
+        if (exc.tipo === 'bloqueado') continue;
+        if (exc.tipo === 'custom' && exc.desde && exc.hasta) {
+          var slots = [];
+          var min = parseInt(exc.desde.split(':')[0])*60+parseInt(exc.desde.split(':')[1]);
+          var max = parseInt(exc.hasta.split(':')[0])*60+parseInt(exc.hasta.split(':')[1]);
+          var limHoy2 = (i===0) ? (new Date().getHours()*60+new Date().getMinutes()+120) : 0;
+          while (min < max) {
+            var horaStr = String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
+            var ocupado2 = citas.some(function(ct){ return ct.fecha===fechaStr&&ct.hora===horaStr; });
+            if (!ocupado2 && !(i===0&&min<limHoy2)) slots.push(horaStr);
+            min+=30;
+          }
+          if (slots.length) disp[fechaStr] = slots;
+          continue;
+        }
+      }
+
+      // Capa 3: horario normal
+      if ((medico.dias_atencion||[]).indexOf(dia) < 0) continue;
+      var desde = medico.horario_desde||'09:00';
+      var hasta  = medico.horario_hasta||'17:00';
+      var hD = parseInt(desde.split(':')[0])*60+parseInt(desde.split(':')[1]);
+      var hH = parseInt(hasta.split(':')[0])*60+parseInt(hasta.split(':')[1]);
+      var min2 = hD;
+      var limHoy3 = (i===0) ? (new Date().getHours()*60+new Date().getMinutes()+120) : 0;
+      var slotsNorm = [];
+      while (min2 < hH) {
+        var hora = String(Math.floor(min2/60)).padStart(2,'0')+':'+String(min2%60).padStart(2,'0');
+        var ocup = citas.some(function(ct){ return ct.fecha===fechaStr&&ct.hora===hora; });
+        if (!ocup && !(i===0&&min2<limHoy3)) slotsNorm.push(hora);
+        min2+=30;
+      }
+      if (slotsNorm.length) disp[fechaStr] = slotsNorm;
+    }
+    return disp;
+  });
+}
 function generarDisponibilidad(medico, citas) {
   var hoy = new Date(); hoy.setHours(0,0,0,0);
   var disp = {};
@@ -651,9 +744,12 @@ function aplicarMedico(m, formacion, citas) {
   var perfilUrl = 'https://citadoc.lat/citadoc-perfil.html?slug='+(m.slug||'');
   window._perfilUrl = perfilUrl;
 
-  // Disponibilidad y calendario
-  _disp = generarDisponibilidad(m, citas||[]);
-  renderCal();
+  // Disponibilidad y calendario — con bloqueos
+  cargarDisponibilidadConBloqueos(m, citas||[], _sb)
+    .then(function(disp) {
+      _disp = disp;
+      renderCal();
+    });
 
   // Auth nav
   var vp = el('ddVerPerfil');

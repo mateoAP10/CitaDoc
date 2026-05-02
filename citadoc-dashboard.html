@@ -433,6 +433,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .day-config-row:last-child{border-bottom:none}
 .day-config-name{width:90px;font-size:.84rem;font-weight:600;color:var(--ink2);flex-shrink:0}
 .day-config-row.inactive .day-config-name{color:var(--muted2)}
+.day-config-row.inactive{opacity:.5;filter:grayscale(.3)}
 .day-toggle{position:relative;width:36px;height:20px;flex-shrink:0}
 .day-toggle input{opacity:0;width:0;height:0;position:absolute}
 .day-toggle-track{position:absolute;inset:0;border-radius:50px;background:var(--border);cursor:pointer;transition:background .2s}
@@ -451,7 +452,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .horarios-table{width:100%;border-collapse:collapse;min-width:600px}
 .horarios-table th{padding:.6rem .4rem;font-size:.78rem;font-weight:700;color:var(--muted);text-align:center;border-bottom:1.5px solid var(--border);background:var(--white);position:sticky;top:0;z-index:2}
 .horarios-table .col-hora{width:64px;font-size:.74rem;font-weight:600;color:var(--muted2);text-align:right;padding:.4rem .8rem .4rem 0;vertical-align:middle;white-space:nowrap}
-.hora-slot{margin:2px 6px;height:36px;border-radius:8px;cursor:pointer;transition:all .12s ease;border:1.5px solid transparent;user-select:none}
+.hora-slot{margin:2px 6px;height:36px;border-radius:8px;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .08s ease;border:1.5px solid transparent;user-select:none}
 .hora-slot.off{background:var(--cream);border-color:var(--border)}
 .hora-slot.off:hover{background:#e0f5f2;border-color:rgba(11,124,110,.2)}
 .hora-slot.on{background:#4ade80;border-color:#22c55e}
@@ -459,6 +460,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .hora-slot.selecting{background:#93c5fd;border-color:#60a5fa}
 .hora-slot.busy{background:#fca5a5;border-color:#f87171;cursor:not-allowed;position:relative}
 .hora-slot.busy::after{content:'✕';display:flex;align-items:center;justify-content:center;height:100%;font-size:.7rem;color:#dc2626;font-weight:700}
+
+/* ── BLOQUEOS / VACACIONES ── */
+.bloqueos-section{margin-top:1.4rem;border-top:1.5px solid var(--border);padding-top:1.2rem}
+.bloqueos-title{font-size:.8rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.9rem}
+.bloqueo-form{display:flex;align-items:flex-end;gap:.7rem;flex-wrap:wrap;background:var(--cream);border-radius:12px;padding:.9rem 1rem;margin-bottom:1rem}
+.bloqueo-form-field{display:flex;flex-direction:column;gap:.3rem}
+.bloqueo-form-field label{font-size:.7rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em}
+.bloqueo-form-field input{padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:var(--ink);background:var(--white);outline:none;transition:border-color .2s}
+.bloqueo-form-field input:focus{border-color:var(--teal-mid)}
+.btn-bloquear{padding:.6rem 1.1rem;background:#dc2626;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-bloquear:hover{opacity:.9}
+.bloqueo-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:var(--white);border:1.5px solid #fca5a5;border-radius:10px;margin-bottom:.5rem}
+.bloqueo-item-info{font-size:.83rem;color:var(--ink2)}
+.bloqueo-item-dates{font-weight:600;color:#dc2626;font-size:.82rem}
+.bloqueo-item-motivo{font-size:.76rem;color:var(--muted2);margin-top:.1rem}
+.btn-eliminar-bloqueo{background:none;border:1.5px solid #fca5a5;color:#dc2626;font-size:.75rem;font-weight:600;padding:.28rem .6rem;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-eliminar-bloqueo:hover{background:#fef2f2}
 </style>
 </head>
 <body>
@@ -619,6 +637,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
             <span>👆</span> Haz clic y arrastra para seleccionar múltiples horarios
           </div>
           <div style="font-size:.74rem;color:var(--teal);font-weight:600" id="horariosSaved" style="display:none">✓ Cambios guardados automáticamente</div>
+        </div>
+      </div>
+
+      <!-- Bloqueos / Vacaciones -->
+      <div class="bloqueos-section">
+        <div class="bloqueos-title">🌴 Vacaciones y ausencias</div>
+        <div class="bloqueo-form">
+          <div class="bloqueo-form-field">
+            <label>Desde</label>
+            <input type="date" id="bloqueoDesde">
+          </div>
+          <div class="bloqueo-form-field">
+            <label>Hasta</label>
+            <input type="date" id="bloqueoHasta">
+          </div>
+          <div class="bloqueo-form-field" style="flex:1;min-width:150px">
+            <label>Motivo (opcional)</label>
+            <input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso">
+          </div>
+          <button class="btn-bloquear" onclick="crearBloqueo()">🚫 Bloquear fechas</button>
+        </div>
+        <div id="bloqueosList">
+          <div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div>
         </div>
       </div>
 
@@ -908,7 +949,7 @@ function showPanel(id, el) {
   var titles = {inicio:'Panel medico',calendario:'Calendario',estadisticas:'Estadisticas',horarios:'Horarios',perfil:'Mi perfil',pacientes:'Pacientes'};
   setText('topbarTitle', titles[id]||id);
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
-  if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); }
+  if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); cargarBloqueos(); }
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='pacientes') {
     if (!esPro()) mostrarProModal('pacientes');
@@ -964,6 +1005,17 @@ function inicializarSlots(m) {
   const desde = m.horario_desde || '09:00';
   const hasta = m.horario_hasta || '17:00';
   const dMin  = toMin(desde), hMin = toMin(hasta);
+  // Si existe config completa, usarla
+  if (m.horarios_config) {
+    DIAS_GRID.forEach(function(d) {
+      var cfg = m.horarios_config[d.key];
+      if (cfg) {
+        dayConfig[d.key].activo = cfg.activo !== false;
+        dayConfig[d.key].desde  = cfg.desde || desde;
+        dayConfig[d.key].hasta  = cfg.hasta || hasta;
+      }
+    });
+  }
   ['lun','mar','mie','jue','vie','sab','dom'].forEach(function(dia){
     TIMES.forEach(function(t){
       slotsState[dia][t] = (!dias.includes(dia)||toMin(t)<dMin||toMin(t)>=hMin) ? 'off' : 'on';
@@ -1015,7 +1067,17 @@ function renderDayConfigBar() {
         + '<input type="time" id="desde_'+d.key+'" value="'+cfg.desde+'">'
         + '<span style="color:var(--muted2)">—</span>'
         + '<input type="time" id="hasta_'+d.key+'" value="'+cfg.hasta+'">'
-        + (cfg.activo ? '<span class="day-slots-preview">'+nSlots+' slots</span>' : '')
+        + (cfg.activo && nSlots > 0 ? (function(){
+          var primeros = [];
+          var dM2 = toMin(cfg.desde);
+          for (var i=0;i<Math.min(3,nSlots);i++) {
+            var h = Math.floor((dM2+i*30)/60);
+            var m = (dM2+i*30)%60;
+            primeros.push(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'));
+          }
+          var resto = nSlots > 3 ? ' +' + (nSlots-3) : '';
+          return '<span class="day-slots-preview">'+primeros.join(' · ')+resto+'</span>';
+        })() : '')
       + '</div>'
       + (cfg.activo && d.key !== 'lun'
         ? '<button class="day-copy-btn" data-dia="'+d.key+'">← Copiar lunes</button>'
@@ -1189,31 +1251,213 @@ function selectDay(d,el) { /* ya no necesario con grid */ }
 function activarTodos() {}
 function desactivarTodos() {}
 
+// ══════════════════════════════════════════════
+// MOTOR CENTRAL DE DISPONIBILIDAD
+// ══════════════════════════════════════════════
+
+// Función única — usada por dashboard Y perfil público
+async function obtenerAgendaDia(medicoId, fecha, horarioBase) {
+  // horarioBase = {dayConfig, slotsState, TIMES} del médico
+
+  // 1. Verificar vacaciones
+  var bloqueos = await _sb.from('bloqueos_medico')
+    .select('id, fecha_inicio, fecha_fin, motivo')
+    .eq('medico_id', medicoId)
+    .lte('fecha_inicio', fecha)
+    .gte('fecha_fin', fecha);
+
+  if (bloqueos.data && bloqueos.data.length > 0) {
+    var b = bloqueos.data[0];
+    return { bloqueado: true, motivo: b.motivo || 'Médico no disponible', slots: [] };
+  }
+
+  // 2. Verificar excepción puntual
+  var excRes = await _sb.from('excepciones_medico')
+    .select('*')
+    .eq('medico_id', medicoId)
+    .eq('fecha', fecha)
+    .maybeSingle();
+
+  if (excRes.data) {
+    var exc = excRes.data;
+    if (exc.tipo === 'bloqueado') {
+      return { bloqueado: true, motivo: exc.motivo || 'Horario especial', slots: [] };
+    }
+    if (exc.tipo === 'custom' && exc.desde && exc.hasta) {
+      var slots = [];
+      var min = toMinGlobal(exc.desde);
+      var max = toMinGlobal(exc.hasta);
+      while (min < max) {
+        slots.push(padHora(min));
+        min += 30;
+      }
+      return { bloqueado: false, custom: true, slots: slots };
+    }
+  }
+
+  // 3. Horario normal del médico
+  if (horarioBase) {
+    var dia = getDiaSemana(fecha);
+    var cfg = horarioBase[dia];
+    if (!cfg || !cfg.activo) return { bloqueado: true, motivo: 'Sin atención ese día', slots: [] };
+    var slots2 = [];
+    var min2 = toMinGlobal(cfg.desde);
+    var max2 = toMinGlobal(cfg.hasta);
+    while (min2 < max2) {
+      slots2.push(padHora(min2));
+      min2 += 30;
+    }
+    return { bloqueado: false, slots: slots2 };
+  }
+
+  return { bloqueado: false, slots: [] };
+}
+
+function toMinGlobal(t) {
+  if (!t) return 0;
+  var parts = t.split(':');
+  return parseInt(parts[0])*60 + parseInt(parts[1]||0);
+}
+function padHora(min) {
+  return String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
+}
+function getDiaSemana(fecha) {
+  var dias = ['dom','lun','mar','mie','jue','vie','sab'];
+  return dias[new Date(fecha+'T12:00:00').getDay()];
+}
+
+// ── BLOQUEOS — CRUD ──
+function crearBloqueo() {
+  if (!M) return;
+  var desde  = document.getElementById('bloqueoDesde').value;
+  var hasta  = document.getElementById('bloqueoHasta').value;
+  var motivo = document.getElementById('bloqueoMotivo').value.trim();
+  if (!desde || !hasta) { mostrarToast('Selecciona fecha de inicio y fin'); return; }
+  if (desde > hasta) { mostrarToast('La fecha de inicio debe ser menor al fin'); return; }
+
+  // Verificar citas existentes en ese rango
+  _sb.from('citas')
+    .select('id, fecha, paciente_nombre')
+    .eq('medico_id', M.id)
+    .gte('fecha', desde)
+    .lte('fecha', hasta)
+    .eq('estado', 'confirmada')
+    .then(function(r) {
+      var citas = r.data || [];
+      if (citas.length > 0) {
+        var confirmar = confirm('Tienes '+citas.length+' cita(s) en ese rango. ¿Bloquear de todas formas? Las citas NO se cancelan automáticamente.');
+        if (!confirmar) return;
+      }
+      _sb.from('bloqueos_medico').insert({
+        medico_id:    M.id,
+        fecha_inicio: desde,
+        fecha_fin:    hasta,
+        motivo:       motivo || null
+      }).then(function(res) {
+        if (res.error) { mostrarToast('Error: '+res.error.message); return; }
+        document.getElementById('bloqueoDesde').value  = '';
+        document.getElementById('bloqueoHasta').value  = '';
+        document.getElementById('bloqueoMotivo').value = '';
+        cargarBloqueos();
+        mostrarToast('Fechas bloqueadas correctamente');
+      });
+    });
+}
+
+function cargarBloqueos() {
+  if (!M) return;
+  var list = document.getElementById('bloqueosList');
+  if (!list) return;
+  _sb.from('bloqueos_medico')
+    .select('*')
+    .eq('medico_id', M.id)
+    .gte('fecha_fin', new Date().toISOString().split('T')[0])
+    .order('fecha_inicio', {ascending: true})
+    .then(function(r) {
+      var bloqueos = r.data || [];
+      if (!bloqueos.length) {
+        list.innerHTML = '<div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div>';
+        return;
+      }
+      list.innerHTML = '';
+      bloqueos.forEach(function(b) {
+        var desde = new Date(b.fecha_inicio+'T12:00:00').toLocaleDateString('es-EC',{day:'numeric',month:'short',year:'numeric'});
+        var hasta = new Date(b.fecha_fin+'T12:00:00').toLocaleDateString('es-EC',{day:'numeric',month:'short',year:'numeric'});
+        var div = document.createElement('div');
+        div.className = 'bloqueo-item';
+        div.innerHTML = '<div class="bloqueo-item-info">'
+          + '<div class="bloqueo-item-dates">'+desde+' → '+hasta+'</div>'
+          + (b.motivo ? '<div class="bloqueo-item-motivo">'+b.motivo+'</div>' : '')
+        + '</div>';
+        var btnEl = document.createElement('button');
+        btnEl.className = 'btn-eliminar-bloqueo';
+        btnEl.textContent = 'Eliminar';
+        (function(id) {
+          btnEl.addEventListener('click', function() {
+            if (!confirm('¿Eliminar este bloqueo?')) return;
+            _sb.from('bloqueos_medico').delete().eq('id', id).then(function() {
+              cargarBloqueos();
+              mostrarToast('Bloqueo eliminado');
+            });
+          });
+        })(b.id);
+        div.appendChild(btnEl);
+        list.appendChild(div);
+      });
+    });
+}
+
 async function guardarHorarios(btn) {
   if (!M) return;
-  var orig = btn.textContent;
-  btn.textContent = 'Guardando...'; btn.disabled = true;
+  var orig = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
+
+  // Validar rangos
+  for (var di = 0; di < DIAS_GRID.length; di++) {
+    var d = DIAS_GRID[di];
+    var cfg = dayConfig[d.key];
+    if (cfg.activo && toMin(cfg.desde) >= toMin(cfg.hasta)) {
+      mostrarToast('Error: en '+d.label+' el inicio debe ser menor al fin');
+      if (btn) { btn.textContent = orig; btn.disabled = false; }
+      return;
+    }
+  }
+
   var activos = DIAS_GRID.map(function(d){ return d.key; })
     .filter(function(d){ return dayConfig[d].activo; });
-  // Usar el rango del primer día activo para compatibilidad con el sistema existente
+
+  // Guardar config completa por día (solución correcta)
+  var horariosConfig = {};
+  DIAS_GRID.forEach(function(d) {
+    horariosConfig[d.key] = {
+      activo: dayConfig[d.key].activo,
+      desde:  dayConfig[d.key].desde,
+      hasta:  dayConfig[d.key].hasta,
+      slots:  dayConfig[d.key].activo
+        ? TIMES.filter(function(t){ return slotsState[d.key][t]==='on'; })
+        : []
+    };
+  });
+
+  // horario_desde/hasta = primer día activo (fallback para sistema existente)
   var primerDia = activos[0] || 'lun';
   var desde = dayConfig[primerDia].desde || '09:00';
   var hasta  = dayConfig[primerDia].hasta  || '17:00';
 
   await _sb.from('medicos').update({
-    dias_atencion: activos,
-    horario_desde: desde,
-    horario_hasta: hasta
+    dias_atencion:   activos,
+    horario_desde:   desde,
+    horario_hasta:   hasta,
+    horarios_config: horariosConfig
   }).eq('id', M.id);
 
-  btn.textContent = '✓ Guardado'; btn.style.background = '#059669';
-  var fechaEl = document.getElementById('horariosFaved');
-  var savedEl = document.getElementById('horariosSaved');
+  if (btn) { btn.textContent = '✓ Guardado'; btn.style.background = '#059669'; }
   var fechaLabel = document.getElementById('horariosFecha');
   if (fechaLabel) fechaLabel.textContent = 'Última actualización: hoy, '+new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
+  var savedEl = document.getElementById('horariosSaved');
   if (savedEl) savedEl.style.display = 'block';
   setTimeout(function(){
-    btn.textContent = orig; btn.style.background = ''; btn.disabled = false;
+    if (btn) { btn.textContent = orig; btn.style.background = ''; btn.disabled = false; }
   }, 2000);
 }
 
