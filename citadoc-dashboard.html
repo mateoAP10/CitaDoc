@@ -2027,10 +2027,8 @@ function testPayPhone() {
   }
 }
 
-// ── PAYPHONE — COBRO PRO ──
-// REEMPLAZA SOLO ESTOS 2 VALORES:
-var PAYPHONE_TOKEN   = 'y8k9Qd7X-db5RQjf4kM67EdxPkr0syJ-h09wn7_aGlUdMowUm-6n4Hik1yK0Boz-hvB9DvZQ6kiOqAdOF8jwOJLAuRYw3uGlZNIbfogfDPE_AnQRVGayq_GWlXsKLGKqYbUneHuGv45PBgjlEfFJTQ5ox-KzPAUJhtSEIfAwIIk_-H2tLcCK00j9_QnPpmokS_mkzDggddOHXqu2UQTbwB66s3mrEzRDdtHe2oOvXGbwcWYLRnsWWTlYSiGIupVrpFLyJsDKsVnJkemQ2VRh5M8vKA0apNKVpEfIldi6h5dMjK-f15ExykmM2Yxg9Ade4Udk5A';    // ← tu token real
-var PAYPHONE_STOREID = 'W3PLR49tfkOg7qm6K2Whw'; // ← tu storeId real
+// ── PAYPHONE — usa las variables del script aislado al final ──
+// Las credenciales están en el bloque <script> antes de </body>
 
 function initPayPhone() {
   if (!M) return;
@@ -3437,8 +3435,8 @@ function cerrarHC() {
 
   <!-- Script PayPhone AISLADO -->
   <script>
-  var PP_TOKEN   = 'PAYPHONE_TOKEN';
-  var PP_STOREID = 'PAYPHONE_STORE_ID';
+  var PAYPHONE_TOKEN   = 'PAYPHONE_TOKEN'; // ← REEMPLAZA ESTE VALOR
+  var PAYPHONE_STOREID = 'PAYPHONE_STORE_ID'; // ← REEMPLAZA ESTE VALOR
 
   function ppTest() {
     console.log('ppTest ejecutado');
@@ -3454,8 +3452,8 @@ function cerrarHC() {
     }
     try {
       new PPaymentButtonBox({
-        token:               PP_TOKEN,
-        storeId:             PP_STOREID,
+        token:               PAYPHONE_TOKEN,
+        storeId:             PAYPHONE_STOREID,
         clientTransactionId: 'test-' + Date.now(),
         amount:              100,
         amountWithoutTax:    100,
