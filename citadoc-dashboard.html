@@ -2146,6 +2146,7 @@ function checkStripeSuccess() {
 }
 
 function mostrarProModal(feature) {
+  currentFeature = feature || 'pacientes';
   var modal = document.getElementById('proModal');
   if (!modal) return;
   var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
