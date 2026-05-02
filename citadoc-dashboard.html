@@ -551,7 +551,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div class="topbar-right">
       <span class="topbar-date" id="topbarDate"></span>
       <!-- Botón PRO en topbar — visible solo para free -->
-      <button id="btnTopbarPro" onclick="mostrarProModal('pacientes')" style="display:flex;align-items:center;gap:.4rem;padding:.45rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;margin-right:.5rem">⭐ Activar PRO</button>
+      <button id="btnTopbarPro" onclick="mostrarProModal('pacientes')" style="display:none;align-items:center;gap:.4rem;padding:.45rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;margin-right:.5rem">⭐ Activar PRO</button>
       <div class="topbar-user">
         <div class="topbar-avatar" id="topbarAvatar">—</div>
         <div>
@@ -3480,7 +3480,7 @@ function cerrarHC() {
 <!-- ═══════════════════════════════════════ -->
 <!-- MODAL PRO GLOBAL — fixed, sobre todo   -->
 <!-- ═══════════════════════════════════════ -->
-<div id="proModal" onclick="if(event.target===this)cerrarProModal()" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
+<div id="proModal" onmousedown="_proModalMouseTarget=event.target" onmouseup="if(_proModalMouseTarget===this&&event.target===this)cerrarProModal()" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
   <div id="proModalCard" onclick="event.stopPropagation()" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
     <div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">🔒 Vista previa Pro</div>
     <div id="proModalIcon" style="font-size:2.2rem;margin-bottom:.6rem">🧠</div>
