@@ -940,15 +940,15 @@ for (let h=7; h<20; h++) { TIMES.push(h2(h)+':00'); TIMES.push(h2(h)+':30'); }
 function h2(n){ return String(n).padStart(2,'0'); }
 
 // ══ HELPERS ══
-function $(id) { return document.getElementById(id); }
-var setText = (id,v) => { const e=$(id); if(e) e.textContent=v; };
-const setVal  = (id,v) => { const e=$(id); if(e&&v!=null&&v!=='') e.value=v; };
+function _el(id) { return document.getElementById(id); }
+var setText = (id,v) => { const e=_el(id); if(e) e.textContent=v; };
+const setVal  = (id,v) => { const e=_el(id); if(e&&v!=null&&v!=='') e.value=v; };
 
 // ══ NAV ══
 function showPanel(id, el) {
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  var panel = $('panel-'+id);
+  var panel = _el('panel-'+id);
   if (!panel) return;
   panel.classList.add('active');
   if (el) el.classList.add('active');
@@ -974,7 +974,7 @@ function renderCal() {
   renderBigCal();
 }
 function renderMiniCal() {
-  var el = $('miniCal'); if (!el) return;
+  var el = _el('miniCal'); if (!el) return;
   const first = new Date(calYear,calMonth,1).getDay();
   const days  = new Date(calYear,calMonth+1,0).getDate();
   const today = new Date();
@@ -988,7 +988,7 @@ function renderMiniCal() {
   el.innerHTML=h;
 }
 function renderBigCal() {
-  const dow=$('bigCalDow'), days=$('bigCalDays'); if(!dow||!days) return;
+  const dow=_el('bigCalDow'), days=_el('bigCalDays'); if(!dow||!days) return;
   dow.innerHTML = DIAS.map(d=>`<div class="big-dow-cell">${d}</div>`).join('');
   const first = new Date(calYear,calMonth,1).getDay();
   const total = new Date(calYear,calMonth+1,0).getDate();
@@ -1491,26 +1491,26 @@ function guardarDireccionDB(direccion, url, lat, lon) {
 function showTab(tab,el){
   document.querySelectorAll('.pf-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.perfil-tab').forEach(t=>t.classList.remove('active'));
-  const s=$('ptab-'+tab); if(s)s.classList.add('active');
+  const s=_el('ptab-'+tab); if(s)s.classList.add('active');
   if(el)el.classList.add('active');
 }
 
 // ══ SEGUROS ══
 function renderSeguros(){
-  const g=$('segurosGrid'); if(!g) return;
+  const g=_el('segurosGrid'); if(!g) return;
   g.innerHTML=SEGUROS_LIST.map(s=>`<div class="seg-chip ${activeSeguros.has(s)?'on':''}" onclick="toggleSeg(this,'${s}')"><div class="seg-dot"></div>${s}</div>`).join('');
 }
 function toggleSeg(el,s){ activeSeguros.has(s)?(activeSeguros.delete(s),el.classList.remove('on')):(activeSeguros.add(s),el.classList.add('on')); el.querySelector('.seg-dot').style.background=activeSeguros.has(s)?'var(--teal)':'var(--border)'; }
 
 // ══ CONTACTO ══
 function toggleWaInput(chk){
-  const wrap=$('waInputWrap');
+  const wrap=_el('waInputWrap');
   if(wrap) wrap.style.display=(chk&&chk.checked)?'block':'none';
   updatePreview();
   if(!chk||!chk.checked) guardarContacto(); // guardar al desactivar
 }
 function updatePreview(){
-  const ag=$('togAg')?.checked, wa=$('togWA')?.checked, p=$('previewBtns'); if(!p) return;
+  const ag=_el('togAg')?.checked, wa=_el('togWA')?.checked, p=_el('previewBtns'); if(!p) return;
   let h='';
   if(ag) h+='<div style="background:var(--teal);color:#fff;padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:600">📅 Agendar cita</div>';
   if(wa) h+='<div style="background:#25d366;color:#fff;padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:600">💬 WhatsApp</div>';
@@ -1520,37 +1520,37 @@ function updatePreview(){
 
 // ══ FORMACIÓN ══
 function renderFormList(){
-  const el=$('formList'); if(!el) return;
+  const el=_el('formList'); if(!el) return;
   el.innerHTML=formData.length===0?'<div class="empty-citas">Sin formación agregada</div>':formData.map((f,i)=>`<div class="list-item"><div class="list-icon">🎓</div><div class="list-body"><div class="list-title">${f.t}</div><div class="list-sub">${f.l}${f.a?' · '+f.a:''}</div></div><button class="btn-remove" onclick="rmForm(${i})">×</button></div>`).join('');
 }
-function addForm(){ const t=$('fTit').value.trim(),l=$('fLug').value.trim(),a=$('fAno').value.trim(); if(!t)return; formData.push({t,l,a}); $('fTit').value=$('fLug').value=$('fAno').value=''; renderFormList(); }
+function addForm(){ const t=_el('fTit').value.trim(),l=_el('fLug').value.trim(),a=_el('fAno').value.trim(); if(!t)return; formData.push({t,l,a}); _el('fTit').value=_el('fLug').value=_el('fAno').value=''; renderFormList(); }
 function rmForm(i){ formData.splice(i,1); renderFormList(); }
 function renderLogrosList(){
-  const el=$('logrosList'); if(!el) return;
+  const el=_el('logrosList'); if(!el) return;
   el.innerHTML=logrosData.length===0?'<div class="empty-citas">Sin logros agregados</div>':logrosData.map((l,i)=>`<div class="list-item"><div class="list-icon">⭐</div><div class="list-body"><div class="list-title">${l.t}</div><div class="list-sub">${l.d}</div></div><button class="btn-remove" onclick="rmLogro(${i})">×</button></div>`).join('');
 }
-function addLogro(){ const t=$('lTit').value.trim(),d=$('lDes').value.trim(); if(!t)return; logrosData.push({t,d}); $('lTit').value=$('lDes').value=''; renderLogrosList(); }
+function addLogro(){ const t=_el('lTit').value.trim(),d=_el('lDes').value.trim(); if(!t)return; logrosData.push({t,d}); _el('lTit').value=_el('lDes').value=''; renderLogrosList(); }
 function rmLogro(i){ logrosData.splice(i,1); renderLogrosList(); }
 
 // ══ SAVE PERFIL ══
 async function guardarPerfil(btn){
   if(!M) return;
   const o=btn.textContent; btn.textContent='Guardando...'; btn.disabled=true;
-  const g=id=>$(''+id)?.value?.trim()||'';
+  const g=id=>_el(''+id)?.value?.trim()||'';
   const upd={
     nombre:    g('inf-nombre')||M.nombre,
     apellido:  g('inf-apellido')||M.apellido,
     titulo:    g('inf-titulo')||M.titulo,
-    bio:       $('bioTextarea')?.value?.trim()||'',
+    bio:       _el('bioTextarea')?.value?.trim()||'',
     precio:    parseInt(g('inf-precio'))||M.precio||0,
     anos_experiencia: parseInt(g('inf-anos'))||0,
     direccion: g('inf-direccion'),
     senescyt:  g('inf-senescyt'),
     telefono:  g('inf-telefono'),
     seguros:   Array.from(activeSeguros),
-    whatsapp:  $('waNumber')?.value?.trim()||'',
-    whatsapp_activo: $('togWA')?.checked||false,
-    agendamiento_citadoc: $('togAg')?.checked??true,
+    whatsapp:  _el('waNumber')?.value?.trim()||'',
+    whatsapp_activo: _el('togWA')?.checked||false,
+    agendamiento_citadoc: _el('togAg')?.checked??true,
   };
   const {error} = await _sb.from('medicos').update(upd).eq('id',M.id);
   if(!error){
@@ -1576,7 +1576,7 @@ async function subirFoto(input){
   await _sb.from('medicos').update({foto_url:u.publicUrl}).eq('id',M.id);
   M.foto_url=u.publicUrl;
   const img=`<img src="${u.publicUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`;
-  const ab=$('perfilAvatar'), as=$('sidebarAvatar');
+  const ab=_el('perfilAvatar'), as=_el('sidebarAvatar');
   if(ab)ab.innerHTML=img; if(as)as.innerHTML=img;
 }
 
@@ -1606,10 +1606,10 @@ function compartirIG(){
 
 async function guardarContacto(){
   if(!M) return;
-  const ag  = $('togAg')?.checked ?? true;
-  const wa  = $('togWA')?.checked ?? false;
-  const num = $('waNumber')?.value?.trim() || '';
-  const status = $('contactSaveStatus');
+  const ag  = _el('togAg')?.checked ?? true;
+  const wa  = _el('togWA')?.checked ?? false;
+  const num = _el('waNumber')?.value?.trim() || '';
+  const status = _el('contactSaveStatus');
 
   if(wa && !num){ 
     if(status) status.textContent = '⚠️ Ingresa tu número de WhatsApp';
@@ -1718,7 +1718,7 @@ async function cancelarCita(id){
 async function cargarProximas(medicoId){
   const hoy=new Date(), en7=new Date(hoy); en7.setDate(hoy.getDate()+7);
   const {data}=await _sb.from('citas').select('fecha,hora,paciente_nombre').eq('medico_id',medicoId).gt('fecha',hoy.toISOString().split('T')[0]).lte('fecha',en7.toISOString().split('T')[0]).neq('estado','cancelada').order('fecha').order('hora').limit(5);
-  const list=$('proximasList'); if(!list) return;
+  const list=_el('proximasList'); if(!list) return;
   if(!data||data.length===0){list.innerHTML='<div class="empty-citas" style="font-size:.82rem">Sin citas próximas</div>';return;}
   list.innerHTML=data.map(c=>{const f=new Date(c.fecha+'T00:00:00');return `<div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">${DIAS[f.getDay()]} ${f.getDate()}</div><div class="proxima-name">${c.hora} · ${c.paciente_nombre.split(' ')[0]}</div></div>`;}).join('');
 }
@@ -1731,10 +1731,10 @@ async function cargarStats(medicoId){
     _sb.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId),
     _sb.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId).eq('estado','cancelada').gte('fecha',mes.toISOString().split('T')[0]),
   ]);
-  const s=(id,v)=>{const e=$(id);if(e)e.textContent=v??0;};
+  const s=(id,v)=>{const e=_el(id);if(e)e.textContent=v??0;};
   s('statSemana',r1.count);s('statMes',r2.count);s('statTotal',r3.count);
   s('estSemana',r1.count);s('estMes',r2.count);s('estTotal',r3.count);s('estCanceladas',r4.count);
-  const sub=$('estMesSub'); if(sub)sub.textContent=(r2.count||0)===0?'sin citas aún':'citas este mes';
+  const sub=_el('estMesSub'); if(sub)sub.textContent=(r2.count||0)===0?'sin citas aún':'citas este mes';
 }
 async function cargarCitasCal(medicoId){
   const ini=new Date(calYear,calMonth,1).toISOString().split('T')[0];
@@ -1766,7 +1766,7 @@ function aplicarMedico(m) {
   setText('sidebarEspecialidad', esp);
   setText('sidebarPlan',         plan);
   setText('sidebarUrl',          url);
-  const av=$('sidebarAvatar');
+  const av=_el('sidebarAvatar');
   if(av){av.textContent=ini;av.style.cssText='font-size:.75rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center';}
 
   // Topbar
@@ -1774,18 +1774,18 @@ function aplicarMedico(m) {
   setText('topbarAvatar', ini);
   setText('topbarName',   nombre);
   setText('topbarPlan',   plan);
-  const btnP=$('btnVerPerfil'); if(btnP&&slugActual) btnP.href='citadoc-perfil.html?slug='+slugActual;
+  const btnP=_el('btnVerPerfil'); if(btnP&&slugActual) btnP.href='citadoc-perfil.html?slug='+slugActual;
 
   // Perfil photo card
   setText('perfilNombre', nombre);
   setText('perfilEsp',    esp+(m.ciudad?' · '+m.ciudad:''));
   setText('urlDash',      url);
-  const vl=$('urlVerLink'); if(vl&&slugActual) vl.href='citadoc-perfil.html?slug='+slugActual;
+  const vl=_el('urlVerLink'); if(vl&&slugActual) vl.href='citadoc-perfil.html?slug='+slugActual;
 
   // Foto
   if(m.foto_url){
     const img=`<img src="${m.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`;
-    const ab=$('perfilAvatar'),as=$('sidebarAvatar');
+    const ab=_el('perfilAvatar'),as=_el('sidebarAvatar');
     if(ab)ab.innerHTML=img; if(as)as.innerHTML=img;
   }
 
@@ -1799,7 +1799,7 @@ function aplicarMedico(m) {
   setVal('inf-direccion',    m.direccion||'');
   setVal('inf-senescyt',     m.senescyt||'');
   setVal('inf-telefono',     m.telefono||m.whatsapp||'');
-  const bio=$('bioTextarea'); if(bio)bio.value=m.bio||'';
+  const bio=_el('bioTextarea'); if(bio)bio.value=m.bio||'';
 
   // Seguros
   activeSeguros.clear();
@@ -1807,11 +1807,11 @@ function aplicarMedico(m) {
   renderSeguros();
 
   // Toggles
-  const tWA=$('togWA'),tAg=$('togAg'),waN=$('waNumber');
+  const tWA=_el('togWA'),tAg=_el('togAg'),waN=_el('waNumber');
   if(tWA)tWA.checked=!!(m.whatsapp_activo);
   if(tAg)tAg.checked=m.agendamiento_citadoc!==false;
   if(waN) waN.value=m.whatsapp||'';
-  const wrap=$('waInputWrap');
+  const wrap=_el('waInputWrap');
   if(wrap) wrap.style.display=m.whatsapp_activo?'block':'none';
   updatePreview();
 
@@ -1833,7 +1833,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const now=new Date();
   const DS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const MS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const dateEl=$('topbarDate');
+  const dateEl=_el('topbarDate');
   if(dateEl) dateEl.textContent=DS[now.getDay()]+', '+now.getDate()+' de '+MS[now.getMonth()]+' '+now.getFullYear();
 
   // Init UI
@@ -1994,6 +1994,8 @@ var PRO_MODAL_CONTENT = {
 // ── STRIPE — UPGRADE A PRO ──
 // ── TEST PAYPHONE (eliminar después) ──
 function testPayPhone() {
+  // Limpiar cualquier $ que conflictúe con PayPhone
+  if (typeof window.jQuery !== 'undefined') window.jQuery.noConflict(true);
   var wrap = document.getElementById('pp-test-wrap');
   var btn  = document.getElementById('btnTestPP');
   if (!wrap) return;
