@@ -599,77 +599,45 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       <div class="section-header">
         <div>
           <h2>Mis horarios</h2>
-          <p>Selecciona los horarios en los que estarás disponible para atender citas.</p>
+          <p>Define los bloques de atención por día. Agrega mañana y tarde por separado.</p>
         </div>
       </div>
 
-      <!-- Controles -->
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.2rem;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:.9rem 1.2rem">
-        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
-          <div style="font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2)">DURACIÓN DE CITA</div>
-          <div class="dur-btns" style="display:flex;gap:.4rem">
-            <button class="dur-btn active" onclick="setDur(30,this)">30 minutos</button>
-            <button class="dur-btn" onclick="setDur(60,this)">1 hora</button>
-          </div>
+      <!-- Duración de cita -->
+      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1.1rem;padding:.75rem 1rem;background:var(--white);border:1.5px solid var(--border);border-radius:12px">
+        <span style="font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2)">Duración de cita</span>
+        <div class="dur-btns">
+          <button class="dur-btn active" onclick="setDur(30,this)">30 min</button>
+          <button class="dur-btn" onclick="setDur(60,this)">1 hora</button>
         </div>
-        <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted)">
-            <div style="width:14px;height:14px;border-radius:4px;background:#4ade80"></div>Disponible
-            <div style="width:14px;height:14px;border-radius:4px;background:var(--cream);border:1.5px solid var(--border);margin-left:.5rem"></div>No disponible
-            <div style="width:14px;height:14px;border-radius:4px;background:#93c5fd;margin-left:.5rem"></div>Seleccionando
-          </div>
-          <button onclick="aplicarTodaSemana()" style="display:flex;align-items:center;gap:.4rem;padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--ink2)">📅 Copiar lunes a toda la semana</button>
-        </div>
+        <button onclick="copiarLunesATodos()" style="margin-left:auto;padding:.45rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:600;cursor:pointer;color:var(--ink2)">📅 Copiar lunes a toda la semana</button>
       </div>
 
-      <!-- Configuración por día -->
-      <div class="day-config-bar" id="dayConfigBar">
-        <!-- generado por JS -->
-      </div>
-
-      <!-- Grid semanal -->
-      <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden">
-        <div id="horariosGrid" style="overflow-x:auto">
-          <!-- generado por JS -->
-        </div>
-        <div style="padding:.75rem 1.4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem">
-          <div style="font-size:.78rem;color:var(--muted2);display:flex;align-items:center;gap:.4rem">
-            <span>👆</span> Haz clic y arrastra para seleccionar múltiples horarios
-          </div>
-          <div style="font-size:.74rem;color:var(--teal);font-weight:600" id="horariosSaved" style="display:none">✓ Cambios guardados automáticamente</div>
-        </div>
-      </div>
+      <!-- Días -->
+      <div id="diasBloques"></div>
 
       <!-- Bloqueos / Vacaciones -->
       <div class="bloqueos-section">
         <div class="bloqueos-title">🌴 Vacaciones y ausencias</div>
         <div class="bloqueo-form">
-          <div class="bloqueo-form-field">
-            <label>Desde</label>
-            <input type="date" id="bloqueoDesde">
-          </div>
-          <div class="bloqueo-form-field">
-            <label>Hasta</label>
-            <input type="date" id="bloqueoHasta">
-          </div>
-          <div class="bloqueo-form-field" style="flex:1;min-width:150px">
-            <label>Motivo (opcional)</label>
-            <input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso">
-          </div>
+          <div class="bloqueo-form-field"><label>Desde</label><input type="date" id="bloqueoDesde"></div>
+          <div class="bloqueo-form-field"><label>Hasta</label><input type="date" id="bloqueoHasta"></div>
+          <div class="bloqueo-form-field" style="flex:1;min-width:140px"><label>Motivo (opcional)</label><input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso"></div>
           <button class="btn-bloquear" onclick="crearBloqueo()">🚫 Bloquear fechas</button>
         </div>
-        <div id="bloqueosList">
-          <div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div>
-        </div>
+        <div id="bloqueosList"><div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div></div>
       </div>
 
       <!-- Footer -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.2rem;flex-wrap:wrap;gap:.8rem">
         <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted2)">
-          <span style="font-size:1.1rem">📅</span>
-          <div><div style="font-weight:600;color:var(--ink2)">Cambios guardados automáticamente</div><div id="horariosFecha" style="font-size:.74rem">Última actualización: --</div></div>
+          <span>📅</span>
+          <div>
+            <div style="font-weight:600;color:var(--ink2)">Cambios guardados automáticamente</div>
+            <div id="horariosFecha" style="font-size:.74rem">Última actualización: --</div>
+          </div>
         </div>
-        <button onclick="guardarHorarios(this)" style="padding:.75rem 1.6rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .2s" id="btnGuardarHorarios">Guardar horarios</button>
+        <button id="btnGuardarHorarios" onclick="guardarHorarios(this)" style="padding:.75rem 1.6rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Guardar horarios</button>
       </div>
     </div>
 
@@ -1000,443 +968,250 @@ function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal
 function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
 
 // ══ HORARIOS ══
+// ══ HORARIOS CON BLOQUES ══
+
+var DIAS_SEMANA = [
+  {key:'lun', label:'Lunes'},
+  {key:'mar', label:'Martes'},
+  {key:'mie', label:'Miércoles'},
+  {key:'jue', label:'Jueves'},
+  {key:'vie', label:'Viernes'},
+  {key:'sab', label:'Sábado'},
+  {key:'dom', label:'Domingo'}
+];
+
+// Modelo de horarios: { lun: {activo, bloques:[{desde,hasta}]}, ... }
+var horariosBloques = {};
+DIAS_SEMANA.forEach(function(d) {
+  horariosBloques[d.key] = {
+    activo: ['lun','mar','mie','jue','vie'].indexOf(d.key) > -1,
+    bloques: [
+      {desde:'09:00', hasta:'13:00'},
+      {desde:'15:00', hasta:'18:00'}
+    ]
+  };
+});
+
 function inicializarSlots(m) {
-  const dias  = m.dias_atencion || ['lun','mar','mie','jue','vie'];
-  const desde = m.horario_desde || '09:00';
-  const hasta = m.horario_hasta || '17:00';
-  const dMin  = toMin(desde), hMin = toMin(hasta);
-  // Si existe config completa, usarla
+  // Cargar desde horarios_config si existe
   if (m.horarios_config) {
-    DIAS_GRID.forEach(function(d) {
+    DIAS_SEMANA.forEach(function(d) {
       var cfg = m.horarios_config[d.key];
       if (cfg) {
-        dayConfig[d.key].activo = cfg.activo !== false;
-        dayConfig[d.key].desde  = cfg.desde || desde;
-        dayConfig[d.key].hasta  = cfg.hasta || hasta;
+        horariosBloques[d.key] = {
+          activo: cfg.activo !== false,
+          bloques: cfg.bloques || [{desde: cfg.desde||'09:00', hasta: cfg.hasta||'17:00'}]
+        };
       }
     });
-  }
-  ['lun','mar','mie','jue','vie','sab','dom'].forEach(function(dia){
-    TIMES.forEach(function(t){
-      slotsState[dia][t] = (!dias.includes(dia)||toMin(t)<dMin||toMin(t)>=hMin) ? 'off' : 'on';
-    });
-    // Sincronizar dayConfig con los datos del médico
-    dayConfig[dia].activo = dias.includes(dia);
-    dayConfig[dia].desde  = desde;
-    dayConfig[dia].hasta  = hasta;
-  });
-  renderDayConfigBar();
-  renderGridHorarios();
-}
-function toMin(t){ const [h,m]=t.split(':'); return parseInt(h)*60+parseInt(m); }
-// ── CONFIGURACIÓN POR DÍA ──
-var dayConfig = {
-  lun: {activo:true,  desde:'09:00', hasta:'17:00'},
-  mar: {activo:true,  desde:'09:00', hasta:'17:00'},
-  mie: {activo:true,  desde:'09:00', hasta:'17:00'},
-  jue: {activo:true,  desde:'09:00', hasta:'17:00'},
-  vie: {activo:true,  desde:'09:00', hasta:'17:00'},
-  sab: {activo:false, desde:'09:00', hasta:'13:00'},
-  dom: {activo:false, desde:'09:00', hasta:'13:00'}
-};
-
-function renderDayConfigBar() {
-  var bar = document.getElementById('dayConfigBar');
-  if (!bar) return;
-  bar.innerHTML = '';
-
-  DIAS_GRID.forEach(function(d) {
-    var cfg = dayConfig[d.key];
-    var row = document.createElement('div');
-    row.className = 'day-config-row' + (cfg.activo ? '' : ' inactive');
-    row.id = 'dcrow_' + d.key;
-
-    // Calcular slots preview
-    var nSlots = 0;
-    if (cfg.activo) {
-      var dMin = toMin(cfg.desde), hMin = toMin(cfg.hasta);
-      nSlots = Math.max(0, Math.floor((hMin - dMin) / 30));
-    }
-
-    row.innerHTML = '<div class="day-config-name">'+d.label+'</div>'
-      + '<label class="day-toggle">'
-        + '<input type="checkbox"'+(cfg.activo?' checked':'')+' id="toggle_'+d.key+'">'
-        + '<div class="day-toggle-track"></div>'
-      + '</label>'
-      + '<div class="day-time-inputs">'
-        + '<input type="time" id="desde_'+d.key+'" value="'+cfg.desde+'">'
-        + '<span style="color:var(--muted2)">—</span>'
-        + '<input type="time" id="hasta_'+d.key+'" value="'+cfg.hasta+'">'
-        + (cfg.activo && nSlots > 0 ? (function(){
-          var primeros = [];
-          var dM2 = toMin(cfg.desde);
-          for (var i=0;i<Math.min(3,nSlots);i++) {
-            var h = Math.floor((dM2+i*30)/60);
-            var m = (dM2+i*30)%60;
-            primeros.push(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'));
-          }
-          var resto = nSlots > 3 ? ' +' + (nSlots-3) : '';
-          return '<span class="day-slots-preview">'+primeros.join(' · ')+resto+'</span>';
-        })() : '')
-      + '</div>'
-      + (cfg.activo && d.key !== 'lun'
-        ? '<button class="day-copy-btn" data-dia="'+d.key+'">← Copiar lunes</button>'
-        : '');
-
-    bar.appendChild(row);
-
-    // Eventos toggle
-    var toggle = document.getElementById('toggle_'+d.key);
-    if (toggle) {
-      (function(dia) {
-        toggle.addEventListener('change', function() {
-          dayConfig[dia].activo = toggle.checked;
-          aplicarDayConfigASlots(dia);
-          renderDayConfigBar();
-          renderGridHorarios();
-        });
-      })(d.key);
-    }
-
-    // Eventos time inputs
-    var desdeEl = document.getElementById('desde_'+d.key);
-    var hastaEl = document.getElementById('hasta_'+d.key);
-    if (desdeEl && hastaEl) {
-      (function(dia) {
-        function onTimeChange() {
-          dayConfig[dia].desde = desdeEl.value || '09:00';
-          dayConfig[dia].hasta = hastaEl.value || '17:00';
-          aplicarDayConfigASlots(dia);
-          renderDayConfigBar();
-          renderGridHorarios();
-        }
-        desdeEl.addEventListener('change', onTimeChange);
-        hastaEl.addEventListener('change', onTimeChange);
-      })(d.key);
-    }
-
-    // Botón copiar lunes
-    var copyBtn = row.querySelector('.day-copy-btn');
-    if (copyBtn) {
-      (function(dia) {
-        copyBtn.addEventListener('click', function() {
-          dayConfig[dia].activo = dayConfig['lun'].activo;
-          dayConfig[dia].desde  = dayConfig['lun'].desde;
-          dayConfig[dia].hasta  = dayConfig['lun'].hasta;
-          aplicarDayConfigASlots(dia);
-          renderDayConfigBar();
-          renderGridHorarios();
-          mostrarToast('Horario de lunes copiado a '+dia);
-        });
-      })(d.key);
-    }
-  });
-}
-
-function aplicarDayConfigASlots(dia) {
-  var cfg = dayConfig[dia];
-  if (!slotsState[dia]) return;
-  if (!cfg.activo) {
-    TIMES.forEach(function(t) {
-      if (slotsState[dia][t] !== 'busy') slotsState[dia][t] = 'off';
-    });
   } else {
-    var dMin = toMin(cfg.desde), hMin = toMin(cfg.hasta);
-    TIMES.forEach(function(t) {
-      if (slotsState[dia][t] === 'busy') return;
-      var tMin = toMin(t);
-      slotsState[dia][t] = (tMin >= dMin && tMin < hMin) ? 'on' : 'off';
+    // Fallback a dias_atencion + horario_desde/hasta
+    var dias   = m.dias_atencion || ['lun','mar','mie','jue','vie'];
+    var desde  = m.horario_desde || '09:00';
+    var hasta  = m.horario_hasta || '17:00';
+    DIAS_SEMANA.forEach(function(d) {
+      horariosBloques[d.key] = {
+        activo: dias.indexOf(d.key) > -1,
+        bloques: [{desde: desde, hasta: hasta}]
+      };
     });
   }
+  renderDiasHorarios();
 }
 
-function aplicarTodaSemana() {
-  DIAS_GRID.forEach(function(d) {
-    if (d.key === 'lun') return;
-    dayConfig[d.key].activo = dayConfig['lun'].activo;
-    dayConfig[d.key].desde  = dayConfig['lun'].desde;
-    dayConfig[d.key].hasta  = dayConfig['lun'].hasta;
-    aplicarDayConfigASlots(d.key);
+function renderDiasHorarios() {
+  var wrap = document.getElementById('diasBloques');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  DIAS_SEMANA.forEach(function(d) {
+    var data = horariosBloques[d.key];
+    var card = document.createElement('div');
+    card.className = 'dia-card' + (data.activo ? ' activo' : '');
+    card.id = 'diacard_' + d.key;
+
+    // Resumen de bloques
+    var resumen = data.activo && data.bloques.length
+      ? data.bloques.map(function(b){ return b.desde+' – '+b.hasta; }).join('  ·  ')
+      : 'Inactivo';
+
+    card.innerHTML = '<div class="dia-header">'
+      + '<div class="dia-label">'+d.label+'</div>'
+      + '<label class="dia-toggle"><input type="checkbox"'+(data.activo?' checked':'')+' id="toggle_'+d.key+'"><div class="dia-toggle-track"></div></label>'
+      + '<div class="dia-resumen'+(data.activo?' on':'')+'">'+resumen+'</div>'
+    + '</div>';
+
+    // Body con bloques (solo si activo)
+    if (data.activo) {
+      var body = document.createElement('div');
+      body.className = 'dia-body';
+      body.id = 'diabody_'+d.key;
+      card.appendChild(body);
+      renderBloquesDia(d.key);
+    }
+
+    wrap.appendChild(card);
+
+    // Toggle evento
+    var toggleEl = document.getElementById('toggle_'+d.key);
+    if (toggleEl) {
+      (function(dia) {
+        toggleEl.addEventListener('change', function() {
+          horariosBloques[dia].activo = toggleEl.checked;
+          if (toggleEl.checked && !horariosBloques[dia].bloques.length) {
+            horariosBloques[dia].bloques.push({desde:'09:00', hasta:'17:00'});
+          }
+          renderDiasHorarios();
+        });
+      })(d.key);
+    }
   });
-  renderDayConfigBar();
-  renderGridHorarios();
+}
+
+function renderBloquesDia(dia) {
+  var body = document.getElementById('diabody_'+dia);
+  if (!body) return;
+  body.innerHTML = '';
+  var bloques = horariosBloques[dia].bloques;
+
+  bloques.forEach(function(b, i) {
+    var row = document.createElement('div');
+    row.className = 'bloque-row';
+
+    var desdeEl = document.createElement('input');
+    desdeEl.type='time'; desdeEl.className='bloque-time'; desdeEl.value=b.desde;
+    var sepEl = document.createElement('span');
+    sepEl.className='bloque-sep'; sepEl.textContent='—';
+    var hastaEl = document.createElement('input');
+    hastaEl.type='time'; hastaEl.className='bloque-time'; hastaEl.value=b.hasta;
+    var delBtn = document.createElement('button');
+    delBtn.className='btn-del-bloque'; delBtn.textContent='✕';
+    delBtn.title='Eliminar bloque';
+
+    row.appendChild(desdeEl);
+    row.appendChild(sepEl);
+    row.appendChild(hastaEl);
+    row.appendChild(delBtn);
+    body.appendChild(row);
+
+    // Eventos
+    (function(dia2, idx) {
+      desdeEl.addEventListener('change', function() {
+        if (desdeEl.value >= horariosBloques[dia2].bloques[idx].hasta) {
+          mostrarToast('El inicio debe ser menor al fin');
+          desdeEl.value = horariosBloques[dia2].bloques[idx].desde;
+          return;
+        }
+        horariosBloques[dia2].bloques[idx].desde = desdeEl.value;
+        actualizarResumenDia(dia2);
+      });
+      hastaEl.addEventListener('change', function() {
+        if (hastaEl.value <= horariosBloques[dia2].bloques[idx].desde) {
+          mostrarToast('El fin debe ser mayor al inicio');
+          hastaEl.value = horariosBloques[dia2].bloques[idx].hasta;
+          return;
+        }
+        horariosBloques[dia2].bloques[idx].hasta = hastaEl.value;
+        actualizarResumenDia(dia2);
+      });
+      delBtn.addEventListener('click', function() {
+        horariosBloques[dia2].bloques.splice(idx, 1);
+        renderBloquesDia(dia2);
+        actualizarResumenDia(dia2);
+      });
+    })(dia, i);
+  });
+
+  // Botón agregar bloque
+  var addBtn = document.createElement('button');
+  addBtn.className = 'btn-add-bloque';
+  addBtn.innerHTML = '+ Agregar bloque de horario';
+  addBtn.addEventListener('click', function() {
+    var ultBloque = horariosBloques[dia].bloques;
+    var nuevaDesde = ultBloque.length ? ultBloque[ultBloque.length-1].hasta : '09:00';
+    // Sumar 1 hora al último fin como sugerencia
+    var partes = nuevaDesde.split(':');
+    var minNueva = parseInt(partes[0])*60+parseInt(partes[1])+60;
+    var nuevaHasta = String(Math.floor(Math.min(minNueva,22*60)/60)).padStart(2,'0')+':00';
+    if (nuevaDesde >= nuevaHasta) nuevaHasta = '18:00';
+    horariosBloques[dia].bloques.push({desde: nuevaDesde, hasta: nuevaHasta});
+    renderBloquesDia(dia);
+    actualizarResumenDia(dia);
+  });
+  body.appendChild(addBtn);
+}
+
+function actualizarResumenDia(dia) {
+  var data = horariosBloques[dia];
+  var resEl = document.querySelector('#diacard_'+dia+' .dia-resumen');
+  if (!resEl) return;
+  var resumen = data.activo && data.bloques.length
+    ? data.bloques.map(function(b){ return b.desde+' – '+b.hasta; }).join('  ·  ')
+    : 'Inactivo';
+  resEl.textContent = resumen;
+}
+
+function copiarLunesATodos() {
+  var lunData = horariosBloques['lun'];
+  DIAS_SEMANA.forEach(function(d) {
+    if (d.key === 'lun') return;
+    horariosBloques[d.key] = {
+      activo: lunData.activo,
+      bloques: JSON.parse(JSON.stringify(lunData.bloques))
+    };
+  });
+  renderDiasHorarios();
   mostrarToast('Horario de lunes copiado a toda la semana');
 }
 
-// ── GRID HORARIOS SEMANAL ──
-var DIAS_GRID = [
-  {key:'lun',label:'Lunes'},
-  {key:'mar',label:'Martes'},
-  {key:'mie',label:'Miércoles'},
-  {key:'jue',label:'Jueves'},
-  {key:'vie',label:'Viernes'},
-  {key:'sab',label:'Sábado'},
-  {key:'dom',label:'Domingo'}
-];
-var _isDragging  = false;
-var _dragValue   = null; // 'on' o 'off' — el valor que se está pintando
-
-function renderGridHorarios() {
-  var grid = document.getElementById('horariosGrid');
-  if (!grid) return;
-
-  // Construir tabla
-  var html = '<table class="horarios-table"><thead><tr>'
-    + '<th class="col-hora"></th>';
-  DIAS_GRID.forEach(function(d) {
-    html += '<th>'+d.label+'</th>';
-  });
-  html += '</tr></thead><tbody>';
-
-  TIMES.forEach(function(t) {
-    html += '<tr><td class="col-hora">'+t+'</td>';
-    DIAS_GRID.forEach(function(d) {
-      var st = (slotsState[d.key]&&slotsState[d.key][t]) || 'off';
-      html += '<td><div class="hora-slot '+st+'" data-dia="'+d.key+'" data-hora="'+t+'"></div></td>';
-    });
-    html += '</tr>';
-  });
-  html += '</tbody></table>';
-  grid.innerHTML = html;
-
-  // Eventos drag
-  grid.querySelectorAll('.hora-slot').forEach(function(slot) {
-    slot.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      var dia  = slot.dataset.dia;
-      var hora = slot.dataset.hora;
-      if (slotsState[dia][hora] === 'busy') return;
-      _isDragging = true;
-      // Si está on → drag pone off; si está off → drag pone on
-      _dragValue  = slotsState[dia][hora] === 'on' ? 'off' : 'on';
-      slotsState[dia][hora] = _dragValue;
-      slot.className = 'hora-slot ' + _dragValue;
-    });
-    slot.addEventListener('mouseenter', function() {
-      if (!_isDragging) return;
-      var dia  = slot.dataset.dia;
-      var hora = slot.dataset.hora;
-      if (slotsState[dia][hora] === 'busy') return;
-      slotsState[dia][hora] = _dragValue;
-      slot.className = 'hora-slot ' + _dragValue;
-    });
-  });
-}
-
-document.addEventListener('mouseup', function() { _isDragging = false; });
-
-function aplicarTodaSemana() {
-  // Copiar lunes a todos los días
-  var base = 'lun';
-  DIAS_GRID.forEach(function(d) {
-    if (d.key === base) return;
-    TIMES.forEach(function(t) {
-      if (slotsState[d.key][t] !== 'busy') {
-        slotsState[d.key][t] = slotsState[base][t];
-      }
-    });
-  });
-  renderGridHorarios();
-  mostrarToast('Horario de lunes aplicado a toda la semana');
-}
-
-function setDur(m,btn) {
+function setDur(m, btn) {
   document.querySelectorAll('.dur-btn').forEach(function(b){b.classList.remove('active');});
   if (btn) btn.classList.add('active');
 }
 
 // Alias para compatibilidad
-function renderSlots() { renderGridHorarios(); }
-function selectDay(d,el) { /* ya no necesario con grid */ }
-function activarTodos() {}
-function desactivarTodos() {}
+function renderSlots()      { renderDiasHorarios(); }
+function renderGridHorarios(){ renderDiasHorarios(); }
+function renderDayConfigBar(){ /* no necesario */ }
 
-// ══════════════════════════════════════════════
-// MOTOR CENTRAL DE DISPONIBILIDAD
-// ══════════════════════════════════════════════
+// ── FUNCIONES AUXILIARES DE SLOTS ──
+function sumarMinutos(hora, min) {
+  var parts = hora.split(':');
+  var h = parseInt(parts[0]), m = parseInt(parts[1]);
+  var total = h*60 + m + min;
+  return String(Math.floor(total/60)).padStart(2,'0') + ':' + String(total%60).padStart(2,'0');
+}
 
-// 3. Cache por día — reduce llamadas a DB
-var _agendaCache = {};
-function invalidarCacheRango(medicoId, desde, hasta) {
-  Object.keys(_agendaCache).forEach(function(k) {
-    if (k.startsWith(medicoId)) delete _agendaCache[k];
+function bloquesASlots(bloques, duracion) {
+  duracion = duracion || 30;
+  // 4. Ordenar bloques por inicio antes de generar
+  var sorted = (bloques||[]).slice().sort(function(a,b){ return a.desde.localeCompare(b.desde); });
+  var seen = {};
+  var slots = [];
+  sorted.forEach(function(b) {
+    var current = b.desde;
+    while (current < b.hasta) {
+      // 5. Deduplicar slots
+      if (!seen[current]) { seen[current]=true; slots.push(current); }
+      current = sumarMinutos(current, duracion);
+    }
+  });
+  return slots;
+}
+
+function normalizarBloques(bloques) {
+  return (bloques||[]).map(function(b) {
+    return { desde: (b.desde||'').slice(0,5), hasta: (b.hasta||'').slice(0,5) };
   });
 }
 
-// Función única — usada por dashboard Y perfil público
-async function obtenerAgendaDia(medicoId, fecha, horarioBase) {
-  // 7. Log para debugging
-  console.log('AGENDA:', medicoId.slice(0,8), fecha);
-  // horarioBase = {dayConfig, slotsState, TIMES} del médico
-
-  // 1. Verificar vacaciones
-  var bloqueos = await _sb.from('bloqueos_medico')
-    .select('id, fecha_inicio, fecha_fin, motivo')
-    .eq('medico_id', medicoId)
-    .lte('fecha_inicio', fecha)
-    .gte('fecha_fin', fecha);
-
-  if (bloqueos.data && bloqueos.data.length > 0) {
-    var b = bloqueos.data[0];
-    return { bloqueado: true, motivo: b.motivo || 'Médico no disponible', slots: [] };
+function validarBloques(bloques) {
+  // Ordenar por inicio
+  var sorted = bloques.slice().sort(function(a,b){ return a.desde.localeCompare(b.desde); });
+  for (var i=0; i<sorted.length-1; i++) {
+    if (sorted[i].hasta > sorted[i+1].desde) return false;
   }
-
-  // 2. Verificar excepción puntual
-  var excRes = await _sb.from('excepciones_medico')
-    .select('*')
-    .eq('medico_id', medicoId)
-    .eq('fecha', fecha)
-    .maybeSingle();
-
-  if (excRes.data) {
-    var exc = excRes.data;
-    if (exc.tipo === 'bloqueado') {
-      return { bloqueado: true, motivo: exc.motivo || 'Horario especial', slots: [] };
-    }
-    if (exc.tipo === 'custom' && exc.desde && exc.hasta) {
-      var slots = [];
-      var min = toMinGlobal(exc.desde);
-      var max = toMinGlobal(exc.hasta);
-      while (min < max) {
-        slots.push(padHora(min));
-        min += 30;
-      }
-      return { bloqueado: false, custom: true, slots: slots };
-    }
-  }
-
-  // 3. Horario normal del médico
-  if (horarioBase) {
-    var dia = getDiaSemana(fecha);
-    var cfg = horarioBase[dia];
-    if (!cfg || !cfg.activo) return { bloqueado: true, motivo: 'Sin atención ese día', slots: [] };
-    var slots2 = [];
-    var min2 = toMinGlobal(cfg.desde);
-    var max2 = toMinGlobal(cfg.hasta);
-    while (min2 < max2) {
-      slots2.push(padHora(min2));
-      min2 += 30;
-    }
-    return { bloqueado: false, slots: slots2 };
-  }
-
-  return { bloqueado: false, slots: [] };
-}
-
-function toMinGlobal(t) {
-  if (!t) return 0;
-  var parts = t.split(':');
-  return parseInt(parts[0])*60 + parseInt(parts[1]||0);
-}
-function padHora(min) {
-  return String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
-}
-function getDiaSemana(fecha) {
-  // 1. TZ fix: usar T12:00:00 para evitar offset que cambie el día
-  var dias = ['dom','lun','mar','mie','jue','vie','sab'];
-  return dias[new Date(fecha+'T12:00:00').getDay()];
-}
-
-// ── BLOQUEOS — CRUD ──
-function crearBloqueo() {
-  if (!M) return;
-  var desde  = document.getElementById('bloqueoDesde').value;
-  var hasta  = document.getElementById('bloqueoHasta').value;
-  var motivo = document.getElementById('bloqueoMotivo').value.trim();
-
-  // 6. Validación de rango
-  if (!desde || !hasta) { mostrarToast('Selecciona fecha de inicio y fin'); return; }
-  if (desde > hasta) { mostrarToast('Rango invalido: el inicio debe ser menor al fin'); return; }
-
-  // 2. Opción A — NO permitir si hay citas activas
-  _sb.from('citas')
-    .select('id, fecha, paciente_nombre, hora')
-    .eq('medico_id', M.id)
-    .gte('fecha', desde)
-    .lte('fecha', hasta)
-    .eq('estado', 'confirmada')
-    .then(function(r) {
-      var citas = r.data || [];
-      if (citas.length > 0) {
-        var lista = citas.slice(0,3).map(function(ct){
-          return ct.paciente_nombre+' - '+ct.fecha+' '+ct.hora;
-        }).join(', ');
-        var extra = citas.length > 3 ? ' y '+(citas.length-3)+' mas' : '';
-        alert('No puedes bloquear ese rango porque tienes '+citas.length+' cita(s) activa(s): '+lista+extra+'. Reprograma o cancela las citas primero.');
-        return;
-      }
-
-      // 5. Verificar solapamiento con bloqueos existentes
-      _sb.from('bloqueos_medico')
-        .select('id, fecha_inicio, fecha_fin')
-        .eq('medico_id', M.id)
-        .lte('fecha_inicio', hasta)
-        .gte('fecha_fin', desde)
-        .then(function(r2) {
-          if (r2.data && r2.data.length > 0) {
-            var confirmar = confirm('Ya existe un bloqueo que se solapa con ese rango. ¿Crear de todas formas?');
-            if (!confirmar) return;
-          }
-          _sb.from('bloqueos_medico').insert({
-            medico_id:    M.id,
-            fecha_inicio: desde,
-            fecha_fin:    hasta,
-            motivo:       motivo || null
-          }).then(function(res) {
-            if (res.error) { mostrarToast('Error: '+res.error.message); return; }
-            // Limpiar cache de esas fechas
-            invalidarCacheRango(M.id, desde, hasta);
-            document.getElementById('bloqueoDesde').value  = '';
-            document.getElementById('bloqueoHasta').value  = '';
-            document.getElementById('bloqueoMotivo').value = '';
-            cargarBloqueos();
-            mostrarToast('Fechas bloqueadas correctamente');
-          });
-        });
-    });
-}
-
-function cargarBloqueos() {
-  if (!M) return;
-  var list = document.getElementById('bloqueosList');
-  if (!list) return;
-  _sb.from('bloqueos_medico')
-    .select('*')
-    .eq('medico_id', M.id)
-    .gte('fecha_fin', new Date().toISOString().split('T')[0])
-    .order('fecha_inicio', {ascending: true})
-    .then(function(r) {
-      var bloqueos = r.data || [];
-      if (!bloqueos.length) {
-        list.innerHTML = '<div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div>';
-        return;
-      }
-      list.innerHTML = '';
-      bloqueos.forEach(function(b) {
-        var desde = new Date(b.fecha_inicio+'T12:00:00').toLocaleDateString('es-EC',{day:'numeric',month:'short',year:'numeric'});
-        var hasta = new Date(b.fecha_fin+'T12:00:00').toLocaleDateString('es-EC',{day:'numeric',month:'short',year:'numeric'});
-        var div = document.createElement('div');
-        div.className = 'bloqueo-item';
-        div.innerHTML = '<div class="bloqueo-item-info">'
-          + '<div class="bloqueo-item-dates">'+desde+' → '+hasta+'</div>'
-          + (b.motivo ? '<div class="bloqueo-item-motivo">'+b.motivo+'</div>' : '')
-        + '</div>';
-        var btnEl = document.createElement('button');
-        btnEl.className = 'btn-eliminar-bloqueo';
-        btnEl.textContent = 'Eliminar';
-        (function(id) {
-          btnEl.addEventListener('click', function() {
-            if (!confirm('¿Eliminar este bloqueo?')) return;
-            _sb.from('bloqueos_medico').delete().eq('id', id).then(function() {
-              cargarBloqueos();
-              mostrarToast('Bloqueo eliminado');
-            });
-          });
-        })(b.id);
-        div.appendChild(btnEl);
-        list.appendChild(div);
-      });
-    });
+  return true;
 }
 
 async function guardarHorarios(btn) {
@@ -1444,55 +1219,60 @@ async function guardarHorarios(btn) {
   var orig = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
 
-  // Validar rangos
-  for (var di = 0; di < DIAS_GRID.length; di++) {
-    var d = DIAS_GRID[di];
-    var cfg = dayConfig[d.key];
-    if (cfg.activo && toMin(cfg.desde) >= toMin(cfg.hasta)) {
-      mostrarToast('Error: en '+d.label+' el inicio debe ser menor al fin');
+  // Validar bloques superpuestos en cada día activo
+  for (var di=0; di<DIAS_SEMANA.length; di++) {
+    var d2 = DIAS_SEMANA[di];
+    var data2 = horariosBloques[d2.key];
+    if (!data2.activo) continue;
+    // Normalizar
+    data2.bloques = normalizarBloques(data2.bloques);
+    // Filtrar bloques vacíos
+    data2.bloques = data2.bloques.filter(function(b){ return b.desde && b.hasta && b.desde < b.hasta; });
+    if (!data2.bloques.length) { data2.activo = false; continue; }
+    // Validar solapamiento
+    if (!validarBloques(data2.bloques)) {
+      mostrarToast('Error en '+d2.label+': bloques superpuestos. Corrígelos antes de guardar.');
       if (btn) { btn.textContent = orig; btn.disabled = false; }
       return;
     }
   }
 
-  var activos = DIAS_GRID.map(function(d){ return d.key; })
-    .filter(function(d){ return dayConfig[d].activo; });
+  var activos = DIAS_SEMANA.map(function(d){ return d.key; })
+    .filter(function(d){ return horariosBloques[d].activo; });
 
-  // Guardar config completa por día (solución correcta)
+  // Primer bloque del primer día para legacy
+  var primerDia    = activos[0] || 'lun';
+  var primerBloque = horariosBloques[primerDia].bloques[0] || {desde:'09:00', hasta:'17:00'};
+
+  // Construir horarios_config con slots derivados
   var horariosConfig = {};
-  DIAS_GRID.forEach(function(d) {
+  DIAS_SEMANA.forEach(function(d) {
+    var hd = horariosBloques[d.key];
     horariosConfig[d.key] = {
-      activo: dayConfig[d.key].activo,
-      desde:  dayConfig[d.key].desde,
-      hasta:  dayConfig[d.key].hasta,
-      slots:  dayConfig[d.key].activo
-        ? TIMES.filter(function(t){ return slotsState[d.key][t]==='on'; })
-        : []
+      activo:  hd.activo,
+      bloques: hd.bloques,
+      slots:   hd.activo ? bloquesASlots(hd.bloques, 30) : [],
+      desde:   hd.bloques[0] ? hd.bloques[0].desde : '09:00',
+      hasta:   hd.bloques[hd.bloques.length-1] ? hd.bloques[hd.bloques.length-1].hasta : '17:00'
     };
   });
 
-  // horario_desde/hasta = primer día activo (fallback para sistema existente)
-  var primerDia = activos[0] || 'lun';
-  var desde = dayConfig[primerDia].desde || '09:00';
-  var hasta  = dayConfig[primerDia].hasta  || '17:00';
-
   await _sb.from('medicos').update({
     dias_atencion:   activos,
-    horario_desde:   desde,
-    horario_hasta:   hasta,
+    horario_desde:   primerBloque.desde,
+    horario_hasta:   primerBloque.hasta,
     horarios_config: horariosConfig
   }).eq('id', M.id);
 
   if (btn) { btn.textContent = '✓ Guardado'; btn.style.background = '#059669'; }
-  var fechaLabel = document.getElementById('horariosFecha');
-  if (fechaLabel) fechaLabel.textContent = 'Última actualización: hoy, '+new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
-  var savedEl = document.getElementById('horariosSaved');
-  if (savedEl) savedEl.style.display = 'block';
+  var fechaEl = document.getElementById('horariosFecha');
+  if (fechaEl) fechaEl.textContent = 'Última actualización: hoy, '+new Date().toLocaleTimeString('es-EC',{hour:'2-digit',minute:'2-digit'});
   setTimeout(function(){
     if (btn) { btn.textContent = orig; btn.style.background = ''; btn.disabled = false; }
   }, 2000);
 }
 
+// ══ PERFIL TABS ══
 // ══ PERFIL TABS ══
 function showTab(tab,el){
   document.querySelectorAll('.pf-section').forEach(s=>s.classList.remove('active'));

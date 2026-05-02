@@ -556,21 +556,28 @@ function cargarDisponibilidadConBloqueos(medico, citas, sbClient) {
         }
       }
 
-      // Capa 3: horario normal
-      if ((medico.dias_atencion||[]).indexOf(dia) < 0) continue;
-      var desde = medico.horario_desde||'09:00';
-      var hasta  = medico.horario_hasta||'17:00';
-      var hD = parseInt(desde.split(':')[0])*60+parseInt(desde.split(':')[1]);
-      var hH = parseInt(hasta.split(':')[0])*60+parseInt(hasta.split(':')[1]);
-      var min2 = hD;
+      // Capa 3: horario normal — usar bloques si disponibles
+      var DIAS_KEY = ['dom','lun','mar','mie','jue','vie','sab'];
+      var diaKey = DIAS_KEY[new Date(fechaStr+'T12:00:00').getDay()];
+      var cfgDia = medico.horarios_config && medico.horarios_config[diaKey];
+      var bloques = cfgDia && cfgDia.activo && cfgDia.bloques
+        ? cfgDia.bloques
+        : ((medico.dias_atencion||[]).indexOf(diaKey) > -1)
+          ? [{desde: medico.horario_desde||'09:00', hasta: medico.horario_hasta||'17:00'}]
+          : [];
+      if (!bloques.length) continue;
       var limHoy3 = (i===0) ? (new Date().getHours()*60+new Date().getMinutes()+120) : 0;
       var slotsNorm = [];
-      while (min2 < hH) {
-        var hora = String(Math.floor(min2/60)).padStart(2,'0')+':'+String(min2%60).padStart(2,'0');
-        var ocup = citas.some(function(ct){ return ct.fecha===fechaStr&&ct.hora===hora; });
-        if (!ocup && !(i===0&&min2<limHoy3)) slotsNorm.push(hora);
-        min2+=30;
-      }
+      bloques.forEach(function(b) {
+        var min2 = parseInt(b.desde.split(':')[0])*60+parseInt(b.desde.split(':')[1]);
+        var hH2  = parseInt(b.hasta.split(':')[0])*60+parseInt(b.hasta.split(':')[1]);
+        while (min2 < hH2) {
+          var hora = String(Math.floor(min2/60)).padStart(2,'0')+':'+String(min2%60).padStart(2,'0');
+          var ocup = citas.some(function(ct){ return ct.fecha===fechaStr&&ct.hora===hora; });
+          if (!ocup && !(i===0&&min2<limHoy3)) slotsNorm.push(hora);
+          min2+=30;
+        }
+      });
       if (slotsNorm.length) disp[fechaStr] = slotsNorm;
     }
     return disp;
@@ -971,19 +978,48 @@ function confirmarCita() {
   var parts = selectedDate.split('-');
   var fechaLabel = parseInt(parts[2])+' de '+MESES[parseInt(parts[1])-1]+' '+parts[0];
   buscarOCrearPaciente(nombre, email, tel).then(function(pacienteId) {
-    _sb.from('citas').insert({
-      medico_id:       selectedDoctor.id,
-      paciente_id:     pacienteId||null,
-      paciente_nombre: nombre,
-      paciente_email:  email||null,
-      paciente_tel:    tel,
-      motivo:          motivo||null,
-      fecha:           selectedDate,
-      hora:            selectedSlot,
-      estado:          'confirmada'
-    }).then(function(res) {
-      if (res.error) console.error('Error cita:', res.error);
-    });
+    // 2. Anti-doble booking — verificar antes de insertar
+    _sb.from('citas').select('id')
+      .eq('medico_id', selectedDoctor.id)
+      .eq('fecha', selectedDate)
+      .eq('hora', selectedSlot)
+      .in('estado', ['confirmada','pendiente'])
+      .then(function(check) {
+        if (check.data && check.data.length > 0) {
+          alert('Este horario acaba de ser reservado por otra persona. Por favor selecciona otro horario.');
+          el('bookingForm').style.display = 'block';
+          el('successState').style.display = 'none';
+          if (btn) { btn.textContent='Confirmar cita'; btn.disabled=false; }
+          return;
+        }
+        // Invalidar cache de disponibilidad para ese día
+        if (typeof _agendaCache !== 'undefined') {
+          delete _agendaCache[selectedDoctor.id + '_' + selectedDate];
+        }
+        _sb.from('citas').insert({
+          medico_id:       selectedDoctor.id,
+          paciente_id:     pacienteId||null,
+          paciente_nombre: nombre,
+          paciente_email:  email||null,
+          paciente_tel:    tel,
+          motivo:          motivo||null,
+          fecha:           selectedDate,
+          hora:            selectedSlot,
+          estado:          'confirmada'
+        }).then(function(res) {
+          if (res.error) {
+            if (res.error.message && res.error.message.indexOf('unique_slot_cita') > -1) {
+              alert('Ese horario acaba de ser reservado por otro paciente. Por favor selecciona otro.');
+              el('bookingForm').style.display = 'block';
+              el('successState').style.display = 'none';
+              // Recargar disponibilidad para mostrar estado real
+              cargarDispModal();
+            } else {
+              console.error('Error cita:', res.error);
+            }
+          }
+        });
+      });
   });
   // Emails
   var tpl = {
