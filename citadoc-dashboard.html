@@ -2031,11 +2031,23 @@ function testPayPhone() {
 // Las credenciales están en el bloque <script> antes de </body>
 
 function mostrarCajitaPro() {
-  // Ocultar botón de decisión, mostrar cajita
+  // Ocultar beneficios — dejar solo precio y cajita
   var btnDecision = document.getElementById('btnProModalUpgrade');
   var ppContainer = document.getElementById('pp-button');
+  var modalIcon   = document.getElementById('proModalIcon');
+  var modalTitle  = document.getElementById('proModalTitle');
+  var modalDesc   = document.getElementById('proModalDesc');
+  var modalDemo   = document.getElementById('proModalDemo');
+  var modalFeats  = document.getElementById('proModalFeats');
+  // Ocultar sección de beneficios
+  [modalIcon, modalTitle, modalDesc, modalDemo, modalFeats].forEach(function(el){
+    if (el) el.style.display = 'none';
+  });
   if (btnDecision) btnDecision.style.display = 'none';
   if (ppContainer) ppContainer.style.display = 'block';
+  // Scroll al top del modal
+  var card = document.getElementById('proModalCard');
+  if (card) card.scrollTop = 0;
   // Renderizar PayPhone
   var medicoId = window.M ? window.M.id : '';
   var email    = window.M ? window.M.email : '';
@@ -3416,7 +3428,7 @@ function cerrarHC() {
 <!-- MODAL PRO GLOBAL — fixed, sobre todo   -->
 <!-- ═══════════════════════════════════════ -->
 <div id="proModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
-  <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
+  <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
     <div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">🔒 Vista previa Pro</div>
     <div id="proModalIcon" style="font-size:2.2rem;margin-bottom:.6rem">🧠</div>
     <div id="proModalTitle" style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2">Gestión Inteligente de Pacientes</div>
