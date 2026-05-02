@@ -360,6 +360,32 @@ var _sb = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 );
 
+// ── WHATSAPP — número limpio con código de país ──
+var CODIGOS_PAIS_WA = {
+  ecuador:'593',colombia:'57',peru:'51',argentina:'54',
+  chile:'56',venezuela:'58',bolivia:'591',paraguay:'595',
+  uruguay:'598',brasil:'55',guyana:'592',suriname:'597',
+  mexico:'52'
+};
+function limpiarNumeroWA(numero, pais) {
+  if (!numero) return null;
+  // 1. Solo dígitos
+  var n = numero.replace(/[^0-9]/g,'');
+  // 2. Quitar 0 inicial
+  if (n.charAt(0)==='0') n = n.slice(1);
+  // 3. Código de país
+  var codigo = CODIGOS_PAIS_WA[(pais||'ecuador').toLowerCase()] || '593';
+  // 4. Evitar duplicar código
+  if (n.startsWith(codigo)) return n;
+  return codigo + n;
+}
+function urlWA(numero, pais, nombre) {
+  var num = limpiarNumeroWA(numero, pais);
+  if (!num) return null;
+  var msg = 'Hola '+nombre+', vi su perfil en CitaDoc y quisiera agendar una cita. Gracias.';
+  return 'https://wa.me/'+num+'?text='+encodeURIComponent(msg);
+}
+
 // ── DATOS ──
 var PAISES = [
   {v:'ecuador',l:'Ecuador'},{v:'colombia',l:'Colombia'},{v:'peru',l:'Peru'},
@@ -588,7 +614,7 @@ function renderDir() {
       + '<div class="card-bottom">'
         + '<div><div class="price-num">$'+d.price+'</div><div class="price-label">por consulta</div></div>'
         + '<div style="display:flex;gap:.5rem;align-items:center">'
-          + (d.whatsapp ? '<a class="btn-wa" href="https://wa.me/'+d.whatsapp.replace(/[^0-9]/g,'')+'" target="_blank">💬 WA</a>' : '')
+          + (d.whatsapp ? (function(){ var u=urlWA(d.whatsapp,d.country,d.name); return u?'<a class="btn-wa" href="'+u+'" target="_blank">💬 WA</a>':''; })() : '')
           + '<button class="btn-agendar">Agendar →</button>'
         + '</div>'
       + '</div>';

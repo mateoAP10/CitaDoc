@@ -289,6 +289,33 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <script>
+
+// ── WHATSAPP — número limpio con código de país ──
+var CODIGOS_PAIS_WA = {
+  ecuador:'593',colombia:'57',peru:'51',argentina:'54',
+  chile:'56',venezuela:'58',bolivia:'591',paraguay:'595',
+  uruguay:'598',brasil:'55',guyana:'592',suriname:'597',
+  mexico:'52'
+};
+function limpiarNumeroWA(numero, pais) {
+  if (!numero) return null;
+  // 1. Solo dígitos
+  var n = numero.replace(/[^0-9]/g,'');
+  // 2. Quitar 0 inicial
+  if (n.charAt(0)==='0') n = n.slice(1);
+  // 3. Código de país
+  var codigo = CODIGOS_PAIS_WA[(pais||'ecuador').toLowerCase()] || '593';
+  // 4. Evitar duplicar código
+  if (n.startsWith(codigo)) return n;
+  return codigo + n;
+}
+function urlWA(numero, pais, nombre) {
+  var num = limpiarNumeroWA(numero, pais);
+  if (!num) return null;
+  var msg = 'Hola '+nombre+', vi su perfil en CitaDoc y quisiera agendar una cita. Gracias.';
+  return 'https://wa.me/'+num+'?text='+encodeURIComponent(msg);
+}
+
 // ── CONFIG ──
 emailjs.init('HwpQ3DPRMmtcVZVt1');
 var _sb = supabase.createClient(
@@ -609,10 +636,9 @@ function aplicarMedico(m, formacion, citas) {
 
   // Contacto
   if (m.whatsapp_activo && m.whatsapp) {
-    var waNum = m.whatsapp.replace(/[^0-9]/g,'');
-    var waMsg = 'Hola '+nombre+', vi tu perfil en CitaDoc y quisiera agendar una cita.';
+    var waUrl = urlWA(m.whatsapp, m.pais, nombre);
     var btnWA = el('btnWA');
-    if (btnWA) btnWA.href = 'https://wa.me/'+waNum+'?text='+encodeURIComponent(waMsg);
+    if (btnWA) btnWA.href = waUrl || '#';
     el('waSection').style.display = 'block';
     if (!m.agendamiento_citadoc) {
       el('agendaSection').style.display = 'none';
