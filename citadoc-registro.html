@@ -256,6 +256,8 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <!-- Analytics -->
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
+  <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
+  <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
 </head>
 <body>
 <nav>
@@ -473,13 +475,8 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
         <div class="plan-summary-price" id="sum-price">$0 <span>/mes</span></div>
       </div>
       <div id="payment-form" style="display:none">
-        <div class="payment-field"><label>Nombre en la tarjeta</label><input type="text" placeholder="Ej: JUAN PEREZ"></div>
-        <div class="payment-field"><label>Número de tarjeta</label><input type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)"></div>
-        <div class="card-row">
-          <div class="payment-field"><label>Vencimiento</label><input type="text" placeholder="MM/AA" maxlength="5" oninput="formatExp(this)"></div>
-          <div class="payment-field"><label>CVV</label><input type="text" placeholder="123" maxlength="4"></div>
-        </div>
-        <div class="secure-note">🔒 Pago seguro con SSL.</div>
+        <div id="pp-button-registro" style="margin-bottom:.5rem"></div>
+        <div class="secure-note">🔒 Pago seguro con PayPhone</div>
       </div>
       <div id="free-note" style="background:var(--teal-lite);border-radius:12px;padding:1.2rem;font-size:.88rem;color:var(--teal);line-height:1.6">
         🎉 <strong>Sin costo.</strong> Tu perfil se activará de inmediato. Puedes actualizar al plan Destacado desde tu panel cuando quieras.
@@ -525,6 +522,11 @@ function updatePaymentStep() {
   document.getElementById('sum-price').innerHTML  = f ? '$19.99 <span>/mes</span>' : '$0 <span>/mes</span>';
   document.getElementById('sum-desc').textContent  = f ? 'Primero en búsquedas · Badge Destacado' : 'Perfil básico · Link para compartir';
   document.getElementById('payment-form').style.display = f ? 'block' : 'none';
+  if (f && typeof window.initPayPhoneRegistro === 'function') {
+    var emailVal = document.getElementById('regEmail') ? document.getElementById('regEmail').value : '';
+    var telVal   = document.getElementById('regTelefono') ? document.getElementById('regTelefono').value : '';
+    setTimeout(function(){ window.initPayPhoneRegistro(emailVal, telVal); }, 200);
+  }
   document.getElementById('free-note').style.display    = f ? 'none' : 'block';
   document.getElementById('btn-activar').textContent    = f ? 'Empezar 30 días gratis →' : 'Activar mi perfil gratis →';
 }
@@ -817,5 +819,51 @@ async function cerrarSesion() {
 }
 document.addEventListener('DOMContentLoaded', initAuthNav);
 </script>
+  <!-- PayPhone Registro -->
+  <script type="module">
+  var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';    // ← reemplaza
+  var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef'; // ← reemplaza
+
+  function initPayPhoneRegistro(email, telefono) {
+    var el = document.getElementById('pp-button-registro');
+    if (!el) return;
+    el.innerHTML = '';
+    if (typeof PPaymentButtonBox === 'undefined') {
+      el.innerHTML = '<p style="color:red;font-size:.85rem">Error cargando sistema de pago. Recarga la página.</p>';
+      return;
+    }
+    new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: 'registro-' + Date.now(),
+      amount:              1999,
+      amountWithoutTax:    1999,
+      currency:            'USD',
+      reference:           'CitaDoc PRO - Registro',
+      lang:                'es',
+      defaultMethod:       'card',
+      email:               email    || '',
+      phoneNumber:         telefono || ''
+    }).render('pp-button-registro');
+  }
+
+  // Escuchar pago exitoso en registro
+  var _pagoRegistroProcesado = false;
+  window.addEventListener('message', function(event) {
+    if (_pagoRegistroProcesado) return;
+    if (event.origin !== 'https://pay.payphonetodoesposible.com') return;
+    var data = event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.transactionStatus === 'Approved') {
+      _pagoRegistroProcesado = true;
+      console.log('Pago registro aprobado');
+      // Guardar en localStorage para activar PRO al crear la cuenta
+      localStorage.setItem('citadoc_pago_pro', 'true');
+      localStorage.setItem('citadoc_pago_ts', Date.now().toString());
+    }
+  });
+
+  window.initPayPhoneRegistro = initPayPhoneRegistro;
+  </script>
 </body>
 </html>

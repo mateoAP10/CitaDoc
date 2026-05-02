@@ -3433,14 +3433,14 @@ function cerrarHC() {
   </div>
   <button onclick="ppTest()" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:#059669;color:#fff;border:none;padding:.6rem 1.1rem;border-radius:10px;font-family:sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F9EA; Test PP</button>
 
-    <!-- PayPhone — implementación según doc oficial -->
+      <!-- PayPhone — implementación oficial con activación PRO -->
   <script type="module">
-  // REEMPLAZA ESTOS 2 VALORES:
-  var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';    // ← tu token
-  var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef'; // ← tu storeId
+  // ── CREDENCIALES (ya reemplazadas) ──
+  var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
+  var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef';
 
-  // Render en el modal Pro cuando se abre
-  function renderPayPhone(containerId) {
+  // ── RENDER CAJITA ──
+  function renderPayPhone(containerId, medicoId, email) {
     var el = document.getElementById(containerId);
     if (!el) return;
     el.innerHTML = '';
@@ -3451,40 +3451,97 @@ function cerrarHC() {
       amount:              1999,
       amountWithoutTax:    1999,
       currency:            'USD',
-      reference:           'CitaDoc Pro',
+      reference:           'CitaDoc Pro - ' + (medicoId || ''),
       lang:                'es',
-      defaultMethod:       'card'
+      defaultMethod:       'card',
+      email:               email || '',
+      optionalParameter:   medicoId || ''
     }).render(containerId);
   }
 
-  // Test button
-  function ppTest() {
-    console.log('ppTest ejecutado');
-    var wrap = document.getElementById('pp-test-wrap');
-    if (wrap) wrap.style.display = 'block';
-    renderPayPhone('pp-test');
+  // ── ACTIVAR PRO DESPUÉS DEL PAGO ──
+  async function activarProTrasPago(medicoId) {
+    if (!medicoId) return;
+    // Acceder a _sb del scope global del script principal
+    var sb = window._sb || window.supabaseClient;
+    if (!sb) { console.error('Supabase no disponible'); return; }
+    var res = await sb.from('medicos').update({
+      plan:        'pro',
+      plan_activo: true
+    }).eq('id', medicoId);
+    if (!res.error) {
+      console.log('PRO activado para:', medicoId);
+      // Actualizar UI
+      if (window.M) { window.M.plan = 'pro'; window.M.plan_activo = true; }
+      var planEl = document.getElementById('sidebarPlan');
+      if (planEl) planEl.textContent = '⭐ PRO';
+      var banner = document.getElementById('sidebarProBanner');
+      if (banner) banner.style.display = 'none';
+      // Cerrar modal y mostrar celebración
+      var modal = document.getElementById('proModal');
+      if (modal) modal.style.display = 'none';
+      document.body.style.overflow = '';
+      if (window.mostrarToast) window.mostrarToast('🎉 Plan PRO activado. Bienvenido!');
+    }
   }
 
-  // Exponer al scope global para que onclick funcione
-  window.ppTest       = ppTest;
+  // ── ESCUCHAR MENSAJE DE PAYPHONE (postMessage seguro) ──
+  var _pagoProcesado = false; // evitar doble activación
+
+  window.addEventListener('message', function(event) {
+    // 1. Evitar doble activación
+    if (_pagoProcesado) return;
+    // 2. Origen exacto — no includes, igualdad estricta
+    if (event.origin !== 'https://pay.payphonetodoesposible.com') return;
+    // 3. Validar data
+    var data = event.data;
+    if (!data || typeof data !== 'object') return;
+    if (!data.transactionStatus) return;
+    // 4. Solo aprobados
+    if (data.transactionStatus === 'Approved') {
+      _pagoProcesado = true;
+      console.log('PayPhone pago aprobado:', data);
+      // Feedback visual inmediato
+      var toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#16a34a;color:#fff;padding:12px 18px;border-radius:10px;font-family:DM Sans,sans-serif;font-weight:600;font-size:.9rem;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.15)';
+      toast.textContent = 'Pago exitoso 🚀 Activando PRO...';
+      document.body.appendChild(toast);
+      var medicoId = window.M ? window.M.id : null;
+      if (medicoId) {
+        activarProTrasPago(medicoId);
+        setTimeout(function() { location.reload(); }, 1500);
+      }
+    } else {
+      console.log('PayPhone pago no aprobado:', data.transactionStatus);
+    }
+  });
+
+  // ── TEST ──
+  function ppTest() {
+    var wrap = document.getElementById('pp-test-wrap');
+    if (wrap) wrap.style.display = 'block';
+    var medicoId = window.M ? window.M.id : 'test';
+    var email    = window.M ? window.M.email : '';
+    renderPayPhone('pp-test', medicoId, email);
+  }
+
+  window.ppTest         = ppTest;
   window.renderPayPhone = renderPayPhone;
 
-  // Cuando se abre el modal Pro, renderizar la cajita
+  // ── OBSERVER: render cuando el modal Pro se abre ──
   window.addEventListener('DOMContentLoaded', function() {
-    // Observar cuando el modal Pro se hace visible
     var modal = document.getElementById('proModal');
-    if (modal) {
-      var observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(m) {
-          if (m.type === 'attributes' && m.attributeName === 'style') {
-            if (modal.style.display !== 'none' && modal.style.display !== '') {
-              setTimeout(function() { renderPayPhone('pp-button'); }, 200);
-            }
-          }
-        });
+    if (!modal) return;
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(m) {
+        if (m.attributeName === 'style' && modal.style.display !== 'none') {
+          var medicoId = window.M ? window.M.id : '';
+          var email    = window.M ? window.M.email : '';
+          setTimeout(function() { renderPayPhone('pp-button', medicoId, email); }, 250);
+        }
       });
-      observer.observe(modal, { attributes: true });
-    }
+    });
+    observer.observe(modal, { attributes: true });
   });
   </script>
 </body>
