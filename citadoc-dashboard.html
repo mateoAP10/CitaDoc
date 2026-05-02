@@ -3488,101 +3488,23 @@ function cerrarHC() {
 
       <!-- PayPhone — implementación oficial con activación PRO -->
   <script type="module">
-  // ── CREDENCIALES (ya reemplazadas) ──
-  var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
-  var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef';
-
-  // ── RENDER CAJITA ──
-  function renderPayPhone(containerId, medicoId, email) {
-    var el = document.getElementById(containerId);
-    if (!el) return;
-    el.innerHTML = '';
-    var ppConfig = {
-      token:               PAYPHONE_TOKEN,
-      storeId:             PAYPHONE_STOREID,
-      clientTransactionId: 'cd' + Date.now(),
-      amount:              1999,
-      amountWithoutTax:    1999,
-      currency:            'USD',
-      reference:           'CitaDoc Pro',
-      lang:                'es',
-      defaultMethod:       'card'
-    };
-    // Solo agregar email si es válido
-    if (email && email.indexOf('@') > 0) ppConfig.email = email;
-    new PPaymentButtonBox(ppConfig).render(containerId);
-  }
-
-  // ── ACTIVAR PRO DESPUÉS DEL PAGO ──
-  async function activarProTrasPago(medicoId) {
-    if (!medicoId) return;
-    // Acceder a _sb del scope global del script principal
-    var sb = window._sb || window.supabaseClient;
-    if (!sb) { console.error('Supabase no disponible'); return; }
-    var res = await sb.from('medicos').update({
-      plan:        'pro',
-      plan_activo: true
-    }).eq('id', medicoId);
-    if (!res.error) {
-      console.log('PRO activado para:', medicoId);
-      // Actualizar UI
-      if (window.M) { window.M.plan = 'pro'; window.M.plan_activo = true; }
-      var planEl = document.getElementById('sidebarPlan');
-      if (planEl) planEl.textContent = '⭐ PRO';
-      var banner = document.getElementById('sidebarProBanner');
-      if (banner) banner.style.display = 'none';
-      // Cerrar modal y mostrar celebración
-      var modal = document.getElementById('proModal');
-      if (modal) modal.style.display = 'none';
-      document.body.style.overflow = '';
-      if (window.mostrarToast) window.mostrarToast('🎉 Plan PRO activado. Bienvenido!');
-    }
-  }
-
-  // ── ESCUCHAR MENSAJE DE PAYPHONE (postMessage seguro) ──
-  var _pagoProcesado = false; // evitar doble activación
-
+  // PayPhone listener de pago exitoso
+  var _pagoProcesado = false;
   window.addEventListener('message', function(event) {
-    // 1. Evitar doble activación
     if (_pagoProcesado) return;
-    // 2. Origen exacto — no includes, igualdad estricta
     if (event.origin !== 'https://pay.payphonetodoesposible.com') return;
-    // 3. Validar data
     var data = event.data;
     if (!data || typeof data !== 'object') return;
-    if (!data.transactionStatus) return;
-    // 4. Solo aprobados
     if (data.transactionStatus === 'Approved') {
       _pagoProcesado = true;
-      console.log('PayPhone pago aprobado:', data);
-      // Feedback visual inmediato
       var toast = document.createElement('div');
-      toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#16a34a;color:#fff;padding:12px 18px;border-radius:10px;font-family:DM Sans,sans-serif;font-weight:600;font-size:.9rem;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.15)';
-      toast.textContent = 'Pago exitoso 🚀 Activando PRO...';
+      toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#16a34a;color:#fff;padding:12px 18px;border-radius:10px;font-family:sans-serif;font-weight:600;font-size:.9rem;z-index:99999';
+      toast.textContent = 'Pago exitoso! Activando PRO...';
       document.body.appendChild(toast);
       var medicoId = window.M ? window.M.id : null;
-      if (medicoId) {
-        activarProTrasPago(medicoId);
-        setTimeout(function() { location.reload(); }, 1500);
-      }
-    } else {
-      console.log('PayPhone pago no aprobado:', data.transactionStatus);
+      if (medicoId && window.activarProTrasPago) window.activarProTrasPago(medicoId);
+      setTimeout(function() { location.reload(); }, 1500);
     }
   });
-
-  // ── TEST ──
-  function ppTest() {
-    var wrap = document.getElementById('pp-test-wrap');
-    if (wrap) wrap.style.display = 'block';
-    var medicoId = window.M ? window.M.id : 'test';
-    var email    = window.M ? window.M.email : '';
-    renderPayPhone('pp-test', medicoId, email);
-  }
-
-  window.ppTest         = ppTest;
-  window.renderPayPhone = renderPayPhone;
-
-  // Observer eliminado — PayPhone se renderiza solo cuando el usuario
-  // hace click en "Pagar con tarjeta", no al abrir el modal
-  </script>
+</script>
 </body>
