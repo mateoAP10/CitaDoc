@@ -553,6 +553,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       </div>
       <a href="citadoc-perfil.html" class="btn-ver-perfil" id="btnVerPerfil">👁 Ver mi perfil</a>
     </div>
+    <!-- Test PayPhone — eliminar cuando funcione -->
+    <div id="pp-test-wrap" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9999;background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:280px">
+      <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-bottom:.5rem">TEST PAYPHONE</div>
+      <div id="pp-test"></div>
+    </div>
+    <button id="btnTestPP" onclick="testPayPhone()" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:#0b7c6e;color:#fff;border:none;padding:.6rem 1rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer">🧪 Test PayPhone</button>
   </header>
 
   <div class="content">
@@ -1987,10 +1993,43 @@ var PRO_MODAL_CONTENT = {
 };
 
 // ── STRIPE — UPGRADE A PRO ──
+// ── TEST PAYPHONE (eliminar después) ──
+function testPayPhone() {
+  var wrap = document.getElementById('pp-test-wrap');
+  var btn  = document.getElementById('btnTestPP');
+  if (!wrap) return;
+  if (wrap.style.display === 'none') {
+    wrap.style.display = 'block';
+    if (btn) btn.style.display = 'none';
+    document.getElementById('pp-test').innerHTML = '';
+    if (typeof PPaymentButtonBox === 'undefined') {
+      document.getElementById('pp-test').innerHTML = '<p style="color:red;font-size:.8rem">ERROR: PPaymentButtonBox no definido. SDK no cargó.</p>';
+      return;
+    }
+    try {
+      new PPaymentButtonBox({
+        token:               PAYPHONE_TOKEN,
+        storeId:             PAYPHONE_STOREID,
+        clientTransactionId: 'test-' + Date.now(),
+        amount:              100,
+        amountWithoutTax:    100,
+        currency:            'USD',
+        reference:           'Test CitaDoc',
+        lang:                'es'
+      }).render('pp-test');
+    } catch(e) {
+      document.getElementById('pp-test').innerHTML = '<p style="color:red;font-size:.8rem">ERROR: '+e.message+'</p>';
+    }
+  } else {
+    wrap.style.display = 'none';
+    if (btn) btn.style.display = 'block';
+  }
+}
+
 // ── PAYPHONE — COBRO PRO ──
 // REEMPLAZA SOLO ESTOS 2 VALORES:
-var PAYPHONE_TOKEN   = '0yeIlUg0l1x20JWTiS9pm8jWwFrrAzzHEpXWd2wSxqidpF0JMqm-BO0j2xZ4xYU0kmI1nUEhwzv1PKNYB9vLahDQkF2O7SGNQd2rOzgFWe4cGwzDv-u7rwKEql-L4_Y3YZXLGQw98Tg0SWxUBS_NJIv5Tj8Je8BDVxCbVF37mRoyUIE9fpwWiAhXhpzUIqz5muuYhfkzJbungaU4CEfoRTvnhPH1Fap3UtAHkhQ9hqFdyE5eG0cwsi1yRw7dfG2p41ppZGYPGUTfsJ-qhzPPUfsOwm5rkx1EFIdjWwK5E8ftrF4ONI4mPxEcnhRSUsjT1QKsvg';    // ← tu token real
-var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef'; // ← tu storeId real
+var PAYPHONE_TOKEN   = 'PAYPHONE_TOKEN';    // ← tu token real
+var PAYPHONE_STOREID = 'PAYPHONE_STORE_ID'; // ← tu storeId real
 
 function initPayPhone() {
   if (!M) return;

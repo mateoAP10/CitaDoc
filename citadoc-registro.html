@@ -243,6 +243,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .nav-dropdown-sep{height:1px;background:var(--border);margin:.25rem 0}
 .nav-dropdown-item.danger{color:#dc2626}
 .nav-dropdown-item.danger:hover{background:#fef2f2}
+
+/* ── NAV ── */
+nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:0 5%; height:64px; background:rgba(247,244,239,.95); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+.nav-link { font-size:.88rem; font-weight:500; color:var(--muted); text-decoration:none; transition:color .2s; }
+.nav-link:hover { color:var(--teal); }
+.nav-back { font-size:.85rem; color:var(--muted); text-decoration:none; transition:color .2s; }
+.nav-back:hover { color:var(--teal); }
+.btn-nav { background:var(--teal); color:#fff; padding:.48rem 1.2rem; border-radius:50px; font-size:.85rem; font-weight:600; text-decoration:none; transition:background .2s; white-space:nowrap; }
+.btn-nav:hover { background:var(--teal-mid); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <!-- Analytics -->
@@ -312,7 +321,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
         <div class="plan-card-top">
           <div>
             <div class="plan-name">Plan Destacado</div>
-            <div class="plan-price-row"><div class="plan-price"><sup>$</sup>29</div><div class="plan-period">/ mes</div></div>
+            <div class="plan-price-row"><div class="plan-price"><sup>$</sup>19.99</div><div class="plan-period">/ mes</div></div>
           </div>
           <div class="plan-radio"></div>
         </div>
@@ -513,7 +522,7 @@ function selectPlan(p) {
 function updatePaymentStep() {
   const f = selectedPlan==='featured';
   document.getElementById('sum-name').textContent = f ? 'Plan Destacado' : 'Plan Gratuito';
-  document.getElementById('sum-price').innerHTML  = f ? '$29 <span>/mes</span>' : '$0 <span>/mes</span>';
+  document.getElementById('sum-price').innerHTML  = f ? '$19.99 <span>/mes</span>' : '$0 <span>/mes</span>';
   document.getElementById('sum-desc').textContent  = f ? 'Primero en búsquedas · Badge Destacado' : 'Perfil básico · Link para compartir';
   document.getElementById('payment-form').style.display = f ? 'block' : 'none';
   document.getElementById('free-note').style.display    = f ? 'none' : 'block';
