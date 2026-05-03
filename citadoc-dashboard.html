@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v22</title>
+<title>CitaDoc — Dashboard v23</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -552,11 +552,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         </div>
       </div>
       <a href="citadoc-perfil.html" class="btn-ver-perfil" id="btnVerPerfil">👁 Ver mi perfil</a>
-    </div>
-    <!-- Test PayPhone — eliminar cuando funcione -->
-    <div id="pp-test-wrap" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9999;background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:280px">
-      <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-bottom:.5rem">TEST PAYPHONE</div>
-      <div id="pp-test"></div>
+    </div><div id="pp-test"></div>
     </div>
   </header>
 
@@ -784,7 +780,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
   <!-- PANEL PACIENTES -->
   <div class="panel" id="panel-pacientes">
-    <!-- Modal Nuevo Paciente -->
     <div id="modalPaciente" onclick="if(event.target===this)cerrarModalPaciente()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem">
       <div onclick="event.stopPropagation()" style="background:#fff;border-radius:18px;padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">
@@ -792,35 +787,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
           <button onclick="cerrarModalPaciente()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af">&#x2715;</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">
-          <div style="grid-column:1/-1">
-            <label style="font-size:.73rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Nombre completo *</label>
-            <input id="p_nombre" placeholder="Ej: Maria Garcia" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
-          </div>
-          <div>
-            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Email</label>
-            <input id="p_email" type="email" placeholder="correo@ejemplo.com" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
-          </div>
-          <div>
-            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Telefono</label>
-            <input id="p_telefono" placeholder="+593 99 123 4567" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
-          </div>
-          <div>
-            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Cedula</label>
-            <input id="p_cedula" placeholder="1234567890" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
-          </div>
-          <div>
-            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Fecha nacimiento</label>
-            <input id="p_fecha" type="date" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
-          </div>
-          <div>
-            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Genero</label>
-            <select id="p_genero" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;background:#fff">
-              <option value="">Sin especificar</option>
-              <option value="M">Masculino</option>
-              <option value="F">Femenino</option>
-              <option value="O">Otro</option>
-            </select>
-          </div>
+          <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">NOMBRE *</label><input id="p_nombre" placeholder="Maria Garcia" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">EMAIL</label><input id="p_email" type="email" placeholder="correo@ejemplo.com" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">TELEFONO</label><input id="p_telefono" placeholder="+593 99 123 4567" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">CEDULA</label><input id="p_cedula" placeholder="1234567890" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">NACIMIENTO</label><input id="p_fecha" type="date" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">GENERO</label><select id="p_genero" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;background:#fff"><option value="">Sin especificar</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select></div>
         </div>
         <div style="display:flex;gap:.7rem;margin-top:1.2rem">
           <button onclick="cerrarModalPaciente()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>
@@ -1294,23 +1266,6 @@ function validarBloques(bloques) {
     if (sorted[i].hasta > sorted[i+1].desde) return false;
   }
   return true;
-}
-
-function bloquesASlots(bloques, duracionMin) {
-  var slots = [];
-  bloques.forEach(function(b) {
-    var desde = b.desde.split(':');
-    var hasta = b.hasta.split(':');
-    var ini = parseInt(desde[0])*60 + parseInt(desde[1]);
-    var fin = parseInt(hasta[0])*60 + parseInt(hasta[1]);
-    while (ini + duracionMin <= fin) {
-      var hh = String(Math.floor(ini/60)).padStart(2,'0');
-      var mm = String(ini%60).padStart(2,'0');
-      slots.push(hh+':'+mm);
-      ini += duracionMin;
-    }
-  });
-  return slots;
 }
 
 async function guardarHorarios(btn) {
@@ -3455,142 +3410,91 @@ function cerrarHC() {
 }
 
 
-
-// ══ FUNCIONES AGREGADAS ══
-
-// ── DURACIÓN CITAS ──
-function setDuracion(min, btn) {
+// ── ALIAS Y FUNCIONES FALTANTES ──
+function setDur(min, btn) {
   DURACION_CITA = min;
   document.querySelectorAll('.dur-btn').forEach(function(b) {
-    b.style.cssText = b.style.cssText.replace(/background:[^;]+;?/,'') + 'background:#fff;color:#374151;border-color:#d1d5db;font-weight:600;';
+    b.style.background=''; b.style.color=''; b.style.borderColor=''; b.style.fontWeight='';
     b.classList.remove('dur-active');
   });
   if (btn) {
-    btn.style.background = '#0b7c6e';
-    btn.style.color = '#fff';
-    btn.style.borderColor = '#0b7c6e';
-    btn.style.fontWeight = '700';
+    btn.style.background='#0b7c6e'; btn.style.color='#fff';
+    btn.style.borderColor='#0b7c6e'; btn.style.fontWeight='700';
     btn.classList.add('dur-active');
   }
   var lbl = document.getElementById('durLabel');
   if (lbl) lbl.textContent = min + ' minutos';
 }
 
-// ── BLOQUEOS ──
+function bloquesASlots(bloques, duracionMin) {
+  var slots = [];
+  (bloques||[]).forEach(function(b) {
+    var p1=b.desde.split(':'), p2=b.hasta.split(':');
+    var ini=parseInt(p1[0])*60+parseInt(p1[1]);
+    var fin=parseInt(p2[0])*60+parseInt(p2[1]);
+    while (ini+duracionMin<=fin) {
+      slots.push(String(Math.floor(ini/60)).padStart(2,'0')+':'+String(ini%60).padStart(2,'0'));
+      ini+=duracionMin;
+    }
+  });
+  return slots;
+}
+
+function renderDayConfigBar(){}
+function renderGridHorarios(){ renderDiasHorarios(); }
+function renderSlots(){ renderDiasHorarios(); }
+
 function cargarBloqueos() {
-  if (!M || !M.id) return;
+  if (!M||!M.id) return;
   var lista = document.getElementById('listaBloqueos');
   if (!lista) return;
-  _sb.from('bloqueos_medico')
-    .select('*').eq('medico_id', M.id)
-    .gte('fecha_fin', new Date().toISOString().split('T')[0])
-    .order('fecha_inicio')
+  _sb.from('bloqueos_medico').select('*').eq('medico_id',M.id)
+    .gte('fecha_fin',new Date().toISOString().split('T')[0]).order('fecha_inicio')
     .then(function(r) {
-      if (r.error || !r.data || !r.data.length) {
-        lista.innerHTML = '<div style="font-size:.78rem;color:#9ca3af;margin-top:.5rem">No hay bloqueos activos.</div>';
-        return;
+      if (r.error||!r.data||!r.data.length) {
+        lista.innerHTML='<div style="font-size:.78rem;color:#9ca3af;margin-top:.5rem">No hay bloqueos activos.</div>'; return;
       }
-      lista.innerHTML = '';
+      lista.innerHTML='';
       r.data.forEach(function(b) {
-        var div = document.createElement('div');
-        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.4rem .8rem;margin-top:.4rem;font-size:.8rem';
-        var span = document.createElement('span');
-        span.style.cssText = 'color:#7f1d1d;font-weight:600';
-        span.textContent = b.fecha_inicio + ' → ' + b.fecha_fin + (b.motivo ? ' · ' + b.motivo : '');
-        var btn = document.createElement('button');
-        btn.style.cssText = 'background:none;border:none;color:#dc2626;cursor:pointer;font-size:.85rem';
-        btn.textContent = '✕';
-        btn.addEventListener('click', function() {
-          _sb.from('bloqueos_medico').delete().eq('id', b.id).then(function() { cargarBloqueos(); });
-        });
-        div.appendChild(span);
-        div.appendChild(btn);
-        lista.appendChild(div);
+        var d=document.createElement('div');
+        d.style.cssText='display:flex;justify-content:space-between;align-items:center;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.4rem .8rem;margin-top:.4rem;font-size:.8rem';
+        var sp=document.createElement('span'); sp.style.cssText='color:#7f1d1d;font-weight:600';
+        sp.textContent=b.fecha_inicio+' → '+b.fecha_fin+(b.motivo?' · '+b.motivo:'');
+        var btn=document.createElement('button'); btn.style.cssText='background:none;border:none;color:#dc2626;cursor:pointer;font-size:.85rem';
+        btn.textContent='✕';
+        (function(id){ btn.addEventListener('click',function(){ _sb.from('bloqueos_medico').delete().eq('id',id).then(function(){ cargarBloqueos(); }); }); })(b.id);
+        d.appendChild(sp); d.appendChild(btn); lista.appendChild(d);
       });
     });
 }
 
-// ── MODAL PACIENTE ──
 function abrirModalPaciente() {
-  var modal = document.getElementById('modalPaciente');
-  if (modal) {
-    modal.style.display = 'flex';
-    ['p_nombre','p_email','p_telefono','p_cedula','p_fecha'].forEach(function(id){
-      var el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-    var g = document.getElementById('p_genero');
-    if (g) g.value = '';
-  }
+  var modal=document.getElementById('modalPaciente');
+  if(modal){ modal.style.display='flex'; ['p_nombre','p_email','p_telefono','p_cedula','p_fecha'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; }); var g=document.getElementById('p_genero'); if(g) g.value=''; }
 }
-
-function cerrarModalPaciente() {
-  var modal = document.getElementById('modalPaciente');
-  if (modal) modal.style.display = 'none';
-}
+function cerrarModalPaciente() { var m=document.getElementById('modalPaciente'); if(m) m.style.display='none'; }
 
 async function guardarPaciente() {
-  if (!M || !M.id) return;
-  var nombre = (document.getElementById('p_nombre')||{}).value || '';
-  nombre = nombre.trim();
-  var email  = (document.getElementById('p_email')||{}).value || '';
-  email = email.trim();
-
-  // Validación
-  if (!nombre) { mostrarToast('El nombre es obligatorio', 'error'); return; }
-  if (email && !email.includes('@')) { mostrarToast('Email inválido', 'error'); return; }
-
-  // Deduplicación por email
+  if (!M||!M.id) return;
+  var nombre=((document.getElementById('p_nombre')||{}).value||'').trim();
+  var email=((document.getElementById('p_email')||{}).value||'').trim();
+  if (!nombre) { mostrarToast('Nombre obligatorio','error'); return; }
+  if (email&&!email.includes('@')) { mostrarToast('Email inválido','error'); return; }
   if (email) {
-    var check = await _sb.from('pacientes').select('id,nombre').eq('email', email).eq('medico_id', M.id).single();
-    if (check.data) {
-      mostrarToast('Ya existe un paciente con ese email: ' + check.data.nombre, 'error');
-      return;
-    }
+    var chk=await _sb.from('pacientes').select('id,nombre').eq('email',email).eq('medico_id',M.id).maybeSingle();
+    if (chk.data) { mostrarToast('Ya existe: '+chk.data.nombre,'error'); return; }
   }
-
-  var paciente = {
-    medico_id:        M.id,
-    nombre:           nombre,
-    email:            email || null,
-    telefono:         (document.getElementById('p_telefono')||{}).value.trim() || null,
-    cedula:           (document.getElementById('p_cedula')||{}).value.trim() || null,
-    fecha_nacimiento: (document.getElementById('p_fecha')||{}).value || null,
-    genero:           (document.getElementById('p_genero')||{}).value || null,
-    origen:           'manual'
-  };
-
-  var res = await _sb.from('pacientes').insert([paciente]);
-  if (res.error) { mostrarToast('Error: ' + res.error.message, 'error'); return; }
-  mostrarToast('Paciente guardado correctamente');
+  var res=await _sb.from('pacientes').insert([{medico_id:M.id, nombre:nombre, email:email||null, telefono:((document.getElementById('p_telefono')||{}).value||null), cedula:((document.getElementById('p_cedula')||{}).value||null), fecha_nacimiento:((document.getElementById('p_fecha')||{}).value||null), genero:((document.getElementById('p_genero')||{}).value||null), origen:'manual'}]);
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  mostrarToast('Paciente guardado');
   cerrarModalPaciente();
   cargarPacientes();
 }
 
-// Función para obtener o crear paciente desde web (agenda pública)
-async function getOrCreatePaciente(data) {
-  if (!data.email) return null;
-  var check = await _sb.from('pacientes').select('*').eq('email', data.email).eq('medico_id', data.medico_id).single();
-  if (check.data) return check.data;
-  var res = await _sb.from('pacientes').insert([Object.assign({}, data, {origen: 'web'})]).select().single();
-  return res.data || null;
-}
-
 function filtrarPacientes() {
-  var txt = (document.getElementById('buscarPaciente')||{}).value;
-  if (!txt) txt = '';
-  txt = txt.toLowerCase();
-  document.querySelectorAll('.pac-card').forEach(function(card) {
-    var search = card.dataset.search || card.textContent;
-    card.style.display = search.toLowerCase().includes(txt) ? '' : 'none';
-  });
+  var txt=((document.getElementById('buscarPaciente')||{}).value||'').toLowerCase();
+  document.querySelectorAll('.pac-card').forEach(function(card){ card.style.display=(card.dataset.search||card.textContent).toLowerCase().includes(txt)?'':'none'; });
 }
-
-// ── HELPERS ──
-function renderDayConfigBar(){ }
-function renderGridHorarios(){ renderDiasHorarios(); }
-function renderSlots(){ renderDiasHorarios(); }
-
 </script>
 
 <!-- SIDEBAR TRIGGER — zona activadora invisible en tablet -->
@@ -3620,16 +3524,10 @@ function renderSlots(){ renderDiasHorarios(); }
   </div>
 </div>
 
-</script>
-  <!-- Test PayPhone — HTML -->
-  <div id="pp-test-wrap" style="display:none;position:fixed;bottom:80px;right:20px;z-index:9999;background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:300px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-      <div style="font-size:.75rem;font-weight:600;color:#6b7280">TEST PAYPHONE ($1)</div>
-      <button onclick="document.getElementById('pp-test-wrap').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1rem">&#x2715;</button>
+</script><button onclick="document.getElementById('pp-test-wrap').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1rem">&#x2715;</button>
     </div>
     <div id="pp-test"></div>
   </div>
-  <button onclick="ppTest()" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:#059669;color:#fff;border:none;padding:.6rem 1.1rem;border-radius:10px;font-family:sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F9EA; Test PP</button>
 
     <!-- PayPhone — implementación según doc oficial -->
   <script type="module">
