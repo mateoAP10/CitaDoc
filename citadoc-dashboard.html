@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v10</title>
+<title>CitaDoc — Dashboard v13</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -630,50 +630,58 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
     <!-- HORARIOS -->
     <div class="panel" id="panel-horarios">
-      <div class="section-header">
+
+      <!-- HEADER -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem">
         <div>
-          <h2>Mis horarios</h2>
-          <p>Define los bloques de atención por día. Agrega mañana y tarde por separado.</p>
+          <h2 style="font-family:'Fraunces',serif;font-size:1.6rem;font-weight:700;color:#0f1a18;margin:0 0 .3rem">Mis horarios</h2>
+          <p style="font-size:.85rem;color:#6b7280;margin:0">Define tus horarios de atención. Los pacientes verán los slots disponibles.</p>
+        </div>
+        <div style="display:flex;gap:.6rem;align-items:center">
+          <button onclick="copiarLunesATodos()" style="padding:.5rem 1rem;background:#f0fdf4;color:#0b7c6e;border:1px solid #bbf7d0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer">↓ Copiar lunes a todos</button>
+          <button onclick="guardarHorarios(this)" style="padding:.5rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.4rem">✓ Guardar cambios</button>
         </div>
       </div>
 
-      <!-- Duración de cita -->
-      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1.1rem;padding:.75rem 1rem;background:var(--white);border:1.5px solid var(--border);border-radius:12px">
-        <span style="font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2)">Duración de cita</span>
-        <div class="dur-btns">
-          <button class="dur-btn active" onclick="setDur(30,this)">30 min</button>
-          <button class="dur-btn" onclick="setDur(60,this)">1 hora</button>
-        </div>
-        <button onclick="copiarLunesATodos()" style="margin-left:auto;padding:.45rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:600;cursor:pointer;color:var(--ink2)">📅 Copiar lunes a toda la semana</button>
-      </div>
-
-      <!-- Días -->
-      <div id="diasBloques"></div>
-
-      <!-- Bloqueos / Vacaciones -->
-      <div class="bloqueos-section">
-        <div class="bloqueos-title">🌴 Vacaciones y ausencias</div>
-        <div class="bloqueo-form">
-          <div class="bloqueo-form-field"><label>Desde</label><input type="date" id="bloqueoDesde"></div>
-          <div class="bloqueo-form-field"><label>Hasta</label><input type="date" id="bloqueoHasta"></div>
-          <div class="bloqueo-form-field" style="flex:1;min-width:140px"><label>Motivo (opcional)</label><input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso"></div>
-          <button class="btn-bloquear" onclick="crearBloqueo()">🚫 Bloquear fechas</button>
-        </div>
-        <div id="bloqueosList"><div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div></div>
-      </div>
-
-      <!-- Footer -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.2rem;flex-wrap:wrap;gap:.8rem">
-        <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted2)">
-          <span>📅</span>
-          <div>
-            <div style="font-weight:600;color:var(--ink2)">Cambios guardados automáticamente</div>
-            <div id="horariosFecha" style="font-size:.74rem">Última actualización: --</div>
+      <!-- DURACIÓN -->
+      <div style="background:#f8fffe;border:1px solid #d1fae5;border-radius:14px;padding:1rem 1.3rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+        <div>
+          <div style="font-size:.78rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Duración de citas</div>
+          <div id="duracionBtns" style="display:flex;gap:.4rem">
+            <button onclick="setDuracion(15,this)" class="dur-btn" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">15 min</button>
+            <button onclick="setDuracion(30,this)" class="dur-btn dur-active" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #0b7c6e;background:#0b7c6e;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;color:#fff">30 min</button>
+            <button onclick="setDuracion(45,this)" class="dur-btn" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">45 min</button>
+            <button onclick="setDuracion(60,this)" class="dur-btn" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">60 min</button>
           </div>
         </div>
-        <button id="btnGuardarHorarios" onclick="guardarHorarios(this)" style="padding:.75rem 1.6rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Guardar horarios</button>
+        <div style="font-size:.78rem;color:#6b7280;margin-left:auto">
+          💡 Los pacientes verán intervalos de <strong id="durLabel" style="color:#0b7c6e">30 minutos</strong>
+        </div>
       </div>
-    </div>
+
+      <!-- DÍAS GRID -->
+      <div id="diasHorariosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.8rem"></div>
+
+      <!-- VACACIONES -->
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:1.3rem;margin-bottom:1rem">
+        <div style="font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem">🌴 Vacaciones y Ausencias</div>
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem">DESDE</label>
+            <input type="date" id="bloqueoDesde" style="padding:.5rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#374151">
+          </div>
+          <div>
+            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem">HASTA</label>
+            <input type="date" id="bloqueoHasta" style="padding:.5rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#374151">
+          </div>
+          <div style="flex:1;min-width:160px">
+            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem">MOTIVO (OPCIONAL)</label>
+            <input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso..." style="width:100%;padding:.5rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#374151;box-sizing:border-box">
+          </div>
+          <button onclick="crearBloqueo()" style="padding:.52rem 1.1rem;background:#dc2626;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:700;cursor:pointer;white-space:nowrap">Bloquear fechas</button>
+        </div>
+        <div id="listaBloqueos" style="margin-top:.8rem"></div>
+      </div>
 
     <!-- PERFIL -->
     <div class="panel" id="panel-perfil">
@@ -2051,6 +2059,15 @@ function testPayPhone() {
 var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
 var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef';
 
+function mostrarToast(msg, tipo) {
+  var t = document.createElement('div');
+  var bg = tipo === 'error' ? '#dc2626' : '#0b7c6e';
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:'+bg+';color:#fff;padding:12px 18px;border-radius:10px;font-family:DM Sans,sans-serif;font-weight:600;font-size:.88rem;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.15);animation:toastIn .2s ease';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
+}
+
 function renderPayPhoneGlobal(containerId) {
   var el = document.getElementById(containerId);
   if (!el) return;
@@ -2133,10 +2150,7 @@ function initPayPhone() {
     });
     ppb.render('pp-button');
 
-    // Activación optimista — click en la cajita después del pago
-    container.addEventListener('click', function() {
-      setTimeout(activarProLocal, 4000);
-    }, { once: true });
+    // Activación solo via postMessage de PayPhone
 
   } catch(e) {
     console.error('PayPhone error:', e);
@@ -2207,7 +2221,6 @@ function mostrarProModal(feature) {
 }
 
 function cerrarProModal() {
-  console.trace('cerrarProModal llamado desde:');
   var modal = document.getElementById('proModal');
   if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
