@@ -549,6 +549,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
 .dia-inactivo{text-align:center;padding:.9rem 0;font-size:.8rem;color:#9ca3af}
 
+
+/* ── DÍA BLOQUES ── */
+.dia-body{margin-top:.6rem;border-top:1px solid #f0f0f0;padding-top:.7rem}
+.dia-resumen{font-size:.76rem;color:#6b7280;margin-top:.3rem;font-family:'DM Sans',sans-serif}
+.dia-resumen.on{color:#0b7c6e;font-weight:600}
+.bloque-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
+.bloque-time{padding:.32rem .5rem;border:1.5px solid #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:#374151;width:88px;background:#fff}
+.bloque-time:focus{outline:none;border-color:#0b7c6e}
+.bloque-sep{color:#9ca3af;font-size:.85rem;font-weight:600}
+.btn-del-bloque{background:none;border:none;color:#d1d5db;cursor:pointer;font-size:.9rem;padding:.2rem .3rem;border-radius:6px;transition:.15s;line-height:1}
+.btn-del-bloque:hover{color:#dc2626;background:#fef2f2}
+
 </style>
   <!-- PayPhone SDK -->
   <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
@@ -1154,13 +1166,15 @@ function renderDiasHorarios() {
       + '<div class="dia-resumen'+(data.activo?' on':'')+'">'+resumen+'</div>'
     + '</div>';
 
-    // Body con bloques (solo si activo)
+    // Body con bloques
+    var body = document.createElement('div');
+    body.className = 'dia-body';
+    body.id = 'diabody_'+d.key;
+    card.appendChild(body);
     if (data.activo) {
-      var body = document.createElement('div');
-      body.className = 'dia-body';
-      body.id = 'diabody_'+d.key;
-      card.appendChild(body);
       renderBloquesDia(d.key);
+    } else {
+      body.innerHTML = '<div class="dia-inactivo">📅 No atiendes este día<br><small>Activa el toggle para agregar horarios</small></div>';
     }
 
     wrap.appendChild(card);
