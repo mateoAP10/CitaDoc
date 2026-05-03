@@ -514,6 +514,41 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-add-bloque{width:100%;padding:.4rem;background:none;border:1.5px dashed #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#6b7280;cursor:pointer;transition:.15s}
 .btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
 .dia-inactivo-msg{text-align:center;padding:.8rem;font-size:.78rem;color:#9ca3af}
+
+/* ── HORARIOS WRAPPER ── */
+.horarios-wrap{padding:.2rem 0}
+.hw-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
+.hw-duracion{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1.4rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.hw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-bottom:1.4rem}
+.hw-vacaciones{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.2rem 1.4rem}
+.hw-btn-primary{padding:.5rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer}
+.hw-btn-secondary{padding:.5rem 1rem;background:#f0fdf4;color:#0b7c6e;border:1.5px solid #bbf7d0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer}
+.hw-btn-danger{padding:.5rem 1rem;background:#dc2626;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.hw-label{font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem;letter-spacing:.04em}
+.hw-input{padding:.48rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:#374151}
+/* Duración buttons */
+.dur-btn{padding:.38rem .85rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151;transition:.15s}
+.dur-btn:hover{border-color:#0b7c6e;color:#0b7c6e}
+.dur-active{background:#0b7c6e!important;color:#fff!important;border-color:#0b7c6e!important;font-weight:700!important}
+/* Día cards */
+.dia-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.1rem;transition:box-shadow .2s}
+.dia-card.activo{border-color:#bbf7d0}
+.dia-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07)}
+.dia-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.dia-label{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;color:#0f1a18}
+.dia-toggle{position:relative;display:inline-block;width:38px;height:22px;cursor:pointer;flex-shrink:0}
+.dia-toggle input{opacity:0;width:0;height:0;position:absolute}
+.dia-toggle-track{position:absolute;inset:0;background:#d1d5db;border-radius:50px;transition:.2s}
+.dia-toggle input:checked + .dia-toggle-track{background:#0b7c6e}
+.dia-toggle-track:before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;left:3px;top:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.dia-toggle input:checked + .dia-toggle-track:before{transform:translateX(16px)}
+.bloque-item{display:flex;align-items:center;justify-content:space-between;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.38rem .75rem;font-size:.8rem;font-family:'DM Sans',sans-serif;font-weight:600;color:#065f46;margin-bottom:.4rem}
+.bloque-del{background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.88rem;padding:0;line-height:1;transition:.15s}
+.bloque-del:hover{color:#dc2626}
+.btn-add-bloque{width:100%;padding:.42rem;background:none;border:1.5px dashed #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#6b7280;cursor:pointer;transition:.15s;margin-top:.2rem}
+.btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
+.dia-inactivo{text-align:center;padding:.9rem 0;font-size:.8rem;color:#9ca3af}
+
 </style>
   <!-- PayPhone SDK -->
   <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
@@ -650,57 +685,61 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
     <!-- HORARIOS -->
     <div class="panel" id="panel-horarios">
+      <div class="horarios-wrap">
 
-      <!-- HEADER -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem">
-        <div>
-          <h2 style="font-family:'Fraunces',serif;font-size:1.6rem;font-weight:700;color:#0f1a18;margin:0 0 .3rem">Mis horarios</h2>
-          <p style="font-size:.85rem;color:#6b7280;margin:0">Define tus horarios de atención. Los pacientes verán los slots disponibles.</p>
-        </div>
-        <div style="display:flex;gap:.6rem;align-items:center">
-          <button onclick="copiarLunesATodos()" style="padding:.5rem 1rem;background:#f0fdf4;color:#0b7c6e;border:1px solid #bbf7d0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer">↓ Copiar lunes a todos</button>
-          <button onclick="guardarHorarios(this)" style="padding:.5rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.4rem">✓ Guardar cambios</button>
-        </div>
-      </div>
-
-      <!-- DURACIÓN -->
-      <div style="background:#f8fffe;border:1px solid #d1fae5;border-radius:14px;padding:1rem 1.3rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
-        <div>
-          <div style="font-size:.78rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Duración de citas</div>
-          <div id="duracionBtns" style="display:flex;gap:.4rem">
-            <button onclick="setDuracion(15,this)" class="dur-btn" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">15 min</button>
-            <button onclick="setDuracion(30,this)" class="dur-btn dur-active" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #0b7c6e;background:#0b7c6e;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;color:#fff">30 min</button>
-            <button onclick="setDuracion(45,this)" class="dur-btn" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">45 min</button>
-            <button onclick="setDuracion(60,this)" class="dur-btn" style="padding:.38rem .8rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">60 min</button>
-          </div>
-        </div>
-        <div style="font-size:.78rem;color:#6b7280;margin-left:auto">
-          💡 Los pacientes verán intervalos de <strong id="durLabel" style="color:#0b7c6e">30 minutos</strong>
-        </div>
-      </div>
-
-      <!-- DÍAS GRID -->
-      <div id="diasBloques" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.8rem"></div>
-
-      <!-- VACACIONES -->
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:1.3rem;margin-bottom:1rem">
-        <div style="font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem">🌴 Vacaciones y Ausencias</div>
-        <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:flex-end">
+        <!-- TOP -->
+        <div class="hw-top">
           <div>
-            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem">DESDE</label>
-            <input type="date" id="bloqueoDesde" style="padding:.5rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#374151">
+            <h2 style="font-family:'Fraunces',serif;font-size:1.55rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Mis horarios</h2>
+            <p style="font-size:.84rem;color:#6b7280;margin:0">Define tus horarios de atención y la duración de tus citas.</p>
           </div>
-          <div>
-            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem">HASTA</label>
-            <input type="date" id="bloqueoHasta" style="padding:.5rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#374151">
+          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+            <button onclick="copiarLunesATodos()" class="hw-btn-secondary">↓ Copiar lunes a todos</button>
+            <button onclick="guardarHorarios(this)" class="hw-btn-primary">✓ Guardar cambios</button>
           </div>
-          <div style="flex:1;min-width:160px">
-            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:.3rem">MOTIVO (OPCIONAL)</label>
-            <input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso..." style="width:100%;padding:.5rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:#374151;box-sizing:border-box">
-          </div>
-          <button onclick="crearBloqueo()" style="padding:.52rem 1.1rem;background:#dc2626;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:700;cursor:pointer;white-space:nowrap">Bloquear fechas</button>
         </div>
-        <div id="listaBloqueos" style="margin-top:.8rem"></div>
+
+        <!-- DURACIÓN -->
+        <div class="hw-duracion">
+          <div>
+            <strong style="font-size:.9rem;color:#0f1a18;font-family:'DM Sans',sans-serif">Duración de las citas</strong>
+            <p style="font-size:.78rem;color:#6b7280;margin:.2rem 0 0">¿Cuánto dura cada consulta?</p>
+          </div>
+          <div style="display:flex;gap:.4rem">
+            <button onclick="setDuracion(15,this)" class="dur-btn">15 min</button>
+            <button onclick="setDuracion(30,this)" class="dur-btn dur-active">30 min</button>
+            <button onclick="setDuracion(45,this)" class="dur-btn">45 min</button>
+            <button onclick="setDuracion(60,this)" class="dur-btn">60 min</button>
+          </div>
+          <div style="font-size:.78rem;color:#6b7280">
+            💡 Los pacientes verán intervalos de <strong id="durLabel" style="color:#0b7c6e">30 minutos</strong>
+          </div>
+        </div>
+
+        <!-- GRID DÍAS -->
+        <div id="diasBloques" class="hw-grid"></div>
+
+        <!-- VACACIONES -->
+        <div class="hw-vacaciones">
+          <div style="font-size:.73rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem">🌴 Vacaciones y Ausencias</div>
+          <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end">
+            <div>
+              <label class="hw-label">DESDE</label>
+              <input type="date" id="bloqueoDesde" class="hw-input">
+            </div>
+            <div>
+              <label class="hw-label">HASTA</label>
+              <input type="date" id="bloqueoHasta" class="hw-input">
+            </div>
+            <div style="flex:1;min-width:180px">
+              <label class="hw-label">MOTIVO (OPCIONAL)</label>
+              <input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso..." class="hw-input" style="width:100%;box-sizing:border-box">
+            </div>
+            <button onclick="crearBloqueo()" class="hw-btn-danger">Bloquear fechas</button>
+          </div>
+          <div id="listaBloqueos" style="margin-top:.8rem"></div>
+        </div>
+
       </div>
 
     <!-- PERFIL -->
@@ -3376,7 +3415,7 @@ function generarPDF() {
     + 'body{margin:0}'
     + '.page{padding:20mm 24mm}'
     + '}'
-    + '</style></head><body>'
+    + '\n</style></head><body>'
     + '<div class="page">'
     + '<div class="header">'
       + '<div class="logo">Cita<em>Doc</em></div>'
