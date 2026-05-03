@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v23</title>
+<title>CitaDoc — Dashboard v24</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -488,6 +488,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .dir-preview{display:flex;align-items:center;justify-content:space-between;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.2);border-radius:10px;padding:.65rem .9rem;margin-top:.6rem;font-size:.84rem;color:var(--teal)}
 .dir-preview a{font-size:.78rem;font-weight:600;color:var(--teal);text-decoration:none;border:1.5px solid var(--teal);padding:.2rem .6rem;border-radius:7px}
 .dir-preview a:hover{background:var(--teal);color:#fff}
+
+.dia-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.1rem;transition:box-shadow .2s}
+.dia-card.activo{border-color:#bbf7d0}
+.dia-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.dia-label{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;color:#0f1a18}
+.dia-resumen{font-size:.76rem;color:#6b7280;font-family:'DM Sans',sans-serif}
+.dia-resumen.on{color:#0b7c6e;font-weight:600}
+.dia-body{margin-top:.6rem;border-top:1px solid #f0f0f0;padding-top:.7rem;display:block}
+.dia-toggle{position:relative;display:inline-block;width:38px;height:22px;cursor:pointer;flex-shrink:0}
+.dia-toggle input{opacity:0;width:0;height:0;position:absolute}
+.dia-toggle-track{position:absolute;inset:0;background:#d1d5db;border-radius:50px;transition:.2s}
+.dia-toggle input:checked + .dia-toggle-track{background:#0b7c6e}
+.dia-toggle-track:before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;left:3px;top:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.dia-toggle input:checked + .dia-toggle-track:before{transform:translateX(16px)}
+.bloque-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
+.bloque-time{padding:.32rem .5rem;border:1.5px solid #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:#374151;width:88px;background:#fff}
+.bloque-time:focus{outline:none;border-color:#0b7c6e}
+.bloque-sep{color:#9ca3af;font-size:.85rem;font-weight:600}
+.btn-del-bloque{background:none;border:none;color:#d1d5db;cursor:pointer;font-size:.9rem;padding:.2rem .3rem;border-radius:6px;transition:.15s;line-height:1}
+.btn-del-bloque:hover{color:#dc2626;background:#fef2f2}
+.btn-add-bloque{width:100%;padding:.42rem;background:none;border:1.5px dashed #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#6b7280;cursor:pointer;transition:.15s;margin-top:.2rem}
+.btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
+.dia-inactivo{text-align:center;padding:.9rem 0;font-size:.8rem;color:#9ca3af}
+
 </style>
   <!-- PayPhone SDK -->
   <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
@@ -544,11 +568,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div class="topbar-title" id="topbarTitle">Panel médico</div>
     <div class="topbar-right">
       <span class="topbar-date" id="topbarDate"></span>
-      <div class="topbar-user">
+      <div class="topbar-user" onclick="toggleUserMenu()" style="cursor:pointer;position:relative" title="Opciones de cuenta">
         <div class="topbar-avatar" id="topbarAvatar">—</div>
         <div>
           <div class="topbar-info-name" id="topbarName">—</div>
           <div class="topbar-info-plan" id="topbarPlan">—</div>
+        </div>
+        <span style="font-size:.65rem;color:#9ca3af;margin-left:.2rem">▾</span>
+        <div id="userMenu" style="display:none;position:absolute;top:110%;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;padding:.5rem;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:100">
+          <div onclick="cerrarSesion()" style="padding:.55rem .9rem;font-size:.85rem;font-family:'DM Sans',sans-serif;font-weight:600;color:#dc2626;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:.5rem" onmouseenter="this.style.background='#fef2f2'" onmouseleave="this.style.background=''">
+            ↩ Cerrar sesión
+          </div>
+          <div onclick="showPanel('perfil',null)" style="padding:.55rem .9rem;font-size:.85rem;font-family:'DM Sans',sans-serif;font-weight:600;color:#374151;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:.5rem" onmouseenter="this.style.background='#f9fafb'" onmouseleave="this.style.background=''">
+            👤 Mi perfil
+          </div>
         </div>
       </div>
       <a href="citadoc-perfil.html" class="btn-ver-perfil" id="btnVerPerfil">👁 Ver mi perfil</a>
@@ -618,52 +651,46 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
     <!-- HORARIOS -->
     <div class="panel" id="panel-horarios">
-      <div class="section-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
         <div>
-          <h2>Mis horarios</h2>
-          <p>Define los bloques de atención por día. Agrega mañana y tarde por separado.</p>
+          <h2 style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Mis horarios</h2>
+          <p style="font-size:.84rem;color:#6b7280;margin:0">Define tus bloques de atención por día.</p>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <button onclick="copiarLunesATodos()" style="padding:.5rem 1rem;background:#f0fdf4;color:#0b7c6e;border:1.5px solid #bbf7d0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer">↓ Copiar lunes a todos</button>
+          <button onclick="guardarHorarios(this)" style="padding:.5rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">✓ Guardar cambios</button>
         </div>
       </div>
 
-      <!-- Duración de cita -->
-      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1.1rem;padding:.75rem 1rem;background:var(--white);border:1.5px solid var(--border);border-radius:12px">
-        <span style="font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2)">Duración de cita</span>
-        <div class="dur-btns">
-          <button class="dur-btn active" onclick="setDur(30,this)">30 min</button>
-          <button class="dur-btn" onclick="setDur(60,this)">1 hora</button>
-        </div>
-        <button onclick="copiarLunesATodos()" style="margin-left:auto;padding:.45rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:600;cursor:pointer;color:var(--ink2)">📅 Copiar lunes a toda la semana</button>
-      </div>
-
-      <!-- Días -->
-      <div id="diasBloques"></div>
-
-      <!-- Bloqueos / Vacaciones -->
-      <div class="bloqueos-section">
-        <div class="bloqueos-title">🌴 Vacaciones y ausencias</div>
-        <div class="bloqueo-form">
-          <div class="bloqueo-form-field"><label>Desde</label><input type="date" id="bloqueoDesde"></div>
-          <div class="bloqueo-form-field"><label>Hasta</label><input type="date" id="bloqueoHasta"></div>
-          <div class="bloqueo-form-field" style="flex:1;min-width:140px"><label>Motivo (opcional)</label><input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso"></div>
-          <button class="btn-bloquear" onclick="crearBloqueo()">🚫 Bloquear fechas</button>
-        </div>
-        <div id="bloqueosList"><div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div></div>
-      </div>
-
-      <!-- Footer -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.2rem;flex-wrap:wrap;gap:.8rem">
-        <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted2)">
-          <span>📅</span>
-          <div>
-            <div style="font-weight:600;color:var(--ink2)">Cambios guardados automáticamente</div>
-            <div id="horariosFecha" style="font-size:.74rem">Última actualización: --</div>
+      <!-- Duración -->
+      <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1rem 1.4rem;margin-bottom:1.4rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+        <div>
+          <div style="font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Duración de citas</div>
+          <div style="display:flex;gap:.4rem">
+            <button onclick="setDur(15,this)" class="dur-btn" style="padding:.38rem .85rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">15 min</button>
+            <button onclick="setDur(30,this)" class="dur-btn dur-active" style="padding:.38rem .85rem;border-radius:8px;border:1.5px solid #0b7c6e;background:#0b7c6e;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;color:#fff">30 min</button>
+            <button onclick="setDur(45,this)" class="dur-btn" style="padding:.38rem .85rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">45 min</button>
+            <button onclick="setDur(60,this)" class="dur-btn" style="padding:.38rem .85rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151">60 min</button>
           </div>
         </div>
-        <button id="btnGuardarHorarios" onclick="guardarHorarios(this)" style="padding:.75rem 1.6rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Guardar horarios</button>
+        <div style="font-size:.78rem;color:#6b7280;margin-left:auto">💡 Los pacientes verán intervalos de <strong id="durLabel" style="color:#0b7c6e">30 minutos</strong></div>
       </div>
-    </div>
 
-    <!-- PERFIL -->
+      <!-- Grid días -->
+      <div id="diasBloques" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.4rem;align-items:start"></div>
+
+      <!-- Vacaciones -->
+      <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.2rem 1.4rem">
+        <div style="font-size:.73rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem">🌴 Vacaciones y Ausencias</div>
+        <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end">
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">DESDE</label><input type="date" id="bloqueoDesde" style="padding:.48rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:#374151"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">HASTA</label><input type="date" id="bloqueoHasta" style="padding:.48rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:#374151"></div>
+          <div style="flex:1;min-width:180px"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">MOTIVO (OPCIONAL)</label><input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso..." style="width:100%;padding:.48rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:#374151;box-sizing:border-box"></div>
+          <button onclick="crearBloqueo()" style="padding:.52rem 1.1rem;background:#dc2626;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:700;cursor:pointer;white-space:nowrap">Bloquear fechas</button>
+        </div>
+        <div id="listaBloqueos" style="margin-top:.8rem"></div>
+      </div>
+
     <div class="panel" id="panel-perfil">
       <div class="section-header"><h2>Mi perfil</h2><p>Esta información aparece en tu perfil público.</p></div>
       <div class="perfil-layout">
@@ -3494,6 +3521,23 @@ async function guardarPaciente() {
 function filtrarPacientes() {
   var txt=((document.getElementById('buscarPaciente')||{}).value||'').toLowerCase();
   document.querySelectorAll('.pac-card').forEach(function(card){ card.style.display=(card.dataset.search||card.textContent).toLowerCase().includes(txt)?'':'none'; });
+}
+
+function toggleUserMenu() {
+  var menu = document.getElementById('userMenu');
+  if (!menu) return;
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  // Cerrar al hacer click fuera
+  if (menu.style.display === 'block') {
+    setTimeout(function() {
+      document.addEventListener('click', function closeMenu(e) {
+        if (!e.target.closest('.topbar-user')) {
+          menu.style.display = 'none';
+          document.removeEventListener('click', closeMenu);
+        }
+      });
+    }, 10);
+  }
 }
 </script>
 
