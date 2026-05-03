@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v19</title>
+<title>CitaDoc — Dashboard v20</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1043,6 +1043,7 @@ function showPanel(id, el) {
   setText('topbarTitle', titles[id]||id);
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
   if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); if(typeof cargarBloqueos==='function') cargarBloqueos(); }
+  if (id==='perfil')      { if (M) aplicarMedico(M); }
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='pacientes') {
     if (!esPro()) mostrarProModal('pacientes');
@@ -1175,13 +1176,12 @@ function renderDiasHorarios() {
     body.className = 'dia-body';
     body.id = 'diabody_'+d.key;
     card.appendChild(body);
+    wrap.appendChild(card);  // Al DOM ANTES de renderizar
     if (data.activo) {
-      renderBloquesDia(d.key);
+      renderBloquesDia(d.key);  // Ahora el elemento existe en el DOM
     } else {
       body.innerHTML = '<div class="dia-inactivo">📅 No atiendes este día<br><small>Activa el toggle para agregar horarios</small></div>';
     }
-
-    wrap.appendChild(card);
 
     // Toggle evento
     var toggleEl = document.getElementById('toggle_'+d.key);
