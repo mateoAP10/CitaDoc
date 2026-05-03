@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v15</title>
+<title>CitaDoc — Dashboard v17</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -519,7 +519,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .horarios-wrap{padding:.2rem 0}
 .hw-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
 .hw-duracion{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1.4rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
-.hw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-bottom:1.4rem}
+.hw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-bottom:1.4rem;align-items:start}
 .hw-vacaciones{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.2rem 1.4rem}
 .hw-btn-primary{padding:.5rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer}
 .hw-btn-secondary{padding:.5rem 1rem;background:#f0fdf4;color:#0b7c6e;border:1.5px solid #bbf7d0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer}
@@ -531,7 +531,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .dur-btn:hover{border-color:#0b7c6e;color:#0b7c6e}
 .dur-active{background:#0b7c6e!important;color:#fff!important;border-color:#0b7c6e!important;font-weight:700!important}
 /* Día cards */
-.dia-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.1rem;transition:box-shadow .2s}
+
 .dia-card.activo{border-color:#bbf7d0}
 .dia-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07)}
 .dia-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
@@ -551,7 +551,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
 
 /* ── DÍA BLOQUES ── */
-.dia-body{margin-top:.6rem;border-top:1px solid #f0f0f0;padding-top:.7rem}
+.dia-body{margin-top:.6rem;border-top:1px solid #f0f0f0;padding-top:.7rem;display:block}
 .dia-resumen{font-size:.76rem;color:#6b7280;margin-top:.3rem;font-family:'DM Sans',sans-serif}
 .dia-resumen.on{color:#0b7c6e;font-weight:600}
 .bloque-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
@@ -1164,8 +1164,10 @@ function renderDiasHorarios() {
 
     card.innerHTML = '<div class="dia-header">'
       + '<div class="dia-label">'+d.label+'</div>'
+      + '<div style="display:flex;align-items:center;gap:.6rem">'
+      + '<span class="dia-resumen'+(data.activo?' on':'')+'">'+resumen+'</span>'
       + '<label class="dia-toggle"><input type="checkbox"'+(data.activo?' checked':'')+' id="toggle_'+d.key+'"><div class="dia-toggle-track"></div></label>'
-      + '<div class="dia-resumen'+(data.activo?' on':'')+'">'+resumen+'</div>'
+      + '</div>'
     + '</div>';
 
     // Body con bloques
