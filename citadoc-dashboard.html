@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v17</title>
+<title>CitaDoc — Dashboard v18</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1042,7 +1042,7 @@ function showPanel(id, el) {
   var titles = {inicio:'Panel medico',calendario:'Calendario',estadisticas:'Estadisticas',horarios:'Horarios',perfil:'Mi perfil',pacientes:'Pacientes'};
   setText('topbarTitle', titles[id]||id);
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
-  if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); cargarBloqueos(); }
+  if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); if(typeof cargarBloqueos==='function') cargarBloqueos(); }
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='pacientes') {
     if (!esPro()) mostrarProModal('pacientes');
@@ -1304,6 +1304,44 @@ function setDur(m, btn) {
 function renderSlots()      { renderDiasHorarios(); }
 function renderGridHorarios(){ renderDiasHorarios(); }
 function renderDayConfigBar(){ /* no necesario */ }
+
+function cargarBloqueos() {
+  if (!M || !M.id) return;
+  var lista = document.getElementById('listaBloqueos');
+  if (!lista) return;
+  _sb.from('bloqueos_medico')
+    .select('*').eq('medico_id', M.id)
+    .gte('fecha_fin', new Date().toISOString().split('T')[0])
+    .order('fecha_inicio')
+    .then(function(r) {
+      if (r.error || !r.data || !r.data.length) {
+        lista.innerHTML = '<div style="font-size:.78rem;color:#9ca3af;margin-top:.5rem">No hay bloqueos activos.</div>';
+        return;
+      }
+      lista.innerHTML = '';
+      r.data.forEach(function(b) {
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.4rem .8rem;margin-top:.4rem;font-size:.8rem';
+        var span = document.createElement('span');
+        span.style.cssText = 'color:#7f1d1d;font-weight:600';
+        span.textContent = b.fecha_inicio + ' → ' + b.fecha_fin + (b.motivo ? ' · ' + b.motivo : '');
+        var btn = document.createElement('button');
+        btn.style.cssText = 'background:none;border:none;color:#dc2626;cursor:pointer;font-size:.85rem';
+        btn.textContent = '✕';
+        btn.setAttribute('data-id', b.id);
+        btn.addEventListener('click', function() { eliminarBloqueo(b.id); });
+        div.appendChild(span);
+        div.appendChild(btn);
+        lista.appendChild(div);
+      });
+    });
+}
+
+function eliminarBloqueo(id) {
+  if (!confirm('Eliminar este bloqueo?')) return;
+  _sb.from('bloqueos_medico').delete().eq('id', id)
+    .then(function() { cargarBloqueos(); });
+}
 
 // ── FUNCIONES AUXILIARES DE SLOTS ──
 function sumarMinutos(hora, min) {
