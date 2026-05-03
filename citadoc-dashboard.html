@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v20</title>
+<title>CitaDoc — Dashboard v22</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -37,16 +37,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   position:relative;z-index:1;display:flex;align-items:center;gap:.5rem
 }
 .sidebar-logo span{color:rgba(255,255,255,.55);font-style:italic}
-.sidebar-logo .logo-plan-badge{
-  font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;
+.sidebar-logo::after{
+  content:'PRO';font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;
   letter-spacing:.06em;padding:.18rem .55rem;border-radius:50px;
-  display:none
-}
-.sidebar-logo .logo-plan-badge.pro{
-  display:inline;background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)
-}
-.sidebar-logo .logo-plan-badge.free{
-  display:inline;background:rgba(255,255,255,.08);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.1)
+  background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)
 }
 .sidebar-doctor{
   padding:1rem 1.2rem;display:flex;align-items:center;gap:.75rem;
@@ -494,79 +488,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .dir-preview{display:flex;align-items:center;justify-content:space-between;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.2);border-radius:10px;padding:.65rem .9rem;margin-top:.6rem;font-size:.84rem;color:var(--teal)}
 .dir-preview a{font-size:.78rem;font-weight:600;color:var(--teal);text-decoration:none;border:1.5px solid var(--teal);padding:.2rem .6rem;border-radius:7px}
 .dir-preview a:hover{background:var(--teal);color:#fff}
-/* ── HORARIOS ── */
-.dia-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.1rem;transition:box-shadow .2s}
-.dia-card.activo{border-color:#d1fae5}
-.dia-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
-.dia-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
-.dia-label{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;color:#0f1a18}
-.dia-resumen{font-size:.78rem;color:#6b7280;margin-bottom:.7rem;line-height:1.5}
-.dia-toggle{position:relative;display:inline-block;width:38px;height:22px;cursor:pointer}
-.dia-toggle input{opacity:0;width:0;height:0}
-.dia-toggle-track{position:absolute;inset:0;background:#d1d5db;border-radius:50px;transition:.2s}
-.dia-toggle input:checked + .dia-toggle-track{background:#0b7c6e}
-.dia-toggle-track:before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;left:3px;top:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.dia-toggle input:checked + .dia-toggle-track:before{transform:translateX(16px)}
-.dia-bloques-list{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.6rem}
-.bloque-item{display:flex;align-items:center;justify-content:space-between;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.35rem .7rem;font-size:.8rem;font-family:'DM Sans',sans-serif;font-weight:600;color:#065f46}
-.bloque-del{background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.9rem;padding:0;line-height:1}
-.bloque-del:hover{color:#dc2626}
-.btn-add-bloque{width:100%;padding:.4rem;background:none;border:1.5px dashed #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#6b7280;cursor:pointer;transition:.15s}
-.btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
-.dia-inactivo-msg{text-align:center;padding:.8rem;font-size:.78rem;color:#9ca3af}
-
-/* ── HORARIOS WRAPPER ── */
-.horarios-wrap{padding:.2rem 0}
-.hw-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
-.hw-duracion{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1.4rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
-.hw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-bottom:1.4rem;align-items:start}
-.hw-vacaciones{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:1.2rem 1.4rem}
-.hw-btn-primary{padding:.5rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer}
-.hw-btn-secondary{padding:.5rem 1rem;background:#f0fdf4;color:#0b7c6e;border:1.5px solid #bbf7d0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer}
-.hw-btn-danger{padding:.5rem 1rem;background:#dc2626;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
-.hw-label{font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem;letter-spacing:.04em}
-.hw-input{padding:.48rem .7rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;color:#374151}
-/* Duración buttons */
-.dur-btn{padding:.38rem .85rem;border-radius:8px;border:1.5px solid #d1d5db;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151;transition:.15s}
-.dur-btn:hover{border-color:#0b7c6e;color:#0b7c6e}
-.dur-active{background:#0b7c6e!important;color:#fff!important;border-color:#0b7c6e!important;font-weight:700!important}
-/* Día cards */
-
-.dia-card.activo{border-color:#bbf7d0}
-.dia-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07)}
-.dia-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
-.dia-label{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;color:#0f1a18}
-.dia-toggle{position:relative;display:inline-block;width:38px;height:22px;cursor:pointer;flex-shrink:0}
-.dia-toggle input{opacity:0;width:0;height:0;position:absolute}
-.dia-toggle-track{position:absolute;inset:0;background:#d1d5db;border-radius:50px;transition:.2s}
-.dia-toggle input:checked + .dia-toggle-track{background:#0b7c6e}
-.dia-toggle-track:before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;left:3px;top:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.dia-toggle input:checked + .dia-toggle-track:before{transform:translateX(16px)}
-.bloque-item{display:flex;align-items:center;justify-content:space-between;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.38rem .75rem;font-size:.8rem;font-family:'DM Sans',sans-serif;font-weight:600;color:#065f46;margin-bottom:.4rem}
-.bloque-del{background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.88rem;padding:0;line-height:1;transition:.15s}
-.bloque-del:hover{color:#dc2626}
-.btn-add-bloque{width:100%;padding:.42rem;background:none;border:1.5px dashed #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#6b7280;cursor:pointer;transition:.15s;margin-top:.2rem}
-.btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
-.dia-inactivo{text-align:center;padding:.9rem 0;font-size:.8rem;color:#9ca3af}
-
-
-/* ── DÍA BLOQUES ── */
-.dia-body{margin-top:.6rem;border-top:1px solid #f0f0f0;padding-top:.7rem;display:block}
-.dia-resumen{font-size:.76rem;color:#6b7280;margin-top:.3rem;font-family:'DM Sans',sans-serif}
-.dia-resumen.on{color:#0b7c6e;font-weight:600}
-.bloque-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
-.bloque-time{padding:.32rem .5rem;border:1.5px solid #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:#374151;width:88px;background:#fff}
-.bloque-time:focus{outline:none;border-color:#0b7c6e}
-.bloque-sep{color:#9ca3af;font-size:.85rem;font-weight:600}
-.btn-del-bloque{background:none;border:none;color:#d1d5db;cursor:pointer;font-size:.9rem;padding:.2rem .3rem;border-radius:6px;transition:.15s;line-height:1}
-.btn-del-bloque:hover{color:#dc2626;background:#fef2f2}
-
 </style>
   <!-- PayPhone SDK -->
   <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
   <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
 </head>
-<body onkeydown="if(event.key==='Escape')cerrarProModal()">
+<body>
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
@@ -617,8 +544,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div class="topbar-title" id="topbarTitle">Panel médico</div>
     <div class="topbar-right">
       <span class="topbar-date" id="topbarDate"></span>
-      <!-- Botón PRO en topbar — visible solo para free -->
-      <button id="btnTopbarPro" onclick="mostrarProModal('pacientes')" style="display:none;align-items:center;gap:.4rem;padding:.45rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;margin-right:.5rem">⭐ Activar PRO</button>
       <div class="topbar-user">
         <div class="topbar-avatar" id="topbarAvatar">—</div>
         <div>
@@ -697,62 +622,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
     <!-- HORARIOS -->
     <div class="panel" id="panel-horarios">
-      <div class="horarios-wrap">
-
-        <!-- TOP -->
-        <div class="hw-top">
-          <div>
-            <h2 style="font-family:'Fraunces',serif;font-size:1.55rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Mis horarios</h2>
-            <p style="font-size:.84rem;color:#6b7280;margin:0">Define tus horarios de atención y la duración de tus citas.</p>
-          </div>
-          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
-            <button onclick="copiarLunesATodos()" class="hw-btn-secondary">↓ Copiar lunes a todos</button>
-            <button onclick="guardarHorarios(this)" class="hw-btn-primary">✓ Guardar cambios</button>
-          </div>
+      <div class="section-header">
+        <div>
+          <h2>Mis horarios</h2>
+          <p>Define los bloques de atención por día. Agrega mañana y tarde por separado.</p>
         </div>
-
-        <!-- DURACIÓN -->
-        <div class="hw-duracion">
-          <div>
-            <strong style="font-size:.9rem;color:#0f1a18;font-family:'DM Sans',sans-serif">Duración de las citas</strong>
-            <p style="font-size:.78rem;color:#6b7280;margin:.2rem 0 0">¿Cuánto dura cada consulta?</p>
-          </div>
-          <div style="display:flex;gap:.4rem">
-            <button onclick="setDuracion(15,this)" class="dur-btn">15 min</button>
-            <button onclick="setDuracion(30,this)" class="dur-btn dur-active">30 min</button>
-            <button onclick="setDuracion(45,this)" class="dur-btn">45 min</button>
-            <button onclick="setDuracion(60,this)" class="dur-btn">60 min</button>
-          </div>
-          <div style="font-size:.78rem;color:#6b7280">
-            💡 Los pacientes verán intervalos de <strong id="durLabel" style="color:#0b7c6e">30 minutos</strong>
-          </div>
-        </div>
-
-        <!-- GRID DÍAS -->
-        <div id="diasBloques" class="hw-grid"></div>
-
-        <!-- VACACIONES -->
-        <div class="hw-vacaciones">
-          <div style="font-size:.73rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem">🌴 Vacaciones y Ausencias</div>
-          <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end">
-            <div>
-              <label class="hw-label">DESDE</label>
-              <input type="date" id="bloqueoDesde" class="hw-input">
-            </div>
-            <div>
-              <label class="hw-label">HASTA</label>
-              <input type="date" id="bloqueoHasta" class="hw-input">
-            </div>
-            <div style="flex:1;min-width:180px">
-              <label class="hw-label">MOTIVO (OPCIONAL)</label>
-              <input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso..." class="hw-input" style="width:100%;box-sizing:border-box">
-            </div>
-            <button onclick="crearBloqueo()" class="hw-btn-danger">Bloquear fechas</button>
-          </div>
-          <div id="listaBloqueos" style="margin-top:.8rem"></div>
-        </div>
-
       </div>
+
+      <!-- Duración de cita -->
+      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1.1rem;padding:.75rem 1rem;background:var(--white);border:1.5px solid var(--border);border-radius:12px">
+        <span style="font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2)">Duración de cita</span>
+        <div class="dur-btns">
+          <button class="dur-btn active" onclick="setDur(30,this)">30 min</button>
+          <button class="dur-btn" onclick="setDur(60,this)">1 hora</button>
+        </div>
+        <button onclick="copiarLunesATodos()" style="margin-left:auto;padding:.45rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:600;cursor:pointer;color:var(--ink2)">📅 Copiar lunes a toda la semana</button>
+      </div>
+
+      <!-- Días -->
+      <div id="diasBloques"></div>
+
+      <!-- Bloqueos / Vacaciones -->
+      <div class="bloqueos-section">
+        <div class="bloqueos-title">🌴 Vacaciones y ausencias</div>
+        <div class="bloqueo-form">
+          <div class="bloqueo-form-field"><label>Desde</label><input type="date" id="bloqueoDesde"></div>
+          <div class="bloqueo-form-field"><label>Hasta</label><input type="date" id="bloqueoHasta"></div>
+          <div class="bloqueo-form-field" style="flex:1;min-width:140px"><label>Motivo (opcional)</label><input type="text" id="bloqueoMotivo" placeholder="Ej: Vacaciones, Congreso"></div>
+          <button class="btn-bloquear" onclick="crearBloqueo()">🚫 Bloquear fechas</button>
+        </div>
+        <div id="bloqueosList"><div class="empty-citas" style="font-size:.82rem">Sin bloqueos activos.</div></div>
+      </div>
+
+      <!-- Footer -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.2rem;flex-wrap:wrap;gap:.8rem">
+        <div style="display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted2)">
+          <span>📅</span>
+          <div>
+            <div style="font-weight:600;color:var(--ink2)">Cambios guardados automáticamente</div>
+            <div id="horariosFecha" style="font-size:.74rem">Última actualización: --</div>
+          </div>
+        </div>
+        <button id="btnGuardarHorarios" onclick="guardarHorarios(this)" style="padding:.75rem 1.6rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Guardar horarios</button>
+      </div>
+    </div>
 
     <!-- PERFIL -->
     <div class="panel" id="panel-perfil">
@@ -871,6 +784,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
   <!-- PANEL PACIENTES -->
   <div class="panel" id="panel-pacientes">
+    <!-- Modal Nuevo Paciente -->
+    <div id="modalPaciente" onclick="if(event.target===this)cerrarModalPaciente()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:18px;padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">
+          <h3 style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:#0f1a18;margin:0">Nuevo paciente</h3>
+          <button onclick="cerrarModalPaciente()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af">&#x2715;</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">
+          <div style="grid-column:1/-1">
+            <label style="font-size:.73rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem">Nombre completo *</label>
+            <input id="p_nombre" placeholder="Ej: Maria Garcia" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Email</label>
+            <input id="p_email" type="email" placeholder="correo@ejemplo.com" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Telefono</label>
+            <input id="p_telefono" placeholder="+593 99 123 4567" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Cedula</label>
+            <input id="p_cedula" placeholder="1234567890" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Fecha nacimiento</label>
+            <input id="p_fecha" type="date" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:.73rem;font-weight:700;color:#6b7280;display:block;margin-bottom:.3rem">Genero</label>
+            <select id="p_genero" style="width:100%;padding:.6rem .8rem;border:1.5px solid #d1d5db;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;box-sizing:border-box;background:#fff">
+              <option value="">Sin especificar</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+              <option value="O">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:.7rem;margin-top:1.2rem">
+          <button onclick="cerrarModalPaciente()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>
+          <button onclick="guardarPaciente()" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">Guardar paciente</button>
+        </div>
+      </div>
+    </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.6rem;border-bottom:1px solid var(--border);gap:1rem;flex-wrap:wrap">
       <div>
@@ -1042,8 +999,7 @@ function showPanel(id, el) {
   var titles = {inicio:'Panel medico',calendario:'Calendario',estadisticas:'Estadisticas',horarios:'Horarios',perfil:'Mi perfil',pacientes:'Pacientes'};
   setText('topbarTitle', titles[id]||id);
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
-  if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); if(typeof cargarBloqueos==='function') cargarBloqueos(); }
-  if (id==='perfil')      { if (M) aplicarMedico(M); }
+  if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); cargarBloqueos(); }
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='pacientes') {
     if (!esPro()) mostrarProModal('pacientes');
@@ -1147,10 +1103,8 @@ function inicializarSlots(m) {
 
 function renderDiasHorarios() {
   var wrap = document.getElementById('diasBloques');
-  console.log('renderDiasHorarios:', wrap ? 'wrap OK' : 'wrap NULL', 'M:', M ? M.nombre : 'null');
   if (!wrap) return;
   wrap.innerHTML = '';
-  console.log('DIAS_SEMANA:', DIAS_SEMANA.length, 'horariosBloques keys:', Object.keys(horariosBloques).length);
 
   DIAS_SEMANA.forEach(function(d) {
     var data = horariosBloques[d.key];
@@ -1165,23 +1119,20 @@ function renderDiasHorarios() {
 
     card.innerHTML = '<div class="dia-header">'
       + '<div class="dia-label">'+d.label+'</div>'
-      + '<div style="display:flex;align-items:center;gap:.6rem">'
-      + '<span class="dia-resumen'+(data.activo?' on':'')+'">'+resumen+'</span>'
       + '<label class="dia-toggle"><input type="checkbox"'+(data.activo?' checked':'')+' id="toggle_'+d.key+'"><div class="dia-toggle-track"></div></label>'
-      + '</div>'
+      + '<div class="dia-resumen'+(data.activo?' on':'')+'">'+resumen+'</div>'
     + '</div>';
 
-    // Body con bloques
-    var body = document.createElement('div');
-    body.className = 'dia-body';
-    body.id = 'diabody_'+d.key;
-    card.appendChild(body);
-    wrap.appendChild(card);  // Al DOM ANTES de renderizar
+    // Body con bloques (solo si activo)
     if (data.activo) {
-      renderBloquesDia(d.key);  // Ahora el elemento existe en el DOM
-    } else {
-      body.innerHTML = '<div class="dia-inactivo">📅 No atiendes este día<br><small>Activa el toggle para agregar horarios</small></div>';
+      var body = document.createElement('div');
+      body.className = 'dia-body';
+      body.id = 'diabody_'+d.key;
+      card.appendChild(body);
+      renderBloquesDia(d.key);
     }
+
+    wrap.appendChild(card);
 
     // Toggle evento
     var toggleEl = document.getElementById('toggle_'+d.key);
@@ -1305,65 +1256,6 @@ function renderSlots()      { renderDiasHorarios(); }
 function renderGridHorarios(){ renderDiasHorarios(); }
 function renderDayConfigBar(){ /* no necesario */ }
 
-function setDuracion(min, btn) {
-  DURACION_CITA = min;
-  // Actualizar botones
-  document.querySelectorAll('.dur-btn').forEach(function(b) {
-    b.style.background = '#fff';
-    b.style.color = '#374151';
-    b.style.borderColor = '#d1d5db';
-    b.style.fontWeight = '600';
-    b.classList.remove('dur-active');
-  });
-  if (btn) {
-    btn.style.background = '#0b7c6e';
-    btn.style.color = '#fff';
-    btn.style.borderColor = '#0b7c6e';
-    btn.style.fontWeight = '700';
-    btn.classList.add('dur-active');
-  }
-  var lbl = document.getElementById('durLabel');
-  if (lbl) lbl.textContent = min + ' minutos';
-}
-
-function cargarBloqueos() {
-  if (!M || !M.id) return;
-  var lista = document.getElementById('listaBloqueos');
-  if (!lista) return;
-  _sb.from('bloqueos_medico')
-    .select('*').eq('medico_id', M.id)
-    .gte('fecha_fin', new Date().toISOString().split('T')[0])
-    .order('fecha_inicio')
-    .then(function(r) {
-      if (r.error || !r.data || !r.data.length) {
-        lista.innerHTML = '<div style="font-size:.78rem;color:#9ca3af;margin-top:.5rem">No hay bloqueos activos.</div>';
-        return;
-      }
-      lista.innerHTML = '';
-      r.data.forEach(function(b) {
-        var div = document.createElement('div');
-        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.4rem .8rem;margin-top:.4rem;font-size:.8rem';
-        var span = document.createElement('span');
-        span.style.cssText = 'color:#7f1d1d;font-weight:600';
-        span.textContent = b.fecha_inicio + ' → ' + b.fecha_fin + (b.motivo ? ' · ' + b.motivo : '');
-        var btn = document.createElement('button');
-        btn.style.cssText = 'background:none;border:none;color:#dc2626;cursor:pointer;font-size:.85rem';
-        btn.textContent = '✕';
-        btn.setAttribute('data-id', b.id);
-        btn.addEventListener('click', function() { eliminarBloqueo(b.id); });
-        div.appendChild(span);
-        div.appendChild(btn);
-        lista.appendChild(div);
-      });
-    });
-}
-
-function eliminarBloqueo(id) {
-  if (!confirm('Eliminar este bloqueo?')) return;
-  _sb.from('bloqueos_medico').delete().eq('id', id)
-    .then(function() { cargarBloqueos(); });
-}
-
 // ── FUNCIONES AUXILIARES DE SLOTS ──
 function sumarMinutos(hora, min) {
   var parts = hora.split(':');
@@ -1402,6 +1294,23 @@ function validarBloques(bloques) {
     if (sorted[i].hasta > sorted[i+1].desde) return false;
   }
   return true;
+}
+
+function bloquesASlots(bloques, duracionMin) {
+  var slots = [];
+  bloques.forEach(function(b) {
+    var desde = b.desde.split(':');
+    var hasta = b.hasta.split(':');
+    var ini = parseInt(desde[0])*60 + parseInt(desde[1]);
+    var fin = parseInt(hasta[0])*60 + parseInt(hasta[1]);
+    while (ini + duracionMin <= fin) {
+      var hh = String(Math.floor(ini/60)).padStart(2,'0');
+      var mm = String(ini%60).padStart(2,'0');
+      slots.push(hh+':'+mm);
+      ini += duracionMin;
+    }
+  });
+  return slots;
 }
 
 async function guardarHorarios(btn) {
@@ -1917,19 +1826,6 @@ function aplicarMedico(m) {
   setText('sidebarNombre',       nombre);
   setText('sidebarEspecialidad', esp);
   setText('sidebarPlan',         plan);
-  // Mostrar/ocultar botones PRO según plan
-  var _isPro = esPro();
-  var _topBtn = document.getElementById('btnTopbarPro');
-  var _floatBtn = document.getElementById('btnFloatPro');
-  var _banner = document.getElementById('sidebarProBanner');
-  var _logoBadge = document.getElementById('logoPlanBadge');
-  if (_topBtn)   _topBtn.style.display   = _isPro ? 'none' : 'flex';
-  if (_floatBtn) _floatBtn.style.display = _isPro ? 'none' : 'block';
-  if (_banner)   _banner.style.display   = _isPro ? 'none' : 'block';
-  if (_logoBadge) {
-    _logoBadge.textContent = _isPro ? 'PRO' : 'FREE';
-    _logoBadge.className = 'logo-plan-badge ' + (_isPro ? 'pro' : 'free');
-  }
   setText('sidebarUrl',          url);
   const av=_el('sidebarAvatar');
   if(av){av.textContent=ini;av.style.cssText='font-size:.75rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center';}
@@ -2040,8 +1936,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     var btnCancel  = document.getElementById('btnProModalCancel');
     var proModal   = document.getElementById('proModal');
     if (btnUpgrade) btnUpgrade.addEventListener('click', initPayPhone);
-    // btnCancel usa onclick en HTML directamente
-    // Click outside desactivado — interfiere con iframe PayPhone
+    if (btnCancel)  btnCancel.addEventListener('click', cerrarProModal);
+    if (proModal)   proModal.addEventListener('click', function(e) {
+      if (e.target === proModal) cerrarProModal();
+    });
   } catch(err) {
     console.error('Error al cargar dashboard:',err);
     setText('sidebarNombre','Error - recarga');
@@ -2060,9 +1958,7 @@ var _hcCurrentDocs = null; // docs actuales para versionado
 
 // ── PRO CHECK ──
 function esPro() {
-  if (!M) return false;
-  var planPro = M.plan === 'destacado' || M.plan === 'pro';
-  return planPro && M.plan_activo === true;
+  return M && (M.plan === 'destacado' || M.plan === 'pro') && M.plan_activo === true;
 }
 
 function getPlanLabel(plan) {
@@ -2114,7 +2010,8 @@ function mostrarProGate(container, feature) {
     + '<div class="pro-gate-icon">'+f.icon+'</div>'
     + '<h3>'+f.title+' <span class="pro-badge">PRO</span></h3>'
     + '<p>'+f.desc+'</p>'
-    + '<button class="btn-upgrade" onclick="mostrarProModal(currentFeature)" style="width:100%;margin:.5rem 0 0">Pagar con tarjeta - $19.99</button>'
+    + '<div id="pp-button" style="margin:.5rem 0"></div>'
+    + '<button class="btn-upgrade" id="btnUpgradePro" onclick="initPayPhone()" style="display:none">💬 Activar PRO por WhatsApp</button>'
     + '<p style="font-size:.72rem;color:rgba(255,255,255,.35);margin-top:.7rem">Cancela cuando quieras</p>'
   + '</div>';
 }
@@ -2191,73 +2088,8 @@ function testPayPhone() {
   }
 }
 
-// ── PAYPHONE — credenciales en scope global ──
-var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
-var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef';
-
-function mostrarToast(msg, tipo) {
-  var t = document.createElement('div');
-  var bg = tipo === 'error' ? '#dc2626' : '#0b7c6e';
-  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:'+bg+';color:#fff;padding:12px 18px;border-radius:10px;font-family:DM Sans,sans-serif;font-weight:600;font-size:.88rem;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.15);animation:toastIn .2s ease';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
-}
-
-function renderPayPhoneGlobal(containerId) {
-  var el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = '';
-  if (typeof PPaymentButtonBox === 'undefined') {
-    el.innerHTML = '<p style="color:#dc2626;font-size:.82rem;padding:1rem">Error cargando PayPhone. Recarga la página.</p>';
-    return;
-  }
-  try {
-    new PPaymentButtonBox({
-      token:               PAYPHONE_TOKEN,
-      storeId:             PAYPHONE_STOREID,
-      clientTransactionId: 'cd' + Date.now(),
-      amount:              1999,
-      amountWithoutTax:    1999,
-      currency:            'USD',
-      reference:           'CitaDoc Pro',
-      lang:                'es',
-      defaultMethod:       'card'
-    }).render(containerId);
-  } catch(e) {
-    el.innerHTML = '<p style="color:#dc2626;font-size:.82rem;padding:1rem">Error: ' + e.message + '</p>';
-  }
-}
-
-function mostrarCajitaPro() {
-  // Asegurar que el modal esté abierto
-  var modal = document.getElementById('proModal');
-  if (modal && modal.style.display !== 'flex') {
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  }
-
-  // Ocultar beneficios
-  ['proModalIcon','proModalTitle','proModalDesc','proModalDemo','proModalFeats','proModalFeatures'].forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-
-  // Ocultar botón de decisión y mostrar cajita
-  var btnDecision = document.getElementById('btnProModalUpgrade');
-  var ppContainer = document.getElementById('pp-button');
-  if (btnDecision) btnDecision.style.display = 'none';
-  if (ppContainer) {
-    ppContainer.style.display = 'block';
-    ppContainer.innerHTML = '';
-  }
-
-  // Renderizar PayPhone directamente
-  renderPayPhoneGlobal('pp-button');
-
-  var card = document.getElementById('proModalCard');
-  if (card) card.scrollTop = 0;
-}
+// ── PAYPHONE — usa las variables del script aislado al final ──
+// Las credenciales están en el bloque <script> antes de </body>
 
 function initPayPhone() {
   if (!M) return;
@@ -2283,10 +2115,14 @@ function initPayPhone() {
       lang:                'es',
       defaultMethod:       'card',
       email:               M.email     || '',
+      phoneNumber:         M.whatsapp  || ''
     });
     ppb.render('pp-button');
 
-    // Activación solo via postMessage de PayPhone
+    // Activación optimista — click en la cajita después del pago
+    container.addEventListener('click', function() {
+      setTimeout(activarProLocal, 4000);
+    }, { once: true });
 
   } catch(e) {
     console.error('PayPhone error:', e);
@@ -2336,7 +2172,8 @@ function checkStripeSuccess() {
 }
 
 function mostrarProModal(feature) {
-  currentFeature = feature || 'pacientes';
+  // Inicializar PayPhone cuando se abre el modal
+  setTimeout(initPayPhone, 300);
   var modal = document.getElementById('proModal');
   if (!modal) return;
   var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
@@ -2360,22 +2197,6 @@ function cerrarProModal() {
   var modal = document.getElementById('proModal');
   if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
-  // Restaurar beneficios
-  ['proModalIcon','proModalTitle','proModalDesc','proModalDemo','proModalFeats'].forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.style.display = '';
-  });
-  // Resetear cajita y botón de pago
-  var btnDecision = document.getElementById('btnProModalUpgrade');
-  var ppContainer = document.getElementById('pp-button');
-  if (btnDecision) btnDecision.style.display = 'block';
-  if (ppContainer) { ppContainer.style.display = 'none'; ppContainer.innerHTML = ''; }
-  // Volver a inicio si estaba en panel bloqueado
-  var activePanel = document.querySelector('.panel.active') || document.querySelector('.panel[style*="block"]');
-  var blockedPanels = ['panel-pacientes','panel-clinica'];
-  if (activePanel && blockedPanels.indexOf(activePanel.id) > -1) {
-    showPanel('inicio', document.querySelector('.nav-item[onclick*="inicio"]'));
-  }
 }
 
 // ── CARGAR PACIENTES ──
@@ -3059,7 +2880,7 @@ function showProBlur(wrapId, ghostHTML, feature) {
   + '</div>';
   var btnUp = overlay.querySelector('.btn-pro-upgrade');
   var btnCn = overlay.querySelector('.btn-pro-cancel');
-  if (btnUp) btnUp.addEventListener('click', mostrarCajitaPro);
+  if (btnUp) btnUp.addEventListener('click', abrirStripe);
   if (btnCn) btnCn.addEventListener('click', function() {
     preview.remove();
     wrap.innerHTML = '<div class="empty-citas">Activa CitaDoc Pro para acceder.</div>';
@@ -3492,7 +3313,7 @@ function generarPDF() {
     + 'body{margin:0}'
     + '.page{padding:20mm 24mm}'
     + '}'
-    + '\n</style></head><body>'
+    + '</style></head><body>'
     + '<div class="page">'
     + '<div class="header">'
       + '<div class="logo">Cita<em>Doc</em></div>'
@@ -3633,6 +3454,143 @@ function cerrarHC() {
   if(btnAI){btnAI.style.display='';btnAI.textContent='✨ Generar resumen AI';btnAI.disabled=false;}
 }
 
+
+
+// ══ FUNCIONES AGREGADAS ══
+
+// ── DURACIÓN CITAS ──
+function setDuracion(min, btn) {
+  DURACION_CITA = min;
+  document.querySelectorAll('.dur-btn').forEach(function(b) {
+    b.style.cssText = b.style.cssText.replace(/background:[^;]+;?/,'') + 'background:#fff;color:#374151;border-color:#d1d5db;font-weight:600;';
+    b.classList.remove('dur-active');
+  });
+  if (btn) {
+    btn.style.background = '#0b7c6e';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#0b7c6e';
+    btn.style.fontWeight = '700';
+    btn.classList.add('dur-active');
+  }
+  var lbl = document.getElementById('durLabel');
+  if (lbl) lbl.textContent = min + ' minutos';
+}
+
+// ── BLOQUEOS ──
+function cargarBloqueos() {
+  if (!M || !M.id) return;
+  var lista = document.getElementById('listaBloqueos');
+  if (!lista) return;
+  _sb.from('bloqueos_medico')
+    .select('*').eq('medico_id', M.id)
+    .gte('fecha_fin', new Date().toISOString().split('T')[0])
+    .order('fecha_inicio')
+    .then(function(r) {
+      if (r.error || !r.data || !r.data.length) {
+        lista.innerHTML = '<div style="font-size:.78rem;color:#9ca3af;margin-top:.5rem">No hay bloqueos activos.</div>';
+        return;
+      }
+      lista.innerHTML = '';
+      r.data.forEach(function(b) {
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.4rem .8rem;margin-top:.4rem;font-size:.8rem';
+        var span = document.createElement('span');
+        span.style.cssText = 'color:#7f1d1d;font-weight:600';
+        span.textContent = b.fecha_inicio + ' → ' + b.fecha_fin + (b.motivo ? ' · ' + b.motivo : '');
+        var btn = document.createElement('button');
+        btn.style.cssText = 'background:none;border:none;color:#dc2626;cursor:pointer;font-size:.85rem';
+        btn.textContent = '✕';
+        btn.addEventListener('click', function() {
+          _sb.from('bloqueos_medico').delete().eq('id', b.id).then(function() { cargarBloqueos(); });
+        });
+        div.appendChild(span);
+        div.appendChild(btn);
+        lista.appendChild(div);
+      });
+    });
+}
+
+// ── MODAL PACIENTE ──
+function abrirModalPaciente() {
+  var modal = document.getElementById('modalPaciente');
+  if (modal) {
+    modal.style.display = 'flex';
+    ['p_nombre','p_email','p_telefono','p_cedula','p_fecha'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    var g = document.getElementById('p_genero');
+    if (g) g.value = '';
+  }
+}
+
+function cerrarModalPaciente() {
+  var modal = document.getElementById('modalPaciente');
+  if (modal) modal.style.display = 'none';
+}
+
+async function guardarPaciente() {
+  if (!M || !M.id) return;
+  var nombre = (document.getElementById('p_nombre')||{}).value || '';
+  nombre = nombre.trim();
+  var email  = (document.getElementById('p_email')||{}).value || '';
+  email = email.trim();
+
+  // Validación
+  if (!nombre) { mostrarToast('El nombre es obligatorio', 'error'); return; }
+  if (email && !email.includes('@')) { mostrarToast('Email inválido', 'error'); return; }
+
+  // Deduplicación por email
+  if (email) {
+    var check = await _sb.from('pacientes').select('id,nombre').eq('email', email).eq('medico_id', M.id).single();
+    if (check.data) {
+      mostrarToast('Ya existe un paciente con ese email: ' + check.data.nombre, 'error');
+      return;
+    }
+  }
+
+  var paciente = {
+    medico_id:        M.id,
+    nombre:           nombre,
+    email:            email || null,
+    telefono:         (document.getElementById('p_telefono')||{}).value.trim() || null,
+    cedula:           (document.getElementById('p_cedula')||{}).value.trim() || null,
+    fecha_nacimiento: (document.getElementById('p_fecha')||{}).value || null,
+    genero:           (document.getElementById('p_genero')||{}).value || null,
+    origen:           'manual'
+  };
+
+  var res = await _sb.from('pacientes').insert([paciente]);
+  if (res.error) { mostrarToast('Error: ' + res.error.message, 'error'); return; }
+  mostrarToast('Paciente guardado correctamente');
+  cerrarModalPaciente();
+  cargarPacientes();
+}
+
+// Función para obtener o crear paciente desde web (agenda pública)
+async function getOrCreatePaciente(data) {
+  if (!data.email) return null;
+  var check = await _sb.from('pacientes').select('*').eq('email', data.email).eq('medico_id', data.medico_id).single();
+  if (check.data) return check.data;
+  var res = await _sb.from('pacientes').insert([Object.assign({}, data, {origen: 'web'})]).select().single();
+  return res.data || null;
+}
+
+function filtrarPacientes() {
+  var txt = (document.getElementById('buscarPaciente')||{}).value;
+  if (!txt) txt = '';
+  txt = txt.toLowerCase();
+  document.querySelectorAll('.pac-card').forEach(function(card) {
+    var search = card.dataset.search || card.textContent;
+    card.style.display = search.toLowerCase().includes(txt) ? '' : 'none';
+  });
+}
+
+// ── HELPERS ──
+function renderDayConfigBar(){ }
+function renderGridHorarios(){ renderDiasHorarios(); }
+function renderSlots(){ renderDiasHorarios(); }
+
 </script>
 
 <!-- SIDEBAR TRIGGER — zona activadora invisible en tablet -->
@@ -3641,8 +3599,8 @@ function cerrarHC() {
 <!-- ═══════════════════════════════════════ -->
 <!-- MODAL PRO GLOBAL — fixed, sobre todo   -->
 <!-- ═══════════════════════════════════════ -->
-<div id="proModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem;pointer-events:none">
-  <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative;pointer-events:auto">
+<div id="proModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
+  <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
     <div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">🔒 Vista previa Pro</div>
     <div id="proModalIcon" style="font-size:2.2rem;margin-bottom:.6rem">🧠</div>
     <div id="proModalTitle" style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2">Gestión Inteligente de Pacientes</div>
@@ -3656,40 +3614,75 @@ function cerrarHC() {
     </ul>
     <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$19.99</div>
     <div style="font-size:.72rem;color:var(--muted2);margin:.15rem 0 1.2rem">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
-    <!-- Botón de decisión (visible primero) -->
-          <button id="btnProModalUpgrade" onclick="mostrarCajitaPro()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem">💳 Pagar con tarjeta — $19.99</button>
-          <!-- Cajita PayPhone (oculta hasta que el usuario decide) -->
-          <div id="pp-button" style="display:none;margin-bottom:.5rem"></div>
-    <button id="btnProModalCancel" onclick="cerrarProModal()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif;padding:.5rem 1rem">Ahora no</button>
+    <div id="pp-button" style="margin-bottom:.5rem"></div>
+          <button id="btnProModalUpgrade" onclick="initPayPhone()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none">💬 Activar PRO por WhatsApp</button>
+    <button id="btnProModalCancel" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
   </div>
 </div>
 
 </script>
-  <!-- PayPhone test container (oculto) -->
-  <div id="pp-test-wrap" style="display:none">
+  <!-- Test PayPhone — HTML -->
+  <div id="pp-test-wrap" style="display:none;position:fixed;bottom:80px;right:20px;z-index:9999;background:#fff;border-radius:14px;padding:1rem;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:300px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <div style="font-size:.75rem;font-weight:600;color:#6b7280">TEST PAYPHONE ($1)</div>
+      <button onclick="document.getElementById('pp-test-wrap').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1rem">&#x2715;</button>
+    </div>
     <div id="pp-test"></div>
   </div>
-  <button onclick="mostrarProModal('pacientes')" id="btnFloatPro" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;padding:.65rem 1.2rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(11,124,110,.35);display:none">⭐ Activar PRO — $19.99</button>
+  <button onclick="ppTest()" style="position:fixed;bottom:20px;right:20px;z-index:9998;background:#059669;color:#fff;border:none;padding:.6rem 1.1rem;border-radius:10px;font-family:sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">&#x1F9EA; Test PP</button>
 
-      <!-- PayPhone — implementación oficial con activación PRO -->
+    <!-- PayPhone — implementación según doc oficial -->
   <script type="module">
-  // PayPhone listener de pago exitoso
-  var _pagoProcesado = false;
-  window.addEventListener('message', function(event) {
-    if (_pagoProcesado) return;
-    if (event.origin !== 'https://pay.payphonetodoesposible.com') return;
-    var data = event.data;
-    if (!data || typeof data !== 'object') return;
-    if (data.transactionStatus === 'Approved') {
-      _pagoProcesado = true;
-      var toast = document.createElement('div');
-      toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#16a34a;color:#fff;padding:12px 18px;border-radius:10px;font-family:sans-serif;font-weight:600;font-size:.9rem;z-index:99999';
-      toast.textContent = 'Pago exitoso! Activando PRO...';
-      document.body.appendChild(toast);
-      var medicoId = window.M ? window.M.id : null;
-      if (medicoId && window.activarProTrasPago) window.activarProTrasPago(medicoId);
-      setTimeout(function() { location.reload(); }, 1500);
+  // REEMPLAZA ESTOS 2 VALORES:
+  var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';    // ← tu token
+  var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef'; // ← tu storeId
+
+  // Render en el modal Pro cuando se abre
+  function renderPayPhone(containerId) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = '';
+    new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: 'citadoc-' + Date.now(),
+      amount:              1999,
+      amountWithoutTax:    1999,
+      currency:            'USD',
+      reference:           'CitaDoc Pro',
+      lang:                'es',
+      defaultMethod:       'card'
+    }).render(containerId);
+  }
+
+  // Test button
+  function ppTest() {
+    console.log('ppTest ejecutado');
+    var wrap = document.getElementById('pp-test-wrap');
+    if (wrap) wrap.style.display = 'block';
+    renderPayPhone('pp-test');
+  }
+
+  // Exponer al scope global para que onclick funcione
+  window.ppTest       = ppTest;
+  window.renderPayPhone = renderPayPhone;
+
+  // Cuando se abre el modal Pro, renderizar la cajita
+  window.addEventListener('DOMContentLoaded', function() {
+    // Observar cuando el modal Pro se hace visible
+    var modal = document.getElementById('proModal');
+    if (modal) {
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          if (m.type === 'attributes' && m.attributeName === 'style') {
+            if (modal.style.display !== 'none' && modal.style.display !== '') {
+              setTimeout(function() { renderPayPhone('pp-button'); }, 200);
+            }
+          }
+        });
+      });
+      observer.observe(modal, { attributes: true });
     }
   });
-</script>
+  </script>
 </body>
