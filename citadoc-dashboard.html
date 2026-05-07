@@ -2039,69 +2039,15 @@ function cargarPacientes() {
   if (!M) return;
   var container = document.getElementById('pacientesList');
   if (!container) return;
-  if (!esPro()) {
-    mostrarProModal('pacientes');
-    return;
-  }
-  container.innerHTML = '<div class="empty-citas">Cargando...</div>';
-
-  // Query único: citas + pacientes + historias_clinicas
-  _sb.from('historias_clinicas')
-    .select('paciente_id, diagnostico, created_at, pacientes(id, nombre, email, telefono)')
+  if (!esPro()) { mostrarProModal('pacientes'); return; }
+  container.innerHTML = '<div style="padding:2rem;text-align:center;color:#9ca3af">Cargando...</div>';
+  _sb.from('pacientes')
+    .select('*')
     .eq('medico_id', M.id)
-    .not('paciente_id', 'is', null)
     .order('created_at', {ascending: false})
     .then(function(r) {
-      if (r.error) { container.innerHTML='<div class="empty-citas">Error: '+r.error.message+'</div>'; return; }
-
-      // Construir mapa: paciente_id → {paciente, última HC}
-      var map = {};
-      (r.data||[]).forEach(function(row) {
-        if (!row.pacientes) return;
-        if (!map[row.paciente_id]) {
-          map[row.paciente_id] = {
-            paciente: row.pacientes,
-            ultimaHC: { diagnostico: row.diagnostico, created_at: row.created_at }
-          };
-        }
-      });
-
-      // Incluir pacientes de citas sin historia clínica
-      _sb.from('citas')
-        .select('paciente_id, pacientes(id, nombre, email, telefono)')
-        .eq('medico_id', M.id)
-        .not('paciente_id', 'is', null)
-        .then(function(r2) {
-          (r2.data||[]).forEach(function(row) {
-            if (row.pacientes && !map[row.paciente_id]) {
-              map[row.paciente_id] = { paciente: row.pacientes, ultimaHC: null };
-            }
-          });
-
-          var pacientes = Object.values(map);
-          var countEl = document.getElementById('pacCount');
-          if (countEl) countEl.textContent = pacientes.length+' paciente'+(pacientes.length!==1?'s':'');
-
-          if (!pacientes.length) {
-            container.innerHTML = '<div class="patient-empty">'
-              + '<div class="patient-empty-icon">🧠</div>'
-              + '<div class="patient-empty-title">Empieza a construir tu base clínica</div>'
-              + '<div class="patient-empty-sub">Cada paciente que atiendas aparecerá aquí con su historial y evolución.</div>'
-              + '</div>';
-            return;
-          }
-
-          var ultimaHC = {};
-          pacientes.forEach(function(entry) {
-            if (entry.ultimaHC) ultimaHC[entry.paciente.id] = entry.ultimaHC;
-          });
-          // Ordenar: con HC primero (más reciente), luego sin HC
-          var conHC  = pacientes.filter(function(e){ return  e.ultimaHC; });
-          var sinHC  = pacientes.filter(function(e){ return !e.ultimaHC; });
-          conHC.sort(function(a,b){ return new Date(b.ultimaHC.created_at)-new Date(a.ultimaHC.created_at); });
-          var ordenados = conHC.concat(sinHC);
-          renderPacientesCards(ordenados.map(function(e){ return e.paciente; }), ultimaHC, container);
-        });
+      if (r.error) { console.error('Error cargando pacientes:', r.error); return; }
+      renderPacientes(r.data || []);
     });
 }
 
@@ -3485,8 +3431,17 @@ async function guardarPaciente(){
   if(email&&!email.includes('@')){mostrarToast('Email invalido','error');return;}
   if(email){var chk=await _sb.from('pacientes').select('id,nombre').eq('email',email).eq('medico_id',M.id).maybeSingle();if(chk.data){mostrarToast('Ya existe: '+chk.data.nombre,'error');return;}}
   var res=await _sb.from('pacientes').insert([{medico_id:M.id,nombre:nombre,email:email||null,telefono:((document.getElementById('p_telefono')||{}).value||'').trim()||null,cedula:((document.getElementById('p_cedula')||{}).value||'').trim()||null,fecha_nacimiento:(document.getElementById('p_fecha')||{}).value||null,genero:(document.getElementById('p_genero')||{}).value||null,direccion:((document.getElementById('p_direccion')||{}).value||'').trim()||null,notas:((document.getElementById('p_notas')||{}).value||'').trim()||null,origen:'manual'}]);
-  if(res.error){mostrarToast('Error: '+res.error.message,'error');return;}
+  if(res.error){console.error('guardarPaciente error:',res.error);mostrarToast('Error: '+res.error.message,'error');return;}
   mostrarToast('Paciente guardado'); cerrarModalPaciente(); cargarPacientes();
+}
+
+function mostrarToast(msg, tipo) {
+  var t = document.createElement('div');
+  var bg = tipo === 'error' ? '#dc2626' : '#0b7c6e';
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:'+bg+';color:#fff;padding:12px 18px;border-radius:10px;font-family:sans-serif;font-weight:600;font-size:.88rem;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.15)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
 }
 </script>
 
