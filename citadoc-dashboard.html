@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v28</title>
+<title>CitaDoc — Dashboard v29</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -32,7 +32,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 }
 .sidebar-logo{
   display:block;padding:1.4rem 1.4rem 1rem;text-decoration:none;
-  font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;color:#fff;
+  font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#fff;
   letter-spacing:-.5px;border-bottom:1px solid rgba(255,255,255,.06);
   position:relative;z-index:1;display:flex;align-items:center;gap:.5rem
 }
@@ -96,7 +96,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-logout:hover{background:rgba(220,38,38,.2);border-color:rgba(220,38,38,.4);color:#fca5a5}
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.topbar-title{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+.topbar-title{font-family:Fraunces,serif;font-size:1.2rem;font-weight:600;color:var(--ink);letter-spacing:-.02em}
 .topbar-right{display:flex;align-items:center;gap:1rem}
 .topbar-date{font-size:.8rem;color:var(--muted2)}
 .topbar-user{display:flex;align-items:center;gap:.55rem}
@@ -108,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .content{flex:1;padding:2rem}
 .panel{display:none}.panel.active{display:block}
 .section-header{margin-bottom:1.5rem}
-.section-header h2{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--ink);margin-bottom:.3rem}
+.section-header h2{font-family:Fraunces,serif;font-size:1.5rem;font-weight:600;color:var(--ink);margin-bottom:.3rem}
 .section-header p{font-size:.88rem;color:var(--muted)}
 .card{background:var(--white);border-radius:16px;padding:1.4rem;border:1.5px solid var(--border);box-shadow:var(--shadow-sm)}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
@@ -117,7 +117,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.4rem}
 .stat-card{background:var(--white);border-radius:14px;padding:1.2rem;border:1.5px solid var(--border);text-align:center}
 .stat-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.5rem}
-.stat-num{font-family:'Fraunces',serif;font-size:2rem;font-weight:700;color:var(--ink);line-height:1;margin-bottom:.3rem}
+.stat-num{font-family:Fraunces,serif;font-size:2rem;font-weight:700;color:var(--ink);line-height:1;margin-bottom:.3rem}
 .stat-num.teal{color:var(--teal)}
 .stat-sub{font-size:.75rem;color:var(--muted2)}
 .dash-grid{display:grid;grid-template-columns:1fr 300px;gap:1.4rem}
@@ -284,7 +284,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .hc-modal-overlay.open{display:flex}
 .hc-modal{background:var(--white);border-radius:20px;width:100%;max-width:680px;margin:auto;box-shadow:0 24px 64px rgba(15,26,24,.2);max-height:calc(100vh - 2rem);overflow-y:auto;flex-shrink:0}
 .hc-modal-header{padding:1.4rem 1.8rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);z-index:10;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between}
-.hc-modal-header h3{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:var(--ink)}
+.hc-modal-header h3{font-family:Fraunces,serif;font-size:1.15rem;font-weight:600;color:var(--ink)}
 .hc-modal-body{padding:1.4rem 1.8rem 1.8rem}
 .hc-field{margin-bottom:1rem}
 .hc-field label{display:block;font-size:.76rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.4rem}
@@ -333,7 +333,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .locked-feature::after{content:'🔒 Pro';position:absolute;top:10px;right:10px;background:#0f1a18;color:#fff;padding:.3rem .7rem;border-radius:7px;font-size:.72rem;font-weight:700;letter-spacing:.04em;z-index:10}
 .pro-gate{background:linear-gradient(135deg,#0f1a18,#1a2e2b);border-radius:16px;padding:1.8rem;text-align:center;margin:.5rem 0}
 .pro-gate-icon{font-size:2rem;margin-bottom:.7rem}
-.pro-gate h3{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:.4rem}
+.pro-gate h3{font-family:Fraunces,serif;font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:.4rem}
 .pro-gate p{font-size:.84rem;color:rgba(255,255,255,.6);line-height:1.55;margin-bottom:1.2rem}
 .btn-upgrade{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;padding:.75rem 1.6rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .2s;text-decoration:none}
 .btn-upgrade:hover{opacity:.9}
@@ -353,12 +353,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .pro-overlay{position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;border-radius:16px}
 .pro-overlay-card{background:var(--white);border-radius:18px;padding:1.8rem 1.6rem;max-width:320px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(15,26,24,.25);border:1.5px solid rgba(11,124,110,.15)}
 .pro-overlay-icon{font-size:2rem;display:block;margin-bottom:.6rem}
-.pro-overlay-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2}
+.pro-overlay-title{font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2}
 .pro-overlay-desc{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem}
 .pro-overlay-features{text-align:left;list-style:none;margin:0 0 1.2rem;padding:0}
 .pro-overlay-features li{font-size:.79rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem}
 .pro-overlay-features li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0}
-.pro-overlay-price{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:700;color:var(--teal);line-height:1}
+.pro-overlay-price{font-family:Fraunces,serif;font-size:1.7rem;font-weight:700;color:var(--teal);line-height:1}
 .pro-overlay-price-sub{font-size:.72rem;color:var(--muted2);margin:.15rem 0 1.2rem}
 .btn-pro-upgrade{width:100%;padding:.78rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;transition:opacity .2s;display:block}
 .btn-pro-upgrade:hover{opacity:.9}
@@ -387,13 +387,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .pro-block-full{position:absolute;inset:0;z-index:200;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(247,244,239,.7);display:flex;align-items:center;justify-content:center;padding:1.5rem;border-radius:inherit}
 .pro-block-card{background:var(--white);border-radius:20px;padding:2rem 1.8rem;max-width:400px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(15,26,24,.2);border:1.5px solid rgba(11,124,110,.1)}
 .pro-block-eyebrow{display:inline-block;background:var(--cream);border:1.5px solid var(--border);border-radius:50px;padding:.28rem .8rem;font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.9rem}
-.pro-block-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2}
+.pro-block-title{font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2}
 .pro-block-sub{font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:.9rem}
 .pro-block-demo{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:10px;padding:.75rem 1rem;margin-bottom:.9rem;font-size:.8rem;color:#0369a1;line-height:1.55;text-align:left;font-style:italic}
 .pro-block-features{list-style:none;padding:0;margin:0 0 1.1rem;text-align:left}
 .pro-block-features li{font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem}
 .pro-block-features li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0}
-.pro-block-price{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:700;color:var(--teal);line-height:1;margin-bottom:.2rem}
+.pro-block-price{font-family:Fraunces,serif;font-size:1.7rem;font-weight:700;color:var(--teal);line-height:1;margin-bottom:.2rem}
 .pro-block-price-sub{font-size:.72rem;color:var(--muted2);margin-bottom:1.1rem}
 .btn-pro-block{width:100%;padding:.8rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;transition:opacity .2s}
 .btn-pro-block:hover{opacity:.9}
@@ -635,7 +635,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div class="panel" id="panel-horarios">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
         <div>
-          <h2 style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Mis horarios</h2>
+          <h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Mis horarios</h2>
           <p style="font-size:.84rem;color:#6b7280;margin:0">Define tus bloques de atención por día.</p>
         </div>
         <div style="display:flex;gap:.6rem;flex-wrap:wrap">
@@ -787,7 +787,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div id="modalPaciente" onclick="if(event.target===this)cerrarModalPaciente()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem">
       <div onclick="event.stopPropagation()" style="background:#fff;border-radius:20px;padding:2rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-          <h3 style="font-family:'Fraunces',serif;font-size:1.25rem;font-weight:700;color:#0f1a18;margin:0">Nuevo paciente</h3>
+          <h3 style="font-family:Fraunces,serif;font-size:1.25rem;font-weight:700;color:#0f1a18;margin:0">Nuevo paciente</h3>
           <button onclick="cerrarModalPaciente()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af">&#x2715;</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem">
@@ -809,7 +809,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem">
       <div>
-        <h2 style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Pacientes</h2>
+        <h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Pacientes</h2>
         <p style="font-size:.84rem;color:#6b7280;margin:0" id="pacCount">Gestiona los pacientes de tu consulta.</p>
       </div>
       <button onclick="abrirModalPaciente()" style="padding:.6rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">+ Nuevo paciente</button>
@@ -822,6 +822,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div id="pacientesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:1rem"></div>
 
     </div>
+
+  <!-- PANEL FICHA PACIENTE -->
+  <div class="panel" id="panel-ficha">
+    <div id="fichaContent"></div>
+  </div>
+
 </main>
 
 <!-- MODAL HISTORIA CLÍNICA -->
@@ -979,6 +985,7 @@ function showPanel(id, el) {
   if (id==='calendario')  { renderCal(); if(M) cargarCitasCal(M.id); }
   if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); cargarBloqueos(); }
   if (id==='estadisticas' && M) cargarStats(M.id);
+  if (id==='ficha') { /* cargado via abrirFicha() */ }
   if (id==='pacientes') {
     if (!esPro()) mostrarProModal('pacientes');
     else cargarPacientes();
@@ -3060,7 +3067,7 @@ function generarPDF() {
   // Construir HTML del documento
   var html = '<!DOCTYPE html><html lang="es"><head>'
     + '<meta charset="UTF-8">'
-    + '<title>CitaDoc — Dashboard v28</title>'
+    + '<title>CitaDoc — Dashboard v29</title>'
     + '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
     + 'body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:0}'
@@ -3406,7 +3413,7 @@ function renderPacientes(rows) {
     if(ultima){ var ult=document.createElement('div'); ult.style.cssText='font-size:.72rem;color:#9ca3af;margin-top:.1rem'; ult.textContent='Ultima cita: '+ultima; info.appendChild(ult); }
     left.appendChild(avatar); left.appendChild(info);
     var actions=document.createElement('div'); actions.style.cssText='display:flex;gap:.5rem;flex-shrink:0';
-    var btnFicha=document.createElement('button'); btnFicha.style.cssText='padding:.4rem .85rem;background:#fff;color:#0b7c6e;border:1.5px solid #0b7c6e;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer'; btnFicha.textContent='Ver ficha'; btnFicha.onmouseenter=function(){this.style.background='#f0fdf4';}; btnFicha.onmouseleave=function(){this.style.background='#fff';}; (function(pid){ btnFicha.onclick=function(){ console.log('Ver ficha paciente:', pid); mostrarToast('Ficha de paciente - pronto'); }; })(p.id);
+    var btnFicha=document.createElement('button'); btnFicha.style.cssText='padding:.4rem .85rem;background:#fff;color:#0b7c6e;border:1.5px solid #0b7c6e;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer'; btnFicha.textContent='Ver ficha'; btnFicha.onmouseenter=function(){this.style.background='#f0fdf4';}; btnFicha.onmouseleave=function(){this.style.background='#fff';}; (function(pid){ btnFicha.onclick=function(){ abrirFicha(pid); }; })(p.id);
     var btnCita=document.createElement('button'); btnCita.style.cssText='padding:.4rem .85rem;background:#0b7c6e;color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer'; btnCita.textContent='Nueva cita'; btnCita.onmouseenter=function(){this.style.background='#065f46';}; btnCita.onmouseleave=function(){this.style.background='#0b7c6e';}; (function(pid){ btnCita.onclick=function(){ console.log('Nueva cita paciente:', pid); mostrarToast('Nueva cita - pronto'); }; })(p.id);
     actions.appendChild(btnFicha); actions.appendChild(btnCita);
     card.appendChild(left); card.appendChild(actions);
@@ -3443,6 +3450,177 @@ function mostrarToast(msg, tipo) {
   document.body.appendChild(t);
   setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
 }
+
+// ══ FICHA PACIENTE ══
+var _fichaId = null;
+
+function abrirFicha(pacienteId) {
+  _fichaId = pacienteId;
+  showPanel('ficha', null);
+  var cont = document.getElementById('fichaContent');
+  if (cont) cont.innerHTML = '<div style="padding:2rem;color:#9ca3af">Cargando...</div>';
+  Promise.all([
+    _sb.from('pacientes').select('*').eq('id', pacienteId).single(),
+    _sb.from('consultas').select('*').eq('paciente_id', pacienteId).order('created_at', {ascending:false})
+  ]).then(function(res) {
+    if (res[0].error || !res[0].data) { cont.innerHTML='<div style="color:#dc2626;padding:2rem">Error cargando paciente</div>'; return; }
+    renderFicha(res[0].data, res[1].data || []);
+  });
+}
+
+function renderFicha(p, consultas) {
+  var cont = document.getElementById('fichaContent');
+  if (!cont) return;
+  var ini = p.nombre.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase()||'?';
+  var edad = '';
+  if (p.fecha_nacimiento) {
+    var d = new Date(p.fecha_nacimiento);
+    edad = Math.floor((new Date()-d)/(365.25*24*3600*1000))+' años';
+  }
+
+  cont.innerHTML = '';
+
+  // ── Volver ──
+  var back = document.createElement('button');
+  back.style.cssText = 'background:none;border:none;cursor:pointer;color:#6b7280;font-size:.85rem;display:flex;align-items:center;gap:.4rem;padding:.3rem .5rem;border-radius:8px;margin-bottom:1.2rem';
+  back.innerHTML = '&#8592; Pacientes';
+  back.onmouseenter=function(){this.style.background='#f3f4f6';};
+  back.onmouseleave=function(){this.style.background='none';};
+  back.onclick=function(){ showPanel('pacientes', document.querySelector('[onclick*="pacientes"]')); };
+  cont.appendChild(back);
+
+  // ── Header ──
+  var header = document.createElement('div');
+  header.style.cssText = 'background:#fff;border-radius:16px;padding:1.4rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;border:1.5px solid #f3f4f6';
+  var av = document.createElement('div');
+  av.style.cssText = 'width:64px;height:64px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;color:#065f46;flex-shrink:0';
+  av.textContent = ini;
+  var info = document.createElement('div');
+  info.style.cssText = 'flex:1';
+  info.innerHTML = '<div style="font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#0f1a18;margin-bottom:.35rem">'+p.nombre+'</div>'
+    +'<div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:.82rem;color:#6b7280">'
+    +(edad?'<span>&#128197; '+edad+'</span>':'')
+    +(p.cedula?'<span>&#128196; '+p.cedula+'</span>':'')
+    +(p.telefono?'<span>&#128222; '+p.telefono+'</span>':'')
+    +(p.email?'<span>&#9993; '+p.email+'</span>':'')
+    +'</div>';
+  var btnC = document.createElement('button');
+  btnC.style.cssText = 'padding:.6rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap';
+  btnC.textContent = '+ Nueva consulta';
+  btnC.onclick = function(){ abrirModalConsulta(_fichaId); };
+  header.appendChild(av); header.appendChild(info); header.appendChild(btnC);
+  cont.appendChild(header);
+
+  // ── Resumen clínico (editable) ──
+  var resumen = document.createElement('div');
+  resumen.style.cssText = 'background:#fff;border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem;border:1.5px solid #f3f4f6';
+  resumen.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">'
+    +'<div style="font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Resumen clínico</div>'
+    +'<button id="btnEditarResumen" style="background:none;border:1px solid #e5e7eb;padding:.25rem .7rem;border-radius:8px;font-size:.75rem;color:#6b7280;cursor:pointer">Editar</button>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem;font-size:.82rem;color:#374151">'
+    +'<div><span style="font-weight:600;color:#9ca3af">Alergias: </span>'+(p.alergias||'No registradas')+'</div>'
+    +'<div><span style="font-weight:600;color:#9ca3af">Antecedentes: </span>'+(p.antecedentes||'No registrados')+'</div>'
+    +'<div><span style="font-weight:600;color:#9ca3af">Medicación: </span>'+(p.medicacion||'No registrada')+'</div>'
+    +'<div><span style="font-weight:600;color:#9ca3af">Cirugías: </span>'+(p.cirugias||'No registradas')+'</div>'
+    +'</div>';
+  cont.appendChild(resumen);
+
+  // ── Timeline consultas ──
+  var tl = document.createElement('div');
+  tl.style.cssText = 'background:#fff;border-radius:14px;padding:1.2rem 1.4rem;border:1.5px solid #f3f4f6';
+  var tlHeader = document.createElement('div');
+  tlHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem';
+  tlHeader.innerHTML = '<div style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:#0f1a18">Historial de consultas</div>'
+    +'<span style="font-size:.78rem;color:#9ca3af">'+consultas.length+' consulta'+(consultas.length!==1?'s':'')+'</span>';
+  tl.appendChild(tlHeader);
+
+  if (!consultas.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;padding:2.5rem;color:#9ca3af;border:1.5px dashed #e5e7eb;border-radius:12px';
+    empty.innerHTML = '<div style="font-size:1.8rem;margin-bottom:.5rem">&#128203;</div><div style="font-weight:600">Sin consultas aún</div>';
+    tl.appendChild(empty);
+  } else {
+    consultas.forEach(function(con) {
+      var fecha = con.created_at ? new Date(con.created_at).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) : '';
+      var card = document.createElement('div');
+      card.style.cssText = 'padding:1rem 1.1rem;border-radius:12px;border:1.5px solid #f3f4f6;margin-bottom:.7rem;cursor:pointer;transition:border-color .15s,box-shadow .15s';
+      card.onmouseenter=function(){this.style.borderColor='#bbf7d0';this.style.boxShadow='0 4px 14px rgba(0,0,0,.06)';};
+      card.onmouseleave=function(){this.style.borderColor='#f3f4f6';this.style.boxShadow='none';};
+      card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.3rem">'
+        +'<div style="font-weight:700;font-size:.92rem;color:#0f1a18">'+(con.motivo||'Consulta')+'</div>'
+        +'<div style="font-size:.74rem;color:#9ca3af;white-space:nowrap;margin-left:1rem">'+fecha+'</div>'
+        +'</div>'
+        +(con.diagnostico?'<div style="font-size:.81rem;color:#6b7280;margin-bottom:.2rem"><span style="color:#0b7c6e;font-weight:600">Dx:</span> '+con.diagnostico+'</div>':'')
+        +(con.tratamiento?'<div style="font-size:.81rem;color:#6b7280"><span style="font-weight:600">Tx:</span> '+con.tratamiento+'</div>':'');
+      tl.appendChild(card);
+    });
+  }
+  cont.appendChild(tl);
+}
+
+function editarResumenClinico(pacienteId) {
+  mostrarToast('Editar resumen - próximamente');
+}
+
+// Modal nueva consulta
+function abrirModalConsulta(pacienteId) {
+  var ex = document.getElementById('modalConsulta'); if(ex) ex.remove();
+  var m = document.createElement('div');
+  m.id='modalConsulta';
+  m.onclick=function(e){if(e.target===m)cerrarModalConsulta();};
+  m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
+  var inner = document.createElement('div');
+  inner.onclick=function(e){e.stopPropagation();};
+  inner.style.cssText='background:#fff;border-radius:20px;padding:2rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+  inner.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">'
+    +'<h3 style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:#0f1a18;margin:0">Nueva consulta</h3>'
+    +'<button onclick="cerrarModalConsulta()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.85rem">'
+    +'<div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">MOTIVO *</label><input id="c_motivo" placeholder="Ej: Dolor de cabeza" style="width:100%;padding:.65rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box"></div>'
+    +'<div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">DIAGNÓSTICO</label><input id="c_diagnostico" placeholder="Ej: Migraña tensional" style="width:100%;padding:.65rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box"></div>'
+    +'<div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TRATAMIENTO</label><textarea id="c_tratamiento" placeholder="Indicaciones médicas..." rows="3" style="width:100%;padding:.65rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical"></textarea></div>'
+    +'<div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">NOTAS</label><textarea id="c_notas" placeholder="Observaciones adicionales..." rows="2" style="width:100%;padding:.65rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical"></textarea></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:.8rem;margin-top:1.5rem">'
+    +'<button onclick="cerrarModalConsulta()" style="flex:1;padding:.7rem;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">Cancelar</button>'
+    +'<button id="btnGuardarConsulta" style="flex:2;padding:.7rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer">Guardar consulta</button>'
+    +'</div>';
+  m.appendChild(inner);
+  document.body.appendChild(m);
+  // Asignar onclick después de que el elemento existe en el DOM
+  var btnG = document.getElementById('btnGuardarConsulta');
+  if (btnG) {
+    (function(pid){ btnG.onclick = function(){ guardarConsulta(pid); }; })(pacienteId);
+  }
+  // Botón editar resumen
+  var btnER = document.getElementById('btnEditarResumen');
+  if (btnER) btnER.onclick = function(){ editarResumenClinico(pacienteId); };
+}
+
+function cerrarModalConsulta(){var m=document.getElementById('modalConsulta');if(m)m.remove();}
+
+async function guardarConsulta(pacienteId) {
+  if(!M||!M.id||!pacienteId) return;
+  var motivo=((document.getElementById('c_motivo')||{}).value||'').trim();
+  if(!motivo){mostrarToast('El motivo es obligatorio','error');return;}
+  var btn=document.getElementById('btnGuardarConsulta');
+  if(btn){btn.disabled=true;btn.textContent='Guardando...';}
+  var res = await _sb.from('consultas').insert([{
+    medico_id: M.id,
+    paciente_id: pacienteId,
+    motivo: motivo,
+    diagnostico: ((document.getElementById('c_diagnostico')||{}).value||'').trim()||null,
+    tratamiento: ((document.getElementById('c_tratamiento')||{}).value||'').trim()||null,
+    notas: ((document.getElementById('c_notas')||{}).value||'').trim()||null
+  }]);
+  if(btn){btn.disabled=false;btn.textContent='Guardar consulta';}
+  if(res.error){mostrarToast('Error: '+res.error.message,'error');console.error(res.error);return;}
+  mostrarToast('Consulta guardada');
+  cerrarModalConsulta();
+  abrirFicha(pacienteId);
+}
 </script>
 
 <!-- SIDEBAR TRIGGER — zona activadora invisible en tablet -->
@@ -3455,7 +3633,7 @@ function mostrarToast(msg, tipo) {
   <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
     <div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">🔒 Vista previa Pro</div>
     <div id="proModalIcon" style="font-size:2.2rem;margin-bottom:.6rem">🧠</div>
-    <div id="proModalTitle" style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2">Gestión Inteligente de Pacientes</div>
+    <div id="proModalTitle" style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2">Gestión Inteligente de Pacientes</div>
     <div id="proModalDesc" style="font-size:.84rem;color:var(--muted);line-height:1.6;margin-bottom:.9rem">Historial clínico completo con análisis de evolución asistido por AI</div>
     <div id="proModalDemo" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:10px;padding:.75rem 1rem;margin-bottom:.9rem;font-size:.8rem;color:#0369a1;line-height:1.55;text-align:left;font-style:italic">✨ Paciente con recurrencia de dolor cervical en 3 consultas. Patrón de sobrecarga muscular detectado automáticamente.</div>
     <ul id="proModalFeatures" style="list-style:none;padding:0;margin:0 0 1.1rem;text-align:left">
@@ -3464,7 +3642,7 @@ function mostrarToast(msg, tipo) {
       <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Detección de patrones del paciente</li>
       <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Seguimiento clínico más preciso</li>
     </ul>
-    <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$19.99</div>
+    <div style="font-family:Fraunces,serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$19.99</div>
     <div style="font-size:.72rem;color:var(--muted2);margin:.15rem 0 1.2rem">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
     <div id="pp-button" style="margin-bottom:.5rem"></div>
           <button id="btnProModalUpgrade" onclick="initPayPhone()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none">💬 Activar PRO por WhatsApp</button>
