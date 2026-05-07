@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v30</title>
+<title>CitaDoc — Dashboard v31</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -3067,7 +3067,7 @@ function generarPDF() {
   // Construir HTML del documento
   var html = '<!DOCTYPE html><html lang="es"><head>'
     + '<meta charset="UTF-8">'
-    + '<title>CitaDoc — Dashboard v30</title>'
+    + '<title>CitaDoc — Dashboard v31</title>'
     + '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
     + 'body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:0}'
@@ -3558,6 +3558,14 @@ function renderFicha(p, consultas) {
         +(con.diagnostico?'<div style="font-size:.81rem;color:#6b7280;margin-bottom:.2rem"><span style="color:#0b7c6e;font-weight:600">Dx:</span> '+con.diagnostico+'</div>':'')
         +(con.plan?'<div style="font-size:.81rem;color:#6b7280;margin-bottom:.2rem"><span style="font-weight:600">Plan:</span> '+con.plan.substring(0,80)+(con.plan.length>80?'...':'')+'</div>':'')
         +(vitales.length?'<div style="font-size:.75rem;color:#9ca3af;margin-top:.3rem">'+vitales.join(' · ')+'</div>':'');
+      // Botón receta en cada consulta
+      var btnRec=document.createElement('button');
+      btnRec.style.cssText='margin-top:.5rem;padding:.3rem .7rem;background:none;border:1px solid #e5e7eb;border-radius:7px;font-size:.75rem;color:#6b7280;cursor:pointer;display:flex;align-items:center;gap:.3rem';
+      btnRec.innerHTML='&#128196; Receta';
+      btnRec.onmouseenter=function(){this.style.borderColor='#0b7c6e';this.style.color='#0b7c6e';};
+      btnRec.onmouseleave=function(){this.style.borderColor='#e5e7eb';this.style.color='#6b7280';};
+      (function(cid,pid){ btnRec.onclick=function(e){ e.stopPropagation(); abrirModalReceta(cid,pid); }; })(con.id, p.id);
+      card.appendChild(btnRec);
       tl.appendChild(card);
     });
   }
@@ -3697,6 +3705,191 @@ async function guardarConsulta(pacienteId) {
   mostrarToast('Consulta guardada');
   cerrarModalConsulta();
   abrirFicha(pacienteId);
+}
+
+// ══ RECETAS Y DETALLE CONSULTA ══
+
+function verDetalleConsulta(consultaId, pacienteId) {
+  // Por ahora abre modal de receta directamente
+  abrirModalReceta(consultaId, pacienteId);
+}
+
+function abrirModalReceta(consultaId, pacienteId) {
+  var ex=document.getElementById('modalReceta'); if(ex) ex.remove();
+
+  // Cargar receta existente si hay
+  _sb.from('recetas').select('*').eq('consulta_id', consultaId).maybeSingle()
+    .then(function(r) {
+      var receta = r.data || null;
+      _crearModalReceta(consultaId, pacienteId, receta);
+    });
+}
+
+function _crearModalReceta(consultaId, pacienteId, recetaExistente) {
+  var m=document.createElement('div');
+  m.id='modalReceta';
+  m.onclick=function(e){if(e.target===m)cerrarModalReceta();};
+  m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
+
+  var inner=document.createElement('div');
+  inner.onclick=function(e){e.stopPropagation();};
+  inner.style.cssText='background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+
+  // Header
+  var hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:1.4rem 1.6rem 1rem;border-bottom:1px solid #f3f4f6;position:sticky;top:0;background:#fff;border-radius:20px 20px 0 0;z-index:1';
+  var htitle=document.createElement('div');
+  htitle.style.cssText='font-size:1.1rem;font-weight:700;color:#0f1a18';
+  htitle.style.fontFamily='Fraunces,serif';
+  htitle.textContent = recetaExistente ? 'Receta médica' : 'Nueva receta';
+  var hclose=document.createElement('button');
+  hclose.style.cssText='background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af';
+  hclose.innerHTML='&#x2715;'; hclose.onclick=cerrarModalReceta;
+  hdr.appendChild(htitle); hdr.appendChild(hclose);
+
+  // Body
+  var body=document.createElement('div');
+  body.style.cssText='padding:1.3rem 1.6rem;display:flex;flex-direction:column;gap:1rem';
+
+  function inputField(id, label, placeholder, tipo, rows, valor) {
+    var wrap=document.createElement('div');
+    var lbl=document.createElement('label');
+    lbl.style.cssText='font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem';
+    lbl.textContent=label;
+    var el;
+    if(tipo==='textarea'){ el=document.createElement('textarea'); el.rows=rows||4; el.style.resize='vertical'; }
+    else { el=document.createElement('input'); el.type=tipo||'text'; }
+    el.id=id; el.placeholder=placeholder;
+    if(valor) el.value=valor;
+    el.style.cssText='width:100%;padding:.65rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:inherit;line-height:1.5;transition:border-color .15s';
+    el.onfocus=function(){this.style.borderColor='#0b7c6e';};
+    el.onblur=function(){this.style.borderColor='#e5e7eb';};
+    wrap.appendChild(lbl); wrap.appendChild(el);
+    return wrap;
+  }
+
+  var hint=document.createElement('div');
+  hint.style.cssText='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:.7rem .9rem;font-size:.8rem;color:#065f46';
+  hint.innerHTML='<strong>Formato sugerido:</strong><br>Omeprazol 20mg — 1 cápsula cada 12h por 14 días<br>Paracetamol 500mg — 1 tableta c/8h si dolor';
+  body.appendChild(hint);
+
+  body.appendChild(inputField('r_medicamentos','Medicamentos *','Un medicamento por línea...','textarea',5, recetaExistente?recetaExistente.medicamentos:''));
+  body.appendChild(inputField('r_indicaciones','Indicaciones al paciente','Tomar después de comidas, reposo...','textarea',3, recetaExistente?recetaExistente.indicaciones:''));
+  body.appendChild(inputField('r_observaciones','Observaciones (opcional)','Notas adicionales...','textarea',2, recetaExistente?recetaExistente.observaciones:''));
+
+  // Footer
+  var footer=document.createElement('div');
+  footer.style.cssText='display:flex;gap:.7rem;padding:1rem 1.6rem 1.4rem;border-top:1px solid #f3f4f6;flex-wrap:wrap';
+
+  var btnCancel=document.createElement('button');
+  btnCancel.style.cssText='flex:1;min-width:100px;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer';
+  btnCancel.textContent='Cancelar'; btnCancel.onclick=cerrarModalReceta;
+
+  var btnGuardar=document.createElement('button');
+  btnGuardar.id='btnGuardarReceta';
+  btnGuardar.style.cssText='flex:2;min-width:140px;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer';
+  btnGuardar.textContent='Guardar receta';
+
+  var btnPDF=document.createElement('button');
+  btnPDF.id='btnRecetaPDF';
+  btnPDF.style.cssText='flex:2;min-width:140px;padding:.65rem;background:#fff;color:#0b7c6e;border:1.5px solid #0b7c6e;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;display:'+(recetaExistente?'flex':'none')+';align-items:center;justify-content:center;gap:.4rem';
+  btnPDF.innerHTML='&#128196; Generar PDF';
+
+  footer.appendChild(btnCancel);
+  footer.appendChild(btnGuardar);
+  footer.appendChild(btnPDF);
+
+  inner.appendChild(hdr); inner.appendChild(body); inner.appendChild(footer);
+  m.appendChild(inner);
+  document.body.appendChild(m);
+
+  // Asignar acciones
+  var recetaId = recetaExistente ? recetaExistente.id : null;
+  btnGuardar.onclick = function() { guardarReceta(consultaId, pacienteId, recetaId); };
+  btnPDF.onclick = function() { generarRecetaPDF(consultaId, pacienteId); };
+}
+
+function cerrarModalReceta(){var m=document.getElementById('modalReceta');if(m)m.remove();}
+
+async function guardarReceta(consultaId, pacienteId, recetaId) {
+  if(!M||!M.id) return;
+  var meds=((document.getElementById('r_medicamentos')||{}).value||'').trim();
+  if(!meds){mostrarToast('Los medicamentos son obligatorios','error');return;}
+  var btn=document.getElementById('btnGuardarReceta');
+  if(btn){btn.disabled=true;btn.textContent='Guardando...';}
+
+  var data={
+    consulta_id:consultaId, paciente_id:pacienteId, medico_id:M.id,
+    medicamentos:meds,
+    indicaciones:((document.getElementById('r_indicaciones')||{}).value||'').trim()||null,
+    observaciones:((document.getElementById('r_observaciones')||{}).value||'').trim()||null
+  };
+
+  var res;
+  if(recetaId) {
+    res=await _sb.from('recetas').update(data).eq('id',recetaId);
+  } else {
+    res=await _sb.from('recetas').insert([data]);
+  }
+
+  if(btn){btn.disabled=false;btn.textContent='Guardar receta';}
+  if(res.error){mostrarToast('Error: '+res.error.message,'error');console.error(res.error);return;}
+
+  mostrarToast('Receta guardada');
+
+  // Mostrar botón PDF
+  var btnPDF=document.getElementById('btnRecetaPDF');
+  if(btnPDF) btnPDF.style.display='flex';
+}
+
+function generarRecetaPDF(consultaId, pacienteId) {
+  if(!M) return;
+  var meds=((document.getElementById('r_medicamentos')||{}).value||'').trim();
+  var indic=((document.getElementById('r_indicaciones')||{}).value||'').trim();
+  var obs=((document.getElementById('r_observaciones')||{}).value||'').trim();
+
+  var medNombre=(M.titulo||'Dr.')+ ' '+(M.nombre||'')+' '+(M.apellido||'');
+  var medEsp=(M.especialidades||[])[0]||'';
+  var fecha=new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
+  var folio='R-'+Date.now().toString().slice(-6);
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<style>'
+    +'*{margin:0;padding:0;box-sizing:border-box}'
+    +'body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff}'
+    +'.page{padding:30px 40px;max-width:700px;margin:0 auto}'
+    +'.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0b7c6e;padding-bottom:16px;margin-bottom:20px}'
+    +'.brand{font-size:22px;font-weight:700;color:#0b7c6e;letter-spacing:-0.5px}'
+    +'.brand em{font-style:italic;color:#374151}'
+    +'.medico-info{text-align:right;font-size:12px;color:#6b7280}'
+    +'.medico-info strong{display:block;font-size:14px;color:#0f1a18;margin-bottom:2px}'
+    +'.rx-symbol{font-size:48px;font-weight:700;color:#0b7c6e;line-height:1;margin:16px 0 8px}'
+    +'.seccion{margin-bottom:18px}'
+    +'.seccion h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:8px}'
+    +'.medicamentos{background:#f8fffe;border-left:3px solid #0b7c6e;padding:12px 16px;border-radius:0 8px 8px 0;line-height:1.8;white-space:pre-line}'
+    +'.indicaciones{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;line-height:1.6}'
+    +'.footer{border-top:1px solid #e5e7eb;margin-top:30px;padding-top:14px;display:flex;justify-content:space-between;align-items:flex-end}'
+    +'.firma{text-align:center}'
+    +'.firma-line{border-top:1px solid #374151;width:160px;margin:40px auto 6px}'
+    +'.firma-nombre{font-size:12px;font-weight:600}'
+    +'.folio{font-size:10px;color:#9ca3af}'
+    +'@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
+    +'</style></head><body><div class="page">'
+    +'<div class="header"><div class="brand">Cita<em>Doc</em></div>'
+    +'<div class="medico-info"><strong>'+medNombre+'</strong>'+(medEsp?medEsp+'<br>':'')+'Fecha: '+fecha+'</div></div>'
+    +'<div class="rx-symbol">&#x211E;</div>'
+    +'<div class="seccion"><h4>Medicamentos</h4><div class="medicamentos">'+meds.split('\n').join('<br>')+'</div></div>'
+    +(indic?'<div class="seccion"><h4>Indicaciones</h4><div class="indicaciones">'+indic+'</div></div>':'')
+    +(obs?'<div class="seccion"><h4>Observaciones</h4><div class="indicaciones">'+obs+'</div></div>':'')
+    +'<div class="footer"><div class="folio">Folio: '+folio+' | CitaDoc</div>'
+    +'<div class="firma"><div class="firma-line"></div><div class="firma-nombre">'+medNombre+'</div>'+(medEsp?'<div style="font-size:11px;color:#6b7280">'+medEsp+'</div>':'')+'</div></div>'
+    +'</div></body></html>';
+
+  var w=window.open('','_blank','width=750,height=900');
+  if(!w){mostrarToast('Activa las ventanas emergentes','error');return;}
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},400);
 }
 </script>
 
