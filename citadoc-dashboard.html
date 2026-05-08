@@ -696,6 +696,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         </div>
         <div id="listaBloqueos" style="margin-top:.8rem"></div>
       </div>
+    </div><!-- /panel-horarios -->
 
     <div class="panel" id="panel-perfil">
 
@@ -1005,7 +1006,9 @@ function showPanel(id, el) {
     else cargarPacientes();
   }
   if (id==='perfil') {
-    if (M) { cargarFormPerfil(M); }
+    var _pf = document.getElementById('panel-perfil');
+    if (_pf) _pf.innerHTML = '<div style="padding:2rem"><h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin-bottom:.5rem">Mi perfil funciona</h2><p style="color:#6b7280">Cargando datos...</p></div>';
+    if (M && typeof cargarFormPerfil === 'function') cargarFormPerfil(M);
   }
 }
 
