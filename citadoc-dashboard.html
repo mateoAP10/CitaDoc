@@ -1021,6 +1021,9 @@ function showPanel(id, el) {
     if (!esPro()) mostrarProModal('pacientes');
     else cargarPacientes();
   }
+  if (id==='perfil' && M) {
+    try { aplicarMedico(M); cargarFormPerfil(M); } catch(e){ console.error('perfil:',e); }
+  }
 }
 
 // Wrapper seguro para cualquier render
