@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v32</title>
+<title>CitaDoc — Dashboard v33</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -517,6 +517,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .btn-add-bloque{width:100%;padding:.42rem;background:none;border:1.5px dashed #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#6b7280;cursor:pointer;margin-top:.2rem}
 .btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
 .dia-inactivo{text-align:center;padding:.9rem 0;font-size:.8rem;color:#9ca3af}
+
+.ux-spinner{width:28px;height:28px;border:3px solid #e5e7eb;border-top-color:#0b7c6e;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 </style>
   <!-- PayPhone SDK -->
 </head>
@@ -1020,6 +1024,14 @@ function showPanel(id, el) {
   }
 }
 
+// Wrapper seguro para cualquier render
+function safeRender(fn, fallbackId) {
+  try { fn(); } catch(e) {
+    console.error('Render error:', e);
+    if (fallbackId) uiError(fallbackId, 'Error al cargar este panel.', function(){ location.reload(); });
+  }
+}
+
 // ══ CALENDARIO ══
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DIAS  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -1464,38 +1476,7 @@ function addLogro(){ const t=_el('lTit').value.trim(),d=_el('lDes').value.trim()
 function rmLogro(i){ logrosData.splice(i,1); renderLogrosList(); }
 
 // ══ SAVE PERFIL ══
-async function guardarPerfil(btn){
-  if(!M) return;
-  const o=btn.textContent; btn.textContent='Guardando...'; btn.disabled=true;
-  const g=id=>_el(''+id)?.value?.trim()||'';
-  const upd={
-    nombre:    g('inf-nombre')||M.nombre,
-    apellido:  g('inf-apellido')||M.apellido,
-    titulo:    g('inf-titulo')||M.titulo,
-    bio:       _el('bioTextarea')?.value?.trim()||'',
-    precio:    parseInt(g('inf-precio'))||M.precio||0,
-    anos_experiencia: parseInt(g('inf-anos'))||0,
-    direccion: g('inf-direccion'),
-    senescyt:  g('inf-senescyt'),
-    telefono:  g('inf-telefono'),
-    seguros:   Array.from(activeSeguros),
-    whatsapp:  _el('waNumber')?.value?.trim()||'',
-    whatsapp_activo: _el('togWA')?.checked||false,
-    agendamiento_citadoc: _el('togAg')?.checked??true,
-  };
-  const {error} = await _sb.from('medicos').update(upd).eq('id',M.id);
-  if(!error){
-    Object.assign(M, upd);
-    // Guardar formación
-    if(formData.length||logrosData.length){
-      await _sb.from('formacion').delete().eq('medico_id',M.id);
-      const rows=[...formData.map((f,i)=>({medico_id:M.id,tipo:'academia',titulo:f.t,institucion:f.l,anio:f.a,icono:'🎓',orden:i})),...logrosData.map((l,i)=>({medico_id:M.id,tipo:'logro',titulo:l.t,descripcion:l.d,icono:'⭐',orden:i}))];
-      if(rows.length) await _sb.from('formacion').insert(rows);
-    }
-    btn.textContent='✓ Guardado'; btn.style.background='var(--green)';
-  } else { btn.textContent='✗ Error'; btn.style.background='var(--red)'; }
-  setTimeout(()=>{btn.textContent=o;btn.style.background='';btn.disabled=false;},2500);
-}
+/* guardarPerfil consolidado arriba */
 
 // ══ FOTO ══
 async function subirFoto(input){
@@ -2075,14 +2056,23 @@ function cargarPacientes() {
   var container = document.getElementById('pacientesList');
   if (!container) return;
   if (!esPro()) { mostrarProModal('pacientes'); return; }
-  container.innerHTML = '<div style="padding:2rem;text-align:center;color:#9ca3af">Cargando...</div>';
+  uiLoading('pacientesList', 'Cargando pacientes...');
   _sb.from('pacientes')
     .select('*')
     .eq('medico_id', M.id)
     .order('created_at', {ascending: false})
     .then(function(r) {
-      if (r.error) { console.error('Error cargando pacientes:', r.error); return; }
-      renderPacientes(r.data || []);
+      if (r.error) {
+        uiError('pacientesList', r.error.message, cargarPacientes);
+        return;
+      }
+      if (!r.data || !r.data.length) {
+        uiEmpty('pacientesList', '👥', 'Sin pacientes aún',
+          'Agrega tu primer paciente para comenzar a registrar consultas.',
+          '+ Nuevo paciente', abrirModalPaciente);
+        return;
+      }
+      renderPacientes(r.data);
     });
 }
 
@@ -3095,7 +3085,7 @@ function generarPDF() {
   // Construir HTML del documento
   var html = '<!DOCTYPE html><html lang="es"><head>'
     + '<meta charset="UTF-8">'
-    + '<title>CitaDoc — Dashboard v32</title>'
+    + '<title>CitaDoc — Dashboard v33</title>'
     + '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
     + 'body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:0}'
@@ -3510,7 +3500,7 @@ async function guardarPaciente(){
   if(email){var chk=await _sb.from('pacientes').select('id,nombre').eq('email',email).eq('medico_id',M.id).maybeSingle();if(chk.data){mostrarToast('Ya existe: '+chk.data.nombre,'error');return;}}
   var res=await _sb.from('pacientes').insert([{medico_id:M.id,nombre:nombre,email:email||null,telefono:((document.getElementById('p_telefono')||{}).value||'').trim()||null,cedula:((document.getElementById('p_cedula')||{}).value||'').trim()||null,fecha_nacimiento:(document.getElementById('p_fecha')||{}).value||null,genero:(document.getElementById('p_genero')||{}).value||null,direccion:((document.getElementById('p_direccion')||{}).value||'').trim()||null,notas:((document.getElementById('p_notas')||{}).value||'').trim()||null,origen:'manual'}]);
   if(res.error){console.error('guardarPaciente error:',res.error);mostrarToast('Error: '+res.error.message,'error');return;}
-  mostrarToast('Paciente guardado'); cerrarModalPaciente(); cargarPacientes();
+  mostrarToast('Paciente guardado correctamente ✓'); cerrarModalPaciente(); cargarPacientes();
 }
 
 function mostrarToast(msg, tipo) {
@@ -3529,12 +3519,12 @@ function abrirFicha(pacienteId) {
   _fichaId = pacienteId;
   showPanel('ficha', null);
   var cont = document.getElementById('fichaContent');
-  if (cont) cont.innerHTML = '<div style="padding:2rem;color:#9ca3af">Cargando...</div>';
+  if (cont) uiLoading('fichaContent', 'Cargando ficha del paciente...');
   Promise.all([
     _sb.from('pacientes').select('*').eq('id', pacienteId).single(),
     _sb.from('consultas').select('*').eq('paciente_id', pacienteId).order('created_at', {ascending:false})
   ]).then(function(res) {
-    if (res[0].error || !res[0].data) { cont.innerHTML='<div style="color:#dc2626;padding:2rem">Error cargando paciente</div>'; return; }
+    if (res[0].error || !res[0].data) { uiError('fichaContent', 'No se pudo cargar la ficha', function(){ abrirFicha(_fichaId); }); return; }
     renderFicha(res[0].data, res[1].data || []);
   });
 }
@@ -3915,7 +3905,7 @@ async function guardarReceta(consultaId, pacienteId, recetaId) {
   if(btn){btn.disabled=false;btn.textContent='Guardar receta';}
   if(res.error){mostrarToast('Error: '+res.error.message,'error');console.error(res.error);return;}
 
-  mostrarToast('Receta guardada');
+  mostrarToast('Receta guardada correctamente ✓');
 
   // Mostrar botón PDF
   var btnPDF=document.getElementById('btnRecetaPDF');
@@ -3943,7 +3933,7 @@ function generarRecetaPDF(consultaId, pacienteId) {
   }).join('');
 
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-    +'<title>CitaDoc — Dashboard v32</title>'
+    +'<title>CitaDoc — Dashboard v33</title>'
     +'<style>'
     +'*{margin:0;padding:0;box-sizing:border-box}'
     +'body{font-family:"Helvetica Neue",Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#f5f5f0}'
@@ -4146,5 +4136,125 @@ function enviarRecetaWhatsApp() {
   });
   
 document.addEventListener("DOMContentLoaded", function(){ initMobile(); });
+
+// ══ ESTADOS UX UNIVERSALES ══
+function uiLoading(containerId, msg) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:.8rem;color:#9ca3af">'
+    + '<div class="ux-spinner"></div>'
+    + '<div style="font-size:.85rem;font-weight:500">'+(msg||'Cargando...')+'</div>'
+    + '</div>';
+}
+
+function uiEmpty(containerId, icon, title, subtitle, actionLabel, actionFn) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  var btnHtml = '';
+  if (actionLabel && actionFn) {
+    var btnId = 'emptyAction_' + containerId;
+    btnHtml = '<button id="'+btnId+'" style="margin-top:1rem;padding:.55rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer">'+actionLabel+'</button>';
+  }
+  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3.5rem 1rem;text-align:center;color:#9ca3af">'
+    + '<div style="font-size:2.5rem;margin-bottom:.75rem;opacity:.7">'+(icon||'📭')+'</div>'
+    + '<div style="font-size:.95rem;font-weight:600;color:#374151;margin-bottom:.3rem">'+(title||'Sin datos')+'</div>'
+    + (subtitle?'<div style="font-size:.82rem;line-height:1.5;max-width:260px">'+subtitle+'</div>':'')
+    + btnHtml
+    + '</div>';
+  if (actionLabel && actionFn) {
+    var btn = document.getElementById('emptyAction_' + containerId);
+    if (btn) btn.onclick = actionFn;
+  }
+}
+
+function uiError(containerId, msg, retryFn) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  var btnId = 'retryBtn_' + containerId;
+  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;text-align:center">'
+    + '<div style="font-size:2rem;margin-bottom:.75rem">⚠️</div>'
+    + '<div style="font-size:.9rem;font-weight:600;color:#dc2626;margin-bottom:.3rem">Error al cargar</div>'
+    + '<div style="font-size:.8rem;color:#9ca3af;margin-bottom:1rem">'+(msg||'Intenta nuevamente')+'</div>'
+    + (retryFn?'<button id="'+btnId+'" style="padding:.5rem 1rem;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.83rem;font-weight:600;cursor:pointer;color:#374151">↻ Reintentar</button>':'')
+    + '</div>';
+  if (retryFn) {
+    var btn = document.getElementById(btnId);
+    if (btn) btn.onclick = retryFn;
+  }
+}
+
+
+// ══ PERFIL ══
+function cargarFormPerfil(m) {
+  if (!m) return;
+  // Llenar campos del formulario
+  var campos = {
+    'inf-nombre':       m.nombre||'',
+    'inf-apellido':     m.apellido||'',
+    'inf-titulo':       m.titulo||'Dr.',
+    'inf-especialidad': (m.especialidades||[])[0]||'',
+    'inf-precio':       m.precio_consulta||'',
+    'inf-anos':         m.anos_experiencia||'',
+    'inf-direccion':    m.direccion||'',
+    'inf-senescyt':     m.senescyt||'',
+    'inf-telefono':     m.telefono||''
+  };
+  Object.keys(campos).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = campos[id];
+  });
+  // Avatar
+  var av = document.getElementById('perfilAvatar');
+  if (av) {
+    if (m.foto_url) {
+      av.style.backgroundImage = 'url('+m.foto_url+')';
+      av.style.backgroundSize = 'cover';
+      av.style.backgroundPosition = 'center';
+      av.textContent = '';
+    } else {
+      var ini = ((m.nombre||'')[0]||'').toUpperCase() + ((m.apellido||'')[0]||'').toUpperCase();
+      av.textContent = ini || '👨‍⚕️';
+    }
+  }
+  // Link público
+  if (m.slug) {
+    var urlEl = document.getElementById('urlDash');
+    if (urlEl) urlEl.textContent = 'citadoc.lat/medico/' + m.slug;
+  }
+}
+
+async function guardarPerfil(btnArg) {
+  if (!M || !M.id) return;
+  var btn = btnArg || document.getElementById('btnGuardarPerfil');
+  if (btn) { btn.disabled=true; btn.textContent='Guardando...'; }
+
+  var updates = {
+    nombre:            (document.getElementById('inf-nombre')||{}).value||'',
+    apellido:          (document.getElementById('inf-apellido')||{}).value||'',
+    titulo:            (document.getElementById('inf-titulo')||{}).value||'Dr.',
+    precio_consulta:   (document.getElementById('inf-precio')||{}).value||null,
+    anos_experiencia:  (document.getElementById('inf-anos')||{}).value||null,
+    direccion:         (document.getElementById('inf-direccion')||{}).value||'',
+    senescyt:          (document.getElementById('inf-senescyt')||{}).value||'',
+    telefono:          (document.getElementById('inf-telefono')||{}).value||''
+  };
+
+  // Especialidad (array)
+  var esp = (document.getElementById('inf-especialidad')||{}).value||'';
+  if (esp) updates.especialidades = [esp];
+
+  var res = await _sb.from('medicos').update(updates).eq('id', M.id);
+  if (btn) { btn.disabled=false; btn.textContent='Guardar cambios'; }
+
+  if (res.error) {
+    mostrarToast('Error al guardar: ' + res.error.message, 'error');
+    console.error(res.error);
+    return;
+  }
+  // Actualizar M local
+  Object.assign(M, updates);
+  mostrarToast('Perfil actualizado correctamente ✓');
+  aplicarMedico(M);
+}
 </script>
 </body>
