@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Dashboard v33</title>
+<title>CitaDoc — Dashboard v34</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -698,119 +698,102 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       </div>
 
     <div class="panel" id="panel-perfil">
-      <div class="section-header"><h2>Mi perfil</h2><p>Esta información aparece en tu perfil público.</p></div>
-      <div class="perfil-layout">
-        <div>
-          <div class="perfil-photo-card">
-            <div class="perfil-avatar-big" id="perfilAvatar">👨‍⚕️</div>
-            <h4 id="perfilNombre">—</h4>
-            <p id="perfilEsp">—</p>
-            <button class="btn-change-photo" onclick="document.getElementById('fotoInput').click()">📸 Cambiar foto</button>
-            <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="subirFoto(this)">
-            <div class="url-dash">
-              <div class="url-dash-label">Tu link público</div>
-              <div class="url-dash-url" id="urlDash">—</div>
-              <div class="url-dash-btns">
-                <button class="btn-url copy" onclick="copiarLink(this)">📋 Copiar</button>
-                <a href="#" class="btn-url view" id="urlVerLink">👁 Ver</a>
-              </div>
-            </div>
+
+      <!-- HERO CARD -->
+      <div id="perfilHero" style="background:linear-gradient(135deg,#0b7c6e,#0a6860);border-radius:18px;padding:1.8rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.4rem;flex-wrap:wrap">
+        <div id="perfilAvatar" style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.15);border:2.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer" onclick="document.getElementById('fotoInput').click()" title="Cambiar foto">MA</div>
+        <input type="file" id="fotoInput" accept="image/*" style="display:none" onchange="subirFoto(this)">
+        <div style="flex:1;min-width:0">
+          <div id="perfilNombre" style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.2rem">—</div>
+          <div id="perfilEsp" style="font-size:.88rem;color:rgba(255,255,255,.75);margin-bottom:.5rem">—</div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+            <span id="heroPlanBadge" style="font-size:.65rem;font-weight:700;padding:.18rem .6rem;border-radius:20px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)">FREE</span>
+            <span id="heroUrl" style="font-size:.75rem;color:rgba(255,255,255,.65)">citadoc.lat/medico/—</span>
           </div>
         </div>
-        <div>
-          <div class="perfil-tabs">
-            <div class="perfil-tab active" onclick="showTab('info',this)">Información</div>
-            <div class="perfil-tab" onclick="showTab('contacto',this)">Contacto</div>
-            <div class="perfil-tab" onclick="showTab('formacion',this)">Formación</div>
-            <div class="perfil-tab" onclick="showTab('logros',this)">Logros</div>
-          </div>
-          <div class="pf-section active" id="ptab-info">
-            <div class="pf-grid">
-              <div class="pf-field"><label>Nombre</label><input type="text" id="inf-nombre" placeholder="Nombre"></div>
-              <div class="pf-field"><label>Apellido</label><input type="text" id="inf-apellido" placeholder="Apellido"></div>
-              <div class="pf-field"><label>Título</label><input type="text" id="inf-titulo" placeholder="Dr."></div>
-              <div class="pf-field"><label>Especialidad</label><input type="text" id="inf-especialidad" placeholder="Especialidad"></div>
-              <div class="pf-field"><label>Precio consulta ($)</label><input type="number" id="inf-precio" placeholder="50"></div>
-              <div class="pf-field"><label>Años de experiencia</label><input type="number" id="inf-anos" placeholder="0"></div>
-              <div class="pf-field full"><label>Dirección del consultorio</label><input type="text" id="inf-direccion" placeholder="Dirección"></div>
-              <div class="pf-field"><label>SENESCYT</label><input type="text" id="inf-senescyt" placeholder="Registro"></div>
-              <div class="pf-field"><label>Teléfono</label><input type="tel" id="inf-telefono" placeholder="+593..."></div>
-            </div>
-            <div class="pf-field full" style="margin-bottom:1rem">
-              <label>Dirección del consultorio</label>
-                <div class="dir-wrap">
-                  <input type="text" id="pfDireccion" class="form-input" placeholder="Ej: Av. Amazonas 1234, Quito, Ecuador" autocomplete="off" style="width:100%;padding:.68rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none">
-                  <div class="dir-suggestions" id="dirSuggestions"></div>
-                </div>
-                <div id="dirPreview" style="display:none" class="dir-preview">
-                  <span id="dirTexto">📍 --</span>
-                  <a id="dirLink" href="#" target="_blank">Ver en Maps →</a>
-                </div>
-              </div>
-
-              <div class="form-group">
-              <label>Bio profesional</label>
-              <textarea id="bioTextarea" placeholder="Tu presentación profesional..." style="margin-top:.4rem"></textarea>
-            </div>
-            <div style="margin-bottom:1.2rem">
-              <div style="font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:.6rem">Seguros que acepta</div>
-              <div class="seguros-grid" id="segurosGrid"></div>
-            </div>
-          </div>
-          <div class="pf-section" id="ptab-contacto">
-            <div style="background:var(--teal-lite);border-radius:12px;padding:.9rem 1rem;margin-bottom:1rem;font-size:.82rem;color:var(--teal);line-height:1.6">
-              💡 <strong>Elige cómo quieres recibir pacientes.</strong> Puedes activar uno o ambos canales. Los cambios se guardan automáticamente.
-            </div>
-            <div class="toggle-row">
-              <div class="toggle-label">
-                <h4>📅 Agendamiento CitaDoc</h4>
-                <p>Los pacientes agendan desde tu perfil en la web. Tú ves las citas en el dashboard.</p>
-              </div>
-              <label class="toggle-switch"><input type="checkbox" id="togAg" checked onchange="guardarContacto()"><span class="toggle-slider"></span></label>
-            </div>
-            <div class="toggle-row">
-              <div class="toggle-label">
-                <h4>💬 WhatsApp directo</h4>
-                <p>Un botón verde en tu perfil abre WhatsApp directamente. Ideal para atención rápida.</p>
-              </div>
-              <label class="toggle-switch"><input type="checkbox" id="togWA" onchange="toggleWaInput(this)"><span class="toggle-slider"></span></label>
-            </div>
-            <div id="waInputWrap" style="display:none;margin-top:.6rem">
-              <div style="font-size:.72rem;font-weight:700;color:var(--muted2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem">Tu número de WhatsApp</div>
-              <div style="display:flex;gap:.5rem">
-                <input type="tel" id="waNumber" placeholder="+593 99 123 4567" style="flex:1;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none">
-                <button onclick="guardarContacto()" style="padding:.6rem 1rem;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">Guardar</button>
-              </div>
-              <div style="font-size:.74rem;color:var(--muted2);margin-top:.35rem">Incluye el código de país. Ej: +593 99 123 4567</div>
-            </div>
-            <div style="margin-top:1.2rem;font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Vista previa en tu perfil público</div>
-            <div class="contact-preview" id="previewBtns"></div>
-            <div style="margin-top:1rem;font-size:.75rem;color:var(--muted2);font-style:italic" id="contactSaveStatus"></div>
-          </div>
-          <div class="pf-section" id="ptab-formacion">
-            <div id="formList"></div>
-            <div class="add-form">
-              <input type="text" id="fTit" placeholder="Título / Especialización">
-              <input type="text" id="fLug" placeholder="Institución">
-              <input type="text" id="fAno" placeholder="Año" style="max-width:75px">
-              <button class="btn-add" onclick="addForm()">+ Agregar</button>
-            </div>
-          </div>
-          <div class="pf-section" id="ptab-logros">
-            <div id="logrosList"></div>
-            <div class="add-form">
-              <input type="text" id="lTit" placeholder="Logro o publicación">
-              <input type="text" id="lDes" placeholder="Descripción breve">
-              <button class="btn-add" onclick="addLogro()">+ Agregar</button>
-            </div>
-          </div>
-          <button class="btn-save" onclick="guardarPerfil(this)">💾 Guardar cambios</button>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button onclick="copiarLink(this)" style="padding:.45rem .9rem;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer">📋 Copiar link</button>
+          <a id="urlVerLink" href="#" style="padding:.45rem .9rem;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:9px;font-size:.8rem;font-weight:600;text-decoration:none">👁 Ver perfil</a>
         </div>
       </div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:.3rem;border-bottom:2px solid #f3f4f6;margin-bottom:1.4rem;overflow-x:auto;scrollbar-width:none" id="perfilTabs">
+        <button class="ptab active" onclick="showPerfilTab('info',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid #0b7c6e;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#0b7c6e;cursor:pointer;white-space:nowrap">Información</button>
+        <button class="ptab" onclick="showPerfilTab('ubicaciones',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Ubicaciones</button>
+        <button class="ptab" onclick="showPerfilTab('redes',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Redes & Landing</button>
+        <button class="ptab" onclick="showPerfilTab('formacion',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Formación</button>
+        <button class="ptab" onclick="showPerfilTab('logros',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Logros</button>
+        <button class="ptab" onclick="showPerfilTab('visibilidad',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Visibilidad</button>
+      </div>
+
+      <!-- TAB: INFORMACIÓN -->
+      <div id="ptab-info" class="ptab-content" style="display:block">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">NOMBRE</label><input id="inf-nombre" placeholder="Mateo" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">APELLIDO</label><input id="inf-apellido" placeholder="Alarcon" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TÍTULO</label><input id="inf-titulo" placeholder="Dr." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">ESPECIALIDAD</label><input id="inf-especialidad" placeholder="Traumatología y Ortopedia" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SUBESPECIALIDAD</label><input id="inf-subespecialidad" placeholder="Cirugía de hombro" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">AÑOS EXPERIENCIA</label><input id="inf-anos" type="number" placeholder="8" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TELÉFONO</label><input id="inf-telefono" placeholder="+593 99 000 0000" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">IDIOMAS</label><input id="inf-idiomas" placeholder="Español, Inglés" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SLOGAN / TAGLINE</label><input id="inf-slogan" placeholder="Tu salud, mi compromiso." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">BIO CORTA</label><textarea id="inf-bio" placeholder="Especialista en traumatología con enfoque en cirugía mínimamente invasiva..." rows="3" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
+        </div>
+        <button onclick="guardarPerfil(this)" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar información</button>
+      </div>
+
+      <!-- TAB: UBICACIONES -->
+      <div id="ptab-ubicaciones" class="ptab-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-size:.85rem;color:#6b7280">Agrega todos los consultorios donde atiendes</div>
+          <button onclick="abrirModalUbicacion()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar ubicación</button>
+        </div>
+        <div id="ubicacionesList"></div>
+      </div>
+
+      <!-- TAB: REDES & LANDING -->
+      <div id="ptab-redes" class="ptab-content" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">INSTAGRAM</label><input id="inf-instagram" placeholder="@drmateoalarcon" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TIKTOK</label><input id="inf-tiktok" placeholder="@drmateoalarcon" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">LINKEDIN</label><input id="inf-linkedin" placeholder="linkedin.com/in/mateoalarcon" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">FACEBOOK</label><input id="inf-facebook" placeholder="facebook.com/drmateo" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SITIO WEB</label><input id="inf-website" placeholder="https://drmateoalarcon.com" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+        </div>
+        <div style="background:#f8fffe;border:1.5px solid #bbf7d0;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem">
+          <div style="font-size:.75rem;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Estado de Landing</div>
+          <div id="landingStatus" style="font-size:.88rem;color:#374151">Cargando...</div>
+        </div>
+        <button onclick="guardarRedesSociales()" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar redes</button>
+      </div>
+
+      <!-- TAB: FORMACIÓN -->
+      <div id="ptab-formacion" class="ptab-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-size:.85rem;color:#6b7280">Tu formación académica y rotaciones</div>
+          <button onclick="abrirModalEducacion()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar formación</button>
+        </div>
+        <div id="educacionList"></div>
+      </div>
+
+      <!-- TAB: LOGROS -->
+      <div id="ptab-logros" class="ptab-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-size:.85rem;color:#6b7280">Certificaciones, congresos y publicaciones</div>
+          <button onclick="abrirModalLogro()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar logro</button>
+        </div>
+        <div id="logrosList"></div>
+      </div>
+
+      <!-- TAB: VISIBILIDAD -->
+      <div id="ptab-visibilidad" class="ptab-content" style="display:none">
+        <div style="display:flex;flex-direction:column;gap:1rem;max-width:480px" id="visibilidadSwitches"></div>
+        <button onclick="guardarVisibilidad()" style="margin-top:1.4rem;padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar preferencias</button>
+      </div>
+
     </div>
-
-  </div>
-
   <!-- PANEL PACIENTES -->
   <div class="panel" id="panel-pacientes">
 
@@ -3087,7 +3070,7 @@ function generarPDF() {
   // Construir HTML del documento
   var html = '<!DOCTYPE html><html lang="es"><head>'
     + '<meta charset="UTF-8">'
-    + '<title>CitaDoc — Dashboard v33</title>'
+    + '<title>CitaDoc — Dashboard v34</title>'
     + '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
     + 'body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:0}'
@@ -3935,7 +3918,7 @@ function generarRecetaPDF(consultaId, pacienteId) {
   }).join('');
 
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-    +'<title>CitaDoc — Dashboard v33</title>'
+    +'<title>CitaDoc — Dashboard v34</title>'
     +'<style>'
     +'*{margin:0;padding:0;box-sizing:border-box}'
     +'body{font-family:"Helvetica Neue",Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#f5f5f0}'
@@ -4185,77 +4168,395 @@ function uiError(containerId, msg, retryFn) {
 
 
 // ══ PERFIL ══
+
+
+
+
+// ══ PERFIL v2 ══
+
+function showPerfilTab(tab, btn) {
+  document.querySelectorAll('.ptab-content').forEach(function(el){ el.style.display='none'; });
+  document.querySelectorAll('.ptab').forEach(function(b){
+    b.style.borderBottomColor='transparent'; b.style.color='#6b7280'; b.style.fontWeight='600';
+  });
+  var el = document.getElementById('ptab-'+tab);
+  if (el) el.style.display = 'block';
+  if (btn) { btn.style.borderBottomColor='#0b7c6e'; btn.style.color='#0b7c6e'; btn.style.fontWeight='700'; }
+  // Cargar data del tab
+  if (tab==='ubicaciones') cargarUbicaciones();
+  if (tab==='formacion') cargarEducacion();
+  if (tab==='logros') cargarLogros();
+  if (tab==='visibilidad') renderVisibilidad();
+  if (tab==='redes') cargarLandingStatus();
+}
+
 function cargarFormPerfil(m) {
   if (!m) return;
-  // Llenar campos del formulario
   var campos = {
-    'inf-nombre':       m.nombre||'',
-    'inf-apellido':     m.apellido||'',
-    'inf-titulo':       m.titulo||'Dr.',
-    'inf-especialidad': (m.especialidades||[])[0]||'',
-    'inf-precio':       m.precio_consulta||'',
-    'inf-anos':         m.anos_experiencia||'',
-    'inf-direccion':    m.direccion||'',
-    'inf-senescyt':     m.senescyt||'',
-    'inf-telefono':     m.telefono||''
+    'inf-nombre': m.nombre||'', 'inf-apellido': m.apellido||'',
+    'inf-titulo': m.titulo||'Dr.', 'inf-especialidad': (m.especialidades||[])[0]||'',
+    'inf-subespecialidad': m.subespecialidad||'', 'inf-anos': m.anos_experiencia||'',
+    'inf-telefono': m.telefono||'', 'inf-idiomas': m.idiomas||'',
+    'inf-slogan': m.slogan||'', 'inf-bio': m.bio||'',
+    'inf-instagram': m.instagram||'', 'inf-tiktok': m.tiktok||'',
+    'inf-linkedin': m.linkedin||'', 'inf-facebook': m.facebook||'',
+    'inf-website': m.website||''
   };
-  Object.keys(campos).forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.value = campos[id];
-  });
+  Object.keys(campos).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=campos[id]; });
+  // Hero
+  var heroNom = document.getElementById('perfilNombre');
+  if (heroNom) heroNom.textContent = (m.titulo||'Dr.')+' '+(m.nombre||'')+' '+(m.apellido||'');
+  var heroEsp = document.getElementById('perfilEsp');
+  if (heroEsp) heroEsp.textContent = (m.especialidades||[])[0]||'';
+  var heroUrl = document.getElementById('heroUrl');
+  if (heroUrl && m.slug) heroUrl.textContent = 'citadoc.lat/medico/'+m.slug;
+  var heroLink = document.getElementById('urlVerLink');
+  if (heroLink && m.slug) heroLink.href = '/citadoc-perfil.html?slug='+m.slug;
+  var heroPlan = document.getElementById('heroPlanBadge');
+  if (heroPlan) heroPlan.textContent = (m.plan==='destacado'?'PRO':'FREE');
   // Avatar
   var av = document.getElementById('perfilAvatar');
   if (av) {
     if (m.foto_url) {
-      av.style.backgroundImage = 'url('+m.foto_url+')';
-      av.style.backgroundSize = 'cover';
-      av.style.backgroundPosition = 'center';
-      av.textContent = '';
+      av.style.backgroundImage='url('+m.foto_url+')'; av.style.backgroundSize='cover';
+      av.style.backgroundPosition='center'; av.textContent='';
     } else {
-      var ini = ((m.nombre||'')[0]||'').toUpperCase() + ((m.apellido||'')[0]||'').toUpperCase();
-      av.textContent = ini || '👨‍⚕️';
+      av.textContent = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase()||'MA';
     }
-  }
-  // Link público
-  if (m.slug) {
-    var urlEl = document.getElementById('urlDash');
-    if (urlEl) urlEl.textContent = 'citadoc.lat/medico/' + m.slug;
   }
 }
 
 async function guardarPerfil(btnArg) {
-  if (!M || !M.id) return;
-  var btn = btnArg || document.getElementById('btnGuardarPerfil');
+  if (!M||!M.id) return;
+  var btn = btnArg || document.querySelector('#ptab-info button');
   if (btn) { btn.disabled=true; btn.textContent='Guardando...'; }
-
-  var updates = {
-    nombre:            (document.getElementById('inf-nombre')||{}).value||'',
-    apellido:          (document.getElementById('inf-apellido')||{}).value||'',
-    titulo:            (document.getElementById('inf-titulo')||{}).value||'Dr.',
-    precio_consulta:   (document.getElementById('inf-precio')||{}).value||null,
-    anos_experiencia:  (document.getElementById('inf-anos')||{}).value||null,
-    direccion:         (document.getElementById('inf-direccion')||{}).value||'',
-    senescyt:          (document.getElementById('inf-senescyt')||{}).value||'',
-    telefono:          (document.getElementById('inf-telefono')||{}).value||''
-  };
-
-  // Especialidad (array)
   var esp = (document.getElementById('inf-especialidad')||{}).value||'';
-  if (esp) updates.especialidades = [esp];
+  var upd = {
+    nombre: (document.getElementById('inf-nombre')||{}).value||'',
+    apellido: (document.getElementById('inf-apellido')||{}).value||'',
+    titulo: (document.getElementById('inf-titulo')||{}).value||'Dr.',
+    subespecialidad: (document.getElementById('inf-subespecialidad')||{}).value||null,
+    anos_experiencia: (document.getElementById('inf-anos')||{}).value||null,
+    telefono: (document.getElementById('inf-telefono')||{}).value||'',
+    idiomas: (document.getElementById('inf-idiomas')||{}).value||null,
+    slogan: (document.getElementById('inf-slogan')||{}).value||null,
+    bio: (document.getElementById('inf-bio')||{}).value||null
+  };
+  if (esp) upd.especialidades = [esp];
+  var res = await _sb.from('medicos').update(upd).eq('id', M.id);
+  if (btn) { btn.disabled=false; btn.textContent='Guardar información'; }
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  Object.assign(M, upd);
+  mostrarToast('Perfil actualizado correctamente \u2713');
+  aplicarMedico(M); cargarFormPerfil(M);
+}
 
-  var res = await _sb.from('medicos').update(updates).eq('id', M.id);
-  if (btn) { btn.disabled=false; btn.textContent='Guardar cambios'; }
+async function guardarRedesSociales() {
+  if (!M||!M.id) return;
+  var upd = {
+    instagram: (document.getElementById('inf-instagram')||{}).value||null,
+    tiktok: (document.getElementById('inf-tiktok')||{}).value||null,
+    linkedin: (document.getElementById('inf-linkedin')||{}).value||null,
+    facebook: (document.getElementById('inf-facebook')||{}).value||null,
+    website: (document.getElementById('inf-website')||{}).value||null
+  };
+  var res = await _sb.from('medicos').update(upd).eq('id', M.id);
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  Object.assign(M, upd);
+  mostrarToast('Redes guardadas \u2713');
+}
 
-  if (res.error) {
-    mostrarToast('Error al guardar: ' + res.error.message, 'error');
-    console.error(res.error);
+function cargarLandingStatus() {
+  var el = document.getElementById('landingStatus');
+  if (!el||!M) return;
+  var plan = M.plan||'gratuito';
+  var txt = plan==='destacado' ? '<span style="color:#0b7c6e;font-weight:700">PRO activo</span> — Tu perfil público está optimizado' : '<span style="color:#6b7280">FREE</span> — Actualiza a PRO para desbloquear landing personalizada';
+  el.innerHTML = txt;
+}
+
+// ── UBICACIONES ──
+async function cargarUbicaciones() {
+  if (!M||!M.id) return;
+  uiLoading('ubicacionesList','Cargando ubicaciones...');
+  var res = await _sb.from('doctor_locations').select('*').eq('medico_id',M.id).order('created_at');
+  if (res.error) { uiError('ubicacionesList',res.error.message,cargarUbicaciones); return; }
+  renderUbicaciones(res.data||[]);
+}
+
+function renderUbicaciones(locs) {
+  var cont = document.getElementById('ubicacionesList');
+  if (!cont) return;
+  if (!locs.length) {
+    uiEmpty('ubicacionesList','📍','Sin ubicaciones','Agrega tu primer consultorio.','+ Agregar',abrirModalUbicacion);
     return;
   }
-  // Actualizar M local
-  Object.assign(M, updates);
-  mostrarToast('Perfil actualizado correctamente ✓');
-  aplicarMedico(M);
+  cont.innerHTML = '';
+  locs.forEach(function(loc) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border:1.5px solid #f3f4f6;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:.8rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem';
+    var info = document.createElement('div');
+    info.innerHTML = '<div style="font-weight:700;font-size:.92rem;color:#0f1a18;margin-bottom:.3rem">'+(loc.nombre||'Consultorio')+(loc.principal?'<span style="margin-left:.5rem;font-size:.65rem;background:#d1fae5;color:#065f46;padding:.1rem .5rem;border-radius:20px;font-weight:700">Principal</span>':'')+'</div>'
+      +(loc.direccion?'<div style="font-size:.8rem;color:#6b7280;margin-bottom:.2rem">📍 '+loc.direccion+'</div>':'')
+      +(loc.telefono?'<div style="font-size:.8rem;color:#6b7280;margin-bottom:.2rem">📞 '+loc.telefono+'</div>':'')
+      +(loc.ciudad?'<div style="font-size:.78rem;color:#9ca3af">'+loc.ciudad+(loc.pais?', '+loc.pais:'')+'</div>':'');
+    var btns = document.createElement('div');
+    btns.style.cssText = 'display:flex;gap:.4rem;flex-shrink:0';
+    var delBtn = document.createElement('button');
+    delBtn.style.cssText = 'padding:.3rem .6rem;background:none;border:1px solid #fecaca;color:#dc2626;border-radius:7px;font-size:.75rem;cursor:pointer';
+    delBtn.textContent = 'Eliminar';
+    (function(id){ delBtn.onclick=function(){ if(confirm('¿Eliminar esta ubicación?')) eliminarUbicacion(id); }; })(loc.id);
+    btns.appendChild(delBtn);
+    card.appendChild(info); card.appendChild(btns);
+    cont.appendChild(card);
+  });
 }
+
+function abrirModalUbicacion() {
+  var ex = document.getElementById('modalUbicacion'); if(ex) ex.remove();
+  var m = document.createElement('div');
+  m.id='modalUbicacion'; m.onclick=function(e){if(e.target===m)m.remove();};
+  m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
+  var inner=document.createElement('div'); inner.onclick=function(e){e.stopPropagation();};
+  inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:460px;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+  inner.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">'
+    +'<div style="font-size:1.1rem;font-weight:700;color:#0f1a18;font-family:Fraunces,serif">Nueva ubicación</div>'
+    +'<button onclick="document.getElementById(\'modalUbicacion\').remove()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.8rem">'
+    +'<input id="ub_nombre" placeholder="Nombre del consultorio" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<input id="ub_direccion" placeholder="Dirección completa" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">'
+    +'<input id="ub_telefono" placeholder="Teléfono" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<input id="ub_ciudad" placeholder="Ciudad" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'</div>'
+    +'<input id="ub_maps" placeholder="URL Google Maps (opcional)" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'</div>'
+    +'<div style="display:flex;gap:.7rem;margin-top:1.2rem">'
+    +'<button onclick="document.getElementById(\'modalUbicacion\').remove()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>'
+    +'<button id="btnGuardarUb" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar ubicación</button>'
+    +'</div>';
+  m.appendChild(inner); document.body.appendChild(m);
+  document.getElementById('btnGuardarUb').onclick = guardarUbicacion;
+}
+
+async function guardarUbicacion() {
+  if (!M||!M.id) return;
+  var nombre = (document.getElementById('ub_nombre')||{}).value||'';
+  if (!nombre) { mostrarToast('El nombre es obligatorio','error'); return; }
+  var res = await _sb.from('doctor_locations').insert([{
+    medico_id:M.id, nombre:nombre,
+    direccion:(document.getElementById('ub_direccion')||{}).value||null,
+    telefono:(document.getElementById('ub_telefono')||{}).value||null,
+    ciudad:(document.getElementById('ub_ciudad')||{}).value||null,
+    maps_url:(document.getElementById('ub_maps')||{}).value||null
+  }]);
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  mostrarToast('Ubicación guardada \u2713');
+  var m=document.getElementById('modalUbicacion'); if(m) m.remove();
+  cargarUbicaciones();
+}
+
+async function eliminarUbicacion(id) {
+  var res = await _sb.from('doctor_locations').delete().eq('id',id);
+  if (res.error) { mostrarToast('Error','error'); return; }
+  mostrarToast('Ubicación eliminada'); cargarUbicaciones();
+}
+
+// ── EDUCACIÓN ──
+async function cargarEducacion() {
+  if (!M||!M.id) return;
+  uiLoading('educacionList','Cargando formación...');
+  var res = await _sb.from('doctor_education').select('*').eq('medico_id',M.id).order('anio_inicio',{ascending:false});
+  if (res.error) { uiError('educacionList',res.error.message,cargarEducacion); return; }
+  renderEducacion(res.data||[]);
+}
+
+function renderEducacion(items) {
+  var cont = document.getElementById('educacionList');
+  if (!cont) return;
+  if (!items.length) {
+    uiEmpty('educacionList','🎓','Sin formación registrada','Agrega tu formación académica y rotaciones.','+ Agregar',abrirModalEducacion);
+    return;
+  }
+  cont.innerHTML = '';
+  items.forEach(function(ed) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border:1.5px solid #f3f4f6;border-radius:14px;padding:1rem 1.3rem;margin-bottom:.7rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem';
+    var anios = ed.actual ? (ed.anio_inicio||'')+ ' — Presente' : (ed.anio_inicio||'')+(ed.anio_fin?' — '+ed.anio_fin:'');
+    var info = document.createElement('div');
+    info.innerHTML = '<div style="font-weight:700;font-size:.9rem;color:#0f1a18">'+(ed.titulo||'')+'</div>'
+      +'<div style="font-size:.82rem;color:#6b7280;margin:.2rem 0">'+(ed.institucion||'')+'</div>'
+      +(anios?'<div style="font-size:.75rem;color:#9ca3af">'+anios+'</div>':'');
+    var del = document.createElement('button');
+    del.style.cssText='padding:.3rem .6rem;background:none;border:1px solid #fecaca;color:#dc2626;border-radius:7px;font-size:.75rem;cursor:pointer;flex-shrink:0';
+    del.textContent='Eliminar';
+    (function(id){del.onclick=function(){if(confirm('¿Eliminar?')){_sb.from('doctor_education').delete().eq('id',id).then(function(){mostrarToast('Eliminado');cargarEducacion();});}};})(ed.id);
+    card.appendChild(info); card.appendChild(del); cont.appendChild(card);
+  });
+}
+
+function abrirModalEducacion() {
+  var ex=document.getElementById('modalEducacion'); if(ex) ex.remove();
+  var m=document.createElement('div'); m.id='modalEducacion';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
+  var inner=document.createElement('div'); inner.onclick=function(e){e.stopPropagation();};
+  inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:460px;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+  inner.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">'
+    +'<div style="font-size:1.1rem;font-weight:700;color:#0f1a18;font-family:Fraunces,serif">Agregar formación</div>'
+    +'<button onclick="document.getElementById(\'modalEducacion\').remove()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.75rem">'
+    +'<input id="ed_titulo" placeholder="Título / Especialidad *" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<input id="ed_institucion" placeholder="Institución" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">'
+    +'<input id="ed_inicio" type="number" placeholder="Año inicio" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<input id="ed_fin" type="number" placeholder="Año fin" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'</div>'
+    +'<input id="ed_ciudad" placeholder="Ciudad, País" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'</div>'
+    +'<div style="display:flex;gap:.7rem;margin-top:1.2rem">'
+    +'<button onclick="document.getElementById(\'modalEducacion\').remove()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>'
+    +'<button id="btnGuardarEd" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar</button>'
+    +'</div>';
+  m.appendChild(inner); document.body.appendChild(m);
+  document.getElementById('btnGuardarEd').onclick = guardarEducacion;
+}
+
+async function guardarEducacion() {
+  if (!M||!M.id) return;
+  var titulo=(document.getElementById('ed_titulo')||{}).value||'';
+  if (!titulo) { mostrarToast('El título es obligatorio','error'); return; }
+  var ciudad=(document.getElementById('ed_ciudad')||{}).value||'';
+  var partes=ciudad.split(',');
+  var res=await _sb.from('doctor_education').insert([{
+    medico_id:M.id, titulo:titulo,
+    institucion:(document.getElementById('ed_institucion')||{}).value||null,
+    anio_inicio:parseInt((document.getElementById('ed_inicio')||{}).value)||null,
+    anio_fin:parseInt((document.getElementById('ed_fin')||{}).value)||null,
+    ciudad:partes[0]?partes[0].trim():null,
+    pais:partes[1]?partes[1].trim():null
+  }]);
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  mostrarToast('Formación guardada \u2713');
+  var m=document.getElementById('modalEducacion'); if(m) m.remove();
+  cargarEducacion();
+}
+
+// ── LOGROS ──
+async function cargarLogros() {
+  if (!M||!M.id) return;
+  uiLoading('logrosList','Cargando logros...');
+  var res=await _sb.from('doctor_achievements').select('*').eq('medico_id',M.id).order('anio',{ascending:false});
+  if (res.error) { uiError('logrosList',res.error.message,cargarLogros); return; }
+  renderLogros(res.data||[]);
+}
+
+function renderLogros(items) {
+  var cont=document.getElementById('logrosList');
+  if (!cont) return;
+  if (!items.length) {
+    uiEmpty('logrosList','🏆','Sin logros registrados','Agrega certificaciones, congresos y publicaciones.','+ Agregar',abrirModalLogro);
+    return;
+  }
+  cont.innerHTML='';
+  items.forEach(function(lg) {
+    var card=document.createElement('div');
+    card.style.cssText='background:#fff;border:1.5px solid #f3f4f6;border-radius:14px;padding:1rem 1.3rem;margin-bottom:.7rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem';
+    var info=document.createElement('div');
+    info.innerHTML='<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">'
+      +(lg.anio?'<span style="font-size:.7rem;font-weight:700;background:#f0fdf4;color:#0b7c6e;padding:.15rem .5rem;border-radius:20px;border:1px solid #bbf7d0">'+lg.anio+'</span>':'')
+      +'<span style="font-weight:700;font-size:.9rem;color:#0f1a18">'+lg.titulo+'</span>'
+      +'</div>'
+      +(lg.descripcion?'<div style="font-size:.8rem;color:#6b7280">'+lg.descripcion+'</div>':'');
+    var del=document.createElement('button');
+    del.style.cssText='padding:.3rem .6rem;background:none;border:1px solid #fecaca;color:#dc2626;border-radius:7px;font-size:.75rem;cursor:pointer;flex-shrink:0';
+    del.textContent='Eliminar';
+    (function(id){del.onclick=function(){if(confirm('¿Eliminar?')){_sb.from('doctor_achievements').delete().eq('id',id).then(function(){mostrarToast('Eliminado');cargarLogros();});}};})(lg.id);
+    card.appendChild(info); card.appendChild(del); cont.appendChild(card);
+  });
+}
+
+function abrirModalLogro() {
+  var ex=document.getElementById('modalLogro'); if(ex) ex.remove();
+  var m=document.createElement('div'); m.id='modalLogro';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
+  var inner=document.createElement('div'); inner.onclick=function(e){e.stopPropagation();};
+  inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:440px;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+  inner.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">'
+    +'<div style="font-size:1.1rem;font-weight:700;color:#0f1a18;font-family:Fraunces,serif">Agregar logro</div>'
+    +'<button onclick="document.getElementById(\'modalLogro\').remove()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.75rem">'
+    +'<input id="lg_titulo" placeholder="Título del logro *" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<textarea id="lg_desc" placeholder="Descripción breve (opcional)" rows="2" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box;resize:vertical"></textarea>'
+    +'<input id="lg_anio" type="number" placeholder="Año (ej: 2024)" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'</div>'
+    +'<div style="display:flex;gap:.7rem;margin-top:1.2rem">'
+    +'<button onclick="document.getElementById(\'modalLogro\').remove()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>'
+    +'<button id="btnGuardarLg" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar</button>'
+    +'</div>';
+  m.appendChild(inner); document.body.appendChild(m);
+  document.getElementById('btnGuardarLg').onclick=guardarLogro;
+}
+
+async function guardarLogro() {
+  if (!M||!M.id) return;
+  var titulo=(document.getElementById('lg_titulo')||{}).value||'';
+  if (!titulo) { mostrarToast('El título es obligatorio','error'); return; }
+  var res=await _sb.from('doctor_achievements').insert([{
+    medico_id:M.id, titulo:titulo,
+    descripcion:(document.getElementById('lg_desc')||{}).value||null,
+    anio:parseInt((document.getElementById('lg_anio')||{}).value)||null
+  }]);
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  mostrarToast('Logro guardado \u2713');
+  var m=document.getElementById('modalLogro'); if(m) m.remove();
+  cargarLogros();
+}
+
+// ── VISIBILIDAD ──
+function renderVisibilidad() {
+  if (!M) return;
+  var cont=document.getElementById('visibilidadSwitches');
+  if (!cont) return;
+  var switches=[
+    {key:'mostrar_whatsapp',label:'Mostrar WhatsApp en perfil público',def:true},
+    {key:'mostrar_email',label:'Mostrar email en perfil público',def:false},
+    {key:'mostrar_direccion',label:'Mostrar dirección en perfil público',def:true},
+    {key:'aparecer_directorio',label:'Aparecer en directorio CitaDoc',def:true}
+  ];
+  cont.innerHTML='';
+  switches.forEach(function(sw) {
+    var val = M[sw.key]!==undefined ? M[sw.key] : sw.def;
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid #f3f4f6;border-radius:12px;padding:.85rem 1rem';
+    var lbl=document.createElement('span');
+    lbl.style.cssText='font-size:.88rem;font-weight:500;color:#374151';
+    lbl.textContent=sw.label;
+    var tog=document.createElement('label');
+    tog.className='dia-toggle';
+    var inp=document.createElement('input'); inp.type='checkbox'; inp.checked=val; inp.id='sw_'+sw.key;
+    var trk=document.createElement('div'); trk.className='dia-toggle-track';
+    tog.appendChild(inp); tog.appendChild(trk);
+    row.appendChild(lbl); row.appendChild(tog);
+    cont.appendChild(row);
+  });
+}
+
+async function guardarVisibilidad() {
+  if (!M||!M.id) return;
+  var upd={};
+  ['mostrar_whatsapp','mostrar_email','mostrar_direccion','aparecer_directorio'].forEach(function(k){
+    var el=document.getElementById('sw_'+k); if(el) upd[k]=el.checked;
+  });
+  var res=await _sb.from('medicos').update(upd).eq('id',M.id);
+  if (res.error) { mostrarToast('Error','error'); return; }
+  Object.assign(M,upd);
+  mostrarToast('Preferencias guardadas \u2713');
+}
+
 </script>
   </div><!-- /content -->
 </body>
