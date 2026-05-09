@@ -968,6 +968,7 @@ function cargarPerfil() {
     });
 }
 
+function showLoggedIn(m) {
   var nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   var ini = (m.nombre[0]||'').toUpperCase()+(m.apellido[0]||'').toUpperCase();
   setText('navAvatar',ini); setText('navName',nombre);
