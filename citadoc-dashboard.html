@@ -2111,13 +2111,6 @@ async function cargarPacientes() {
       return (a.nombre||'').localeCompare(b.nombre||'', 'es', {sensitivity:'base'});
     });
 
-    // DEBUG TEMPORAL — remover después de confirmar causa raíz
-    console.log('[PAC] M.plan:', M && M.plan, '| esPro:', esPro());
-    console.log('[PAC] pacA:', pacA.length, pacA);
-    console.log('[PAC] idsBooking:', idsBooking);
-    console.log('[PAC] pacB:', pacB.length, pacB);
-    console.log('[PAC] todos:', todos.length, todos);
-
     if (!todos.length) {
       uiEmpty('pacientesList', '👥', 'Sin pacientes aún',
         'Agrega tu primer paciente para comenzar a registrar consultas.',
@@ -3515,10 +3508,7 @@ function renderPacientes(rows) {
   var cnt=document.getElementById('pacCount'); if(cnt) cnt.textContent=rows.length+' paciente'+(rows.length!==1?'s':'')+' en total';
   var seen={},pacs=[];
   rows.forEach(function(r){ var p=r.pacientes||r; if(!p||!p.nombre) return; var key=p.id||p.nombre; if(!seen[key]){seen[key]=true;pacs.push({id:p.id,nombre:p.nombre||'',email:p.email||'',telefono:p.telefono||'',cedula:p.cedula||'',ultima:r.created_at||p.created_at||''});} });
-  // DEBUG TEMPORAL — remover después de confirmar causa raíz
-  console.log('[RENDER] rows recibidos:', rows.length, '| pacs después del filtro nombre:', pacs.length);
-  if(pacs.length === 0) console.warn('[RENDER] TODOS los pacientes fueron filtrados — probablemente nombre=null/vacío en DB');
-  console.log('[RENDER] muestra de rows:', rows.slice(0,3));
+  if(!pacs.length){ uiEmpty('pacientesList','👥','Sin pacientes aún','Agrega tu primer paciente para comenzar a registrar consultas.','+ Nuevo paciente',abrirModalPaciente); return; }
   var pal=['#e0f2fe:#0369a1','#d1fae5:#065f46','#fce7f3:#9d174d','#fef3c7:#92400e','#ede9fe:#5b21b6','#fee2e2:#991b1b'];
   grid.innerHTML='';
   pacs.forEach(function(p){
