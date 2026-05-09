@@ -621,7 +621,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         <div class="stat-card"><div class="stat-label">Total pacientes</div><div class="stat-num teal" id="statTotal">—</div><div class="stat-sub">desde el inicio</div></div>
       </div>
       <!-- EVOLUCIÓN DIGITAL — solo para FREE -->
-      <div id="evolucionSection" style="display:none;margin-bottom:2.2rem">
+      <div id="evolucionSection" style="display:none;margin-bottom:2.2rem"><!-- renderizado por renderEvolucionSection() -->
 
         <!-- Encabezado -->
         <div style="margin-bottom:1.6rem">
@@ -634,7 +634,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;align-items:start">
 
           <!-- FREE -->
-          <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:20px;padding:1.5rem">
+          <div id="evolFreeCard" style="background:#fff;border:1.5px solid #e5e7eb;border-radius:20px;padding:1.5rem">
             <div style="display:inline-flex;align-items:center;background:#f3f4f6;color:#9ca3af;font-size:.62rem;font-weight:700;padding:.2rem .65rem;border-radius:50px;letter-spacing:.06em;margin-bottom:1rem">PLAN ACTUAL</div>
             <div style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#374151;line-height:1.2;margin-bottom:.25rem">Tu consulta organizada</div>
             <div style="font-size:.78rem;color:#9ca3af;margin-bottom:1.1rem;line-height:1.5">Base sólida para comenzar.</div>
@@ -654,8 +654,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
           <!-- PRO -->
           <div style="background:linear-gradient(148deg,#0b7c6e 0%,#053d33 100%);border-radius:20px;padding:1.5rem;position:relative;box-shadow:0 16px 48px rgba(11,124,110,.32),0 0 0 1px rgba(255,255,255,.06)">
-            <div style="position:absolute;top:-13px;left:0;right:0;display:flex;justify-content:center">
-              <div style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:.62rem;font-weight:700;padding:.3rem 1.1rem;border-radius:50px;letter-spacing:.06em;white-space:nowrap;box-shadow:0 3px 12px rgba(217,119,6,.35)">⭐ MÁS POPULAR</div>
+            <div id="evolProBadgeWrap" style="position:absolute;top:-13px;left:0;right:0;display:flex;justify-content:center">
+              <div id="evolProBadge" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:.62rem;font-weight:700;padding:.3rem 1.1rem;border-radius:50px;letter-spacing:.06em;white-space:nowrap;box-shadow:0 3px 12px rgba(217,119,6,.35)">⭐ MÁS POPULAR</div>
             </div>
             <div style="font-size:.62rem;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.09em;margin-bottom:.5rem;margin-top:.6rem">PRO</div>
             <div style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.25rem">Digitaliza tu práctica</div>
@@ -677,7 +677,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
                 <span style="width:18px;height:18px;border-radius:50%;background:rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;color:#34d399">✓</span>Seguimiento clínico
               </div>
             </div>
-            <button onclick="mostrarProModal('pacientes')" style="width:100%;padding:.78rem;background:#fff;color:#065f46;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer">Actualizar a PRO</button>
+            <button id="evolProBtn" onclick="mostrarProModal('pacientes')" style="width:100%;padding:.78rem;background:#fff;color:#065f46;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer">Actualizar a PRO</button>
           </div>
 
           <!-- PRO+WEB -->
@@ -1823,11 +1823,10 @@ function aplicarMedico(m) {
     _planBadge.style.color = 'rgba(255,255,255,.45)';
     _planBadge.style.border = '1px solid rgba(255,255,255,.1)';
   }
-  // Banner FREE en panel inicio
+  // Banner FREE legacy — oculto
   var _freeBanner = document.getElementById('freePlanBanner');
-  if (_freeBanner) _freeBanner.style.display = 'none'; // reemplazado por evolucionSection
-  var _evol = document.getElementById('evolucionSection');
-  if (_evol) _evol.style.display = _isPro ? 'none' : 'block';
+  if (_freeBanner) _freeBanner.style.display = 'none';
+  renderEvolucionSection(_isPro);
   // Badge PRO en nav item Pacientes
   var _navPacPro = document.getElementById('navPacientesPro');
   if (_navPacPro) _navPacPro.style.display = _isPro ? 'none' : 'inline';
@@ -1981,6 +1980,36 @@ var _hcId = null;
 var _hcCurrentDocs = null; // docs actuales para versionado
 
 // ── PRO CHECK ──
+function renderEvolucionSection(isPro) {
+  var sec = document.getElementById('evolucionSection');
+  if (!sec) return;
+  sec.style.display = 'block';
+
+  if (isPro) {
+    // Card FREE desaparece — el médico ya la superó
+    var fc = document.getElementById('evolFreeCard');
+    if (fc) fc.style.display = 'none';
+
+    // Badge PRO → "TU PLAN ACTUAL"
+    var badge = document.getElementById('evolProBadge');
+    if (badge) {
+      badge.textContent = 'TU PLAN ACTUAL ✓';
+      badge.style.background = 'linear-gradient(135deg,#065f46,#0b7c6e)';
+      badge.style.boxShadow = '0 3px 12px rgba(11,124,110,.35)';
+    }
+
+    // Botón PRO → estado activo, sin CTA
+    var btn = document.getElementById('evolProBtn');
+    if (btn) {
+      btn.textContent = 'Plan activo ✓';
+      btn.style.cursor = 'default';
+      btn.style.background = 'rgba(255,255,255,.12)';
+      btn.style.color = 'rgba(255,255,255,.7)';
+      btn.onclick = null;
+    }
+  }
+}
+
 function esPro() {
   // plan_activo===true: requiere confirmación de pago vía webhook
   // plan_activo===null/undefined: médico registrado con plan destacado pero sin webhook aún
