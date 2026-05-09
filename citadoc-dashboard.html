@@ -633,6 +633,57 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         <div class="stat-card"><div class="stat-label">Este mes</div><div class="stat-num" id="statMes">—</div><div class="stat-sub">mes en curso</div></div>
         <div class="stat-card"><div class="stat-label">Total pacientes</div><div class="stat-num teal" id="statTotal">—</div><div class="stat-sub">desde el inicio</div></div>
       </div>
+      <!-- EVOLUCIÓN DIGITAL — solo para FREE -->
+      <div id="evolucionSection" style="display:none;margin-bottom:1.8rem">
+        <div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:#0f1a18;margin-bottom:.2rem">Tu evolución digital médica</div>
+        <div style="font-size:.84rem;color:#6b7280;margin-bottom:1.3rem">Empieza gratis. Escala cuando tu práctica lo pida.</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;align-items:start">
+
+          <!-- FREE -->
+          <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:1.3rem">
+            <div style="font-size:.67rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.55rem">Tu plan actual</div>
+            <div style="font-size:1rem;font-weight:700;color:#374151;margin-bottom:.8rem">Gratuito</div>
+            <div style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem">
+              <div style="font-size:.81rem;color:#9ca3af;display:flex;gap:.5rem"><span>✓</span>Agenda inteligente</div>
+              <div style="font-size:.81rem;color:#9ca3af;display:flex;gap:.5rem"><span>✓</span>WhatsApp médico</div>
+              <div style="font-size:.81rem;color:#9ca3af;display:flex;gap:.5rem"><span>✓</span>Perfil público básico</div>
+            </div>
+            <div style="text-align:center;font-size:.77rem;color:#9ca3af;padding:.5rem;background:#f9fafb;border-radius:9px">Plan activo</div>
+          </div>
+
+          <!-- PRO -->
+          <div style="background:linear-gradient(135deg,#0b7c6e 0%,#065f46 100%);border-radius:16px;padding:1.3rem;position:relative;box-shadow:0 8px 28px rgba(11,124,110,.22)">
+            <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:.63rem;font-weight:700;padding:.22rem .85rem;border-radius:50px;letter-spacing:.05em;white-space:nowrap">⭐ MÁS POPULAR</div>
+            <div style="font-size:.67rem;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.55rem;margin-top:.3rem">PRO</div>
+            <div style="font-size:.95rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.3rem">Digitaliza tu consulta</div>
+            <div style="font-family:Fraunces,serif;font-size:1.55rem;font-weight:700;color:#fff;margin-bottom:.8rem">$19<span style="font-size:.8rem;font-weight:400;opacity:.7">/mes</span></div>
+            <div style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:1.1rem">
+              <div style="font-size:.81rem;color:rgba(255,255,255,.85);display:flex;gap:.5rem"><span style="color:#34d399">✓</span>Historias clínicas</div>
+              <div style="font-size:.81rem;color:rgba(255,255,255,.85);display:flex;gap:.5rem"><span style="color:#34d399">✓</span>Recetas digitales</div>
+              <div style="font-size:.81rem;color:rgba(255,255,255,.85);display:flex;gap:.5rem"><span style="color:#34d399">✓</span>Gestión de pacientes</div>
+              <div style="font-size:.81rem;color:rgba(255,255,255,.85);display:flex;gap:.5rem"><span style="color:#34d399">✓</span>Agenda avanzada</div>
+            </div>
+            <button onclick="mostrarProModal('pacientes')" style="width:100%;padding:.68rem;background:#fff;color:#065f46;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">Actualizar a PRO</button>
+          </div>
+
+          <!-- PRO+WEB -->
+          <div style="background:#0f1a18;border-radius:16px;padding:1.3rem;border:1px solid rgba(255,255,255,.07)">
+            <div style="font-size:.67rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.55rem">PRO + WEB</div>
+            <div style="font-size:.95rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.25rem">Tu presencia médica online</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:.4rem">$79 implementación única</div>
+            <div style="font-family:Fraunces,serif;font-size:1.55rem;font-weight:700;color:#fff;margin-bottom:.8rem">$29<span style="font-size:.8rem;font-weight:400;opacity:.45">/mes</span></div>
+            <div style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:1.1rem">
+              <div style="font-size:.81rem;color:rgba(255,255,255,.7);display:flex;gap:.5rem"><span style="color:#a78bfa">✓</span>Sitio médico profesional</div>
+              <div style="font-size:.81rem;color:rgba(255,255,255,.7);display:flex;gap:.5rem"><span style="color:#a78bfa">✓</span>SEO en Google</div>
+              <div style="font-size:.81rem;color:rgba(255,255,255,.7);display:flex;gap:.5rem"><span style="color:#a78bfa">✓</span>Branding personalizado</div>
+              <div style="font-size:.81rem;color:rgba(255,255,255,.7);display:flex;gap:.5rem"><span style="color:#a78bfa">✓</span>Conversión de pacientes</div>
+            </div>
+            <button style="width:100%;padding:.68rem;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer">Crear mi sitio médico</button>
+          </div>
+
+        </div>
+      </div>
+
       <div class="dash-grid">
         <div class="card">
           <div class="card-header"><h3>Citas de hoy</h3><span class="badge-count" id="citasCount">0 citas</span></div>
@@ -1739,7 +1790,9 @@ function aplicarMedico(m) {
   }
   // Banner FREE en panel inicio
   var _freeBanner = document.getElementById('freePlanBanner');
-  if (_freeBanner) _freeBanner.style.display = _isPro ? 'none' : 'flex';
+  if (_freeBanner) _freeBanner.style.display = 'none'; // reemplazado por evolucionSection
+  var _evol = document.getElementById('evolucionSection');
+  if (_evol) _evol.style.display = _isPro ? 'none' : 'block';
   // Badge PRO en nav item Pacientes
   var _navPacPro = document.getElementById('navPacientesPro');
   if (_navPacPro) _navPacPro.style.display = _isPro ? 'none' : 'inline';
