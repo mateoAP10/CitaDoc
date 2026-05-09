@@ -972,106 +972,142 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   <!-- PANEL MI SITIO WEB -->
   <div class="panel" id="panel-sitio">
 
-    <!-- Header + URL bar -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+    <!-- URL bar compacta -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:.75rem">
       <div>
-        <h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin-bottom:.25rem">Tu sitio médico profesional</h2>
-        <p style="font-size:.84rem;color:#6b7280;margin:0">Tu presencia online independiente dentro de CitaDoc Health Network.</p>
+        <h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin:0 0 .15rem">Tu sitio médico profesional</h2>
+        <p style="font-size:.82rem;color:#9ca3af;margin:0">Presencia digital premium independiente · CitaDoc Health Network</p>
       </div>
-      <div style="display:flex;align-items:center;gap:.5rem;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:.5rem .8rem;flex-wrap:wrap">
-        <span id="webUrlText" style="font-size:.78rem;color:#374151;font-family:monospace">web.citadoc.lat/—</span>
-        <button onclick="copiarWebUrl()" style="padding:.3rem .6rem;background:#fff;border:1px solid #e5e7eb;border-radius:7px;font-size:.73rem;font-weight:600;color:#374151;cursor:pointer;font-family:'DM Sans',sans-serif">Copiar</button>
-        <a id="webUrlOpen" href="#" target="_blank" rel="noopener" style="padding:.3rem .6rem;background:var(--teal);color:#fff;border-radius:7px;font-size:.73rem;font-weight:600;text-decoration:none">Abrir ↗</a>
+      <div style="display:flex;align-items:center;gap:.45rem;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:10px;padding:.4rem .7rem">
+        <span id="webUrlText" style="font-size:.75rem;color:#374151;font-family:monospace">—.citadoc.site</span>
+        <button onclick="copiarWebUrl()" title="Copiar URL" style="padding:.2rem .45rem;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:.68rem;font-weight:600;color:#6b7280;cursor:pointer;font-family:'DM Sans',sans-serif">📋</button>
+        <a id="webUrlOpen" href="#" target="_blank" rel="noopener" style="padding:.2rem .5rem;background:var(--teal);color:#fff;border-radius:6px;font-size:.68rem;font-weight:600;text-decoration:none">↗</a>
       </div>
     </div>
 
-    <!-- Template selector + Preview -->
-    <div style="display:grid;grid-template-columns:180px 1fr;gap:1.2rem;margin-bottom:1.5rem;align-items:start">
+    <!-- ✨ AI GENERATOR HERO -->
+    <div style="background:linear-gradient(148deg,#0a0f0e 0%,#12071e 100%);border-radius:20px;padding:2rem 2.2rem;margin-bottom:1.8rem;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 80% 20%,rgba(124,58,237,.15),transparent 60%);pointer-events:none"></div>
+      <div style="position:relative;z-index:1">
+        <div style="font-size:.63rem;font-weight:700;color:rgba(167,139,250,.7);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem">CitaDoc AI</div>
+        <h3 style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.3rem">✨ Genera tu sitio médico con AI</h3>
+        <p style="font-size:.83rem;color:rgba(255,255,255,.45);margin-bottom:1.3rem;line-height:1.6">Describe tu práctica ideal y nuestra IA construirá una presencia médica premium en minutos.</p>
 
-      <!-- Templates -->
+        <!-- Textarea principal -->
+        <textarea id="webAiPrompt" rows="3" placeholder="Ej: Quiero una web elegante y moderna para mi clínica de fisioterapia deportiva. Enfoque en atletas y personas activas. Tono profesional pero cercano..." style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:.9rem;color:#fff;resize:none;line-height:1.65;box-sizing:border-box;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='rgba(167,139,250,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
+
+        <!-- Quick chips -->
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0 1.2rem">
+          <span style="font-size:.68rem;color:rgba(255,255,255,.3);padding:.3rem 0;margin-right:.2rem">Inspírate →</span>
+          <button onclick="document.getElementById('webAiPrompt').value='Minimalista y premium, cirugía estética'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Minimalista premium</button>
+          <button onclick="document.getElementById('webAiPrompt').value='Deportivo y energético, fisioterapia y rehabilitación'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Deportivo y dinámico</button>
+          <button onclick="document.getElementById('webAiPrompt').value='Elegante tipo clínica europea, especialidad de alto nivel'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Clínica europea</button>
+          <button onclick="document.getElementById('webAiPrompt').value='Moderno y tecnológico, cardiología avanzada'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Tecnológico moderno</button>
+        </div>
+
+        <!-- Template inline + CTA -->
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+          <div style="display:flex;gap:.4rem">
+            <button class="web-ai-tpl-btn sel" data-tpl="minimal-white" onclick="webAiSelectTpl(this,'minimal-white')" style="padding:.3rem .75rem;background:rgba(11,124,110,.25);border:1px solid rgba(11,124,110,.5);border-radius:50px;font-size:.73rem;color:rgba(255,255,255,.75);cursor:pointer;font-family:'DM Sans',sans-serif">Minimal</button>
+            <button class="web-ai-tpl-btn" data-tpl="premium-dark" onclick="webAiSelectTpl(this,'premium-dark')" style="padding:.3rem .75rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.73rem;color:rgba(255,255,255,.5);cursor:pointer;font-family:'DM Sans',sans-serif">Dark</button>
+            <button class="web-ai-tpl-btn" data-tpl="clinica-moderna" onclick="webAiSelectTpl(this,'clinica-moderna')" style="padding:.3rem .75rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.73rem;color:rgba(255,255,255,.5);cursor:pointer;font-family:'DM Sans',sans-serif">Clínica</button>
+          </div>
+          <button onclick="webAiGenerar(this)" style="flex:1;min-width:200px;padding:.82rem 1.5rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;letter-spacing:.01em;box-shadow:0 6px 28px rgba(124,58,237,.35);transition:opacity .18s" onmouseenter="this.style.opacity='.9'" onmouseleave="this.style.opacity='1'">✨ Generar sitio premium con AI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview + templates sidebar -->
+    <div style="display:grid;grid-template-columns:160px 1fr;gap:1rem;margin-bottom:1.5rem;align-items:start">
+
+      <!-- Template selector -->
       <div>
-        <div style="font-size:.7rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem">Template</div>
-        <div style="display:flex;flex-direction:column;gap:.55rem" id="webTplSelector">
-          <div class="web-tpl-card sel" data-tpl="minimal-white" onclick="seleccionarTemplate(this,'minimal-white')" style="border:2px solid var(--teal);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s">
-            <div style="height:42px;background:linear-gradient(135deg,#0b7c6e,#065f46)"></div>
-            <div style="padding:.5rem .65rem;background:#fff"><div style="font-size:.77rem;font-weight:700;color:#374151">Minimal White</div><div style="font-size:.68rem;color:#9ca3af">Limpio y profesional</div></div>
+        <div style="font-size:.67rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">Template activo</div>
+        <div style="display:flex;flex-direction:column;gap:.5rem" id="webTplSelector">
+          <div class="web-tpl-card sel" data-tpl="minimal-white" onclick="seleccionarTemplate(this,'minimal-white')" style="border:2px solid var(--teal);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s">
+            <div style="height:36px;background:linear-gradient(135deg,#0b7c6e,#065f46)"></div>
+            <div style="padding:.4rem .55rem;background:#fff"><div style="font-size:.72rem;font-weight:700;color:#374151">Minimal</div></div>
           </div>
-          <div class="web-tpl-card" data-tpl="premium-dark" onclick="seleccionarTemplate(this,'premium-dark')" style="border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s">
-            <div style="height:42px;background:linear-gradient(135deg,#0a0f0e,#1a1a2e)"><div style="width:18px;height:3px;background:#c9a94a;margin:12px auto 0;border-radius:2px"></div></div>
-            <div style="padding:.5rem .65rem;background:#0f0f0f"><div style="font-size:.77rem;font-weight:700;color:#f5f5f5">Premium Dark</div><div style="font-size:.68rem;color:#6b7280">Elegante y premium</div></div>
+          <div class="web-tpl-card" data-tpl="premium-dark" onclick="seleccionarTemplate(this,'premium-dark')" style="border:2px solid #e5e7eb;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s">
+            <div style="height:36px;background:linear-gradient(135deg,#0a0f0e,#1a1a2e);display:flex;align-items:center;justify-content:center"><div style="width:16px;height:2px;background:#c9a94a;border-radius:2px"></div></div>
+            <div style="padding:.4rem .55rem;background:#0f0f0f"><div style="font-size:.72rem;font-weight:700;color:#f5f5f5">Dark</div></div>
           </div>
-          <div class="web-tpl-card" data-tpl="clinica-moderna" onclick="seleccionarTemplate(this,'clinica-moderna')" style="border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s">
-            <div style="height:42px;background:linear-gradient(135deg,#0e7490,#164e63)"></div>
-            <div style="padding:.5rem .65rem;background:#fff"><div style="font-size:.77rem;font-weight:700;color:#374151">Clínica Moderna</div><div style="font-size:.68rem;color:#9ca3af">Corporativo y confiable</div></div>
+          <div class="web-tpl-card" data-tpl="clinica-moderna" onclick="seleccionarTemplate(this,'clinica-moderna')" style="border:2px solid #e5e7eb;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s">
+            <div style="height:36px;background:linear-gradient(135deg,#0e7490,#164e63)"></div>
+            <div style="padding:.4rem .55rem;background:#fff"><div style="font-size:.72rem;font-weight:700;color:#374151">Clínica</div></div>
           </div>
         </div>
       </div>
 
       <!-- Preview -->
-      <div style="border-radius:14px;overflow:hidden;background:#e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.1)">
-        <!-- Browser chrome -->
-        <div style="background:#f3f4f6;padding:.4rem .7rem;display:flex;align-items:center;gap:.4rem">
-          <div style="width:9px;height:9px;border-radius:50%;background:#fc5c5c"></div>
-          <div style="width:9px;height:9px;border-radius:50%;background:#fdbc40"></div>
-          <div style="width:9px;height:9px;border-radius:50%;background:#34c84a"></div>
-          <div style="flex:1;background:#fff;border-radius:4px;height:18px;margin:0 .5rem;display:flex;align-items:center;padding:0 .5rem"><span id="webPreviewUrl" style="font-size:.6rem;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">web.citadoc.lat/—</span></div>
-          <button onclick="refreshWebPreview()" style="padding:.15rem .4rem;background:none;border:none;cursor:pointer;font-size:.7rem;color:#9ca3af" title="Refrescar">↻</button>
+      <div style="border-radius:12px;overflow:hidden;background:#e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.1)">
+        <div style="background:#f3f4f6;padding:.35rem .65rem;display:flex;align-items:center;gap:.35rem">
+          <div style="width:8px;height:8px;border-radius:50%;background:#fc5c5c"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#fdbc40"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#34c84a"></div>
+          <div style="flex:1;background:#fff;border-radius:4px;height:16px;margin:0 .45rem;display:flex;align-items:center;padding:0 .45rem"><span id="webPreviewUrl" style="font-size:.58rem;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">—.citadoc.site</span></div>
+          <button onclick="refreshWebPreview()" style="padding:.1rem .35rem;background:none;border:none;cursor:pointer;font-size:.68rem;color:#9ca3af">↻</button>
         </div>
-        <!-- iframe -->
-        <div style="position:relative;overflow:hidden;height:420px;background:#fff">
-          <iframe id="webPreviewFrame" style="width:150%;height:630px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
+        <div style="position:relative;overflow:hidden;height:400px;background:#fff">
+          <iframe id="webPreviewFrame" style="width:150%;height:600px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
         </div>
       </div>
 
     </div>
 
-    <!-- Editor tabs -->
-    <div style="border-bottom:2px solid #f3f4f6;margin-bottom:1.3rem;display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none" id="webEditorTabs">
-      <button class="web-etab active" onclick="showWebTab('identidad',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid var(--teal);margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;color:var(--teal);cursor:pointer;white-space:nowrap">Identidad</button>
-      <button class="web-etab" onclick="showWebTab('servicios',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Servicios</button>
-      <button class="web-etab" onclick="showWebTab('sobremí',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Sobre mí</button>
-      <button class="web-etab" onclick="showWebTab('seo',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">SEO</button>
-    </div>
+    <!-- Personalizar manualmente (colapsable) -->
+    <div style="border-top:1.5px solid #f3f4f6;padding-top:1.2rem">
+      <button onclick="toggleWebEditor(this)" style="display:flex;align-items:center;gap:.5rem;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;padding:0;margin-bottom:1rem">
+        <span id="webEditorArrow" style="font-size:.7rem;transition:transform .2s">▶</span>
+        Personalizar manualmente
+      </button>
+      <div id="webEditorArea" style="display:none">
 
-    <!-- Tab: Identidad -->
-    <div id="web-tab-identidad" class="web-etab-content" style="display:block">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TITULAR PRINCIPAL</label><input id="wc_headline" placeholder="Tu salud, nuestro compromiso" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
-        <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SUBTÍTULO / PROPUESTA DE VALOR</label><textarea id="wc_subheadline" rows="2" placeholder="Especialista con 15 años de experiencia en Quito." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
-        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TEXTO DEL BOTÓN PRINCIPAL</label><input id="wc_cta_text" placeholder="Agendar consulta" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
-        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">COLOR PRINCIPAL</label>
-          <div style="display:flex;align-items:center;gap:.6rem">
-            <input type="color" id="wc_color" value="#0b7c6e" style="width:40px;height:34px;padding:2px;border:1.5px solid #e5e7eb;border-radius:8px;cursor:pointer;background:none" oninput="document.getElementById('wc_color_hex').value=this.value">
-            <input type="text" id="wc_color_hex" value="#0b7c6e" maxlength="7" style="width:88px;padding:.48rem .65rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.83rem;font-family:monospace;box-sizing:border-box" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))document.getElementById('wc_color').value=this.value">
+        <!-- Editor tabs -->
+        <div style="border-bottom:2px solid #f3f4f6;margin-bottom:1.2rem;display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none" id="webEditorTabs">
+          <button class="web-etab active" onclick="showWebTab('identidad',this)" style="padding:.45rem .85rem;background:none;border:none;border-bottom:2px solid var(--teal);margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:700;color:var(--teal);cursor:pointer;white-space:nowrap">Identidad</button>
+          <button class="web-etab" onclick="showWebTab('servicios',this)" style="padding:.45rem .85rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Servicios</button>
+          <button class="web-etab" onclick="showWebTab('sobremí',this)" style="padding:.45rem .85rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Sobre mí</button>
+          <button class="web-etab" onclick="showWebTab('seo',this)" style="padding:.45rem .85rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.83rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">SEO</button>
+        </div>
+
+        <div id="web-tab-identidad" class="web-etab-content" style="display:block">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem">
+            <div style="grid-column:1/-1"><label style="font-size:.7rem;font-weight:700;color:#374151;display:block;margin-bottom:.28rem">TITULAR PRINCIPAL</label><input id="wc_headline" placeholder="Tu salud, nuestro compromiso" style="width:100%;padding:.58rem .8rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.87rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+            <div style="grid-column:1/-1"><label style="font-size:.7rem;font-weight:700;color:#374151;display:block;margin-bottom:.28rem">SUBTÍTULO</label><textarea id="wc_subheadline" rows="2" placeholder="Especialista con 15 años de experiencia en Quito." style="width:100%;padding:.58rem .8rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.87rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
+            <div><label style="font-size:.7rem;font-weight:700;color:#374151;display:block;margin-bottom:.28rem">TEXTO CTA</label><input id="wc_cta_text" placeholder="Agendar consulta" style="width:100%;padding:.58rem .8rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.87rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+            <div><label style="font-size:.7rem;font-weight:700;color:#374151;display:block;margin-bottom:.28rem">COLOR</label>
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <input type="color" id="wc_color" value="#0b7c6e" style="width:38px;height:32px;padding:2px;border:1.5px solid #e5e7eb;border-radius:7px;cursor:pointer;background:none" oninput="document.getElementById('wc_color_hex').value=this.value">
+                <input type="text" id="wc_color_hex" value="#0b7c6e" maxlength="7" style="width:85px;padding:.45rem .6rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.82rem;font-family:monospace;box-sizing:border-box" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))document.getElementById('wc_color').value=this.value">
+              </div>
+            </div>
           </div>
         </div>
+
+        <div id="web-tab-servicios" class="web-etab-content" style="display:none">
+          <div id="wcServiciosList" style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:.7rem"></div>
+          <button onclick="wcAgregarServicio()" style="padding:.42rem .85rem;background:none;border:1.5px dashed #d1d5db;border-radius:9px;font-size:.81rem;color:#6b7280;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar servicio</button>
+        </div>
+
+        <div id="web-tab-sobremí" class="web-etab-content" style="display:none">
+          <textarea id="wc_highlights" rows="4" placeholder="15 años de experiencia&#10;Especialista en dolor crónico&#10;Atención personalizada" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.87rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+          <div style="font-size:.72rem;color:#9ca3af;margin-top:.3rem">Un diferenciador por línea.</div>
+        </div>
+
+        <div id="web-tab-seo" class="web-etab-content" style="display:none">
+          <div style="display:flex;flex-direction:column;gap:.8rem">
+            <div><label style="font-size:.7rem;font-weight:700;color:#374151;display:block;margin-bottom:.28rem">TÍTULO SEO</label><input id="wc_seo_title" placeholder="Dr. Mateo Alarcón — Traumatólogo en Quito" style="width:100%;padding:.58rem .8rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.87rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+            <div><label style="font-size:.7rem;font-weight:700;color:#374151;display:block;margin-bottom:.28rem">DESCRIPCIÓN SEO</label><textarea id="wc_seo_desc" rows="2" style="width:100%;padding:.58rem .8rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.87rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea><div style="font-size:.7rem;color:#9ca3af;margin-top:.2rem"><span id="wcSeoDescCount">0</span>/155 caracteres</div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:.75rem;margin-top:1.2rem">
+          <button onclick="guardarWebConfig(this)" style="padding:.62rem 1.3rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.87rem;font-weight:700;cursor:pointer">Guardar cambios</button>
+          <button onclick="refreshWebPreview()" style="padding:.62rem 1rem;background:#f9fafb;color:#374151;border:1.5px solid #e5e7eb;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.87rem;font-weight:500;cursor:pointer">↻ Actualizar vista previa</button>
+        </div>
+
       </div>
-    </div>
-
-    <!-- Tab: Servicios -->
-    <div id="web-tab-servicios" class="web-etab-content" style="display:none">
-      <div id="wcServiciosList" style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:.8rem"></div>
-      <button onclick="wcAgregarServicio()" style="padding:.48rem .9rem;background:none;border:1.5px dashed #d1d5db;border-radius:9px;font-size:.82rem;color:#6b7280;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar servicio</button>
-    </div>
-
-    <!-- Tab: Sobre mí -->
-    <div id="web-tab-sobremí" class="web-etab-content" style="display:none">
-      <div style="margin-bottom:.8rem"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">DIFERENCIADORES (uno por línea)</label><textarea id="wc_highlights" rows="4" placeholder="15 años de experiencia&#10;Especialista en dolor crónico&#10;Atención personalizada&#10;Tecnología de diagnóstico avanzada" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
-      <div style="font-size:.75rem;color:#9ca3af">Aparecen como chips de confianza en la sección "Sobre mí".</div>
-    </div>
-
-    <!-- Tab: SEO -->
-    <div id="web-tab-seo" class="web-etab-content" style="display:none">
-      <div style="display:flex;flex-direction:column;gap:.9rem">
-        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TÍTULO SEO (Google)</label><input id="wc_seo_title" placeholder="Dr. Mateo Alarcón — Traumatólogo en Quito" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
-        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">DESCRIPCIÓN SEO</label><textarea id="wc_seo_desc" rows="2" placeholder="Especialista en traumatología con enfoque en cirugía mínimamente invasiva. Agenda online en Quito." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea><div style="font-size:.72rem;color:#9ca3af;margin-top:.2rem">Máximo 155 caracteres. <span id="wcSeoDescCount">0</span>/155</div></div>
-      </div>
-    </div>
-
-    <!-- Botones -->
-    <div style="display:flex;gap:.8rem;margin-top:1.5rem;flex-wrap:wrap">
-      <button onclick="abrirCrearSitioMedico()" style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1.2rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">✨ Regenerar con AI</button>
-      <button onclick="guardarWebConfig(this)" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">Guardar cambios</button>
     </div>
 
   </div><!-- /panel-sitio -->
@@ -2196,6 +2232,58 @@ function cargarMiSitio(m) {
 
   // Preview
   refreshWebPreview();
+}
+
+function toggleWebEditor(btn) {
+  var area = document.getElementById('webEditorArea');
+  var arrow = document.getElementById('webEditorArrow');
+  if (!area) return;
+  var open = area.style.display === 'block';
+  area.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+var _webAiTpl = 'minimal-white';
+function webAiSelectTpl(btn, tpl) {
+  _webAiTpl = tpl;
+  document.querySelectorAll('.web-ai-tpl-btn').forEach(function(b){
+    b.style.background='rgba(255,255,255,.04)'; b.style.borderColor='rgba(255,255,255,.1)'; b.style.color='rgba(255,255,255,.5)';
+  });
+  btn.style.background='rgba(167,139,250,.2)'; btn.style.borderColor='rgba(167,139,250,.5)'; btn.style.color='rgba(255,255,255,.85)';
+  // Sync template selector
+  _wcTpl = tpl;
+  document.querySelectorAll('.web-tpl-card').forEach(function(c){ c.style.borderColor = c.dataset.tpl===tpl ? 'var(--teal)' : '#e5e7eb'; });
+}
+
+async function webAiGenerar(btn) {
+  if (!M||!M.id) return;
+  var prompt = (document.getElementById('webAiPrompt')||{}).value||'';
+  if (btn) { btn.disabled=true; btn.textContent='✨ Generando…'; }
+
+  // Use existing csmFinalizarGeneracion logic but inline
+  var cfg = _TONOS_CFG[_csmTono]||_TONOS_CFG['Humano'];
+  var color = _ESTILOS_COLOR[_webAiTpl]||'#0b7c6e';
+  var esp = (M.especialidades||[])[0]||'';
+  var ciudad = M.ciudad||'';
+  var anos = M.anos_experiencia||'';
+
+  var sub = prompt || (esp&&anos ? esp+' con '+anos+' años de experiencia'+(ciudad?' en '+ciudad:'') : '');
+  var lc = Object.assign({}, M.web_config||{}, {
+    template: _webAiTpl,
+    headline: cfg.hero,
+    subheadline: sub||null,
+    cta_primary_text: cfg.cta,
+    primary_color: color,
+    servicios: null,
+    sobre_mi_highlights: null
+  });
+
+  var res = await _sb.from('medicos').update({web_config: lc}).eq('id', M.id);
+  if (btn) { btn.disabled=false; btn.textContent='✨ Generar sitio premium con AI'; }
+  if (res.error) { mostrarToast('Error al guardar','error'); return; }
+  M.web_config = lc;
+  mostrarToast('Sitio generado ✓');
+  cargarMiSitio(M);
 }
 
 function updateWcSeoCount() {
