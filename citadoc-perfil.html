@@ -130,6 +130,24 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
   .stats-row{grid-template-columns:repeat(3,1fr)}
   .profile-header-inner{flex-direction:column;align-items:center;text-align:center}
 }
+/* ── TIMELINE FORMACIÓN ── */
+.timeline{position:relative}
+.tl-item{display:flex;gap:1rem;padding-bottom:1.5rem;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:46px}
+.tl-year{font-size:.68rem;font-weight:800;color:var(--teal);letter-spacing:.05em;text-align:center;margin-bottom:.35rem;white-space:nowrap;text-transform:uppercase}
+.tl-dot{width:11px;height:11px;border-radius:50%;background:var(--teal);border:2.5px solid var(--teal-lite);flex-shrink:0;z-index:1}
+.tl-line{flex:1;width:2px;background:var(--border);margin-top:3px;min-height:20px}
+.tl-item:last-child .tl-line{display:none}
+.tl-content{padding-top:.05rem;flex:1;min-width:0}
+.tl-title{font-size:.9rem;font-weight:700;color:var(--ink);line-height:1.35;margin-bottom:.2rem}
+.tl-inst{font-size:.8rem;color:var(--muted2);line-height:1.45}
+/* ── LOGROS ── */
+.logro-item{display:flex;gap:.9rem;align-items:flex-start;padding:.85rem 0;border-bottom:1px solid var(--border)}
+.logro-item:last-child{border-bottom:none}
+.logro-icon{font-size:1.2rem;flex-shrink:0;margin-top:.05rem}
+.logro-title{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:.15rem}
+.logro-desc{font-size:.78rem;color:var(--muted2);line-height:1.5}
 /* ── HERO V2 ── */
 .hero-v2{display:flex;gap:2rem;background:linear-gradient(135deg,var(--teal-dark) 0%,#062e2b 100%);border-radius:24px;padding:2.2rem;margin-bottom:1.5rem;overflow:hidden;position:relative}
 .hero-v2::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 85% 15%,rgba(14,157,140,.45) 0%,transparent 60%);pointer-events:none}
@@ -647,32 +665,74 @@ function aplicarMedico(m, formacion, citas, locs) {
     }
   }
 
-  // Formación
+  // Formación — timeline visual
   var formEl = el('formList');
   if (formEl) {
     var academias = (formacion||[]).filter(function(f){ return f.tipo==='academia'; });
     if (academias.length) {
       formEl.innerHTML = '';
+      var tl = document.createElement('div');
+      tl.className = 'timeline';
       academias.forEach(function(f) {
-        var div = document.createElement('div');
-        div.className = 'list-item';
-        div.innerHTML = '<div class="list-icon">🎓</div><div><div class="list-title">'+(f.titulo||'')+'</div><div class="list-sub">'+(f.institucion||'')+(f.anio?' · '+f.anio:'')+'</div></div>';
-        formEl.appendChild(div);
+        var item = document.createElement('div');
+        item.className = 'tl-item';
+
+        // Columna izquierda: año + dot + línea
+        var left = document.createElement('div');
+        left.className = 'tl-left';
+        if (f.anio) {
+          var yearEl = document.createElement('div');
+          yearEl.className = 'tl-year';
+          yearEl.textContent = f.anio;
+          left.appendChild(yearEl);
+        }
+        var dot = document.createElement('div'); dot.className = 'tl-dot'; left.appendChild(dot);
+        var line = document.createElement('div'); line.className = 'tl-line'; left.appendChild(line);
+
+        // Contenido: título + institución
+        var content = document.createElement('div');
+        content.className = 'tl-content';
+        var titleEl = document.createElement('div');
+        titleEl.className = 'tl-title';
+        titleEl.textContent = f.titulo || '';
+        content.appendChild(titleEl);
+        if (f.institucion || f.lugar) {
+          var instEl = document.createElement('div');
+          instEl.className = 'tl-inst';
+          instEl.textContent = (f.institucion||'')+(f.lugar?' · '+f.lugar:'');
+          content.appendChild(instEl);
+        }
+
+        item.appendChild(left);
+        item.appendChild(content);
+        tl.appendChild(item);
       });
+      formEl.appendChild(tl);
     }
   }
 
-  // Logros
+  // Logros — cards con icono
   var logEl = el('logrosList');
   if (logEl) {
     var logros = (formacion||[]).filter(function(f){ return f.tipo==='logro'; });
     if (logros.length) {
       logEl.innerHTML = '';
       logros.forEach(function(l) {
-        var div = document.createElement('div');
-        div.className = 'list-item';
-        div.innerHTML = '<div class="list-icon">⭐</div><div><div class="list-title">'+(l.titulo||'')+'</div><div class="list-sub">'+(l.descripcion||'')+'</div></div>';
-        logEl.appendChild(div);
+        var item = document.createElement('div');
+        item.className = 'logro-item';
+        var icon = document.createElement('div');
+        icon.className = 'logro-icon'; icon.textContent = '⭐';
+        var body = document.createElement('div');
+        var titleEl = document.createElement('div');
+        titleEl.className = 'logro-title'; titleEl.textContent = l.titulo||'';
+        body.appendChild(titleEl);
+        if (l.descripcion) {
+          var descEl = document.createElement('div');
+          descEl.className = 'logro-desc'; descEl.textContent = l.descripcion;
+          body.appendChild(descEl);
+        }
+        item.appendChild(icon); item.appendChild(body);
+        logEl.appendChild(item);
       });
     }
   }
