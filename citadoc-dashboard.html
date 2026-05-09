@@ -2075,30 +2075,54 @@ function cerrarProModal() {
 }
 
 // ── CARGAR PACIENTES ──
-function cargarPacientes() {
+// Dos fuentes unificadas:
+//   A — pacientes creados manualmente desde el dashboard (tienen medico_id)
+//   B — pacientes que vienen del booking (NO tienen medico_id, pero tienen
+//       una cita con este médico en la tabla citas)
+// Se deduplictan por id y se ordenan A-Z.
+async function cargarPacientes() {
   if (!M) return;
   var container = document.getElementById('pacientesList');
   if (!container) return;
   if (!esPro()) { mostrarProModal('pacientes'); return; }
   uiLoading('pacientesList', 'Cargando pacientes...');
-  _sb.from('pacientes')
-    .select('*')
-    .eq('medico_id', M.id)
-    .order('nombre', {ascending: true})
-    .then(function(r) {
-      if (r.error) {
-        uiError('pacientesList', r.error.message, cargarPacientes);
-        return;
-      }
-      if (!r.data || !r.data.length) {
-        uiEmpty('pacientesList', '👥', 'Sin pacientes aún',
-          'Agrega tu primer paciente para comenzar a registrar consultas.',
-          '+ Nuevo paciente', abrirModalPaciente);
-        return;
-      }
-      renderPacientes(r.data);
-    })
-    .catch(function(e){ logError('cargarPacientes:network', e); uiError('pacientesList', 'Error de red. Intenta de nuevo.', cargarPacientes); });
+
+  try {
+    // Fuente A: manuales
+    var resA = await _sb.from('pacientes').select('*').eq('medico_id', M.id);
+    if (resA.error) { logError('cargarPacientes:A', resA.error); uiError('pacientesList', resA.error.message, cargarPacientes); return; }
+    var pacA = resA.data || [];
+    var idsEnA = new Set(pacA.map(function(p){ return p.id; }));
+
+    // Fuente B: IDs únicos de pacientes en citas de este médico que no están en A
+    var resCitas = await _sb.from('citas').select('paciente_id').eq('medico_id', M.id).not('paciente_id', 'is', null);
+    if (resCitas.error) { logError('cargarPacientes:citas', resCitas.error); }
+    var idsBooking = Array.from(new Set((resCitas.data||[]).map(function(c){ return c.paciente_id; }))).filter(function(id){ return !idsEnA.has(id); });
+
+    var pacB = [];
+    if (idsBooking.length) {
+      var resB = await _sb.from('pacientes').select('*').in('id', idsBooking);
+      if (resB.error) { logError('cargarPacientes:B', resB.error); }
+      else pacB = resB.data || [];
+    }
+
+    // Merge y sort A-Z
+    var todos = pacA.concat(pacB).sort(function(a, b){
+      return (a.nombre||'').localeCompare(b.nombre||'', 'es', {sensitivity:'base'});
+    });
+
+    if (!todos.length) {
+      uiEmpty('pacientesList', '👥', 'Sin pacientes aún',
+        'Agrega tu primer paciente para comenzar a registrar consultas.',
+        '+ Nuevo paciente', abrirModalPaciente);
+      return;
+    }
+    renderPacientes(todos);
+
+  } catch(e) {
+    logError('cargarPacientes:catch', e);
+    uiError('pacientesList', 'Error de red. Intenta de nuevo.', cargarPacientes);
+  }
 }
 
 // ── RENDER TARJETAS PACIENTES ──
