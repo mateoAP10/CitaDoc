@@ -130,6 +130,32 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
   .stats-row{grid-template-columns:repeat(3,1fr)}
   .profile-header-inner{flex-direction:column;align-items:center;text-align:center}
 }
+/* ── HERO V2 ── */
+.hero-v2{display:flex;gap:2rem;background:linear-gradient(135deg,var(--teal-dark) 0%,#062e2b 100%);border-radius:24px;padding:2.2rem;margin-bottom:1.5rem;overflow:hidden;position:relative}
+.hero-v2::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 85% 15%,rgba(14,157,140,.45) 0%,transparent 60%);pointer-events:none}
+.hero-photo-v2{width:150px;min-height:180px;border-radius:18px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.18);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;z-index:1;align-self:stretch}
+.hero-photo-v2 img{width:100%;height:100%;object-fit:cover}
+.hero-info-v2{flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;gap:.6rem}
+.hero-name-v2{font-family:'Fraunces',serif;font-size:2rem;font-weight:700;color:#fff;line-height:1.12;letter-spacing:-.025em}
+.hero-spec-v2{font-size:.9rem;color:rgba(255,255,255,.76);display:flex;flex-wrap:wrap;align-items:center;gap:.25rem}
+.hero-spec-sep{color:rgba(255,255,255,.35);margin:0 .1rem}
+.hero-trust-v2{display:flex;flex-wrap:wrap;gap:.4rem}
+.trust-chip{font-size:.71rem;font-weight:700;padding:.22rem .72rem;border-radius:50px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.18);letter-spacing:.02em;white-space:nowrap}
+.hero-ctas-v2{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:.25rem}
+.btn-wa-hero{display:inline-flex;align-items:center;gap:.45rem;background:#25d366;color:#fff;padding:.72rem 1.3rem;border-radius:11px;font-size:.9rem;font-weight:700;text-decoration:none;transition:background .18s;border:none;cursor:pointer;white-space:nowrap}
+.btn-wa-hero:hover{background:#1da851}
+.btn-book-hero{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.12);color:#fff;padding:.72rem 1.3rem;border-radius:11px;font-size:.9rem;font-weight:600;text-decoration:none;border:1.5px solid rgba(255,255,255,.28);transition:background .18s;cursor:pointer;white-space:nowrap}
+.btn-book-hero:hover{background:rgba(255,255,255,.22)}
+.hero-bio-v2{font-size:.84rem;color:rgba(255,255,255,.62);line-height:1.65;margin-top:.1rem}
+@media(max-width:768px){
+  .hero-v2{flex-direction:column;padding:1.4rem;gap:1rem}
+  .hero-photo-v2{width:100%;min-height:170px;border-radius:14px;order:2}
+  .hero-info-v2{order:1}
+  .hero-name-v2{font-size:1.5rem}
+  .hero-bio-v2{display:none}
+  .hero-ctas-v2{gap:.5rem}
+  .btn-wa-hero,.btn-book-hero{flex:1;justify-content:center;padding:.72rem .8rem;font-size:.86rem}
+}
 </style>
 </head>
 <body>
@@ -161,23 +187,25 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 <div class="profile-wrap">
   <!-- COLUMNA IZQUIERDA -->
   <div class="profile-main">
-    <!-- Header -->
-    <div class="profile-header">
-      <div class="profile-header-inner">
-        <div class="profile-avatar" id="profAvatar">👨‍⚕️</div>
-        <div>
-          <div class="profile-badges" id="profBadges"></div>
-          <div class="profile-name" id="profName">Cargando...</div>
-          <div class="profile-sub" id="profSub"></div>
-          <div class="profile-meta" id="profMeta"></div>
+    <!-- HERO V2 -->
+    <div class="hero-v2">
+      <div class="hero-photo-v2" id="profAvatar">👨‍⚕️</div>
+      <div class="hero-info-v2">
+        <div class="profile-badges" id="profBadges"></div>
+        <h1 class="hero-name-v2" id="profName">Cargando...</h1>
+        <div class="hero-spec-v2" id="profSub"></div>
+        <div class="hero-trust-v2" id="heroTrust"></div>
+        <div class="hero-ctas-v2">
+          <a class="btn-wa-hero" id="btnWAHero" href="#" target="_blank" rel="noopener" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Escribir por WhatsApp
+          </a>
+          <a class="btn-book-hero" id="btnBookHero" href="#agendaSection" onclick="document.getElementById('agendaSection').scrollIntoView({behavior:'smooth'});return false;">
+            📅 Agendar consulta
+          </a>
         </div>
+        <p class="hero-bio-v2" id="profBioShort"></p>
       </div>
-    </div>
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="statExp">0</div><div class="stat-label">años exp.</div></div>
-      <div class="stat-card"><div class="stat-num" id="statPac">—</div><div class="stat-label">pacientes</div></div>
-      <div class="stat-card"><div class="stat-num" id="statRat">—</div><div class="stat-label">calificación</div></div>
     </div>
     <!-- Tabs -->
     <div class="profile-tabs">
@@ -548,26 +576,57 @@ function aplicarMedico(m, formacion, citas, locs) {
   }
 
   setText('profName', nombre);
-  setText('profSub', esp+(m.ciudad?(' · '+m.ciudad+', '+(m.pais||'')):''));
 
-  // Meta
-  var meta = el('profMeta');
-  if (meta) {
-    var mhtml = '';
-    if (m.precio)           mhtml += '<span>💰 Consulta desde <strong>$'+m.precio+'</strong></span>';
-    if (m.horario_desde)    mhtml += '<span>🕐 '+m.horario_desde+' - '+m.horario_hasta+'</span>';
-    if (m.dias_atencion && m.dias_atencion.length) {
-      var dias = m.dias_atencion;
-      var primerDia = dias[0].charAt(0).toUpperCase()+dias[0].slice(1);
-      var ultDia    = dias[dias.length-1].charAt(0).toUpperCase()+dias[dias.length-1].slice(1);
-      mhtml += '<span>📅 '+primerDia+' - '+ultDia+'</span>';
-    }
-    meta.innerHTML = mhtml;
+  // Especialidad + ciudad con separadores visuales
+  var subEl = el('profSub');
+  if (subEl) {
+    subEl.innerHTML = '';
+    var specParts = [];
+    if (esp) specParts.push(esp);
+    if (m.subespecialidad) specParts.push(m.subespecialidad);
+    if (ciudad) specParts.push(ciudad+(m.pais ? ', '+paisLabel : ''));
+    specParts.forEach(function(p, i) {
+      if (i > 0) { var s=document.createElement('span'); s.className='hero-spec-sep'; s.textContent='·'; subEl.appendChild(s); }
+      var span=document.createElement('span'); span.textContent=p; subEl.appendChild(span);
+    });
   }
 
-  // Stats
-  setText('statExp', m.anos_experiencia||'0');
-  setText('bookPrice', '$'+( m.precio||0));
+  // Trust chips — solo datos reales
+  var trustEl = el('heroTrust');
+  if (trustEl) {
+    trustEl.innerHTML = '';
+    var chips = [];
+    if (m.anos_experiencia) chips.push('✓ '+m.anos_experiencia+' años de experiencia');
+    if (m.senescyt) chips.push('Reg. SENESCYT '+m.senescyt);
+    var primerInst = (formacion||[]).filter(function(f){ return f.tipo==='academia' && f.institucion; })[0];
+    if (primerInst) chips.push(primerInst.institucion);
+    chips.forEach(function(c) {
+      var span=document.createElement('span'); span.className='trust-chip'; span.textContent=c; trustEl.appendChild(span);
+    });
+  }
+
+  // Bio corta en el hero
+  var bioShortEl = el('profBioShort');
+  if (bioShortEl) {
+    var bio = m.bio || '';
+    bioShortEl.textContent = bio.length > 130 ? bio.slice(0, 130).trim()+'...' : bio;
+  }
+
+  // WhatsApp CTA en el hero
+  var waHeroBtn = el('btnWAHero');
+  if (waHeroBtn && m.whatsapp_activo && m.whatsapp) {
+    var waUrl0 = urlWA(m.whatsapp, m.pais, nombre);
+    if (waUrl0) { waHeroBtn.href = waUrl0; waHeroBtn.style.display = 'inline-flex'; }
+  }
+
+  // Microcopy dinámico en botón Agendar
+  var bookHeroBtn = el('btnBookHero');
+  if (bookHeroBtn && ciudad) {
+    bookHeroBtn.textContent = '📅 Agendar consulta en '+ciudad;
+  }
+
+  // Precio en booking card
+  setText('bookPrice', '$'+(m.precio||0));
 
   // Bio
   var bioEl = el('profBio');
