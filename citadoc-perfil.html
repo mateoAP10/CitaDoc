@@ -402,6 +402,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <script>
 
+// Fallback inline — shared.js los sobreescribe si carga correctamente
+function el(id){ return document.getElementById(id); }
+function setText(id,v){ var e=el(id); if(e) e.textContent=v; }
+function setVal(id,v){ var e=el(id); if(e) e.value=v; }
+
 // ── CONFIG ──
 // emailjs.init movido a DOMContentLoaded — emailjs se carga con defer
 var _sb = supabase.createClient(
