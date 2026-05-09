@@ -131,9 +131,105 @@ body.tpl-premium-dark .nav{background:rgba(10,10,10,.92);border-color:rgba(255,2
   .btn-p,.btn-wa,.btn-outline{width:100%;justify-content:center}
   .hero-ctas{flex-direction:column}
 }
+
+/* ── BOOKING INLINE ── */
+.bk-overlay{position:fixed;inset:0;z-index:1000;background:rgba(5,8,7,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:1.2rem}
+.bk-modal{background:linear-gradient(148deg,#0a0f0e 0%,#0f0a1a 100%);border:1px solid rgba(255,255,255,.08);border-radius:24px;width:100%;max-width:460px;max-height:92vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04)}
+.bk-header{padding:1.4rem 1.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:flex-start}
+.bk-close{background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.5);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.88rem;display:flex;align-items:center;justify-content:center;transition:background .18s;flex-shrink:0}
+.bk-close:hover{background:rgba(255,255,255,.12)}
+.bk-body{padding:1.4rem 1.7rem}
+/* Cal */
+.bk-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.bk-cal-title{font-family:var(--display,'Fraunces',serif);font-size:1rem;font-weight:700;color:#fff;letter-spacing:-.01em}
+.bk-cal-arrow{background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.6);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.bk-cal-arrow:hover{background:rgba(255,255,255,.12)}
+.bk-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:1.2rem}
+.bk-cal-hdr{text-align:center;font-size:.62rem;font-weight:600;color:rgba(255,255,255,.3);padding:.3rem 0;text-transform:uppercase;letter-spacing:.05em}
+.bk-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .18s;color:rgba(255,255,255,.7);position:relative}
+.bk-day.avail{color:#fff;background:rgba(255,255,255,.06)}
+.bk-day.avail:hover{background:rgba(11,124,110,.35);color:#fff}
+.bk-day.selected{background:var(--p,#0b7c6e)!important;color:#fff!important;font-weight:700}
+.bk-day.today{border:1px solid rgba(255,255,255,.2)}
+.bk-day.past,.bk-day.unavail{opacity:.2;cursor:default;pointer-events:none}
+.bk-day.empty{pointer-events:none}
+/* Slots */
+.bk-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1.2rem}
+.bk-slot{padding:.5rem .3rem;text-align:center;border:1px solid rgba(255,255,255,.1);border-radius:10px;font-size:.82rem;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;transition:all .18s;background:rgba(255,255,255,.04)}
+.bk-slot:hover{border-color:rgba(11,124,110,.5);background:rgba(11,124,110,.15);color:#fff}
+.bk-slot.sel{border-color:var(--p,#0b7c6e);background:rgba(11,124,110,.25);color:#fff;font-weight:700}
+.bk-slot.taken{opacity:.25;cursor:default;pointer-events:none;text-decoration:line-through}
+/* Form */
+.bk-input{width:100%;padding:.68rem .9rem;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:#fff;outline:none;transition:border-color .2s;box-sizing:border-box}
+.bk-input::placeholder{color:rgba(255,255,255,.3)}
+.bk-input:focus{border-color:rgba(11,124,110,.6)}
+.bk-btn{width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .18s,transform .18s}
+.bk-btn:hover{opacity:.9;transform:translateY(-1px)}
+.bk-btn:disabled{opacity:.5;cursor:default;transform:none}
+.bk-btn-wa{width:100%;padding:.78rem;background:#25d366;color:#fff;border:none;border-radius:13px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:opacity .18s}
+.bk-btn-wa:hover{opacity:.9}
+@keyframes bkIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.bk-modal{animation:bkIn .25s ease}
 </style>
 </head>
 <body>
+
+<!-- BOOKING MODAL INLINE -->
+<div class="bk-overlay" id="bkOverlay" onclick="if(event.target===this)cerrarBooking()">
+  <div class="bk-modal">
+    <div class="bk-header">
+      <div>
+        <div style="font-size:.6rem;font-weight:700;color:rgba(11,124,110,.8);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem">Reservar consulta</div>
+        <div id="bkDrName" style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:#fff"></div>
+        <div id="bkDrEsp" style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:.1rem"></div>
+      </div>
+      <button class="bk-close" onclick="cerrarBooking()">✕</button>
+    </div>
+
+    <!-- STEP 1: Fecha + hora -->
+    <div id="bkStep1" class="bk-body">
+      <div class="bk-cal-nav">
+        <button class="bk-cal-arrow" onclick="bkNavMes(-1)">‹</button>
+        <div class="bk-cal-title" id="bkCalTitle"></div>
+        <button class="bk-cal-arrow" onclick="bkNavMes(1)">›</button>
+      </div>
+      <div class="bk-cal-grid" id="bkCalGrid"></div>
+      <div id="bkSlotsWrap" style="display:none">
+        <div style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.65rem" id="bkSlotsLabel">Horarios disponibles</div>
+        <div class="bk-slots" id="bkSlots"></div>
+        <button class="bk-btn" id="bkStep1Btn" onclick="bkGoStep2()" disabled>Continuar →</button>
+      </div>
+      <div id="bkNoSlots" style="display:none;text-align:center;padding:1rem 0;font-size:.85rem;color:rgba(255,255,255,.35)">Sin horarios disponibles este día.</div>
+    </div>
+
+    <!-- STEP 2: Datos -->
+    <div id="bkStep2" class="bk-body" style="display:none">
+      <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:1rem;display:flex;align-items:center;gap:.4rem">
+        <span id="bkSelDate" style="color:rgba(255,255,255,.7);font-weight:600"></span>
+        <span>·</span>
+        <span id="bkSelTime" style="color:rgba(11,124,110,.9);font-weight:700;font-size:.82rem"></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.7rem;margin-bottom:1rem">
+        <input id="bkNombre" class="bk-input" placeholder="Tu nombre completo *">
+        <input id="bkTelefono" class="bk-input" placeholder="Teléfono / WhatsApp *" type="tel">
+        <input id="bkEmail" class="bk-input" placeholder="Email (opcional)" type="email">
+      </div>
+      <button class="bk-btn" id="bkConfirmBtn" onclick="bkConfirmar()">✓ Confirmar cita</button>
+      <button onclick="bkGoStep1()" style="width:100%;padding:.55rem;background:none;border:none;color:rgba(255,255,255,.3);font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;margin-top:.5rem">← Cambiar fecha/hora</button>
+    </div>
+
+    <!-- STEP 3: Confirmación -->
+    <div id="bkStep3" class="bk-body" style="display:none;text-align:center;padding:2rem 1.7rem">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(11,124,110,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1rem">✓</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.3rem">Cita confirmada</div>
+      <div id="bkConfMsg" style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:1.5rem"></div>
+      <div style="display:flex;flex-direction:column;gap:.6rem">
+        <a id="bkWaLink" href="#" target="_blank" rel="noopener" class="bk-btn-wa" style="display:none;text-align:center;text-decoration:none">💬 Confirmar por WhatsApp</a>
+        <button onclick="cerrarBooking()" style="padding:.62rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:11px;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;font-size:.87rem;cursor:pointer">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <nav class="nav">
   <div class="nav-brand">
@@ -448,10 +544,243 @@ function renderWeb(m, locs, wc) {
     ctaWa.style.display='inline-flex';
   }
 
-  // Booking onclick
+  // Booking inline — opens modal
   [el('navCta'),el('wBtnBook'),el('wCtaBtn')].forEach(function(b){
-    if(b) b.onclick=function(){ window.open('citadoc-perfil.html?slug='+(m.slug||''),'_blank'); };
+    if(b) b.onclick = abrirBooking;
   });
+}
+
+// ══ BOOKING INLINE ══
+var _M = null; // medico activo
+var _bkYear, _bkMonth, _bkSelDate=null, _bkSelSlot=null, _bkCitas=[];
+var DIAS_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var DIA_IDX = {lun:1,mar:2,'mie':3,'mié':3,jue:4,vie:5,sab:6,'sáb':6,dom:0};
+
+function abrirBooking() {
+  if (!_M) return;
+  var ov = el('bkOverlay'); if (!ov) return;
+  ov.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  var nombre = (_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido;
+  setText('bkDrName', nombre);
+  setText('bkDrEsp', (_M.especialidades||[])[0]||'');
+
+  var now = new Date();
+  _bkYear = now.getFullYear(); _bkMonth = now.getMonth();
+  _bkSelDate = null; _bkSelSlot = null;
+
+  // Pre-cargar citas del mes
+  bkCargarCitas().then(function(){ bkRenderCal(); });
+}
+
+function cerrarBooking() {
+  var ov = el('bkOverlay'); if (ov) ov.style.display = 'none';
+  document.body.style.overflow = '';
+  bkGoStep1();
+}
+
+async function bkCargarCitas() {
+  if (!_M) return;
+  var hoy = new Date().toISOString().split('T')[0];
+  var en90 = new Date(); en90.setDate(en90.getDate()+90);
+  var r = await _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id)
+    .gte('fecha',hoy).lte('fecha',en90.toISOString().split('T')[0]).neq('estado','cancelada');
+  _bkCitas = (r.data||[]);
+}
+
+function bkDiasActivos() {
+  var dias = _M.dias_atencion||['lun','mar','mie','jue','vie'];
+  return dias.map(function(d){ return DIA_IDX[d.toLowerCase()]; }).filter(function(n){ return n!==undefined; });
+}
+
+function bkRenderCal() {
+  var title = el('bkCalTitle');
+  if (title) title.textContent = MESES_ES[_bkMonth]+' '+_bkYear;
+
+  var grid = el('bkCalGrid'); if (!grid) return;
+  grid.innerHTML = '';
+
+  // Headers
+  DIAS_ES.forEach(function(d){
+    var h=document.createElement('div'); h.className='bk-cal-hdr'; h.textContent=d.charAt(0);
+    grid.appendChild(h);
+  });
+
+  var primerDia = new Date(_bkYear, _bkMonth, 1).getDay();
+  var diasEnMes = new Date(_bkYear, _bkMonth+1, 0).getDate();
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var activos = bkDiasActivos();
+
+  // Celdas vacías antes del primer día
+  for (var i=0; i<primerDia; i++) {
+    var empty=document.createElement('div'); empty.className='bk-day empty'; grid.appendChild(empty);
+  }
+
+  for (var d=1; d<=diasEnMes; d++) {
+    var fecha = new Date(_bkYear, _bkMonth, d);
+    var fechaStr = fecha.toISOString().split('T')[0];
+    var diaSemana = fecha.getDay();
+    var isPast = fecha < hoy;
+    var isActivo = activos.indexOf(diaSemana) !== -1;
+
+    var cell = document.createElement('div');
+    cell.textContent = d;
+    var todayStr = hoy.toISOString().split('T')[0];
+    if (fechaStr === todayStr) cell.classList.add('today');
+
+    if (isPast || !isActivo) {
+      cell.className += ' bk-day '+(isPast?'past':'unavail');
+    } else {
+      cell.className = 'bk-day avail';
+      if (fechaStr === _bkSelDate) cell.classList.add('selected');
+      (function(fs){ cell.onclick = function(){ bkSelectDate(fs); }; })(fechaStr);
+    }
+    grid.appendChild(cell);
+  }
+
+  el('bkSlotsWrap').style.display = _bkSelDate ? 'block' : 'none';
+  if (_bkSelDate) bkRenderSlots(_bkSelDate);
+}
+
+function bkNavMes(delta) {
+  _bkMonth += delta;
+  if (_bkMonth<0){ _bkMonth=11; _bkYear--; }
+  if (_bkMonth>11){ _bkMonth=0; _bkYear++; }
+  bkRenderCal();
+}
+
+function bkSelectDate(fechaStr) {
+  _bkSelDate = fechaStr;
+  _bkSelSlot = null;
+  var btn = el('bkStep1Btn'); if (btn) { btn.disabled=true; }
+  bkRenderCal();
+}
+
+function bkRenderSlots(fecha) {
+  var wrap = el('bkSlotsWrap');
+  var cont = el('bkSlots');
+  var noSlots = el('bkNoSlots');
+  if (!cont) return;
+
+  var label = el('bkSlotsLabel');
+  if (label) {
+    var d = new Date(fecha+'T12:00:00');
+    label.textContent = d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
+  }
+
+  var desde = _M.horario_desde||'08:00';
+  var hasta = _M.horario_hasta||'17:00';
+  var dur   = parseInt(_M.duracion_cita||30);
+
+  var tomados = _bkCitas.filter(function(c){ return c.fecha===fecha; }).map(function(c){ return c.hora; });
+  var slots = [];
+  var h1=parseInt(desde.split(':')[0]), m1=parseInt(desde.split(':')[1]);
+  var h2=parseInt(hasta.split(':')[0]), m2=parseInt(hasta.split(':')[1]);
+  var mins=h1*60+m1, end=h2*60+m2;
+  while(mins<end){
+    var hh=Math.floor(mins/60).toString().padStart(2,'0');
+    var mm=(mins%60).toString().padStart(2,'0');
+    slots.push(hh+':'+mm);
+    mins+=dur;
+  }
+
+  // Filtrar slots pasados si es hoy
+  var hoy=new Date().toISOString().split('T')[0];
+  var ahoraMin=new Date().getHours()*60+new Date().getMinutes();
+  if (fecha===hoy) slots=slots.filter(function(s){ return parseInt(s.split(':')[0])*60+parseInt(s.split(':')[1])>ahoraMin; });
+
+  cont.innerHTML='';
+  var disponibles=0;
+  slots.forEach(function(s){
+    var chip=document.createElement('div');
+    chip.className='bk-slot'+(tomados.indexOf(s)!==-1?' taken':'')+(s===_bkSelSlot?' sel':'');
+    chip.textContent=s;
+    if (tomados.indexOf(s)===-1) {
+      disponibles++;
+      (function(slot){ chip.onclick=function(){ bkSelectSlot(slot); }; })(s);
+    }
+    cont.appendChild(chip);
+  });
+
+  if (noSlots) noSlots.style.display=disponibles===0?'block':'none';
+  wrap.style.display='block';
+}
+
+function bkSelectSlot(slot) {
+  _bkSelSlot = slot;
+  document.querySelectorAll('.bk-slot').forEach(function(c){ c.classList.remove('sel'); });
+  document.querySelectorAll('.bk-slot').forEach(function(c){ if(c.textContent===slot) c.classList.add('sel'); });
+  var btn = el('bkStep1Btn'); if (btn) btn.disabled = false;
+}
+
+function bkGoStep1() {
+  el('bkStep1').style.display='block';
+  el('bkStep2').style.display='none';
+  el('bkStep3').style.display='none';
+}
+
+function bkGoStep2() {
+  if (!_bkSelDate||!_bkSelSlot) return;
+  el('bkStep1').style.display='none';
+  el('bkStep2').style.display='block';
+  el('bkStep3').style.display='none';
+  var d=new Date(_bkSelDate+'T12:00:00');
+  setText('bkSelDate', d.toLocaleDateString('es',{day:'numeric',month:'long'}));
+  setText('bkSelTime', _bkSelSlot);
+}
+
+async function bkConfirmar() {
+  var nombre=((el('bkNombre')||{}).value||'').trim();
+  var tel=((el('bkTelefono')||{}).value||'').trim();
+  var email=((el('bkEmail')||{}).value||'').trim();
+  if (!nombre||!tel) { alert('Completa nombre y teléfono.'); return; }
+
+  var btn=el('bkConfirmBtn'); if (btn) { btn.disabled=true; btn.textContent='Confirmando…'; }
+
+  // Find or create paciente
+  var rPac = await _sb.from('pacientes').select('id').eq('telefono',tel).maybeSingle();
+  var pacienteId;
+  if (rPac.data) {
+    pacienteId = rPac.data.id;
+    _sb.from('pacientes').update({nombre:nombre}).eq('id',pacienteId);
+  } else {
+    var ins = await _sb.from('pacientes').insert({nombre:nombre,telefono:tel,email:email||null}).select('id').single();
+    pacienteId = ins.data ? ins.data.id : null;
+  }
+
+  if (!pacienteId) { if(btn){btn.disabled=false;btn.textContent='✓ Confirmar cita';} alert('Error al registrar paciente.'); return; }
+
+  var rCita = await _sb.from('citas').insert([{
+    medico_id: _M.id, paciente_id: pacienteId,
+    fecha: _bkSelDate, hora: _bkSelSlot,
+    estado: 'confirmada', origen: 'web-ai',
+    paciente_nombre: nombre, paciente_tel: tel
+  }]);
+
+  if (btn) { btn.disabled=false; btn.textContent='✓ Confirmar cita'; }
+  if (rCita.error) { alert('Error: '+rCita.error.message); return; }
+
+  // Paso 3 — confirmación
+  el('bkStep2').style.display='none';
+  el('bkStep3').style.display='block';
+  var d=new Date(_bkSelDate+'T12:00:00');
+  var nombreDoc=(_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido;
+  setText('bkConfMsg', nombre+', tu cita con '+nombreDoc+' fue confirmada para el '
+    +d.toLocaleDateString('es',{day:'numeric',month:'long'})+' a las '+_bkSelSlot+'.'
+    +(email?' Revisa tu correo.':''));
+
+  // WhatsApp link
+  var waLink = el('bkWaLink');
+  if (waLink && _M.whatsapp_activo && _M.whatsapp) {
+    var msg='Hola '+nombreDoc+', confirmé mi cita para el '+d.toLocaleDateString('es',{day:'numeric',month:'long'})+' a las '+_bkSelSlot+'. Soy '+nombre+' ('+tel+').';
+    waLink.href='https://wa.me/'+_M.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(msg);
+    waLink.style.display='block';
+  }
+
+  // Refresh citas
+  bkCargarCitas();
 }
 
 (function(){
@@ -465,6 +794,7 @@ function renderWeb(m, locs, wc) {
     .then(function(r){
       if(r.error||!r.data){ setText('wH1','Médico no encontrado'); return; }
       var m = r.data;
+      _M = m; // para booking inline
       if(tplOverride&&m.web_config){ m.web_config = Object.assign({},m.web_config,{template:tplOverride}); }
       else if(tplOverride){ m.web_config = {template:tplOverride}; }
       _sb.from('doctor_locations').select('nombre,direccion,telefono,ciudad,maps_url')
