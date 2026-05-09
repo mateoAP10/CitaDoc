@@ -655,7 +655,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
                 <span style="width:18px;height:18px;border-radius:50%;border:1.5px solid #e5e7eb;display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;color:#d1d5db">✓</span>Perfil compartible
               </div>
             </div>
-            <div style="padding:.6rem 1rem;background:#f9fafb;border-radius:10px;text-align:center;font-size:.78rem;color:#9ca3af;font-weight:600">Plan activo ✓</div>
+            <div style="padding:.6rem 1rem;background:#f9fafb;border-radius:10px;text-align:center">
+              <div style="font-size:.78rem;color:#9ca3af;font-weight:600">Plan activo ✓</div>
+              <div style="font-size:.69rem;color:#d1d5db;margin-top:.18rem">Puedes cambiar cuando quieras</div>
+            </div>
           </div>
 
           <!-- PRO -->
@@ -719,8 +722,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         </div>
 
         <!-- Tagline footer -->
-        <div style="text-align:center;margin-top:1.2rem;font-size:.74rem;color:#9ca3af;letter-spacing:.02em">
-          CitaDoc Health Network — devuelve el control digital al médico.
+        <div style="text-align:center;margin-top:1.2rem">
+          <div style="font-size:.74rem;color:#9ca3af;letter-spacing:.02em;margin-bottom:.25rem">CitaDoc Health Network — devuelve el control digital al médico.</div>
+          <div style="font-size:.71rem;color:#d1d5db">Puedes cambiar de plan cuando quieras. Sin permanencia.</div>
         </div>
 
       </div>
@@ -1990,6 +1994,9 @@ function renderEvolucionSection(isPro) {
   var sec = document.getElementById('evolucionSection');
   if (!sec) return;
   sec.style.display = 'block';
+  // Mover encima de las estadísticas
+  var statsRow = document.querySelector('#panel-inicio .stats-row');
+  if (statsRow && statsRow.previousElementSibling !== sec) statsRow.parentNode.insertBefore(sec, statsRow);
 
   if (isPro) {
     // FREE → "superado": visible pero muted/opaco, mantiene contexto de progresión
@@ -2010,16 +2017,44 @@ function renderEvolucionSection(isPro) {
       badge.style.boxShadow = '0 3px 12px rgba(11,124,110,.35)';
     }
 
-    // Botón PRO → estado activo, sin CTA
+    // Botón PRO → "Gestionar plan"
     var btn = document.getElementById('evolProBtn');
     if (btn) {
-      btn.textContent = 'Plan activo ✓';
-      btn.style.cursor = 'default';
-      btn.style.background = 'rgba(255,255,255,.12)';
-      btn.style.color = 'rgba(255,255,255,.7)';
-      btn.onclick = null;
+      btn.textContent = 'Gestionar plan';
+      btn.style.cursor = 'pointer';
+      btn.style.background = 'rgba(255,255,255,.14)';
+      btn.style.color = 'rgba(255,255,255,.85)';
+      btn.onclick = abrirGestionarPlan;
     }
   }
+}
+
+function abrirGestionarPlan() {
+  var ex = document.getElementById('modalGestionPlan'); if (ex) ex.remove();
+  var ov = document.createElement('div');
+  ov.id = 'modalGestionPlan';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.65);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+  ov.innerHTML = '<div onclick="event.stopPropagation()" style="background:#fff;border-radius:22px;padding:2rem;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.2)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.4rem">'
+    +'<div><div style="font-size:.63rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">Suscripción activa</div>'
+    +'<div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:#0f1a18">Plan PRO</div></div>'
+    +'<button onclick="document.getElementById(\'modalGestionPlan\').remove()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af;padding:.2rem">✕</button></div>'
+    +'<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.3rem">'
+    +'<div style="font-size:.73rem;font-weight:700;color:#065f46;margin-bottom:.55rem">Incluido en tu plan</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.35rem">'
+    +'<div style="font-size:.83rem;color:#374151;display:flex;gap:.5rem;align-items:center"><span style="color:#0b7c6e;font-weight:700">✓</span>Historias clínicas</div>'
+    +'<div style="font-size:.83rem;color:#374151;display:flex;gap:.5rem;align-items:center"><span style="color:#0b7c6e;font-weight:700">✓</span>Recetas digitales</div>'
+    +'<div style="font-size:.83rem;color:#374151;display:flex;gap:.5rem;align-items:center"><span style="color:#0b7c6e;font-weight:700">✓</span>Gestión de pacientes</div>'
+    +'<div style="font-size:.83rem;color:#374151;display:flex;gap:.5rem;align-items:center"><span style="color:#0b7c6e;font-weight:700">✓</span>Seguimiento clínico</div>'
+    +'</div></div>'
+    +'<div style="display:flex;flex-direction:column;gap:.65rem">'
+    +'<button onclick="document.getElementById(\'modalGestionPlan\').remove();mostrarProModal(\'pacientes\')" style="width:100%;padding:.78rem 1rem;background:linear-gradient(148deg,#0a1512,#111827);color:#e9d5ff;border:1px solid rgba(167,139,250,.2);border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;text-align:left">✨ Activar PRO+WEB — $89 + $29/mes →</button>'
+    +'<button onclick="document.getElementById(\'modalGestionPlan\').remove()" style="width:100%;padding:.72rem;background:#f9fafb;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.86rem;font-weight:500;cursor:pointer">Volver al plan básico</button>'
+    +'</div>'
+    +'<div style="text-align:center;margin-top:.9rem;font-size:.71rem;color:#b8c4c2">Sin permanencia · Cambias cuando quieras</div>'
+    +'</div>';
+  document.body.appendChild(ov);
 }
 
 function esPro() {
