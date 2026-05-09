@@ -168,7 +168,7 @@ footer a{color:var(--teal-mid);text-decoration:none}
   <a href="index.html" class="logo">Cita<span>Doc</span></a>
   <div class="nav-right">
     <a href="citadoc-registro.html" class="nav-link">Para médicos</a>
-    <span class="nav-link" id="btnLogin">Iniciar sesión</span>
+    <span class="nav-link" id="btnLogin" style="cursor:pointer" onclick="var o=document.getElementById('loginOverlay');if(o){o.classList.add('open');document.body.style.overflow='hidden';}">Iniciar sesión</span>
     <a href="citadoc-registro.html" class="btn-nav" id="btnRegistro">Registrarme</a>
     <div style="position:relative">
       <div class="nav-user-pill" id="navPill">
@@ -363,6 +363,22 @@ footer a{color:var(--teal-mid);text-decoration:none}
 <script src="js/auth.js"></script>
 <script src="js/booking.js"></script>
 <script>
+// ── FALLBACK — por si shared.js no carga (ej: push pendiente en server) ──
+if (typeof el === 'undefined') {
+  function el(id) { return document.getElementById(id); }
+  function setText(id, v) { var e=el(id); if(e) e.textContent=v; }
+  function pad2(n) { return String(n).padStart(2,'0'); }
+  function toSlug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'_'); }
+  var CODIGOS_PAIS_WA={ecuador:'593',colombia:'57',peru:'51',argentina:'54',chile:'56',venezuela:'58',bolivia:'591',paraguay:'595',uruguay:'598',brasil:'55',guyana:'592',suriname:'597',mexico:'52'};
+  function limpiarNumeroWA(n,p){if(!n)return null;n=n.replace(/[^0-9]/g,'');if(n[0]==='0')n=n.slice(1);var c=CODIGOS_PAIS_WA[(p||'ecuador').toLowerCase()]||'593';return n.startsWith(c)?n:c+n;}
+  function urlWA(n,p,nom){var num=limpiarNumeroWA(n,p);if(!num)return null;return'https://wa.me/'+num+'?text='+encodeURIComponent('Hola '+nom+', vi su perfil en CitaDoc y quisiera agendar una cita. Gracias.');}
+  var PAISES=[{v:'ecuador',l:'Ecuador'},{v:'colombia',l:'Colombia'},{v:'peru',l:'Peru'},{v:'argentina',l:'Argentina'},{v:'chile',l:'Chile'},{v:'venezuela',l:'Venezuela'},{v:'bolivia',l:'Bolivia'},{v:'paraguay',l:'Paraguay'},{v:'uruguay',l:'Uruguay'},{v:'brasil',l:'Brasil'},{v:'guyana',l:'Guyana'},{v:'suriname',l:'Surinam'}];
+  var CIUDADES={ecuador:['Quito','Guayaquil','Cuenca','Manta','Ambato','Portoviejo','Machala','Santo Domingo'],colombia:['Bogota','Medellin','Cali','Barranquilla','Cartagena'],peru:['Lima','Arequipa','Trujillo','Chiclayo','Cusco'],argentina:['Buenos Aires','Cordoba','Rosario','Mendoza'],chile:['Santiago','Valparaiso','Concepcion'],venezuela:['Caracas','Maracaibo','Valencia'],bolivia:['Santa Cruz','La Paz','Cochabamba'],paraguay:['Asuncion'],uruguay:['Montevideo'],brasil:['Sao Paulo','Rio de Janeiro','Brasilia'],guyana:['Georgetown'],suriname:['Paramaribo']};
+  var MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var DIAS_SEM=['dom','lun','mar','mie','jue','vie','sab'];
+  var PAISES_LABEL={ecuador:'Ecuador',colombia:'Colombia',peru:'Peru',argentina:'Argentina',chile:'Chile',venezuela:'Venezuela',bolivia:'Bolivia',paraguay:'Paraguay',uruguay:'Uruguay',brasil:'Brasil',guyana:'Guyana',suriname:'Surinam'};
+  var BG=['#d4f0ec','#e0fff4','#e8eaff','#ffe8e8','#f0ffe8','#e8f0ff'];
+}
 // ── CONFIG ──
 emailjs.init('HwpQ3DPRMmtcVZVt1');
 var _sb = supabase.createClient(

@@ -200,7 +200,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
   <a href="index.html" class="logo">Cita<span>Doc</span></a>
   <div class="nav-right">
     <a href="index.html" class="nav-link">← Directorio</a>
-    <span class="nav-link" id="btnLogin" style="cursor:pointer">Iniciar sesión</span>
+    <span class="nav-link" id="btnLogin" style="cursor:pointer" onclick="var o=document.getElementById('loginOverlay');if(o){o.classList.add('open');document.body.style.overflow='hidden';}">Iniciar sesión</span>
     <a href="citadoc-registro.html" class="btn-nav" id="btnRegistro">Registrarme</a>
     <div style="position:relative">
       <div class="nav-user-pill" id="navPill">
