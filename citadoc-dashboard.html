@@ -42,6 +42,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   letter-spacing:.06em;padding:.18rem .55rem;border-radius:50px;
   background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)
 }
+.sidebar-logo.is-free::after{display:none}
 .sidebar-doctor{
   padding:1rem 1.2rem;display:flex;align-items:center;gap:.75rem;
   border-bottom:1px solid rgba(255,255,255,.06);position:relative;z-index:1
@@ -543,7 +544,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div class="nav-item" onclick="showPanel('calendario',this)"><span class="nav-icon">📅</span>Calendario</div>
     <!-- estadisticas oculto en fase 1 -->
     <div class="nav-section-label" style="margin-top:.4rem">Clínica</div>
-    <div class="nav-item" onclick="showPanel('pacientes',this)"><span class="nav-icon">👥</span>Pacientes</div>
+    <div class="nav-item" onclick="showPanel('pacientes',this)"><span class="nav-icon">👥</span>Pacientes<span id="navPacientesPro" style="display:none;margin-left:auto;font-size:.58rem;font-weight:700;padding:.12rem .45rem;border-radius:50px;background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)">PRO</span></div>
     <div class="nav-section-label" style="margin-top:.4rem">Configuración</div>
     <div class="nav-item" onclick="showPanel('horarios',this)"><span class="nav-icon">🕐</span>Horarios</div>
     <div class="nav-item" onclick="showPanel('perfil',this)"><span class="nav-icon">👤</span>Mi perfil</div>
@@ -605,6 +606,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
     <!-- INICIO -->
     <div class="panel active" id="panel-inicio">
+      <!-- Banner visible solo para plan FREE -->
+      <div id="freePlanBanner" style="display:none;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.2rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:#065f46">Plan Gratuito activo</div>
+          <div style="font-size:.76rem;color:#047857;margin-top:.15rem;line-height:1.5">Citas, calendario y perfil público incluidos. Historias clínicas y gestión de pacientes con PRO.</div>
+        </div>
+        <button onclick="mostrarProModal('pacientes')" style="flex-shrink:0;padding:.44rem 1rem;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">Ver PRO →</button>
+      </div>
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Citas hoy</div><div class="stat-num teal" id="statHoy">—</div><div class="stat-sub" id="statHoySub">cargando...</div></div>
         <div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-num" id="statSemana">—</div><div class="stat-sub">últimos 7 días</div></div>
@@ -1644,6 +1653,25 @@ function aplicarMedico(m) {
   slugActual = m.slug || '';
   AppState.medico = m;       // misma referencia — mutaciones en M.prop se reflejan aquí
   AppState.slug   = m.slug || '';
+
+  // ── Legibilidad del plan FREE ──
+  var _isPro = esPro();
+  // Logo: ocultar badge "PRO" para usuarios FREE
+  var _logo = document.querySelector('.sidebar-logo');
+  if (_logo) _logo.classList.toggle('is-free', !_isPro);
+  // Badge del plan en sidebar: muted para FREE, teal para PRO
+  var _planBadge = document.getElementById('sidebarPlan');
+  if (_planBadge && !_isPro) {
+    _planBadge.style.background = 'rgba(255,255,255,.06)';
+    _planBadge.style.color = 'rgba(255,255,255,.45)';
+    _planBadge.style.border = '1px solid rgba(255,255,255,.1)';
+  }
+  // Banner FREE en panel inicio
+  var _freeBanner = document.getElementById('freePlanBanner');
+  if (_freeBanner) _freeBanner.style.display = _isPro ? 'none' : 'flex';
+  // Badge PRO en nav item Pacientes
+  var _navPacPro = document.getElementById('navPacientesPro');
+  if (_navPacPro) _navPacPro.style.display = _isPro ? 'none' : 'inline';
   const nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   const esp    = (m.especialidades||[])[0]||'—';
   const plan   = getPlanLabel(m.plan);
