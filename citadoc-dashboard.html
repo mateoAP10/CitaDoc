@@ -2084,7 +2084,7 @@ function cargarPacientes() {
   _sb.from('pacientes')
     .select('*')
     .eq('medico_id', M.id)
-    .order('created_at', {ascending: false})
+    .order('nombre', {ascending: true})
     .then(function(r) {
       if (r.error) {
         uiError('pacientesList', r.error.message, cargarPacientes);
@@ -3483,7 +3483,7 @@ function renderPacientes(rows) {
   }
   var cnt=document.getElementById('pacCount'); if(cnt) cnt.textContent=rows.length+' paciente'+(rows.length!==1?'s':'')+' en total';
   var seen={},pacs=[];
-  rows.forEach(function(r){ var p=r.pacientes||r; if(!p||!p.nombre) return; var key=p.id||p.nombre; if(!seen[key]){seen[key]=true;pacs.push({id:p.id,nombre:p.nombre||'',email:p.email||'',telefono:p.telefono||'',ultima:r.created_at||p.created_at||''});} });
+  rows.forEach(function(r){ var p=r.pacientes||r; if(!p||!p.nombre) return; var key=p.id||p.nombre; if(!seen[key]){seen[key]=true;pacs.push({id:p.id,nombre:p.nombre||'',email:p.email||'',telefono:p.telefono||'',cedula:p.cedula||'',ultima:r.created_at||p.created_at||''});} });
   var pal=['#e0f2fe:#0369a1','#d1fae5:#065f46','#fce7f3:#9d174d','#fef3c7:#92400e','#ede9fe:#5b21b6','#fee2e2:#991b1b'];
   grid.innerHTML='';
   pacs.forEach(function(p){
@@ -3491,7 +3491,7 @@ function renderPacientes(rows) {
     var col=pal[Math.abs(ini.charCodeAt(0)||0)%pal.length].split(':');
     var ultima=p.ultima?new Date(p.ultima).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'';
     var card=document.createElement('div');
-    card.className='pac-card'; card.dataset.search=(p.nombre+' '+p.email+' '+p.telefono).toLowerCase();
+    card.className='pac-card'; card.dataset.search=(p.nombre+' '+p.email+' '+p.telefono+' '+p.cedula).toLowerCase();
     card.style.cssText='background:#fff;border-radius:16px;padding:1.1rem 1.3rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.05);border:1.5px solid #f3f4f6;transition:border-color .15s,box-shadow .15s';
     card.onmouseenter=function(){this.style.borderColor='#bbf7d0';this.style.boxShadow='0 4px 20px rgba(0,0,0,.08)';};
     card.onmouseleave=function(){this.style.borderColor='#f3f4f6';this.style.boxShadow='0 2px 12px rgba(0,0,0,.05)';};
@@ -3500,8 +3500,12 @@ function renderPacientes(rows) {
     var avatar=document.createElement('div'); avatar.style.cssText='width:46px;height:46px;border-radius:50%;background:'+col[0]+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;color:'+col[1]+';flex-shrink:0'; avatar.textContent=ini;
     var info=document.createElement('div'); info.style.cssText='min-width:0';
     var name=document.createElement('div'); name.style.cssText='font-weight:700;font-size:.92rem;color:#0f1a18'; name.textContent=p.nombre;
-    var contact=document.createElement('div'); contact.style.cssText='font-size:.78rem;color:#6b7280'; contact.textContent=p.email||p.telefono||'Sin contacto';
-    info.appendChild(name); info.appendChild(contact);
+    var contact=document.createElement('div'); contact.style.cssText='font-size:.78rem;color:#6b7280';
+    var contactParts=[p.telefono,p.email].filter(Boolean);
+    contact.textContent=contactParts.length?contactParts.join(' · '):'Sin contacto';
+    info.appendChild(name);
+    info.appendChild(contact);
+    if(p.cedula){var ced=document.createElement('div');ced.style.cssText='font-size:.72rem;color:#9ca3af;margin-top:.05rem';ced.textContent='CI: '+p.cedula;info.appendChild(ced);}
     if(ultima){ var ult=document.createElement('div'); ult.style.cssText='font-size:.72rem;color:#9ca3af;margin-top:.1rem'; ult.textContent='Ultima cita: '+ultima; info.appendChild(ult); }
     left.appendChild(avatar); left.appendChild(info);
     var actions=document.createElement('div'); actions.style.cssText='display:flex;gap:.5rem;flex-shrink:0';
