@@ -2111,6 +2111,13 @@ async function cargarPacientes() {
       return (a.nombre||'').localeCompare(b.nombre||'', 'es', {sensitivity:'base'});
     });
 
+    // DEBUG TEMPORAL — remover después de confirmar causa raíz
+    console.log('[PAC] M.plan:', M && M.plan, '| esPro:', esPro());
+    console.log('[PAC] pacA:', pacA.length, pacA);
+    console.log('[PAC] idsBooking:', idsBooking);
+    console.log('[PAC] pacB:', pacB.length, pacB);
+    console.log('[PAC] todos:', todos.length, todos);
+
     if (!todos.length) {
       uiEmpty('pacientesList', '👥', 'Sin pacientes aún',
         'Agrega tu primer paciente para comenzar a registrar consultas.',
@@ -3508,6 +3515,10 @@ function renderPacientes(rows) {
   var cnt=document.getElementById('pacCount'); if(cnt) cnt.textContent=rows.length+' paciente'+(rows.length!==1?'s':'')+' en total';
   var seen={},pacs=[];
   rows.forEach(function(r){ var p=r.pacientes||r; if(!p||!p.nombre) return; var key=p.id||p.nombre; if(!seen[key]){seen[key]=true;pacs.push({id:p.id,nombre:p.nombre||'',email:p.email||'',telefono:p.telefono||'',cedula:p.cedula||'',ultima:r.created_at||p.created_at||''});} });
+  // DEBUG TEMPORAL — remover después de confirmar causa raíz
+  console.log('[RENDER] rows recibidos:', rows.length, '| pacs después del filtro nombre:', pacs.length);
+  if(pacs.length === 0) console.warn('[RENDER] TODOS los pacientes fueron filtrados — probablemente nombre=null/vacío en DB');
+  console.log('[RENDER] muestra de rows:', rows.slice(0,3));
   var pal=['#e0f2fe:#0369a1','#d1fae5:#065f46','#fce7f3:#9d174d','#fef3c7:#92400e','#ede9fe:#5b21b6','#fee2e2:#991b1b'];
   grid.innerHTML='';
   pacs.forEach(function(p){
@@ -4142,6 +4153,52 @@ function enviarRecetaWhatsApp() {
 
 </script>
 
+<script>
+// ══ ESTADOS UX UNIVERSALES ══
+function uiLoading(containerId, msg) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:.8rem;color:#9ca3af">'
+    + '<div class="ux-spinner"></div>'
+    + '<div style="font-size:.85rem;font-weight:500">'+(msg||'Cargando...')+'</div>'
+    + '</div>';
+}
+function uiEmpty(containerId, icon, title, subtitle, actionLabel, actionFn) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  var btnHtml = '';
+  if (actionLabel && actionFn) {
+    var btnId = 'emptyAction_' + containerId;
+    btnHtml = '<button id="'+btnId+'" style="margin-top:1rem;padding:.55rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer">'+actionLabel+'</button>';
+  }
+  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3.5rem 1rem;text-align:center;color:#9ca3af">'
+    + '<div style="font-size:2.5rem;margin-bottom:.75rem;opacity:.7">'+(icon||'📭')+'</div>'
+    + '<div style="font-size:.95rem;font-weight:600;color:#374151;margin-bottom:.3rem">'+(title||'Sin datos')+'</div>'
+    + (subtitle?'<div style="font-size:.82rem;line-height:1.5;max-width:260px">'+subtitle+'</div>':'')
+    + btnHtml
+    + '</div>';
+  if (actionLabel && actionFn) {
+    var btn = document.getElementById('emptyAction_' + containerId);
+    if (btn) btn.onclick = actionFn;
+  }
+}
+function uiError(containerId, msg, retryFn) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  var btnId = 'retryBtn_' + containerId;
+  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;text-align:center">'
+    + '<div style="font-size:2rem;margin-bottom:.75rem">⚠️</div>'
+    + '<div style="font-size:.9rem;font-weight:600;color:#dc2626;margin-bottom:.3rem">Error al cargar</div>'
+    + '<div style="font-size:.8rem;color:#9ca3af;margin-bottom:1rem">'+(msg||'Intenta nuevamente')+'</div>'
+    + (retryFn?'<button id="'+btnId+'" style="padding:.5rem 1rem;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.83rem;font-weight:600;cursor:pointer;color:#374151">↻ Reintentar</button>':'')
+    + '</div>';
+  if (retryFn) {
+    var btn = document.getElementById(btnId);
+    if (btn) btn.onclick = retryFn;
+  }
+}
+</script>
+
     <!-- PayPhone — implementación según doc oficial -->
   <script type="module">
   // REEMPLAZA ESTOS 2 VALORES:
@@ -4197,53 +4254,6 @@ function enviarRecetaWhatsApp() {
   });
   
 document.addEventListener("DOMContentLoaded", function(){ initMobile(); });
-
-// ══ ESTADOS UX UNIVERSALES ══
-function uiLoading(containerId, msg) {
-  var el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;gap:.8rem;color:#9ca3af">'
-    + '<div class="ux-spinner"></div>'
-    + '<div style="font-size:.85rem;font-weight:500">'+(msg||'Cargando...')+'</div>'
-    + '</div>';
-}
-
-function uiEmpty(containerId, icon, title, subtitle, actionLabel, actionFn) {
-  var el = document.getElementById(containerId);
-  if (!el) return;
-  var btnHtml = '';
-  if (actionLabel && actionFn) {
-    var btnId = 'emptyAction_' + containerId;
-    btnHtml = '<button id="'+btnId+'" style="margin-top:1rem;padding:.55rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer">'+actionLabel+'</button>';
-  }
-  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3.5rem 1rem;text-align:center;color:#9ca3af">'
-    + '<div style="font-size:2.5rem;margin-bottom:.75rem;opacity:.7">'+(icon||'📭')+'</div>'
-    + '<div style="font-size:.95rem;font-weight:600;color:#374151;margin-bottom:.3rem">'+(title||'Sin datos')+'</div>'
-    + (subtitle?'<div style="font-size:.82rem;line-height:1.5;max-width:260px">'+subtitle+'</div>':'')
-    + btnHtml
-    + '</div>';
-  if (actionLabel && actionFn) {
-    var btn = document.getElementById('emptyAction_' + containerId);
-    if (btn) btn.onclick = actionFn;
-  }
-}
-
-function uiError(containerId, msg, retryFn) {
-  var el = document.getElementById(containerId);
-  if (!el) return;
-  var btnId = 'retryBtn_' + containerId;
-  el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1rem;text-align:center">'
-    + '<div style="font-size:2rem;margin-bottom:.75rem">⚠️</div>'
-    + '<div style="font-size:.9rem;font-weight:600;color:#dc2626;margin-bottom:.3rem">Error al cargar</div>'
-    + '<div style="font-size:.8rem;color:#9ca3af;margin-bottom:1rem">'+(msg||'Intenta nuevamente')+'</div>'
-    + (retryFn?'<button id="'+btnId+'" style="padding:.5rem 1rem;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.83rem;font-weight:600;cursor:pointer;color:#374151">↻ Reintentar</button>':'')
-    + '</div>';
-  if (retryFn) {
-    var btn = document.getElementById(btnId);
-    if (btn) btn.onclick = retryFn;
-  }
-}
-
 
 // ══ PERFIL ══
 
