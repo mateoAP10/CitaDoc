@@ -1439,7 +1439,7 @@ function initModalDireccionInput() {
 function buscarDireccionModal(query, inp, sug) {
   sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Buscando...</div>';
   sug.style.display = 'block';
-  fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(query)+'&limit=5&accept-language=es', {
+  fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q='+encodeURIComponent(query)+'&limit=5&accept-language=es', {
     headers: {'User-Agent': 'CitaDoc/1.0'}
   })
   .then(function(r){ return r.json(); })
@@ -1450,16 +1450,22 @@ function buscarDireccionModal(query, inp, sug) {
       return;
     }
     data.forEach(function(place) {
+      var addr = place.address || {};
+      var ciudad = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+      var label = place.display_name.split(',').slice(0,3).join(',');
       var div = document.createElement('div');
       div.style.cssText = 'padding:.5rem .85rem;font-size:.82rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6';
-      div.textContent = place.display_name;
+      div.textContent = label;
       div.addEventListener('mouseenter', function(){ div.style.background='#f0fdf4'; });
       div.addEventListener('mouseleave', function(){ div.style.background=''; });
       div.addEventListener('mousedown', function(e) {
-        e.preventDefault(); // evitar que blur oculte el dropdown antes del click
-        inp.value = place.display_name;
-        var mapsInp = document.getElementById('ub_maps');
-        if (mapsInp) mapsInp.value = 'https://www.google.com/maps?q='+place.lat+','+place.lon;
+        e.preventDefault();
+        inp.value = label;
+        var ciudadInp = document.getElementById('ub_ciudad');
+        if (ciudadInp && ciudad) ciudadInp.value = ciudad;
+        // Guardar lat/lon para maps_url preciso
+        inp.dataset.lat = place.lat;
+        inp.dataset.lon = place.lon;
         sug.style.display = 'none';
       });
       sug.appendChild(div);
@@ -4510,9 +4516,10 @@ function abrirModalUbicacion(loc) {
     +'<button onclick="cerrarModalUbicacion()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
     +'</div>'
     +'<div style="display:flex;flex-direction:column;gap:.8rem">'
+    +'<input type="hidden" id="ub_id">'
     +'<input id="ub_nombre" placeholder="Nombre del consultorio" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'<div style="position:relative">'
-    +'<input id="ub_direccion" placeholder="Dirección completa" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<input id="ub_direccion" placeholder="Busca tu clínica, hospital o dirección..." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'<div id="modalDirSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:200px;overflow-y:auto;margin-top:3px"></div>'
     +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">'
@@ -4527,20 +4534,25 @@ function abrirModalUbicacion(loc) {
   m.appendChild(inner); document.body.appendChild(m);
   initModalDireccionInput();
   if (loc) {
-    var f = function(id, v) { var e=document.getElementById(id); if(e&&v) e.value=v; };
+    var f = function(fid, v) { var e=document.getElementById(fid); if(e&&v!=null) e.value=v; };
+    f('ub_id',        loc.id||'');
     f('ub_nombre',    loc.nombre);
     f('ub_direccion', loc.direccion);
     f('ub_telefono',  loc.telefono);
     f('ub_ciudad',    loc.ciudad);
     var btn = document.getElementById('btnGuardarUb');
-    if (btn) { btn.textContent = 'Guardar cambios'; btn.onclick = function(){ editarUbicacion(loc.id); }; }
+    if (btn) { btn.textContent = 'Guardar cambios'; btn.onclick = editarUbicacion; }
   } else {
     document.getElementById('btnGuardarUb').onclick = guardarUbicacion;
   }
 }
 
 function _autoMapsUrl() {
-  var dir = ((document.getElementById('ub_direccion')||{}).value||'').trim();
+  var dirEl = document.getElementById('ub_direccion');
+  var lat = dirEl && dirEl.dataset.lat;
+  var lon = dirEl && dirEl.dataset.lon;
+  if (lat && lon) return 'https://www.google.com/maps?q='+lat+','+lon;
+  var dir = (dirEl && dirEl.value||'').trim();
   var ciu = ((document.getElementById('ub_ciudad')||{}).value||'').trim();
   var q = [dir, ciu].filter(Boolean).join(' ');
   return q ? 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q) : null;
@@ -4564,8 +4576,10 @@ async function guardarUbicacion() {
 }
 
 
-async function editarUbicacion(id) {
+async function editarUbicacion() {
   if (!M||!M.id) return;
+  var id = ((document.getElementById('ub_id')||{}).value||'').trim();
+  if (!id) { mostrarToast('Error: ubicación sin ID válido','error'); return; }
   var nombre = (document.getElementById('ub_nombre')||{}).value||'';
   if (!nombre) { mostrarToast('El nombre es obligatorio','error'); return; }
   var btn = document.getElementById('btnGuardarUb');
