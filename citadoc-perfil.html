@@ -200,8 +200,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
   <a href="index.html" class="logo">Cita<span>Doc</span></a>
   <div class="nav-right">
     <a href="index.html" class="nav-link">← Directorio</a>
-    <span class="nav-link" id="btnLogin" style="cursor:pointer" onclick="var o=document.getElementById('loginOverlay');if(o){o.classList.add('open');document.body.style.overflow='hidden';}">Iniciar sesión</span>
-    <a href="citadoc-registro.html" class="btn-nav" id="btnRegistro">Registrarme</a>
+    <span class="nav-link" id="btnLogin" style="cursor:pointer;display:none" onclick="var o=document.getElementById('loginOverlay');if(o){o.classList.add('open');document.body.style.overflow='hidden';}">Iniciar sesión</span>
+    <a href="citadoc-registro.html" class="btn-nav" id="btnRegistro" style="display:none">Registrarme</a>
     <div style="position:relative">
       <div class="nav-user-pill" id="navPill">
         <div class="nav-user-avatar" id="navAvatar">--</div>
@@ -973,6 +973,8 @@ function cargarPerfil() {
 }
 function showLoggedOut() {
   var pill=el('navPill'); if(pill)pill.style.display='none';
+  var login=el('btnLogin'); if(login)login.style.display='';
+  var reg=el('btnRegistro'); if(reg)reg.style.display='';
 }
 function doLogin() {
   var email=el('loginEmail').value.trim(), pass=el('loginPass').value, errEl=el('loginError');

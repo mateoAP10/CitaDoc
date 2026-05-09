@@ -614,6 +614,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
         </div>
         <button onclick="mostrarProModal('pacientes')" style="flex-shrink:0;padding:.44rem 1rem;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">Ver PRO →</button>
       </div>
+      <!-- Card "Tu página médica" -->
+      <div style="background:linear-gradient(135deg,#0b7c6e 0%,#065f46 100%);border-radius:16px;padding:1.4rem 1.6rem;margin-bottom:1.3rem;display:flex;align-items:center;justify-content:space-between;gap:1.2rem;flex-wrap:wrap">
+        <div>
+          <div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Tu presencia digital</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.3rem">Tu página médica profesional</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.7);line-height:1.5">Aparece en Google, recibe citas online y muestra tu perfil. Personalízala en Mi Perfil → Redes & Landing.</div>
+        </div>
+        <div style="display:flex;gap:.65rem;flex-shrink:0;flex-wrap:wrap">
+          <a id="cardVerPerfil" href="#" target="_blank" rel="noopener" style="padding:.55rem 1.1rem;background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3);border-radius:10px;font-size:.83rem;font-weight:600;text-decoration:none;white-space:nowrap">Ver página ↗</a>
+          <button onclick="showPanel('perfil',document.querySelector('[onclick*=\'perfil\']'));setTimeout(function(){showPerfilTab('redes',document.querySelector('[onclick*=\'redes\']'))},80)" style="padding:.55rem 1.1rem;background:#fff;color:#065f46;border:none;border-radius:10px;font-size:.83rem;font-weight:700;cursor:pointer;white-space:nowrap">Personalizar →</button>
+        </div>
+      </div>
+
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Citas hoy</div><div class="stat-num teal" id="statHoy">—</div><div class="stat-sub" id="statHoySub">cargando...</div></div>
         <div class="stat-card"><div class="stat-label">Esta semana</div><div class="stat-num" id="statSemana">—</div><div class="stat-sub">últimos 7 días</div></div>
@@ -748,6 +761,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">AÑOS EXPERIENCIA</label><input id="inf-anos" type="number" placeholder="8" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TELÉFONO</label><input id="inf-telefono" placeholder="+593 99 000 0000" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">IDIOMAS</label><input id="inf-idiomas" placeholder="Español, Inglés" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">PRECIO CONSULTA (USD)</label><input id="inf-precio" type="number" min="0" placeholder="50" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SLOGAN / TAGLINE</label><input id="inf-slogan" placeholder="Tu salud, mi compromiso." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">BIO CORTA</label><textarea id="inf-bio" placeholder="Especialista en traumatología con enfoque en cirugía mínimamente invasiva..." rows="3" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
         </div>
@@ -1749,6 +1763,12 @@ function aplicarMedico(m) {
       btnP.href='#'; btnP.title='Perfil aún sin slug — contacta soporte';
       btnP.style.opacity='.4'; btnP.style.pointerEvents='none';
     }
+  }
+  // Card "Ver página" en panel inicio
+  const cardP=_el('cardVerPerfil');
+  if (cardP) {
+    if (slugActual) { cardP.href='citadoc-perfil.html?slug='+slugActual; cardP.style.opacity=''; cardP.style.pointerEvents=''; }
+    else { cardP.href='#'; cardP.style.opacity='.5'; cardP.style.pointerEvents='none'; }
   }
 
   // Perfil photo card
@@ -4344,7 +4364,7 @@ function cargarFormPerfil(m) {
   var heroLink = document.getElementById('urlVerLink');
   if (heroLink && m.slug) heroLink.href = '/citadoc-perfil.html?slug='+m.slug;
   var heroPlan = document.getElementById('heroPlanBadge');
-  if (heroPlan) heroPlan.textContent = (m.plan==='destacado'?'PRO':'FREE');
+  if (heroPlan) heroPlan.textContent = (m.plan==='destacado'||m.plan==='pro') ? '⭐ PRO' : 'Plan Gratuito';
   // Avatar
   var av = document.getElementById('perfilAvatar');
   if (av) {
@@ -4370,6 +4390,7 @@ async function guardarPerfil(btnArg) {
     anos_experiencia: (document.getElementById('inf-anos')||{}).value||null,
     telefono: (document.getElementById('inf-telefono')||{}).value||'',
     idiomas: (document.getElementById('inf-idiomas')||{}).value||null,
+    precio: parseFloat((document.getElementById('inf-precio')||{}).value||'') || null,
     slogan: (document.getElementById('inf-slogan')||{}).value||null,
     bio: (document.getElementById('inf-bio')||{}).value||null
   };
@@ -4420,7 +4441,7 @@ function cargarLandingStatus() {
   var el = document.getElementById('landingStatus');
   if (!el||!M) return;
   var plan = M.plan||'gratuito';
-  var txt = plan==='destacado' ? '<span style="color:#0b7c6e;font-weight:700">PRO activo</span> — Tu perfil público está optimizado' : '<span style="color:#6b7280">FREE</span> — Actualiza a PRO para desbloquear landing personalizada';
+  var txt = (plan==='destacado'||plan==='pro') ? '<span style="color:#0b7c6e;font-weight:700">PRO activo</span> — Tu perfil público está optimizado' : '<span style="color:#6b7280">Plan Gratuito</span> — Actualiza a PRO para desbloquear landing personalizada';
   el.innerHTML = txt;
 }
 
