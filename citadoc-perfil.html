@@ -876,6 +876,69 @@ function aplicarMedico(m, formacion, citas, locs) {
   // Auth nav
   var vp = el('ddVerPerfil');
   if (vp && m.slug) vp.href = 'citadoc-perfil.html?slug='+m.slug;
+
+  aplicarLandingConfig(m.landing_config);
+}
+
+// ── LANDING CONFIG — renderer de personalización PRO+WEB ──
+function aplicarLandingConfig(lc) {
+  lc = lc || {};
+
+  // Accent color — sobreescribe --teal en todo el documento
+  if (lc.accent_color) {
+    document.documentElement.style.setProperty('--teal', lc.accent_color);
+  }
+
+  // Hero subtitle (bio corta en hero)
+  if (lc.hero_subtitle) {
+    var bioShortEl = el('profBioShort');
+    if (bioShortEl) bioShortEl.textContent = lc.hero_subtitle;
+  }
+
+  // CTA final — título de sección
+  if (lc.hero_title) {
+    var ctaTitleEl = el('ctaFinalTitle');
+    if (ctaTitleEl) ctaTitleEl.textContent = lc.hero_title;
+  }
+
+  // Texto del botón de booking
+  if (lc.cta_text) {
+    var bookBtn = el('btnBookHero');
+    if (bookBtn) bookBtn.textContent = '📅 ' + lc.cta_text;
+  }
+
+  // Visibilidad de tabs — siempre cae a "info" si el tab activo se oculta
+  function ocultarTab(nombre) {
+    var tab   = document.querySelector('.tab[data-tab="'+nombre+'"]');
+    var panel = el('tab-'+nombre);
+    if (!tab) return;
+    if (tab.classList.contains('active')) {
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      var infoTab = document.querySelector('.tab[data-tab="info"]');
+      var infoPanel = el('tab-info');
+      if (infoTab)  infoTab.classList.add('active');
+      if (infoPanel) infoPanel.classList.add('active');
+    }
+    tab.style.display = 'none';
+    if (panel) panel.style.display = 'none';
+  }
+
+  if (lc.show_formacion   === false) ocultarTab('formacion');
+  if (lc.show_logros      === false) ocultarTab('logros');
+
+  // Seguros — aplicarMedico puede haberlo mostrado; este override tiene la última palabra
+  if (lc.show_seguros     === false) { var s = el('segurosCard');      if (s) s.style.display = 'none'; }
+  if (lc.show_ubicaciones === false) { var u = el('ubicacionesSection'); if (u) u.style.display = 'none'; }
+  if (lc.show_precio      === false) { var p = el('bookPrice');         if (p) p.style.display = 'none'; }
+
+  // Orden CTAs en hero: si whatsapp_primary=false, booking va primero
+  if (lc.whatsapp_primary === false) {
+    var heroCtas = document.querySelector('.hero-ctas-v2');
+    var bookHero = el('btnBookHero');
+    var waHero   = el('btnWAHero');
+    if (heroCtas && bookHero && waHero) heroCtas.insertBefore(bookHero, waHero);
+  }
 }
 
 // ── CARGAR PERFIL ──
