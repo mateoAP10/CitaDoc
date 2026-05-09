@@ -4314,16 +4314,23 @@ function renderUbicaciones(locs) {
   });
 }
 
+function cerrarModalUbicacion() {
+  var m = document.getElementById('modalUbicacion');
+  if (m) m.remove();
+  document.body.style.overflow = '';
+}
+
 function abrirModalUbicacion() {
   var ex = document.getElementById('modalUbicacion'); if(ex) ex.remove();
   var m = document.createElement('div');
-  m.id='modalUbicacion'; m.onclick=function(e){if(e.target===m)m.remove();};
+  m.id='modalUbicacion'; m.onclick=function(e){if(e.target===m) cerrarModalUbicacion();};
   m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
+  document.body.style.overflow = 'hidden';
   var inner=document.createElement('div'); inner.onclick=function(e){e.stopPropagation();};
-  inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:460px;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+  inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)';
   inner.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">'
     +'<div style="font-size:1.1rem;font-weight:700;color:#0f1a18;font-family:Fraunces,serif">Nueva ubicación</div>'
-    +'<button onclick="document.getElementById(\'modalUbicacion\').remove()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
+    +'<button onclick="cerrarModalUbicacion()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
     +'</div>'
     +'<div style="display:flex;flex-direction:column;gap:.8rem">'
     +'<input id="ub_nombre" placeholder="Nombre del consultorio" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
@@ -4338,7 +4345,7 @@ function abrirModalUbicacion() {
     +'<input id="ub_maps" placeholder="URL Google Maps (opcional)" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'</div>'
     +'<div style="display:flex;gap:.7rem;margin-top:1.2rem">'
-    +'<button onclick="document.getElementById(\'modalUbicacion\').remove()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>'
+    +'<button onclick="cerrarModalUbicacion()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>'
     +'<button id="btnGuardarUb" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar ubicación</button>'
     +'</div>';
   m.appendChild(inner); document.body.appendChild(m);
@@ -4359,7 +4366,7 @@ async function guardarUbicacion() {
   }]);
   if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
   mostrarToast('Ubicación guardada \u2713');
-  var m=document.getElementById('modalUbicacion'); if(m) m.remove();
+  cerrarModalUbicacion();
   cargarUbicaciones();
 }
 
