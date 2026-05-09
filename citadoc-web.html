@@ -152,8 +152,11 @@ img{max-width:100%;display:block}
 <!-- NAV -->
 <nav class="w-nav">
   <div class="w-nav-inner">
-    <a href="index.html" class="w-logo">Cita<span>Doc</span></a>
-    <button class="w-nav-cta" id="navCta">Agendar cita</button>
+    <div class="w-logo" id="wNavBrand" style="color:var(--ink)">·</div>
+    <div style="display:flex;align-items:center;gap:.65rem">
+      <span id="wNavEsp" style="font-size:.78rem;color:var(--muted);display:none"></span>
+      <button class="w-nav-cta" id="navCta">Agendar cita</button>
+    </div>
   </div>
 </nav>
 
@@ -230,10 +233,9 @@ img{max-width:100%;display:block}
 </section>
 
 <!-- FOOTER -->
-<footer class="w-footer">
-  <div class="w-footer-inner">
-    <span class="w-footer-brand" id="wFooterBrand"></span>
-    <span class="w-footer-citadoc">CitaDoc Health Network ® · Guayaquil, 2026</span>
+<footer style="padding:2rem 5%;text-align:center">
+  <div style="font-size:.68rem;color:var(--muted);opacity:.5;letter-spacing:.04em">
+    Creado con <a href="https://citadoc.lat" style="color:inherit;text-decoration:none;font-weight:600">CitaDoc Health Network®</a> &nbsp;·&nbsp; Guayaquil &nbsp;·&nbsp; 2026
   </div>
 </footer>
 
@@ -292,7 +294,11 @@ function renderWeb(m, locs, wc) {
   var metaDesc = document.getElementById('pageDesc');
   if (metaDesc) metaDesc.setAttribute('content', desc.slice(0,155));
 
-  // Nav CTA
+  // Nav — branding del médico, NO CitaDoc
+  var navBrand = el('wNavBrand');
+  if (navBrand) navBrand.textContent = nombre;
+  var navEsp = el('wNavEsp');
+  if (navEsp && esp) { navEsp.textContent = esp; navEsp.style.display = 'inline'; }
   var navCta = el('navCta');
   if (navCta) navCta.textContent = wc.cta_primary_text||'Agendar cita';
 
