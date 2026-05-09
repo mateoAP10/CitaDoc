@@ -4304,6 +4304,11 @@ function renderUbicaciones(locs) {
       +(loc.ciudad?'<div style="font-size:.78rem;color:#9ca3af">'+loc.ciudad+(loc.pais?', '+loc.pais:'')+'</div>':'');
     var btns = document.createElement('div');
     btns.style.cssText = 'display:flex;gap:.4rem;flex-shrink:0';
+    var editBtn = document.createElement('button');
+    editBtn.style.cssText = 'padding:.3rem .6rem;background:none;border:1px solid #d1fae5;color:#059669;border-radius:7px;font-size:.75rem;cursor:pointer';
+    editBtn.textContent = 'Editar';
+    (function(l){ editBtn.onclick=function(){ abrirModalUbicacion(l); }; })(loc);
+    btns.appendChild(editBtn);
     var delBtn = document.createElement('button');
     delBtn.style.cssText = 'padding:.3rem .6rem;background:none;border:1px solid #fecaca;color:#dc2626;border-radius:7px;font-size:.75rem;cursor:pointer';
     delBtn.textContent = 'Eliminar';
@@ -4320,7 +4325,7 @@ function cerrarModalUbicacion() {
   document.body.style.overflow = '';
 }
 
-function abrirModalUbicacion() {
+function abrirModalUbicacion(loc) {
   var ex = document.getElementById('modalUbicacion'); if(ex) ex.remove();
   var m = document.createElement('div');
   m.id='modalUbicacion'; m.onclick=function(e){if(e.target===m) cerrarModalUbicacion();};
@@ -4328,8 +4333,9 @@ function abrirModalUbicacion() {
   document.body.style.overflow = 'hidden';
   var inner=document.createElement('div'); inner.onclick=function(e){e.stopPropagation();};
   inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+  var titulo = loc ? 'Editar ubicación' : 'Nueva ubicación';
   inner.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">'
-    +'<div style="font-size:1.1rem;font-weight:700;color:#0f1a18;font-family:Fraunces,serif">Nueva ubicación</div>'
+    +'<div style="font-size:1.1rem;font-weight:700;color:#0f1a18;font-family:Fraunces,serif">'+titulo+'</div>'
     +'<button onclick="cerrarModalUbicacion()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9ca3af">&#x2715;</button>'
     +'</div>'
     +'<div style="display:flex;flex-direction:column;gap:.8rem">'
@@ -4349,8 +4355,19 @@ function abrirModalUbicacion() {
     +'<button id="btnGuardarUb" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar ubicación</button>'
     +'</div>';
   m.appendChild(inner); document.body.appendChild(m);
-  document.getElementById('btnGuardarUb').onclick = guardarUbicacion;
   initModalDireccionInput();
+  if (loc) {
+    var f = function(id, v) { var e=document.getElementById(id); if(e&&v) e.value=v; };
+    f('ub_nombre',    loc.nombre);
+    f('ub_direccion', loc.direccion);
+    f('ub_telefono',  loc.telefono);
+    f('ub_ciudad',    loc.ciudad);
+    f('ub_maps',      loc.maps_url);
+    var btn = document.getElementById('btnGuardarUb');
+    if (btn) { btn.textContent = 'Guardar cambios'; btn.onclick = function(){ editarUbicacion(loc.id); }; }
+  } else {
+    document.getElementById('btnGuardarUb').onclick = guardarUbicacion;
+  }
 }
 
 async function guardarUbicacion() {
@@ -4370,6 +4387,26 @@ async function guardarUbicacion() {
   cargarUbicaciones();
 }
 
+
+async function editarUbicacion(id) {
+  if (!M||!M.id) return;
+  var nombre = (document.getElementById('ub_nombre')||{}).value||'';
+  if (!nombre) { mostrarToast('El nombre es obligatorio','error'); return; }
+  var btn = document.getElementById('btnGuardarUb');
+  if (btn) { btn.disabled=true; btn.textContent='Guardando...'; }
+  var res = await _sb.from('doctor_locations').update({
+    nombre:    nombre,
+    direccion: (document.getElementById('ub_direccion')||{}).value||null,
+    telefono:  (document.getElementById('ub_telefono')||{}).value||null,
+    ciudad:    (document.getElementById('ub_ciudad')||{}).value||null,
+    maps_url:  (document.getElementById('ub_maps')||{}).value||null
+  }).eq('id', id);
+  if (btn) { btn.disabled=false; btn.textContent='Guardar cambios'; }
+  if (res.error) { logError('editarUbicacion', res.error); mostrarToast('Error: '+res.error.message,'error'); return; }
+  mostrarToast('Ubicación actualizada ✓');
+  cerrarModalUbicacion();
+  cargarUbicaciones();
+}
 async function eliminarUbicacion(id) {
   var res = await _sb.from('doctor_locations').delete().eq('id',id);
   if (res.error) { mostrarToast('Error','error'); return; }
