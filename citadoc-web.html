@@ -9,234 +9,230 @@
 <meta property="og:description" id="ogDesc" content="">
 <meta property="og:image" id="ogImage" content="">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-/* ── VARIABLES BASE ── */
+/* ── CSS VARIABLES BY TEMPLATE ── */
 :root{
-  --primary:#0b7c6e;
-  --primary-dark:#065f46;
-  --primary-light:#e0f5f2;
-  --ink:#0f1a18;
-  --ink2:#374151;
-  --muted:#6b7280;
-  --border:#e5e7eb;
-  --bg:#fff;
-  --surface:#f9fafb;
-  --radius:16px;
-  --font-body:'DM Sans',sans-serif;
-  --font-display:'Fraunces',serif;
+  --p:#0b7c6e; --pd:#065f46; --pl:rgba(11,124,110,.08);
+  --ink:#0f1a18; --ink2:#374151; --muted:#6b7280;
+  --bg:#fff; --surface:#f9fafb; --border:#e5e7eb;
+  --hero-from:#0b7c6e; --hero-to:#021b19;
+  --display:'Fraunces',serif; --body:'DM Sans',sans-serif;
+  --r:20px;
 }
-
-/* ── TEMPLATE: minimal-white (default) ── */
-body.tpl-minimal-white{
-  --primary:#0b7c6e; --primary-dark:#065f46; --primary-light:#e0f5f2;
-  --hero-bg:linear-gradient(135deg,#0b7c6e 0%,#065f46 100%);
-  --hero-text:#fff; --nav-bg:#fff; --nav-text:var(--ink);
-}
-
-/* ── TEMPLATE: premium-dark ── */
 body.tpl-premium-dark{
-  --primary:#c9a94a; --primary-dark:#a07a2e; --primary-light:rgba(201,169,74,.1);
-  --hero-bg:linear-gradient(135deg,#0a0f0e 0%,#1a1a2e 100%);
-  --hero-text:#fff; --nav-bg:#0a0f0e; --nav-text:rgba(255,255,255,.85);
-  --bg:#0f0f0f; --surface:#161616; --ink:#f5f5f5; --ink2:#d1d5db;
-  --border:rgba(255,255,255,.08); --muted:#9ca3af;
+  --p:#c9a94a; --pd:#92751e; --pl:rgba(201,169,74,.08);
+  --bg:#0a0a0a; --surface:#111; --ink:#f5f0e8; --ink2:#d4cfc7;
+  --muted:#8a8580; --border:rgba(255,255,255,.06);
+  --hero-from:#0f0f0f; --hero-to:#1a1209;
 }
-
-/* ── TEMPLATE: clinica-moderna ── */
 body.tpl-clinica-moderna{
-  --primary:#0891b2; --primary-dark:#0e7490; --primary-light:#e0f7fb;
-  --hero-bg:linear-gradient(135deg,#0e7490 0%,#164e63 100%);
-  --hero-text:#fff; --nav-bg:#fff; --nav-text:var(--ink);
+  --p:#0369a1; --pd:#075985; --pl:rgba(3,105,161,.07);
+  --hero-from:#0369a1; --hero-to:#0c1a2e;
 }
-
-/* ── RESET & BASE ── */
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{font-family:var(--font-body);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+body{font-family:var(--body);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
 a{text-decoration:none;color:inherit}
 img{max-width:100%;display:block}
 
 /* ── NAV ── */
-.w-nav{position:sticky;top:0;z-index:200;background:var(--nav-bg,#fff);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.w-nav-inner{max-width:1100px;margin:0 auto;padding:0 5%;height:64px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.w-logo{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--nav-text,var(--ink));letter-spacing:-.02em}
-.w-logo span{color:var(--primary)}
-.w-nav-cta{display:inline-flex;align-items:center;gap:.4rem;background:var(--primary);color:#fff;padding:.5rem 1.2rem;border-radius:50px;font-size:.85rem;font-weight:600;border:none;cursor:pointer;font-family:var(--font-body);transition:opacity .18s}
-.w-nav-cta:hover{opacity:.88}
+.nav{position:sticky;top:0;z-index:200;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 6%;background:rgba(255,255,255,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+body.tpl-premium-dark .nav{background:rgba(10,10,10,.92);border-color:rgba(255,255,255,.06)}
+.nav-brand{font-family:var(--display);font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.02em;display:flex;flex-direction:column;gap:1px}
+.nav-brand-sub{font-family:var(--body);font-size:.68rem;font-weight:400;color:var(--muted);letter-spacing:.02em}
+.nav-cta{display:inline-flex;align-items:center;gap:.4rem;background:var(--p);color:#fff;padding:.52rem 1.3rem;border-radius:50px;font-size:.84rem;font-weight:600;border:none;cursor:pointer;font-family:var(--body);transition:opacity .18s,transform .18s}
+.nav-cta:hover{opacity:.88;transform:translateY(-1px)}
 
 /* ── HERO ── */
-.w-hero{background:var(--hero-bg,linear-gradient(135deg,#0b7c6e,#065f46));padding:5rem 5% 4.5rem;position:relative;overflow:hidden}
-.w-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 85% 20%,rgba(255,255,255,.06) 0%,transparent 60%);pointer-events:none}
-.w-hero-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:3rem;position:relative;z-index:1}
-.w-hero-content{flex:1;min-width:0}
-.w-hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.9);font-size:.72rem;font-weight:600;padding:.28rem .75rem;border-radius:50px;margin-bottom:1.1rem;letter-spacing:.03em}
-.w-hero-h1{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;color:var(--hero-text,#fff);line-height:1.15;letter-spacing:-.03em;margin-bottom:.8rem}
-.w-hero-sub{font-size:1rem;color:rgba(255,255,255,.72);line-height:1.65;max-width:520px;margin-bottom:1.8rem}
-.w-hero-ctas{display:flex;gap:.75rem;flex-wrap:wrap}
-.w-btn-primary{display:inline-flex;align-items:center;gap:.4rem;background:#fff;color:var(--primary-dark,#065f46);padding:.78rem 1.5rem;border-radius:12px;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);transition:transform .18s,box-shadow .18s}
-.w-btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.15)}
-.w-btn-wa{display:inline-flex;align-items:center;gap:.4rem;background:#25d366;color:#fff;padding:.78rem 1.5rem;border-radius:12px;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font-body);transition:opacity .18s}
-.w-btn-wa:hover{opacity:.9}
-.w-hero-photo{width:260px;height:300px;border-radius:20px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.18);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:4rem}
-.w-hero-photo img{width:100%;height:100%;object-fit:cover;object-position:top}
+.hero{min-height:95vh;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--hero-from) 0%,var(--hero-to) 100%)}
+.hero-photo-bg{position:absolute;inset:0;object-fit:cover;object-position:center top;width:100%;height:100%;opacity:.35;mix-blend-mode:luminosity}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(160deg,rgba(2,27,25,.0) 0%,rgba(2,27,25,.4) 40%,rgba(2,27,25,.85) 100%)}
+.hero-content{position:relative;z-index:2;padding:0 6% 4.5rem;max-width:820px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.88);font-size:.72rem;font-weight:600;padding:.3rem .85rem;border-radius:50px;margin-bottom:1.4rem;letter-spacing:.04em;backdrop-filter:blur(8px)}
+.hero-h1{font-family:var(--display);font-size:clamp(2.8rem,7vw,5.5rem);font-weight:900;color:#fff;line-height:1.05;letter-spacing:-.04em;margin-bottom:.7rem}
+.hero-h1 em{font-style:italic;font-weight:300;opacity:.85}
+.hero-hook{font-size:clamp(1rem,2.2vw,1.25rem);color:rgba(255,255,255,.65);line-height:1.65;max-width:540px;margin-bottom:2rem;font-weight:300}
+.hero-ctas{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-p{display:inline-flex;align-items:center;gap:.45rem;background:#fff;color:var(--pd);padding:.82rem 1.7rem;border-radius:12px;font-size:.95rem;font-weight:700;border:none;cursor:pointer;font-family:var(--body);transition:transform .18s,box-shadow .18s}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.2)}
+.btn-wa{display:inline-flex;align-items:center;gap:.45rem;background:#25d366;color:#fff;padding:.82rem 1.7rem;border-radius:12px;font-size:.95rem;font-weight:700;border:none;cursor:pointer;font-family:var(--body);transition:opacity .18s}
+.btn-wa:hover{opacity:.9}
+.btn-outline{display:inline-flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.1);color:#fff;padding:.82rem 1.7rem;border-radius:12px;font-size:.95rem;font-weight:600;border:1.5px solid rgba(255,255,255,.22);cursor:pointer;font-family:var(--body);transition:background .18s}
+.btn-outline:hover{background:rgba(255,255,255,.18)}
+/* Trust bar */
+.hero-trust{display:flex;gap:2rem;padding:1.2rem 6%;background:rgba(0,0,0,.3);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.07);position:relative;z-index:2;flex-wrap:wrap}
+.trust-item{display:flex;flex-direction:column;gap:.15rem}
+.trust-num{font-family:var(--display);font-size:1.6rem;font-weight:700;color:#fff;line-height:1}
+.trust-label{font-size:.7rem;color:rgba(255,255,255,.55);font-weight:500;letter-spacing:.03em;text-transform:uppercase}
 
 /* ── SECTION SHARED ── */
-.w-section{padding:5rem 5%}
-.w-section-inner{max-width:1100px;margin:0 auto}
-.w-section-label{font-size:.68rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem}
-.w-section-h2{font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:.6rem}
-.w-section-sub{font-size:.95rem;color:var(--muted);line-height:1.65;max-width:520px;margin-bottom:2.5rem}
-.w-divider{width:100%;height:1px;background:var(--border);margin:0}
+.section{padding:6rem 6%}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-label{font-size:.65rem;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.55rem}
+.section-h2{font-family:var(--display);font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:700;color:var(--ink);line-height:1.15;letter-spacing:-.03em;margin-bottom:.65rem}
+.section-sub{font-size:.97rem;color:var(--muted);line-height:1.75;max-width:540px;margin-bottom:3rem;font-weight:300}
 
 /* ── SERVICIOS ── */
-.w-section.w-servicios{background:var(--surface)}
-.w-serv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.2rem}
-.w-serv-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.4rem;transition:border-color .2s,box-shadow .2s}
-.w-serv-card:hover{border-color:var(--primary);box-shadow:0 4px 20px rgba(0,0,0,.06)}
-.w-serv-icon{width:40px;height:40px;border-radius:10px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:.8rem}
-.w-serv-title{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.3rem}
-.w-serv-desc{font-size:.83rem;color:var(--muted);line-height:1.55}
+.section.srv{background:var(--surface)}
+.srv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem}
+.srv-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:1.8rem;position:relative;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
+.srv-card:hover{border-color:var(--p);box-shadow:0 8px 32px rgba(0,0,0,.08);transform:translateY(-2px)}
+.srv-num{font-family:var(--display);font-size:3rem;font-weight:900;color:var(--pl);line-height:1;position:absolute;top:.8rem;right:1.2rem;letter-spacing:-.05em}
+.srv-icon{width:44px;height:44px;border-radius:12px;background:var(--pl);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1rem}
+.srv-title{font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:.4rem;letter-spacing:-.01em}
+.srv-desc{font-size:.85rem;color:var(--muted);line-height:1.65}
 
-/* ── SOBRE MÍ ── */
-.w-sobre-inner{display:flex;gap:3.5rem;align-items:flex-start}
-.w-sobre-photo{width:200px;height:240px;border-radius:20px;background:var(--primary-light);border:2px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:3rem}
-.w-sobre-photo img{width:100%;height:100%;object-fit:cover;object-position:top}
-.w-sobre-content{flex:1;min-width:0}
-.w-sobre-bio{font-size:.93rem;color:var(--ink2);line-height:1.75;margin-bottom:1.5rem}
-.w-highlights{display:flex;flex-wrap:wrap;gap:.65rem}
-.w-hl-chip{display:flex;align-items:center;gap:.45rem;background:var(--primary-light);color:var(--primary-dark);font-size:.8rem;font-weight:600;padding:.4rem .85rem;border-radius:50px}
-.w-hl-chip::before{content:'✓';font-weight:700}
-
-/* ── UBICACIONES ── */
-.w-locs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
-.w-loc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.2rem}
-.w-loc-name{font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.4rem}
-.w-loc-detail{font-size:.82rem;color:var(--muted);margin-bottom:.2rem;display:flex;align-items:center;gap:.4rem}
-.w-loc-link{display:inline-flex;align-items:center;gap:.35rem;margin-top:.7rem;font-size:.8rem;font-weight:600;color:var(--primary)}
-.w-loc-link:hover{text-decoration:underline}
+/* ── SOBRE MÍ — editorial ── */
+.sobre-layout{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.sobre-photo-wrap{position:relative}
+.sobre-photo{width:100%;aspect-ratio:3/4;border-radius:24px;overflow:hidden;background:var(--pl)}
+.sobre-photo img{width:100%;height:100%;object-fit:cover;object-position:top}
+.sobre-photo-init{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:5rem;font-weight:700;color:var(--p);background:var(--pl)}
+.sobre-badge{position:absolute;bottom:1.5rem;left:1.5rem;background:var(--pd);color:#fff;font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:50px;backdrop-filter:blur(4px)}
+.sobre-quote{font-family:var(--display);font-size:clamp(1.4rem,2.5vw,1.9rem);font-style:italic;font-weight:400;color:var(--ink);line-height:1.4;margin-bottom:1.3rem;letter-spacing:-.01em}
+.sobre-bio{font-size:.93rem;color:var(--muted);line-height:1.85;margin-bottom:1.8rem;font-weight:300}
+.hl-list{display:flex;flex-direction:column;gap:.55rem}
+.hl-row{display:flex;align-items:center;gap:.75rem;font-size:.88rem;color:var(--ink2)}
+.hl-dot{width:8px;height:8px;border-radius:50%;background:var(--p);flex-shrink:0}
 
 /* ── CTA FINAL ── */
-.w-cta-final{background:var(--hero-bg,linear-gradient(135deg,#0b7c6e,#065f46));padding:4rem 5%;text-align:center;position:relative;overflow:hidden}
-.w-cta-final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 120% at 50% 0%,rgba(255,255,255,.06),transparent 60%);pointer-events:none}
-.w-cta-final-inner{max-width:620px;margin:0 auto;position:relative;z-index:1}
-.w-cta-final h2{font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:#fff;margin-bottom:.5rem;letter-spacing:-.02em}
-.w-cta-final p{font-size:.9rem;color:rgba(255,255,255,.65);margin-bottom:1.8rem;line-height:1.65}
-.w-cta-final .w-btn-primary{background:#fff;color:var(--primary-dark,#065f46);font-size:.95rem}
+.cta-section{background:linear-gradient(160deg,var(--hero-from) 0%,var(--hero-to) 100%);padding:7rem 6%;text-align:center;position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 100% at 50% 0%,rgba(255,255,255,.04),transparent 60%);pointer-events:none}
+.cta-inner{max-width:640px;margin:0 auto;position:relative;z-index:1}
+.cta-h2{font-family:var(--display);font-size:clamp(2rem,4vw,3.2rem);font-weight:700;color:#fff;letter-spacing:-.04em;line-height:1.1;margin-bottom:.7rem}
+.cta-sub{font-size:.97rem;color:rgba(255,255,255,.6);margin-bottom:2.2rem;line-height:1.7;font-weight:300}
+
+/* ── UBICACIONES ── */
+.locs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem}
+.loc-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:1.4rem;transition:border-color .2s}
+.loc-card:hover{border-color:var(--p)}
+.loc-name{font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:.5rem}
+.loc-detail{font-size:.83rem;color:var(--muted);margin-bottom:.25rem;display:flex;align-items:center;gap:.4rem;line-height:1.5}
+.loc-link{display:inline-flex;align-items:center;gap:.4rem;margin-top:.8rem;font-size:.8rem;font-weight:600;color:var(--p)}
+.loc-link:hover{text-decoration:underline}
 
 /* ── FOOTER ── */
-.w-footer{background:var(--nav-bg,#fff);border-top:1px solid var(--border);padding:1.5rem 5%}
-.w-footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.w-footer-brand{font-size:.78rem;color:var(--muted)}
-.w-footer-citadoc{font-size:.72rem;color:var(--muted);opacity:.6}
+.site-footer{padding:1.8rem 6%;border-top:1px solid var(--border);text-align:center}
+.site-footer span{font-size:.68rem;color:var(--muted);opacity:.5;letter-spacing:.04em}
 
 /* ── SKELETON ── */
-.w-skeleton{background:linear-gradient(90deg,#f3f4f6 25%,#e9e9e9 50%,#f3f4f6 75%);background-size:200% 100%;animation:wSkeleton 1.4s infinite;border-radius:8px}
-@keyframes wSkeleton{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.sk{background:linear-gradient(90deg,var(--border) 25%,var(--surface) 50%,var(--border) 75%);background-size:200% 100%;animation:sk 1.4s infinite;border-radius:6px}
+@keyframes sk{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
-  .w-hero-inner{flex-direction:column;gap:1.8rem}
-  .w-hero-photo{width:100%;height:200px;order:2}
-  .w-hero-content{order:1}
-  .w-sobre-inner{flex-direction:column;gap:1.5rem}
-  .w-sobre-photo{width:100%;height:180px}
-  .w-hero-ctas{flex-direction:column}
-  .w-btn-primary,.w-btn-wa{width:100%;justify-content:center}
+  .hero-h1{font-size:2.6rem}
+  .sobre-layout{grid-template-columns:1fr;gap:2.5rem}
+  .sobre-photo{aspect-ratio:4/3}
+  .section{padding:4rem 6%}
+  .hero-trust{gap:1.2rem}
+  .btn-p,.btn-wa,.btn-outline{width:100%;justify-content:center}
+  .hero-ctas{flex-direction:column}
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="w-nav">
-  <div class="w-nav-inner">
-    <div class="w-logo" id="wNavBrand" style="color:var(--ink)">·</div>
-    <div style="display:flex;align-items:center;gap:.65rem">
-      <span id="wNavEsp" style="font-size:.78rem;color:var(--muted);display:none"></span>
-      <button class="w-nav-cta" id="navCta">Agendar cita</button>
-    </div>
+<nav class="nav">
+  <div class="nav-brand">
+    <span id="wNavName">·</span>
+    <span class="nav-brand-sub" id="wNavEsp"></span>
   </div>
+  <button class="nav-cta" id="navCta">Agendar cita</button>
 </nav>
 
-<!-- HERO -->
-<section class="w-hero" id="wHero">
-  <div class="w-hero-inner">
-    <div class="w-hero-content">
-      <div class="w-hero-badge" id="wHeroBadge">🩺 Médico especialista</div>
-      <h1 class="w-hero-h1" id="wHeroH1">
-        <div class="w-skeleton" style="height:2.5rem;width:80%;margin-bottom:.4rem"></div>
-        <div class="w-skeleton" style="height:2.5rem;width:60%"></div>
-      </h1>
-      <p class="w-hero-sub" id="wHeroSub"></p>
-      <div class="w-hero-ctas" id="wHeroCtas">
-        <button class="w-btn-primary" id="wBtnBook">📅 Agendar consulta</button>
-        <a class="w-btn-wa" id="wBtnWa" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
-      </div>
+<!-- HERO CINEMATOGRÁFICO -->
+<section class="hero" id="wHero">
+  <img id="wHeroBg" src="" alt="" class="hero-photo-bg" style="display:none">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow" id="wEyebrow">🩺 Médico especialista</div>
+    <h1 class="hero-h1" id="wH1">
+      <div class="sk" style="height:4rem;width:85%;margin-bottom:.4rem"></div>
+      <div class="sk" style="height:4rem;width:65%"></div>
+    </h1>
+    <p class="hero-hook" id="wHook"></p>
+    <div class="hero-ctas" id="wCtas">
+      <button class="btn-p" id="wBtnBook">📅 Agendar consulta</button>
+      <a class="btn-wa" id="wBtnWa" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
     </div>
-    <div class="w-hero-photo" id="wHeroPhoto">👤</div>
+  </div>
+  <div class="hero-trust" id="wTrust" style="display:none">
+    <div class="trust-item" id="wTrustAnos" style="display:none">
+      <span class="trust-num" id="wTrustAnosNum"></span>
+      <span class="trust-label">Años de experiencia</span>
+    </div>
+    <div class="trust-item">
+      <span class="trust-num">100%</span>
+      <span class="trust-label">Atención personalizada</span>
+    </div>
+    <div class="trust-item" id="wTrustCity" style="display:none">
+      <span class="trust-num" id="wTrustCityTxt" style="font-size:1rem;padding-top:.3rem"></span>
+      <span class="trust-label">Ubicación</span>
+    </div>
   </div>
 </section>
-
-<hr class="w-divider">
 
 <!-- SERVICIOS -->
-<section class="w-section w-servicios" id="wServiciosSection">
-  <div class="w-section-inner">
-    <div class="w-section-label">Servicios</div>
-    <h2 class="w-section-h2">¿En qué te puedo ayudar?</h2>
-    <p class="w-section-sub" id="wServSub"></p>
-    <div class="w-serv-grid" id="wServGrid">
-      <div class="w-serv-card"><div class="w-skeleton" style="height:80px"></div></div>
-      <div class="w-serv-card"><div class="w-skeleton" style="height:80px"></div></div>
-      <div class="w-serv-card"><div class="w-skeleton" style="height:80px"></div></div>
+<section class="section srv" id="wSrvSection">
+  <div class="section-inner">
+    <div class="section-label">Servicios</div>
+    <h2 class="section-h2" id="wSrvH2">¿En qué te puedo ayudar?</h2>
+    <p class="section-sub" id="wSrvSub"></p>
+    <div class="srv-grid" id="wSrvGrid">
+      <div class="srv-card"><div class="sk" style="height:100px"></div></div>
+      <div class="srv-card"><div class="sk" style="height:100px"></div></div>
+      <div class="srv-card"><div class="sk" style="height:100px"></div></div>
     </div>
   </div>
 </section>
 
-<hr class="w-divider">
-
-<!-- SOBRE MÍ -->
-<section class="w-section" id="wSobreSection">
-  <div class="w-section-inner">
-    <div class="w-sobre-inner">
-      <div class="w-sobre-photo" id="wSobrePhoto">👤</div>
-      <div class="w-sobre-content">
-        <div class="w-section-label">Sobre mí</div>
-        <h2 class="w-section-h2" id="wSobreNombre"></h2>
-        <p class="w-sobre-bio" id="wSobreBio"></p>
-        <div class="w-highlights" id="wHighlights"></div>
+<!-- SOBRE MÍ — editorial -->
+<section class="section" id="wSobreSection">
+  <div class="section-inner">
+    <div class="sobre-layout">
+      <div class="sobre-photo-wrap">
+        <div class="sobre-photo" id="wSobrePhoto">
+          <div class="sobre-photo-init" id="wSobreInit">MA</div>
+        </div>
+        <div class="sobre-badge" id="wSobreBadge"></div>
+      </div>
+      <div>
+        <div class="section-label">Sobre mí</div>
+        <h2 class="section-h2" id="wSobreNombre"></h2>
+        <blockquote class="sobre-quote" id="wSobreQuote"></blockquote>
+        <p class="sobre-bio" id="wSobreBio"></p>
+        <div class="hl-list" id="wHlList"></div>
       </div>
     </div>
   </div>
 </section>
 
-<hr class="w-divider" id="wLocsDivider">
-
 <!-- UBICACIONES -->
-<section class="w-section w-servicios" id="wLocsSection" style="display:none">
-  <div class="w-section-inner">
-    <div class="w-section-label">Dónde te atiendo</div>
-    <h2 class="w-section-h2">Ubicaciones</h2>
-    <div class="w-locs-grid" id="wLocsGrid"></div>
+<section class="section srv" id="wLocsSection" style="display:none">
+  <div class="section-inner">
+    <div class="section-label">Dónde atiendo</div>
+    <h2 class="section-h2">Ubicaciones</h2>
+    <div class="locs-grid" id="wLocsGrid"></div>
   </div>
 </section>
 
 <!-- CTA FINAL -->
-<section class="w-cta-final" id="wCtaFinal">
-  <div class="w-cta-final-inner">
-    <h2 id="wCtaH2">Agenda tu consulta hoy</h2>
-    <p id="wCtaP">Da el primer paso hacia tu bienestar. Respuesta rápida y atención personalizada.</p>
-    <button class="w-btn-primary" id="wCtaBtn">📅 Agendar ahora</button>
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-h2" id="wCtaH2">Agenda tu consulta hoy</h2>
+    <p class="cta-sub" id="wCtaSub">Da el primer paso. Atención personalizada con respuesta rápida.</p>
+    <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+      <button class="btn-p" id="wCtaBtn">📅 Agendar ahora</button>
+      <a class="btn-outline" id="wCtaWa" href="#" target="_blank" rel="noopener" style="display:none">💬 WhatsApp</a>
+    </div>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer style="padding:2rem 5%;text-align:center">
-  <div style="font-size:.68rem;color:var(--muted);opacity:.5;letter-spacing:.04em">
-    Creado con <a href="https://citadoc.lat" style="color:inherit;text-decoration:none;font-weight:600">CitaDoc Health Network®</a> &nbsp;·&nbsp; Guayaquil &nbsp;·&nbsp; 2026
-  </div>
+<footer class="site-footer">
+  <span>Creado con <a href="https://citadoc.lat" style="color:inherit;font-weight:600">CitaDoc Health Network®</a> &nbsp;·&nbsp; Guayaquil &nbsp;·&nbsp; 2026</span>
 </footer>
 
 <script>
@@ -244,206 +240,236 @@ var _sb = supabase.createClient(
   'https://qxoomcqaafogczrvsyhg.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 );
-
 function el(id){ return document.getElementById(id); }
-function setText(id, v){ var e=el(id); if(e) e.textContent=v; }
+function setText(id,v){ var e=el(id); if(e) e.textContent=v; }
 
-// Templates
-var TPL_CLASSES = {
-  'minimal-white':  'tpl-minimal-white',
-  'premium-dark':   'tpl-premium-dark',
+// Emotional hooks por especialidad
+var HOOKS = {
+  'traumatología':  'Vuelve a moverte sin límites.',
+  'ortopedia':      'Recupera tu movilidad con confianza.',
+  'fisioterapia':   'Muévete mejor. Vive sin dolor.',
+  'cardiología':    'Tu corazón en las mejores manos.',
+  'dermatología':   'Cuida tu piel con expertos.',
+  'pediatría':      'El mejor cuidado para los que más quieres.',
+  'ginecología':    'Atención especializada en cada etapa.',
+  'neurología':     'Tu sistema nervioso, en control.',
+  'psiquiatría':    'Salud mental con acompañamiento real.',
+  'odontología':    'Tu sonrisa, transformada.',
+  'oftalmología':   'Ve el mundo con claridad.',
+  'nutrición':      'Transforma tu salud desde adentro.',
+  'default':        'Atención médica que transforma vidas.'
+};
+
+var DEFAULT_SERVS = {
+  'traumatología':  [{t:'Consulta traumatológica',d:'Evaluación integral del sistema musculoesquelético.',i:'🦴'},{t:'Cirugía ortopédica',d:'Procedimientos modernos con enfoque en recuperación rápida.',i:'⚕'},{t:'Rehabilitación',d:'Programas personalizados de recuperación funcional.',i:'💪'},{t:'Diagnóstico avanzado',d:'Imágenes y estudios de alta precisión diagnóstica.',i:'🔬'}],
+  'fisioterapia':   [{t:'Fisioterapia manual',d:'Técnicas especializadas para alivio del dolor.',i:'🖐'},{t:'Rehabilitación deportiva',d:'Recuperación para atletas y deportistas.',i:'🏃'},{t:'Electroestimulación',d:'Tecnología de punta para acelerar la recuperación.',i:'⚡'},{t:'Plan preventivo',d:'Estrategias para evitar lesiones futuras.',i:'🛡'}],
+  'cardiología':    [{t:'Consulta cardiológica',d:'Evaluación completa del sistema cardiovascular.',i:'❤'},{t:'Ecocardiograma',d:'Imagen detallada del corazón en tiempo real.',i:'📡'},{t:'Holter 24h',d:'Monitoreo continuo del ritmo cardíaco.',i:'📊'},{t:'Prevención cardiovascular',d:'Estrategias para un corazón saludable.',i:'🛡'}],
+  'default':        [{t:'Consulta médica',d:'Evaluación integral y diagnóstico personalizado.',i:'🩺'},{t:'Seguimiento clínico',d:'Control periódico y ajuste de tratamiento.',i:'📋'},{t:'Diagnóstico especializado',d:'Estudios y análisis de precisión.',i:'🔬'},{t:'Plan de salud',d:'Estrategia médica personalizada para ti.',i:'✦'}]
+};
+
+var TPL_MAP = {
+  'minimal-white':'',
+  'premium-dark':'tpl-premium-dark',
   'clinica-moderna':'tpl-clinica-moderna'
 };
-var TPL_ICONS = {
-  'minimal-white':  ['🩺','💊','🔬','🩻','🧬','💉'],
-  'premium-dark':   ['⚕','✦','◆','◈','⬡','✧'],
-  'clinica-moderna':['🏥','🩺','💊','🔬','🩻','🧬']
-};
-var DEFAULT_SERVICIOS = [
-  {titulo:'Consulta médica',   desc:'Evaluación integral y diagnóstico personalizado.'},
-  {titulo:'Seguimiento clínico',desc:'Control periódico y ajuste de tratamiento.'},
-  {titulo:'Orientación médica', desc:'Guía profesional para decisiones de salud.'},
-  {titulo:'Emergencias',        desc:'Atención de urgencias con respuesta rápida.'}
-];
 
 function applyTemplate(wc) {
-  var tpl = (wc && wc.template) || 'minimal-white';
-  document.body.className = TPL_CLASSES[tpl] || TPL_CLASSES['minimal-white'];
+  var tpl = (wc&&wc.template)||'minimal-white';
+  document.body.className = TPL_MAP[tpl]||'';
+  if (wc&&wc.primary_color) document.documentElement.style.setProperty('--p', wc.primary_color);
 }
 
-function applyColor(wc) {
-  if (wc && wc.primary_color) {
-    document.documentElement.style.setProperty('--primary', wc.primary_color);
-  }
+function hookForEsp(esp) {
+  if (!esp) return HOOKS.default;
+  var key = Object.keys(HOOKS).find(function(k){ return esp.toLowerCase().indexOf(k)!==-1; });
+  return HOOKS[key||'default'];
+}
+
+function servsForEsp(wc, esp) {
+  if (wc&&wc.servicios&&wc.servicios.length) return wc.servicios.map(function(s,i){return{t:s.titulo,d:s.desc,i:'✦'};});
+  var key = Object.keys(DEFAULT_SERVS).find(function(k){ return esp&&esp.toLowerCase().indexOf(k)!==-1; });
+  return DEFAULT_SERVS[key||'default'];
 }
 
 function renderWeb(m, locs, wc) {
-  wc = wc || {};
+  wc = wc||{};
   applyTemplate(wc);
-  applyColor(wc);
 
-  var nombre  = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
-  var esp     = (m.especialidades||[])[0]||'';
-  var ciudad  = m.ciudad||'';
-  var tpl     = wc.template||'minimal-white';
-  var icons   = TPL_ICONS[tpl]||TPL_ICONS['minimal-white'];
+  var nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  var esp    = (m.especialidades||[])[0]||'';
+  var ciudad = m.ciudad||'';
+  var anos   = m.anos_experiencia||'';
+  var bio    = m.bio||'';
 
   // SEO
-  document.title = (wc.seo_title)||(nombre+(esp?' — '+esp:'')+(ciudad?' en '+ciudad:''));
-  var desc = wc.seo_desc||m.bio||(nombre+'. Especialista en '+esp+(ciudad?' en '+ciudad:''));
-  var metaDesc = document.getElementById('pageDesc');
-  if (metaDesc) metaDesc.setAttribute('content', desc.slice(0,155));
+  document.title = wc.seo_title||nombre+(esp?' — '+esp:'')+(ciudad?' en '+ciudad:'');
+  var md = el('pageDesc'); if(md) md.setAttribute('content',(wc.seo_desc||bio||nombre+' '+esp).slice(0,155));
 
-  // Nav — branding del médico, NO CitaDoc
-  var navBrand = el('wNavBrand');
-  if (navBrand) navBrand.textContent = nombre;
-  var navEsp = el('wNavEsp');
-  if (navEsp && esp) { navEsp.textContent = esp; navEsp.style.display = 'inline'; }
-  var navCta = el('navCta');
-  if (navCta) navCta.textContent = wc.cta_primary_text||'Agendar cita';
+  // Nav
+  setText('wNavName', nombre);
+  if (esp) setText('wNavEsp', esp);
+  var nc = el('navCta'); if(nc) nc.textContent = wc.cta_primary_text||'Agendar cita';
 
-  // Hero badge
-  setText('wHeroBadge', (esp||'Médico especialista'));
+  // Hero photo as background
+  if (m.foto_url) {
+    var bg = el('wHeroBg');
+    if (bg) { bg.src = m.foto_url; bg.alt = nombre; bg.style.display='block'; }
+  }
+
+  // Hero eyebrow
+  setText('wEyebrow', esp||'Médico especialista');
 
   // Hero H1
-  var h1 = el('wHeroH1');
-  if (h1) h1.textContent = wc.headline||nombre;
-
-  // Hero sub
-  setText('wHeroSub', wc.subheadline||(m.bio||'').slice(0,130)||('Atención médica especializada'+(ciudad?' en '+ciudad:'')+'.'));
-
-  // Hero photo
-  var heroPhoto = el('wHeroPhoto');
-  if (heroPhoto) {
-    if (m.foto_url) {
-      heroPhoto.innerHTML = '';
-      var img = document.createElement('img');
-      img.src = m.foto_url;
-      img.alt = nombre;
-      img.loading = 'lazy';
-      heroPhoto.appendChild(img);
+  var h1 = el('wH1');
+  if (h1) {
+    var headline = wc.headline||nombre;
+    // Split en dos partes si hay coma o " — "
+    var parts = headline.split(/[,—–]/);
+    if (parts.length>1) {
+      h1.innerHTML = parts[0].trim()+'<br><em>'+parts.slice(1).join(' ').trim()+'</em>';
     } else {
-      heroPhoto.textContent = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase()||'👤';
+      h1.textContent = headline;
     }
   }
 
-  // Hero CTAs
-  var btnBook = el('wBtnBook');
-  if (btnBook) btnBook.textContent = '📅 '+(wc.cta_primary_text||'Agendar consulta');
+  // Hook emocional
+  setText('wHook', wc.subheadline||hookForEsp(esp));
 
+  // CTAs
+  var btnBook = el('wBtnBook');
+  if(btnBook) btnBook.textContent = '📅 '+(wc.cta_primary_text||'Agendar consulta');
   var btnWa = el('wBtnWa');
-  if (btnWa) {
-    if (m.whatsapp_activo && m.whatsapp) {
-      var waMsg = 'Hola '+nombre+', me gustaría agendar una consulta.';
-      btnWa.href = 'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(waMsg);
-      btnWa.style.display = 'inline-flex';
-    } else {
-      btnWa.style.display = 'none';
+  if(btnWa){
+    if(m.whatsapp_activo&&m.whatsapp){
+      btnWa.href='https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', me gustaría agendar una consulta.');
+      btnWa.style.display='inline-flex';
+    } else { btnWa.style.display='none'; }
+  }
+
+  // Trust bar
+  var trust = el('wTrust');
+  if(trust&&(anos||ciudad)){
+    trust.style.display='flex';
+    if(anos){
+      var ta=el('wTrustAnos'); if(ta) ta.style.display='flex';
+      setText('wTrustAnosNum', anos+'+');
+    }
+    if(ciudad){
+      var tc=el('wTrustCity'); if(tc) tc.style.display='flex';
+      setText('wTrustCityTxt', ciudad);
     }
   }
 
   // Servicios
-  var servs = (wc.servicios && wc.servicios.length) ? wc.servicios : DEFAULT_SERVICIOS.map(function(s,i){
-    if (esp) s = Object.assign({},s);
-    return s;
-  });
-  var servGrid = el('wServGrid');
-  if (servGrid) {
-    servGrid.innerHTML = '';
-    servs.forEach(function(s, i) {
-      var card = document.createElement('div');
-      card.className = 'w-serv-card';
-      card.innerHTML = '<div class="w-serv-icon">'+icons[i%icons.length]+'</div>'
-        +'<div class="w-serv-title">'+s.titulo+'</div>'
-        +'<div class="w-serv-desc">'+s.desc+'</div>';
-      servGrid.appendChild(card);
+  var servs = servsForEsp(wc, esp);
+  var grid = el('wSrvGrid');
+  if(grid){
+    grid.innerHTML='';
+    servs.forEach(function(s,i){
+      var card = document.createElement('div'); card.className='srv-card';
+      card.innerHTML='<div class="srv-num">0'+(i+1)+'</div>'
+        +'<div class="srv-icon">'+s.i+'</div>'
+        +'<div class="srv-title">'+s.t+'</div>'
+        +'<div class="srv-desc">'+s.d+'</div>';
+      grid.appendChild(card);
     });
   }
-  setText('wServSub', esp ? 'Servicios especializados en '+esp+'.' : 'Atención médica personalizada y profesional.');
+  setText('wSrvH2', esp?'Especialidades en '+esp:'¿En qué te puedo ayudar?');
+  setText('wSrvSub', esp?'Tratamientos especializados con la mejor tecnología médica.':'Atención médica integral y personalizada.');
 
   // Sobre mí
   setText('wSobreNombre', nombre);
-  var bio = el('wSobreBio');
-  if (bio) bio.textContent = m.bio||'Médico comprometido con la salud y el bienestar de sus pacientes.';
 
   var sobrePhoto = el('wSobrePhoto');
-  if (sobrePhoto) {
-    if (m.foto_url) {
-      sobrePhoto.innerHTML = '';
-      var img2 = document.createElement('img');
-      img2.src = m.foto_url;
-      img2.alt = nombre;
-      img2.loading = 'lazy';
-      sobrePhoto.appendChild(img2);
-    } else {
-      sobrePhoto.textContent = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase()||'👤';
-    }
+  var sobreInit = el('wSobreInit');
+  if(m.foto_url&&sobrePhoto){
+    var img=document.createElement('img'); img.src=m.foto_url; img.alt=nombre; img.loading='lazy';
+    sobrePhoto.innerHTML=''; sobrePhoto.appendChild(img);
+  } else if(sobreInit){
+    sobreInit.textContent=((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase()||'MD';
   }
 
-  var hl = el('wHighlights');
-  if (hl) {
-    var chips = wc.sobre_mi_highlights||[];
-    if (!chips.length) {
-      if (m.anos_experiencia) chips.push(m.anos_experiencia+' años de experiencia');
-      if (esp) chips.push('Especialista en '+esp);
-      if (m.senescyt) chips.push('Reg. SENESCYT '+m.senescyt);
-      if (ciudad) chips.push(ciudad);
+  if(esp&&anos){
+    setText('wSobreBadge', esp+' · '+anos+' años');
+    el('wSobreBadge').style.display='block';
+  } else if(esp){
+    setText('wSobreBadge', esp);
+    el('wSobreBadge').style.display='block';
+  }
+
+  // Quote editorial
+  var quote = wc.sobre_quote||(bio?'"'+bio.slice(0,120).trim()+(bio.length>120?'…':'')+'"':'');
+  if(!quote&&esp) quote = '"La medicina es un compromiso diario con la vida de mis pacientes."';
+  setText('wSobreQuote', quote);
+
+  // Bio
+  setText('wSobreBio', bio||('Especialista en '+(esp||'medicina')+(ciudad?' con consultorio en '+ciudad:'')+'. Comprometido con la salud y el bienestar de cada paciente.'));
+
+  // Highlights
+  var hlList = el('wHlList');
+  if(hlList){
+    var chips = (wc.sobre_mi_highlights||[]);
+    if(!chips.length){
+      if(anos) chips.push(anos+' años de experiencia clínica');
+      if(esp)  chips.push('Especialista en '+esp);
+      if(m.senescyt) chips.push('Reg. SENESCYT '+m.senescyt);
+      if(ciudad) chips.push('Atención en '+ciudad);
+      chips.push('Atención personalizada');
     }
-    hl.innerHTML = chips.map(function(c){
-      return '<span class="w-hl-chip">'+c+'</span>';
+    hlList.innerHTML=chips.slice(0,5).map(function(h){
+      return '<div class="hl-row"><div class="hl-dot"></div><span>'+h+'</span></div>';
     }).join('');
   }
 
   // Ubicaciones
   var locsSection = el('wLocsSection');
   var locsGrid = el('wLocsGrid');
-  if (locsSection && locsGrid && locs && locs.length) {
-    locsGrid.innerHTML = '';
-    locs.forEach(function(loc) {
-      var card = document.createElement('div');
-      card.className = 'w-loc-card';
-      card.innerHTML = '<div class="w-loc-name">'+( loc.nombre||'Consultorio')+'</div>'
-        +(loc.direccion?'<div class="w-loc-detail">📍 '+loc.direccion+'</div>':'')
-        +(loc.telefono?'<div class="w-loc-detail">📞 '+loc.telefono+'</div>':'')
-        +(loc.ciudad?'<div class="w-loc-detail" style="color:var(--muted);font-size:.77rem">'+loc.ciudad+'</div>':'')
-        +(loc.maps_url?'<a class="w-loc-link" href="'+loc.maps_url+'" target="_blank" rel="noopener">📍 Cómo llegar →</a>':'');
+  if(locsSection&&locsGrid&&locs&&locs.length){
+    locsGrid.innerHTML='';
+    locs.forEach(function(loc){
+      var card=document.createElement('div'); card.className='loc-card';
+      card.innerHTML='<div class="loc-name">'+(loc.nombre||'Consultorio')+'</div>'
+        +(loc.direccion?'<div class="loc-detail">📍 '+loc.direccion+'</div>':'')
+        +(loc.telefono?'<div class="loc-detail">📞 '+loc.telefono+'</div>':'')
+        +(loc.ciudad?'<div class="loc-detail" style="font-size:.78rem;opacity:.7">'+loc.ciudad+'</div>':'')
+        +(loc.maps_url?'<a class="loc-link" href="'+loc.maps_url+'" target="_blank" rel="noopener">📍 Cómo llegar →</a>':'');
       locsGrid.appendChild(card);
     });
-    locsSection.style.display = 'block';
+    locsSection.style.display='block';
   }
 
   // CTA final
-  setText('wCtaH2', wc.cta_final_title||'Agenda tu consulta'+(ciudad?' en '+ciudad:''+'.'));
-  setText('wCtaP', 'Da el primer paso. Atención personalizada y respuesta rápida.');
-  var ctaBtn = el('wCtaBtn');
-  if (ctaBtn) ctaBtn.textContent = '📅 '+(wc.cta_primary_text||'Agendar ahora');
+  setText('wCtaH2', wc.cta_final||(esp?'Agenda tu consulta de '+esp:('Agenda tu consulta'+(ciudad?' en '+ciudad:''))));
+  setText('wCtaSub', 'Da el primer paso hacia tu bienestar. Atención personalizada y respuesta rápida.');
+  var ctaBtn=el('wCtaBtn'); if(ctaBtn) ctaBtn.textContent='📅 '+(wc.cta_primary_text||'Agendar ahora');
+  var ctaWa=el('wCtaWa');
+  if(ctaWa&&m.whatsapp_activo&&m.whatsapp){
+    ctaWa.href='https://wa.me/'+m.whatsapp.replace(/\D/g,'');
+    ctaWa.style.display='inline-flex';
+  }
 
-  // Nav CTA + CTA btns scroll to booking
-  [el('navCta'), el('wBtnBook'), el('wCtaBtn')].forEach(function(btn) {
-    if (btn) btn.onclick = function() {
-      window.open('citadoc-perfil.html?slug='+(m.slug||''), '_blank');
-    };
+  // Booking onclick
+  [el('navCta'),el('wBtnBook'),el('wCtaBtn')].forEach(function(b){
+    if(b) b.onclick=function(){ window.open('citadoc-perfil.html?slug='+(m.slug||''),'_blank'); };
   });
-
-  // Footer
-  setText('wFooterBrand', nombre+(esp?' · '+esp:''));
 }
 
-// Cargar
-(function() {
-  var params = new URLSearchParams(window.location.search);
-  var slug = params.get('slug')||'';
-  if (!slug) { document.title = 'Sitio no encontrado'; el('wHeroH1').textContent = 'Médico no encontrado'; return; }
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  var slug = p.get('slug')||'';
+  // Preview override desde dashboard
+  var tplOverride = p.get('tpl')||null;
 
-  _sb.from('medicos').select('*').eq('slug', slug).eq('activo', true).single()
-    .then(function(r) {
-      if (r.error||!r.data) { el('wHeroH1').textContent = 'Médico no encontrado'; return; }
+  if(!slug){ setText('wH1','Médico no encontrado'); return; }
+  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single()
+    .then(function(r){
+      if(r.error||!r.data){ setText('wH1','Médico no encontrado'); return; }
       var m = r.data;
+      if(tplOverride&&m.web_config){ m.web_config = Object.assign({},m.web_config,{template:tplOverride}); }
+      else if(tplOverride){ m.web_config = {template:tplOverride}; }
       _sb.from('doctor_locations').select('nombre,direccion,telefono,ciudad,maps_url')
-        .eq('medico_id', m.id).order('created_at')
-        .then(function(rLocs) {
-          renderWeb(m, rLocs.data||[], m.web_config||null);
-        });
+        .eq('medico_id',m.id).order('created_at')
+        .then(function(rl){ renderWeb(m,rl.data||[],m.web_config||null); });
     });
 })();
 </script>
