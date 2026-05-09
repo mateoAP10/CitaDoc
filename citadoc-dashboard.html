@@ -2390,42 +2390,61 @@ function abrirCrearSitioMedico() {
   var ov = document.createElement('div');
   ov.id = 'modalCrearSitio';
   ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(5,8,7,.88);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto';
-  // Modal fullscreen dark — experiencia AI premium
-  ov.innerHTML = '<div onclick="event.stopPropagation()" style="width:100%;max-width:580px;position:relative">'
+  // Modal AI premium — fullscreen inmersivo
+  ov.innerHTML = '<div onclick="event.stopPropagation()" style="width:100%;max-width:560px;position:relative">'
 
-    // Step 1 — prompt
+    // HEADER
+    +'<div style="text-align:center;margin-bottom:2.2rem">'
+    +'<div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6d28d9,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto .9rem;box-shadow:0 8px 32px rgba(124,58,237,.4)">✨</div>'
+    +'<div style="font-size:.62rem;font-weight:700;color:rgba(167,139,250,.7);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem">CitaDoc AI · PRO+WEB</div>'
+    +'<div style="font-family:Fraunces,serif;font-size:1.7rem;font-weight:700;color:#fff;line-height:1.12;margin-bottom:.4rem">Tu presencia médica<br><em style="font-style:italic;font-weight:300;opacity:.8">generada con AI</em></div>'
+    +'</div>'
+
+    // Step 1 — Describe
     +'<div id="csmStep1">'
-    +'<div style="text-align:center;margin-bottom:2rem">'
-    +'<div style="font-size:.65rem;font-weight:700;color:rgba(167,139,250,.8);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.7rem">CitaDoc AI · PRO+WEB</div>'
-    +'<div style="font-family:Fraunces,serif;font-size:clamp(1.5rem,4vw,2.1rem);font-weight:700;color:#fff;line-height:1.15;margin-bottom:.5rem">Genera tu presencia médica</div>'
-    +'<div style="font-size:.88rem;color:rgba(255,255,255,.45);line-height:1.6">Describe tu práctica y el AI construirá tu sitio profesional.</div>'
+    // Textarea con label
+    +'<div style="font-size:.65rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">Describe tu práctica médica</div>'
+    +'<div style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:16px;padding:1rem 1.2rem;margin-bottom:.75rem;transition:border-color .2s" onfocusin="this.style.borderColor=\'rgba(167,139,250,.4)\'" onfocusout="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
+    +'<textarea id="csm_prompt" rows="3" placeholder="Quiero una web elegante para mi clínica de rehabilitación deportiva. Enfoque en atletas, tono profesional pero humano…" style="width:100%;background:none;border:none;outline:none;font-family:\'DM Sans\',sans-serif;font-size:.9rem;color:#fff;resize:none;line-height:1.65"></textarea>'
     +'</div>'
-    // Textarea principal
-    +'<div style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);border-radius:18px;padding:1.2rem 1.4rem;margin-bottom:1rem;transition:border-color .2s" onfocusin="this.style.borderColor=\'rgba(167,139,250,.5)\'" onfocusout="this.style.borderColor=\'rgba(255,255,255,.1)\'">'
-    +'<textarea id="csm_prompt" rows="4" placeholder="Ej: Quiero una web moderna y minimalista para mi clínica de fisioterapia. Enfoque en pacientes con dolor crónico. Tono profesional pero cercano." style="width:100%;background:none;border:none;outline:none;font-family:\'DM Sans\',sans-serif;font-size:.95rem;color:#fff;resize:none;line-height:1.65;placeholder-color:rgba(255,255,255,.3)"></textarea>'
-    +'</div>'
-    // Quick examples
-    +'<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem">'
-    +['Minimalista y premium','Tecnológico y moderno','Elegante tipo clínica europea','Deportivo y energético','Neurocirugía futurista'].map(function(ex){
-      return '<button onclick="document.getElementById(\'csm_prompt\').value=\''+ex+'\'" style="padding:.35rem .8rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:50px;font-family:\'DM Sans\',sans-serif;font-size:.75rem;color:rgba(255,255,255,.65);cursor:pointer;transition:all .18s" onmouseenter="this.style.background=\'rgba(167,139,250,.15)\';this.style.borderColor=\'rgba(167,139,250,.35)\'" onmouseleave="this.style.background=\'rgba(255,255,255,.06)\';this.style.borderColor=\'rgba(255,255,255,.12)\'">'+ex+'</button>';
+    +'<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.4rem">'
+    +['Rehabilitación elite','Cirugía premium','Clínica europea','Salud deportiva','Neurología avanzada'].map(function(ex){
+      return '<button onclick="document.getElementById(\'csm_prompt\').value=\''+ex+'\'" style="padding:.28rem .72rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-family:\'DM Sans\',sans-serif;font-size:.72rem;color:rgba(255,255,255,.5);cursor:pointer;transition:all .18s" onmouseenter="this.style.background=\'rgba(167,139,250,.12)\';this.style.borderColor=\'rgba(167,139,250,.3)\';this.style.color=\'rgba(255,255,255,.8)\'" onmouseleave="this.style.background=\'rgba(255,255,255,.04)\';this.style.borderColor=\'rgba(255,255,255,.1)\';this.style.color=\'rgba(255,255,255,.5)\'">'+ex+'</button>';
     }).join('')
     +'</div>'
-    // Tone + style row
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.5rem">'
-    +'<div><div style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem">Tono</div>'
-    +'<div style="display:flex;flex-wrap:wrap;gap:.4rem" id="csmTonoWrap">'
-    +['Elegante','Moderno','Humano','Académico'].map(function(t){
-      return '<button class="tono-opt'+(t==='Humano'?' sel':'')+'" onclick="csmSelectTono(this,\''+t+'\')" style="padding:.3rem .7rem;border:1px solid rgba(255,255,255,.15);border-radius:50px;font-family:\'DM Sans\',sans-serif;font-size:.75rem;color:rgba(255,255,255,.6);cursor:pointer;background:rgba(255,255,255,.04)">'+t+'</button>';
+
+    // Upload cards (visual)
+    +'<div style="font-size:.65rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">Assets visuales <span style="opacity:.5;font-weight:400;font-style:italic;font-size:.6rem">— opcional</span></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1.4rem">'
+    +'<div style="border:1.5px dashed rgba(255,255,255,.12);border-radius:14px;padding:1.1rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)" onmouseenter="this.style.borderColor=\'rgba(167,139,250,.3)\';this.style.background=\'rgba(167,139,250,.05)\'" onmouseleave="this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.background=\'rgba(255,255,255,.02)\'">'
+    +'<div style="font-size:1.4rem;margin-bottom:.35rem">🖼</div>'
+    +'<div style="font-size:.77rem;font-weight:600;color:rgba(255,255,255,.6)">Foto profesional</div>'
+    +'<div style="font-size:.67rem;color:rgba(255,255,255,.28);margin-top:.15rem">Arrastra o selecciona</div>'
+    +'</div>'
+    +'<div style="border:1.5px dashed rgba(255,255,255,.12);border-radius:14px;padding:1.1rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)" onmouseenter="this.style.borderColor=\'rgba(167,139,250,.3)\';this.style.background=\'rgba(167,139,250,.05)\'" onmouseleave="this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.background=\'rgba(255,255,255,.02)\'">'
+    +'<div style="font-size:1.4rem;margin-bottom:.35rem">⬡</div>'
+    +'<div style="font-size:.77rem;font-weight:600;color:rgba(255,255,255,.6)">Logo / Isotipo</div>'
+    +'<div style="font-size:.67rem;color:rgba(255,255,255,.28);margin-top:.15rem">PNG o SVG</div>'
+    +'</div>'
+    +'</div>'
+
+    // Template + Tono inline
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">'
+    +'<div><div style="font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Template</div>'
+    +'<div style="display:flex;gap:.35rem;flex-wrap:wrap" id="csmEstiloWrap">'
+    +[{n:'Minimal',t:'minimal-white',c:'#0b7c6e'},{n:'Dark',t:'premium-dark',c:'#c9a94a'},{n:'Clínica',t:'clinica-moderna',c:'#0891b2'}].map(function(s,i){
+      return '<button class="estilo-card'+(i===0?' sel':'')+'" data-tpl="'+s.t+'" onclick="csmSelectEstilo(this,\''+s.t+'\')" style="padding:.3rem .65rem;border:1px solid rgba(255,255,255,.12);border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;background:rgba(255,255,255,.04);display:flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:'+s.c+';flex-shrink:0;display:inline-block"></span>'+s.n+'</button>';
     }).join('')+'</div></div>'
-    +'<div><div style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem">Template base</div>'
-    +'<div style="display:flex;flex-wrap:wrap;gap:.4rem" id="csmEstiloWrap">'
-    +[{n:'Minimal',t:'minimal-white'},{n:'Dark',t:'premium-dark'},{n:'Clínica',t:'clinica-moderna'}].map(function(s,i){
-      return '<button class="estilo-card'+(i===0?' sel':'')+'" data-tpl="'+s.t+'" onclick="csmSelectEstilo(this,\''+s.t+'\')" style="padding:.3rem .7rem;border:1px solid rgba(255,255,255,.15);border-radius:50px;font-family:\'DM Sans\',sans-serif;font-size:.75rem;color:rgba(255,255,255,.6);cursor:pointer;background:rgba(255,255,255,.04)">'+s.n+'</button>';
+    +'<div><div style="font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Tono</div>'
+    +'<div style="display:flex;gap:.35rem;flex-wrap:wrap" id="csmTonoWrap">'
+    +['Elegante','Moderno','Humano','Académico'].map(function(t){
+      return '<button class="tono-opt'+(t==='Humano'?' sel':'')+'" onclick="csmSelectTono(this,\''+t+'\')" style="padding:.3rem .65rem;border:1px solid rgba(255,255,255,.12);border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;background:rgba(255,255,255,.04)">'+t+'</button>';
     }).join('')+'</div></div>'
     +'</div>'
-    // CTA
-    +'<button onclick="csmGenerar()" style="width:100%;padding:.95rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:14px;font-family:\'DM Sans\',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.01em;box-shadow:0 8px 32px rgba(124,58,237,.35)">✨ Generar mi sitio con AI</button>'
-    +'<div style="text-align:center;margin-top:.85rem"><button onclick="document.getElementById(\'modalCrearSitio\').remove()" style="background:none;border:none;font-size:.78rem;color:rgba(255,255,255,.3);cursor:pointer;font-family:\'DM Sans\',sans-serif">Cancelar</button></div>'
+
+    // CTA principal
+    +'<button onclick="csmGenerar()" style="width:100%;padding:1rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:15px;font-family:\'DM Sans\',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.01em;box-shadow:0 10px 40px rgba(124,58,237,.4);transition:transform .18s,box-shadow .18s" onmouseenter="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 14px 50px rgba(124,58,237,.55)\'" onmouseleave="this.style.transform=\'\';this.style.boxShadow=\'0 10px 40px rgba(124,58,237,.4)\'">✨ Generar sitio premium con AI</button>'
+    +'<div style="text-align:center;margin-top:.75rem"><button onclick="document.getElementById(\'modalCrearSitio\').remove()" style="background:none;border:none;font-size:.75rem;color:rgba(255,255,255,.25);cursor:pointer;font-family:\'DM Sans\',sans-serif">Cancelar</button></div>'
     +'</div>'
 
     // Step 3 — generando (full dark)
