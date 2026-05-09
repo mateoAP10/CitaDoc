@@ -777,6 +777,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
           <div id="landingStatus" style="font-size:.88rem;color:#374151">Cargando...</div>
         </div>
         <button onclick="guardarRedesSociales()" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar redes</button>
+
+        <div style="margin-top:1.8rem;padding-top:1.4rem;border-top:1.5px solid #f3f4f6">
+          <div style="font-size:.75rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1.1rem">Personaliza tu página pública</div>
+          <div style="display:grid;gap:.9rem">
+
+            <div>
+              <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.4rem">COLOR PRINCIPAL</label>
+              <div style="display:flex;align-items:center;gap:.65rem">
+                <input type="color" id="lc-accent-color" value="#0b7c6e" style="width:44px;height:36px;padding:2px;border:1.5px solid #e5e7eb;border-radius:8px;cursor:pointer;background:none" oninput="document.getElementById('lc-accent-hex').value=this.value">
+                <input type="text" id="lc-accent-hex" value="#0b7c6e" maxlength="7" placeholder="#0b7c6e" style="width:90px;padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;font-family:monospace;box-sizing:border-box" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))document.getElementById('lc-accent-color').value=this.value">
+                <span style="font-size:.78rem;color:#6b7280">Color de header, botones y acentos</span>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.35rem">TAGLINE DEL PERFIL</label>
+              <textarea id="lc-hero-subtitle" rows="2" placeholder="Ej: Más de 15 años ayudando a recuperar tu movilidad..." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+              <div style="font-size:.72rem;color:#9ca3af;margin-top:.2rem">Aparece en el hero de tu perfil público</div>
+            </div>
+
+            <div>
+              <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.35rem">TÍTULO DE LLAMADA A ACCIÓN</label>
+              <input type="text" id="lc-hero-title" placeholder="Ej: Agenda tu consulta de fisioterapia en Quito" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+            <div>
+              <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.35rem">TEXTO DEL BOTÓN DE BOOKING</label>
+              <input type="text" id="lc-cta-text" placeholder="Agendar cita" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid #f3f4f6;border-radius:12px;padding:.85rem 1rem">
+              <div>
+                <div style="font-size:.88rem;font-weight:500;color:#374151">WhatsApp como contacto principal</div>
+                <div style="font-size:.75rem;color:#9ca3af;margin-top:.1rem">El botón WA aparece primero en tu perfil</div>
+              </div>
+              <label class="dia-toggle"><input type="checkbox" id="lc-whatsapp-primary" checked><div class="dia-toggle-track"></div></label>
+            </div>
+
+          </div>
+          <div style="display:flex;gap:.8rem;margin-top:1.3rem;align-items:center">
+            <button onclick="guardarLandingConfig(this)" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar landing</button>
+            <a id="verPerfilLink" href="#" target="_blank" rel="noopener" style="font-size:.85rem;color:#0b7c6e;font-weight:600;text-decoration:none">Ver mi perfil ↗</a>
+          </div>
+        </div>
+
       </div>
 
       <!-- TAB: FORMACIÓN -->
@@ -4281,6 +4326,14 @@ function cargarFormPerfil(m) {
     'inf-website': m.website||''
   };
   Object.keys(campos).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=campos[id]; });
+  // Landing config
+  var lc = m.landing_config || {};
+  var lcMap = {'lc-accent-color': lc.accent_color||'#0b7c6e', 'lc-accent-hex': lc.accent_color||'#0b7c6e', 'lc-hero-subtitle': lc.hero_subtitle||'', 'lc-hero-title': lc.hero_title||'', 'lc-cta-text': lc.cta_text||''};
+  Object.keys(lcMap).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=lcMap[id]; });
+  var waPrimEl = document.getElementById('lc-whatsapp-primary');
+  if (waPrimEl) waPrimEl.checked = lc.whatsapp_primary !== false;
+  var perfilLink = document.getElementById('verPerfilLink');
+  if (perfilLink && m.slug) perfilLink.href = '/citadoc-perfil.html?slug='+m.slug;
   // Hero
   var heroNom = document.getElementById('perfilNombre');
   if (heroNom) heroNom.textContent = (m.titulo||'Dr.')+' '+(m.nombre||'')+' '+(m.apellido||'');
@@ -4342,6 +4395,25 @@ async function guardarRedesSociales() {
   if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
   Object.assign(M, upd);
   mostrarToast('Redes guardadas \u2713');
+}
+
+async function guardarLandingConfig(btnArg) {
+  if (!M||!M.id) return;
+  var btn = btnArg || document.querySelector('#landingConfigEditor button');
+  if (btn) { btn.disabled=true; btn.textContent='Guardando...'; }
+  var lc = Object.assign({}, M.landing_config || {});
+  var hex = ((document.getElementById('lc-accent-hex')||{}).value||'').trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) lc.accent_color = hex; else delete lc.accent_color;
+  lc.hero_subtitle = ((document.getElementById('lc-hero-subtitle')||{}).value||'').trim() || null;
+  lc.hero_title    = ((document.getElementById('lc-hero-title')||{}).value||'').trim() || null;
+  lc.cta_text      = ((document.getElementById('lc-cta-text')||{}).value||'').trim() || null;
+  var waPrim = document.getElementById('lc-whatsapp-primary');
+  lc.whatsapp_primary = waPrim ? waPrim.checked : true;
+  var res = await _sb.from('medicos').update({landing_config: lc}).eq('id', M.id);
+  if (btn) { btn.disabled=false; btn.textContent='Guardar landing'; }
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  M.landing_config = lc;
+  mostrarToast('Landing actualizada ✓');
 }
 
 function cargarLandingStatus() {
@@ -4654,21 +4726,32 @@ function renderVisibilidad() {
     {key:'aparecer_directorio',label:'Aparecer en directorio CitaDoc',def:true}
   ];
   cont.innerHTML='';
-  switches.forEach(function(sw) {
-    var val = M[sw.key]!==undefined ? M[sw.key] : sw.def;
+  function makeSwitch(key, label, val) {
     var row=document.createElement('div');
     row.style.cssText='display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid #f3f4f6;border-radius:12px;padding:.85rem 1rem';
-    var lbl=document.createElement('span');
-    lbl.style.cssText='font-size:.88rem;font-weight:500;color:#374151';
-    lbl.textContent=sw.label;
-    var tog=document.createElement('label');
-    tog.className='dia-toggle';
-    var inp=document.createElement('input'); inp.type='checkbox'; inp.checked=val; inp.id='sw_'+sw.key;
+    var lbl=document.createElement('span'); lbl.style.cssText='font-size:.88rem;font-weight:500;color:#374151'; lbl.textContent=label;
+    var tog=document.createElement('label'); tog.className='dia-toggle';
+    var inp=document.createElement('input'); inp.type='checkbox'; inp.checked=val; inp.id='sw_'+key;
     var trk=document.createElement('div'); trk.className='dia-toggle-track';
     tog.appendChild(inp); tog.appendChild(trk);
     row.appendChild(lbl); row.appendChild(tog);
     cont.appendChild(row);
-  });
+  }
+  switches.forEach(function(sw){ makeSwitch(sw.key, sw.label, M[sw.key]!==undefined ? M[sw.key] : sw.def); });
+
+  // Secciones del perfil público (guardadas en landing_config)
+  var sep=document.createElement('div');
+  sep.style.cssText='font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;padding:.6rem 0 .2rem';
+  sep.textContent='Secciones del perfil público';
+  cont.appendChild(sep);
+  var lc=M.landing_config||{};
+  [
+    {key:'show_formacion',  label:'Mostrar sección Formación'},
+    {key:'show_logros',     label:'Mostrar sección Logros'},
+    {key:'show_seguros',    label:'Mostrar seguros aceptados'},
+    {key:'show_ubicaciones',label:'Mostrar consultorio y ubicaciones'},
+    {key:'show_precio',     label:'Mostrar precio de consulta'}
+  ].forEach(function(sw){ makeSwitch(sw.key, sw.label, lc[sw.key]!==false); });
 }
 
 async function guardarVisibilidad() {
@@ -4677,9 +4760,15 @@ async function guardarVisibilidad() {
   ['mostrar_whatsapp','mostrar_email','mostrar_direccion','aparecer_directorio'].forEach(function(k){
     var el=document.getElementById('sw_'+k); if(el) upd[k]=el.checked;
   });
+  // Secciones del perfil p\u00fablico \u2192 landing_config JSONB
+  var lc=Object.assign({},M.landing_config||{});
+  ['show_formacion','show_logros','show_seguros','show_ubicaciones','show_precio'].forEach(function(k){
+    var el=document.getElementById('sw_'+k); if(el) lc[k]=el.checked;
+  });
+  upd.landing_config=lc;
   var res=await _sb.from('medicos').update(upd).eq('id',M.id);
   if (res.error) { mostrarToast('Error','error'); return; }
-  Object.assign(M,upd);
+  Object.assign(M,upd); M.landing_config=lc;
   mostrarToast('Preferencias guardadas \u2713');
 }
 
