@@ -4518,7 +4518,6 @@ function abrirModalUbicacion(loc) {
     +'<input id="ub_telefono" placeholder="Teléfono" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'<input id="ub_ciudad" placeholder="Ciudad" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'</div>'
-    +'<input id="ub_maps" placeholder="URL Google Maps (opcional)" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'</div>'
     +'<div style="display:flex;gap:.7rem;margin-top:1.2rem">'
     +'<button onclick="cerrarModalUbicacion()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>'
@@ -4532,12 +4531,18 @@ function abrirModalUbicacion(loc) {
     f('ub_direccion', loc.direccion);
     f('ub_telefono',  loc.telefono);
     f('ub_ciudad',    loc.ciudad);
-    f('ub_maps',      loc.maps_url);
     var btn = document.getElementById('btnGuardarUb');
     if (btn) { btn.textContent = 'Guardar cambios'; btn.onclick = function(){ editarUbicacion(loc.id); }; }
   } else {
     document.getElementById('btnGuardarUb').onclick = guardarUbicacion;
   }
+}
+
+function _autoMapsUrl() {
+  var dir = ((document.getElementById('ub_direccion')||{}).value||'').trim();
+  var ciu = ((document.getElementById('ub_ciudad')||{}).value||'').trim();
+  var q = [dir, ciu].filter(Boolean).join(' ');
+  return q ? 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q) : null;
 }
 
 async function guardarUbicacion() {
@@ -4549,7 +4554,7 @@ async function guardarUbicacion() {
     direccion:(document.getElementById('ub_direccion')||{}).value||null,
     telefono:(document.getElementById('ub_telefono')||{}).value||null,
     ciudad:(document.getElementById('ub_ciudad')||{}).value||null,
-    maps_url:(document.getElementById('ub_maps')||{}).value||null
+    maps_url:_autoMapsUrl()
   }]);
   if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
   mostrarToast('Ubicación guardada \u2713');
@@ -4569,7 +4574,7 @@ async function editarUbicacion(id) {
     direccion: (document.getElementById('ub_direccion')||{}).value||null,
     telefono:  (document.getElementById('ub_telefono')||{}).value||null,
     ciudad:    (document.getElementById('ub_ciudad')||{}).value||null,
-    maps_url:  (document.getElementById('ub_maps')||{}).value||null
+    maps_url:  _autoMapsUrl()
   }).eq('id', id);
   if (btn) { btn.disabled=false; btn.textContent='Guardar cambios'; }
   if (res.error) { logError('editarUbicacion', res.error); mostrarToast('Error: '+res.error.message,'error'); return; }
