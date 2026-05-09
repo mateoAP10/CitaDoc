@@ -598,7 +598,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
           <div onclick="showPanel('perfil',null);toggleUserMenu()" style="padding:.55rem .9rem;font-size:.85rem;font-family:'DM Sans',sans-serif;font-weight:600;color:#374151;border-radius:8px;cursor:pointer" onmouseenter="this.style.background='#f9fafb'" onmouseleave="this.style.background=''">&#x1F464; Mi perfil</div>
         </div>
       </div>
-      <a href="citadoc-perfil.html" class="btn-ver-perfil" id="btnVerPerfil">👁 Ver mi perfil</a>
+      <a href="#" class="btn-ver-perfil" id="btnVerPerfil" style="opacity:.4;pointer-events:none">👁 Ver mi perfil</a>
     </div>
   </header>
 
@@ -1031,6 +1031,10 @@ function showPanel(id, el) {
     else cargarPacientes();
   }
   if (id==='perfil') {
+    // Garantizar que las tabs no queden bloqueadas por pointer-events en cascada
+    document.querySelectorAll('#panel-perfil .ptab, #panel-perfil .ptab-content')
+      .forEach(function(e){ e.style.pointerEvents=''; });
+    showPerfilTab('info', document.querySelector('#panel-perfil .ptab.active') || document.querySelector('#panel-perfil .ptab'));
     if (M && typeof cargarFormPerfil === 'function') cargarFormPerfil(M);
   }
 }
@@ -1691,7 +1695,16 @@ function aplicarMedico(m) {
   setText('topbarAvatar', ini);
   setText('topbarName',   nombre);
   setText('topbarPlan',   plan);
-  const btnP=_el('btnVerPerfil'); if(btnP&&slugActual) btnP.href='citadoc-perfil.html?slug='+slugActual;
+  const btnP=_el('btnVerPerfil');
+  if (btnP) {
+    if (slugActual) {
+      btnP.href='citadoc-perfil.html?slug='+slugActual;
+      btnP.style.opacity=''; btnP.style.pointerEvents='';
+    } else {
+      btnP.href='#'; btnP.title='Perfil aún sin slug — contacta soporte';
+      btnP.style.opacity='.4'; btnP.style.pointerEvents='none';
+    }
+  }
 
   // Perfil photo card
   setText('perfilNombre', nombre);
@@ -1814,7 +1827,13 @@ var _hcCurrentDocs = null; // docs actuales para versionado
 
 // ── PRO CHECK ──
 function esPro() {
-  return M && (M.plan === 'destacado' || M.plan === 'pro') && M.plan_activo === true;
+  // plan_activo===true: requiere confirmación de pago vía webhook
+  // plan_activo===null/undefined: médico registrado con plan destacado pero sin webhook aún
+  // Para early-stage: plan_activo null se trata igual que true si el plan es destacado/pro
+  if (!M) return false;
+  var esPlanPro = M.plan === 'destacado' || M.plan === 'pro';
+  var activado  = M.plan_activo === true || M.plan_activo === null || M.plan_activo === undefined;
+  return esPlanPro && activado;
 }
 
 function getPlanLabel(plan) {
