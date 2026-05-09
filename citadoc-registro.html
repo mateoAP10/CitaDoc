@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Registro médico — CitaDoc Ecuador</title>
 <meta name="description" content="Crea tu perfil médico en CitaDoc. Recibe pacientes desde tu link único. Plan gratuito disponible.">
 <meta name="keywords" content="registro médico, perfil médico online, agendar citas, médicos Ecuador">
@@ -250,6 +250,69 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
 .nav-back:hover { color:var(--teal); }
 .btn-nav { background:var(--teal); color:#fff; padding:.48rem 1.2rem; border-radius:50px; font-size:.85rem; font-weight:600; text-decoration:none; transition:background .2s; white-space:nowrap; }
 .btn-nav:hover { background:var(--teal-mid); }
+
+/* ── MOBILE REGISTRO ── */
+@media(max-width:768px){
+  html{padding-top:env(safe-area-inset-top)}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  nav{height:56px;padding:0 4%}
+  .logo{font-size:1.25rem}
+  .nav-back{display:none}
+  .page-wrap{grid-template-columns:1fr;padding-top:56px}
+  .plans-side{display:none}
+  .form-side{padding:1.4rem 5% calc(2rem + env(safe-area-inset-bottom))}
+  /* Mobile plan pill — shown only on mobile */
+  .mobile-plan-pill{display:flex}
+  /* No iOS zoom on inputs */
+  input,select,textarea{font-size:1rem!important}
+  /* Field rows collapse */
+  .field-row{grid-template-columns:1fr!important}
+  /* Buttons full-width touch-optimized */
+  .btn-next,.btn-submit{
+    width:100%;padding:1rem 1.5rem;font-size:1rem;
+    border-radius:14px;-webkit-tap-highlight-color:transparent;
+  }
+  .btn-back{padding:.75rem 1.2rem;-webkit-tap-highlight-color:transparent}
+  .form-nav{
+    position:sticky;bottom:0;
+    background:rgba(255,255,255,.95);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    margin:1.5rem -5% 0;
+    padding:1rem 5% calc(.8rem + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);
+    z-index:10;
+    display:flex;gap:.75rem;
+  }
+  .form-title{font-size:1.5rem}
+  .form-sub{font-size:.9rem}
+  /* Step indicator */
+  .step-bar{gap:.4rem}
+  .step-dot{width:8px;height:8px}
+  /* Plan cards inside form on mobile */
+  .plan-card{padding:1rem 1.2rem}
+  .plan-price{font-size:2.5rem}
+  /* Schedule grid */
+  .schedule-grid{grid-template-columns:repeat(4,1fr)!important}
+  /* Upload area */
+  .upload-area{padding:1.8rem 1rem}
+  /* Insurance grid */
+  .insurance-grid{grid-template-columns:repeat(2,1fr)!important}
+  /* URL preview */
+  .url-preview{flex-direction:column;gap:.5rem}
+  .url-copy{align-self:flex-start}
+  /* Plan selection buttons */
+  .btn-copy-url,.btn-dashboard{padding:.75rem;font-size:.9rem}
+}
+/* Mobile plan pill (compact selector shown on mobile instead of sidebar) */
+.mobile-plan-pill{
+  display:none;
+  align-items:center;justify-content:space-between;
+  background:var(--teal-dark);border-radius:14px;
+  padding:.9rem 1.2rem;margin-bottom:1.4rem;
+}
+.mobile-plan-pill-label{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.15rem}
+.mobile-plan-pill-name{font-size:.9rem;font-weight:700;color:#fff}
+.mobile-plan-change{font-size:.75rem;font-weight:600;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:.25rem .65rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
 </style>
 <!-- Analytics -->
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
@@ -344,6 +407,15 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
       <div class="step-item"><div class="step-num" id="sn-2">2</div><span class="step-label" id="sl-2">Tu perfil</span></div>
       <div class="step-connector" id="sc-2"></div>
       <div class="step-item"><div class="step-num" id="sn-3">3</div><span class="step-label" id="sl-3">Plan</span></div>
+    </div>
+
+    <!-- Mobile plan indicator -->
+    <div class="mobile-plan-pill" id="mobilePlanPill">
+      <div>
+        <div class="mobile-plan-pill-label">Plan seleccionado</div>
+        <div class="mobile-plan-pill-name" id="mobilePlanName">Plan Gratuito</div>
+      </div>
+      <button class="mobile-plan-change" onclick="scrollToPlanSection()">Cambiar</button>
     </div>
 
     <!-- PASO 1 -->
@@ -835,6 +907,46 @@ async function cerrarSesion() {
   window.location.href = 'index.html';
 }
 document.addEventListener('DOMContentLoaded', initAuthNav);
+
+// Mobile plan pill sync
+function updateMobilePlanPill(planName) {
+  var el = document.getElementById('mobilePlanName');
+  if (el) el.textContent = planName;
+}
+// Override selectPlan to also update pill
+var _origSelectPlan = typeof selectPlan === 'function' ? selectPlan : null;
+// Hook into plan selection — call updateMobilePlanPill whenever plan changes
+// This works by patching after DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+  var freeCard = document.getElementById('plan-free');
+  var featCard = document.getElementById('plan-featured');
+  if (freeCard) freeCard.addEventListener('click', function(){ updateMobilePlanPill('Plan Gratuito'); });
+  if (featCard) featCard.addEventListener('click', function(){ updateMobilePlanPill('Plan Destacado'); });
+});
+function scrollToPlanSection() {
+  // On mobile, show plans inline by scrolling to a plans section or show a modal
+  // For now, show plans side temporarily
+  var ps = document.querySelector('.plans-side');
+  if (ps) {
+    ps.style.display = 'block';
+    ps.style.position = 'fixed';
+    ps.style.inset = '0';
+    ps.style.zIndex = '900';
+    ps.style.overflow = 'auto';
+    var close = document.createElement('button');
+    close.textContent = '✕ Cerrar';
+    close.style.cssText = 'position:sticky;top:1rem;right:1rem;float:right;padding:.5rem 1rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-family:\'DM Sans\',sans-serif;cursor:pointer;font-size:.85rem;margin:1rem 1rem 0 auto;display:block';
+    close.onclick = function() {
+      ps.style.display = 'none';
+      ps.style.position = '';
+      ps.style.inset = '';
+      ps.style.zIndex = '';
+      close.remove();
+    };
+    ps.insertBefore(close, ps.firstChild);
+    ps.scrollIntoView({behavior:'smooth'});
+  }
+}
 </script>
   <!-- PayPhone Registro -->
   <script type="module">

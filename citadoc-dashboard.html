@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>CitaDoc — Dashboard v34</title>
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
@@ -278,6 +278,82 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   .stats-row{grid-template-columns:1fr}
   .seguros-grid{grid-template-columns:1fr}
 }
+
+/* ── MOBILE DASHBOARD ── */
+@media(max-width:768px){
+  html,body{height:auto;min-height:100svh}
+  html{padding-top:env(safe-area-inset-top)}
+  /* Side nav → hidden, replaced by bottom */
+  .sidebar{
+    position:fixed;left:-100%;top:0;bottom:0;z-index:400;
+    width:82%;max-width:300px;
+    transition:left .3s cubic-bezier(.16,1,.3,1);
+    box-shadow:none;
+    padding-top:max(1.5rem, env(safe-area-inset-top));
+    padding-bottom:env(safe-area-inset-bottom);
+    overflow-y:auto;
+  }
+  .sidebar.open,.sidebar.mobile-open{left:0;box-shadow:4px 0 40px rgba(0,0,0,.3)}
+  .main{margin-left:0!important}
+  .content{padding:1.2rem 4% calc(80px + env(safe-area-inset-bottom))}
+  /* Hamburger button */
+  .mobile-ham{
+    display:flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:10px;
+    background:rgba(11,124,110,.08);border:none;cursor:pointer;
+    font-size:1.1rem;-webkit-tap-highlight-color:transparent;
+  }
+  /* Top bar on mobile */
+  .topbar{padding:0 4%;height:56px}
+  /* Dashboard bottom nav */
+  .dash-bottom-nav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;z-index:200;
+    background:rgba(255,255,255,.95);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-top:1px solid rgba(0,0,0,.07);
+    padding:0 2% env(safe-area-inset-bottom);
+    height:calc(58px + env(safe-area-inset-bottom));
+    align-items:center;justify-content:space-around;
+  }
+  .dbn-item{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:.45rem .6rem;border-radius:10px;
+    cursor:pointer;border:none;background:none;
+    font-family:'DM Sans',sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .15s;text-decoration:none;
+  }
+  .dbn-item:active{transform:scale(.88)}
+  .dbn-icon{font-size:1.2rem;line-height:1}
+  .dbn-label{font-size:.56rem;font-weight:600;color:#9ca3af}
+  .dbn-item.active .dbn-label{color:var(--teal)}
+  /* Inputs no zoom */
+  input,select,textarea{font-size:1rem!important}
+  /* Cards full-width */
+  .stats-row{grid-template-columns:repeat(2,1fr)!important}
+  .cal-grid{font-size:.75rem}
+  /* AI builder modal */
+  #aiWebModal .ai-builder-modal-content,#modalCrearSitio{
+    border-radius:22px 22px 0 0!important;
+    width:100%!important;max-width:100%!important;
+    max-height:94svh;
+    padding:1.5rem 1.4rem calc(1rem + env(safe-area-inset-bottom));
+    margin-top:auto;
+  }
+  /* Touch */
+  button{-webkit-tap-highlight-color:transparent}
+  .panel{min-height:auto}
+}
+/* Dash bottom nav — only exists on mobile */
+.dash-bottom-nav{display:none}
+/* Sidebar overlay upgrade */
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;z-index:350;
+  background:rgba(0,0,0,.4);
+  -webkit-tap-highlight-color:transparent;
+}
+.sidebar-overlay.active{display:block}
 
 /* ── TARJETAS PACIENTES ── */
 .patient-card{background:var(--white);border-radius:14px;padding:1rem 1.25rem;margin-bottom:.65rem;border:1.5px solid var(--border);border-left:3px solid transparent;cursor:pointer;transition:all .18s ease;display:flex;flex-direction:column;gap:.5rem}
@@ -594,7 +670,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
   <header class="topbar">
     <div style="display:flex;align-items:center;gap:.75rem">
-      <button id="btnHamburger" onclick="toggleSidebar()" style="display:none;background:none;border:none;cursor:pointer;padding:.4rem;border-radius:8px;color:#374151;flex-direction:column;gap:4px;align-items:center;justify-content:center" aria-label="Menu">
+      <button id="btnHamburger" class="mobile-ham" onclick="toggleSidebar()" style="display:none" aria-label="Menu">
         <span style="display:block;width:20px;height:2px;background:#374151;border-radius:2px"></span>
         <span style="display:block;width:20px;height:2px;background:#374151;border-radius:2px"></span>
         <span style="display:block;width:20px;height:2px;background:#374151;border-radius:2px"></span>
@@ -5735,4 +5811,55 @@ async function guardarVisibilidad() {
 </script>
   </div><!-- /content -->
 <div style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:.35rem;pointer-events:none;z-index:1"><span style="font-size:.62rem;color:#d1d5db;letter-spacing:.03em">CitaDoc Health Network ® &nbsp;&middot;&nbsp; Guayaquil, 2026</span></div>
+
+<!-- Dashboard Bottom Nav (mobile only) -->
+<nav class="dash-bottom-nav" id="dashBottomNav">
+  <button class="dbn-item active" data-panel="inicio" onclick="showPanel('inicio',this)">
+    <span class="dbn-icon">🏠</span>
+    <span class="dbn-label">Inicio</span>
+  </button>
+  <button class="dbn-item" data-panel="calendario" onclick="showPanel('calendario',this)">
+    <span class="dbn-icon">📅</span>
+    <span class="dbn-label">Citas</span>
+  </button>
+  <button class="dbn-item" data-panel="pacientes" onclick="showPanel('pacientes',this)">
+    <span class="dbn-icon">👥</span>
+    <span class="dbn-label">Pacientes</span>
+  </button>
+  <button class="dbn-item" data-panel="perfil" onclick="showPanel('perfil',this)">
+    <span class="dbn-icon">👤</span>
+    <span class="dbn-label">Perfil</span>
+  </button>
+  <button class="dbn-item" data-panel="sitio" onclick="showPanel('sitio',this)">
+    <span class="dbn-icon">🌐</span>
+    <span class="dbn-label">Sitio</span>
+  </button>
+</nav>
+
+<script>
+// Mobile sidebar (new class-based toggle for upgraded CSS)
+function toggleMobileSidebar() {
+  var sb = document.querySelector('.sidebar');
+  var ov = document.getElementById('sidebarOverlay');
+  if (!sb) return;
+  var open = sb.classList.toggle('mobile-open');
+  if (ov) ov.classList.toggle('active', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+// Dashboard bottom nav active state
+function dashNavActive(panel) {
+  document.querySelectorAll('.dbn-item').forEach(function(i) {
+    i.classList.toggle('active', i.dataset.panel === panel);
+  });
+}
+// Hook into showPanel to update bottom nav
+var _origShowPanel = typeof showPanel === 'function' ? showPanel : null;
+if (typeof showPanel === 'function') {
+  var __sp = showPanel;
+  showPanel = function(id, el) {
+    __sp(id, el);
+    dashNavActive(id);
+  };
+}
+</script>
 </body>
