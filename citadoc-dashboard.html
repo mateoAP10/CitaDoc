@@ -1539,7 +1539,7 @@ async function cargarCitas(medicoId) {
       if (!list) return;
       var n = citas.length;
       if (count) count.textContent = n + ' cita' + (n!==1?'s':'');
-      if (badge) badge.textContent = n;
+      if (badge) { badge.textContent = n; badge.style.display = n > 0 ? '' : 'none'; }
       if (stat)  stat.textContent  = n;
       if (!n) { list.innerHTML='<div class="empty-citas">No hay citas para hoy</div>'; return; }
       var now  = new Date();
