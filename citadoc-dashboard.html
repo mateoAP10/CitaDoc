@@ -981,13 +981,29 @@ for (let h=7; h<20; h++) { TIMES.push(h2(h)+':00'); TIMES.push(h2(h)+':30'); }
 ['lun','mar','mie','jue','vie','sab','dom'].forEach(d => { slotsState[d]={}; TIMES.forEach(t=>slotsState[d][t]='off'); });
 function h2(n){ return String(n).padStart(2,'0'); }
 
+// ══ APP STATE ══
+// Fuente centralizada de verdad. Los alias globales (M, slugActual, calYear,
+// calMonth, EVENTS) se mantienen por compatibilidad mientras se migran progresivamente.
+var AppState = {
+  medico:       null,   // objeto médico completo del usuario logueado
+  slug:         '',     // slug del médico activo
+  currentPanel: 'inicio',
+  cal: {
+    year:   new Date().getFullYear(),
+    month:  new Date().getMonth(),
+    events: {},         // { día_del_mes: [{text}] } — re-anclado en cargarCitasCal
+  },
+};
+
 // ══ HELPERS ══
 function _el(id) { return document.getElementById(id); }
 var setText = (id,v) => { const e=_el(id); if(e) e.textContent=v; };
 const setVal  = (id,v) => { const e=_el(id); if(e&&v!=null&&v!=='') e.value=v; };
+function logError(ctx, err) { console.error('[CitaDoc:'+ctx+']', err); }
 
 // ══ NAV ══
 function showPanel(id, el) {
+  AppState.currentPanel = id;
   closeSidebarOnMobile();
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
@@ -1059,8 +1075,8 @@ function renderBigCal() {
   }
   days.innerHTML=h;
 }
-function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
-function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
+function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} AppState.cal.month=calMonth; AppState.cal.year=calYear; renderCal(); }
+function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} AppState.cal.month=calMonth; AppState.cal.year=calYear; renderCal(); }
 
 // ══ HORARIOS ══
 // ══ HORARIOS CON BLOQUES ══
@@ -1330,95 +1346,6 @@ function guardarDireccionDB(direccion, url, lat, lon) {
 }
 
 // ══ PERFIL TABS ══
-// ── DIRECCIÓN CONSULTORIO (OpenStreetMap Nominatim) ──
-var _dirTimeout = null;
-
-function initDireccionInput() {
-  var inp = document.getElementById('pfDireccion');
-  var sug = document.getElementById('dirSuggestions');
-  if (!inp) return;
-
-  inp.addEventListener('input', function() {
-    clearTimeout(_dirTimeout);
-    var q = inp.value.trim();
-    if (q.length < 4) { sug.classList.remove('open'); return; }
-    _dirTimeout = setTimeout(function() { buscarDireccion(q); }, 400);
-  });
-
-  inp.addEventListener('blur', function() {
-    setTimeout(function(){ sug.classList.remove('open'); }, 200);
-  });
-
-  // Actualizar preview si hay dirección guardada
-  if (M && M.direccion) {
-    inp.value = M.direccion;
-    mostrarDirPreview(M.direccion, M.maps_url);
-  }
-}
-
-function buscarDireccion(query) {
-  var sug = document.getElementById('dirSuggestions');
-  if (!sug) return;
-  sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Buscando...</div>';
-  sug.classList.add('open');
-
-  fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(query)+'&limit=5&accept-language=es', {
-    headers: {'User-Agent': 'CitaDoc/1.0'}
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data) {
-    sug.innerHTML = '';
-    if (!data.length) {
-      sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Sin resultados. Intenta con más detalle.</div>';
-      return;
-    }
-    data.forEach(function(place) {
-      var div = document.createElement('div');
-      div.className = 'dir-suggestion';
-      div.textContent = place.display_name;
-      div.addEventListener('click', function() {
-        var inp2 = document.getElementById('pfDireccion');
-        if (inp2) inp2.value = place.display_name;
-        sug.classList.remove('open');
-        var url = 'https://www.google.com/maps?q='+place.lat+','+place.lon;
-        mostrarDirPreview(place.display_name, url);
-        // Guardar inmediatamente si médico está cargado
-        if (M) guardarDireccionDB(place.display_name, url);
-      });
-      sug.appendChild(div);
-    });
-  })
-  .catch(function() {
-    sug.innerHTML = '<div class="dir-suggestion" style="color:var(--muted2)">Error buscando. Intenta de nuevo.</div>';
-  });
-}
-
-function mostrarDirPreview(direccion, url) {
-  var preview = document.getElementById('dirPreview');
-  var texto   = document.getElementById('dirTexto');
-  var link    = document.getElementById('dirLink');
-  if (!preview) return;
-  if (texto) texto.textContent = '📍 '+direccion;
-  if (link)  { link.href = url || 'https://www.google.com/maps?q='+encodeURIComponent(direccion); }
-  preview.style.display = 'flex';
-}
-
-function guardarDireccionDB(direccion, url, lat, lon) {
-  var payload = { direccion: direccion, maps_url: url };
-  // Guardar coords si disponibles (para futura migración a Google Maps)
-  if (lat) payload.lat = parseFloat(lat);
-  if (lon) payload.lng = parseFloat(lon);
-  _sb.from('medicos').update(payload).eq('id', M.id)
-    .then(function(r) {
-      if (!r.error) {
-        // Actualizar estado local
-        if (M) { M.direccion = direccion; M.maps_url = url; }
-        mostrarToast('Dirección guardada');
-      }
-    });
-}
-
-// ══ PERFIL TABS ══
 function showTab(tab,el){
   document.querySelectorAll('.pf-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.perfil-tab').forEach(t=>t.classList.remove('active'));
@@ -1552,6 +1479,7 @@ async function cargarCitas(medicoId) {
   var hoy = new Date().toISOString().split('T')[0];
   _sb.from('citas').select('*').eq('medico_id', medicoId).eq('fecha', hoy).order('hora')
     .then(function(r) {
+      if (r.error) { logError('cargarCitas', r.error); return; }
       var citas = r.data || [];
       var list  = document.getElementById('citasList');
       var count = document.getElementById('citasCount');
@@ -1608,16 +1536,19 @@ async function cargarCitas(medicoId) {
         }
         list.appendChild(div);
       });
-    });
+    })
+    .catch(function(e){ logError('cargarCitas:network', e); });
 }
 async function cancelarCita(id){
   if(!confirm('¿Cancelar esta cita?')) return;
-  await _sb.from('citas').update({estado:'cancelada'}).eq('id',id);
+  var rCan = await _sb.from('citas').update({estado:'cancelada'}).eq('id',id);
+  if (rCan.error) { logError('cancelarCita', rCan.error); alert('No se pudo cancelar. Intenta de nuevo.'); return; }
   if(M) cargarCitas(M.id);
 }
 async function cargarProximas(medicoId){
   const hoy=new Date(), en7=new Date(hoy); en7.setDate(hoy.getDate()+7);
-  const {data}=await _sb.from('citas').select('fecha,hora,paciente_nombre').eq('medico_id',medicoId).gt('fecha',hoy.toISOString().split('T')[0]).lte('fecha',en7.toISOString().split('T')[0]).neq('estado','cancelada').order('fecha').order('hora').limit(5);
+  const {data,error:eProx}=await _sb.from('citas').select('fecha,hora,paciente_nombre').eq('medico_id',medicoId).gt('fecha',hoy.toISOString().split('T')[0]).lte('fecha',en7.toISOString().split('T')[0]).neq('estado','cancelada').order('fecha').order('hora').limit(5);
+  if(eProx){ logError('cargarProximas', eProx); return; }
   const list=_el('proximasList'); if(!list) return;
   if(!data||data.length===0){list.innerHTML='<div class="empty-citas" style="font-size:.82rem">Sin citas próximas</div>';return;}
   list.innerHTML=data.map(c=>{const f=new Date(c.fecha+'T00:00:00');return `<div class="proxima-item"><div class="proxima-dot"></div><div class="proxima-date">${DIAS[f.getDay()]} ${f.getDate()}</div><div class="proxima-name">${c.hora} · ${c.paciente_nombre.split(' ')[0]}</div></div>`;}).join('');
@@ -1631,6 +1562,9 @@ async function cargarStats(medicoId){
     _sb.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId),
     _sb.from('citas').select('*',{count:'exact',head:true}).eq('medico_id',medicoId).eq('estado','cancelada').gte('fecha',mes.toISOString().split('T')[0]),
   ]);
+  if ([r1,r2,r3,r4].some(function(r){ return r.error; })) {
+    logError('cargarStats', r1.error||r2.error||r3.error||r4.error); return;
+  }
   const s=(id,v)=>{const e=_el(id);if(e)e.textContent=v??0;};
   s('statSemana',r1.count);s('statMes',r2.count);s('statTotal',r3.count);
   s('estSemana',r1.count);s('estMes',r2.count);s('estTotal',r3.count);s('estCanceladas',r4.count);
@@ -1639,8 +1573,10 @@ async function cargarStats(medicoId){
 async function cargarCitasCal(medicoId){
   const ini=new Date(calYear,calMonth,1).toISOString().split('T')[0];
   const fin=new Date(calYear,calMonth+1,0).toISOString().split('T')[0];
-  const {data}=await _sb.from('citas').select('fecha,hora,paciente_nombre,estado').eq('medico_id',medicoId).gte('fecha',ini).lte('fecha',fin).neq('estado','cancelada');
+  const {data,error:eCal}=await _sb.from('citas').select('fecha,hora,paciente_nombre,estado').eq('medico_id',medicoId).gte('fecha',ini).lte('fecha',fin).neq('estado','cancelada');
+  if(eCal){ logError('cargarCitasCal', eCal); return; }
   EVENTS={};
+  AppState.cal.events = EVENTS; // re-anclar: mutaciones a EVENTS[d] reflejan en AppState.cal.events[d]
   (data||[]).forEach(c=>{const d=parseInt(c.fecha.split('-')[2]);if(!EVENTS[d])EVENTS[d]=[];EVENTS[d].push({text:c.hora+' '+c.paciente_nombre.split(' ')[0]});});
   renderCal();
 }
@@ -1655,6 +1591,8 @@ async function cargarFormacion(medicoId){
 function aplicarMedico(m) {
   M = m;
   slugActual = m.slug || '';
+  AppState.medico = m;       // misma referencia — mutaciones en M.prop se reflejan aquí
+  AppState.slug   = m.slug || '';
   const nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   const esp    = (m.especialidades||[])[0]||'—';
   const plan   = getPlanLabel(m.plan);
@@ -2061,7 +1999,8 @@ function cargarPacientes() {
         return;
       }
       renderPacientes(r.data);
-    });
+    })
+    .catch(function(e){ logError('cargarPacientes:network', e); uiError('pacientesList', 'Error de red. Intenta de nuevo.', cargarPacientes); });
 }
 
 // ── RENDER TARJETAS PACIENTES ──
@@ -2155,6 +2094,7 @@ function abrirConsulta(citaId, pacienteNombre, pacienteId) {
   // Cargar historia existente si ya hay una
   _sb.from('historias_clinicas').select('*').eq('cita_id', citaId).single()
     .then(function(r) {
+      if (r.error && r.error.code !== 'PGRST116') { logError('abrirConsulta', r.error); return; }
       if (r.data) {
         _hcId = r.data.id;
         document.getElementById('hcSintomas').value    = r.data.sintomas||'';
@@ -2177,7 +2117,8 @@ function abrirConsulta(citaId, pacienteNombre, pacienteId) {
         };
         cargarDocumentos(_hcCurrentDocs);
       }
-    });
+    })
+    .catch(function(e){ logError('abrirConsulta:network', e); });
   // Cargar historial previo
   if (pacienteId) cargarHistorialPrevio(pacienteId, citaId);
   document.getElementById('hcOverlay').classList.add('open');
@@ -2218,6 +2159,7 @@ function abrirHistorialPaciente(pacienteId, nombre) {
     .eq('paciente_id', pacienteId)
     .order('created_at', {ascending: false})
     .then(function(r) {
+      if (r.error) { logError('abrirHistorialPaciente', r.error); return; }
       var historias = r.data || [];
       var wrap = document.getElementById('historialPrevio');
       var list = document.getElementById('historialList');
@@ -2272,7 +2214,8 @@ function abrirHistorialPaciente(pacienteId, nombre) {
           + (h.resumen_ai ? '<div class="historial-ai">✨ '+h.resumen_ai+'</div>' : '');
         list.appendChild(div);
       });
-    });
+    })
+    .catch(function(e){ logError('abrirHistorialPaciente:network', e); });
 
   document.getElementById('hcOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2283,6 +2226,7 @@ function cargarHistorialPrevio(pacienteId, citaActualId) {
   _sb.from('historias_clinicas').select('*').eq('paciente_id', pacienteId)
     .order('created_at', {ascending: false})
     .then(function(r) {
+      if (r.error) { logError('cargarHistorialPrevio', r.error); return; }
       var historias = (r.data||[]).filter(function(h){ return h.cita_id !== citaActualId; });
       var wrap = document.getElementById('historialPrevio');
       var list = document.getElementById('historialList');
@@ -2303,7 +2247,8 @@ function cargarHistorialPrevio(pacienteId, citaActualId) {
           + (h.resumen_ai ? '<div class="historial-ai">✨ '+h.resumen_ai+'</div>' : '');
         list.appendChild(div);
       });
-    });
+    })
+    .catch(function(e){ logError('cargarHistorialPrevio:network', e); });
 }
 
 // ── GUARDAR HISTORIA CLÍNICA ──
@@ -3513,8 +3458,10 @@ function abrirFicha(pacienteId) {
     _sb.from('consultas').select('*').eq('paciente_id', pacienteId).order('created_at', {ascending:false})
   ]).then(function(res) {
     if (res[0].error || !res[0].data) { uiError('fichaContent', 'No se pudo cargar la ficha', function(){ abrirFicha(_fichaId); }); return; }
+    if (res[1].error) { logError('abrirFicha:consultas', res[1].error); }
     renderFicha(res[0].data, res[1].data || []);
-  });
+  })
+  .catch(function(e){ logError('abrirFicha:network', e); uiError('fichaContent', 'Error de red al cargar la ficha', function(){ abrirFicha(_fichaId); }); });
 }
 
 function renderFicha(p, consultas) {
@@ -3777,9 +3724,11 @@ function abrirModalReceta(consultaId, pacienteId) {
   // Cargar receta existente si hay
   _sb.from('recetas').select('*').eq('consulta_id', consultaId).maybeSingle()
     .then(function(r) {
+      if (r.error) { logError('abrirModalReceta', r.error); _crearModalReceta(consultaId, pacienteId, null); return; }
       var receta = r.data || null;
       _crearModalReceta(consultaId, pacienteId, receta);
-    });
+    })
+    .catch(function(e){ logError('abrirModalReceta:network', e); _crearModalReceta(consultaId, pacienteId, null); });
 }
 
 function _crearModalReceta(consultaId, pacienteId, recetaExistente) {
