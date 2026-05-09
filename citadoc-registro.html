@@ -343,9 +343,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
       <div class="step-connector" id="sc-1"></div>
       <div class="step-item"><div class="step-num" id="sn-2">2</div><span class="step-label" id="sl-2">Tu perfil</span></div>
       <div class="step-connector" id="sc-2"></div>
-      <div class="step-item"><div class="step-num" id="sn-3">3</div><span class="step-label" id="sl-3">Horarios</span></div>
-      <div class="step-connector" id="sc-3"></div>
-      <div class="step-item"><div class="step-num" id="sn-4">4</div><span class="step-label" id="sl-4">Pago</span></div>
+      <div class="step-item"><div class="step-num" id="sn-3">3</div><span class="step-label" id="sl-3">Plan</span></div>
     </div>
 
     <!-- PASO 1 -->
@@ -367,7 +365,8 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
         <div class="field"><label>Cédula / RUC</label><input type="text" placeholder="Ej: 1712345678" id="f-cedula"></div>
         <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" placeholder="Ej: +593 99 123 4567" id="f-tel"></div>
       </div>
-      <div class="form-nav"><span></span><button class="btn-next" onclick="goStep(2)">Siguiente → Tu perfil</button></div>
+      <p id="error-paso1" style="display:none;color:#dc2626;font-size:.83rem;margin-bottom:.8rem;padding:.6rem .9rem;background:#fef2f2;border-radius:9px"></p>
+      <div class="form-nav"><span></span><button class="btn-next" onclick="validarPaso1()">Siguiente → Tu perfil</button></div>
     </div>
 
     <!-- PASO 2 -->
@@ -439,7 +438,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
       </div>
       <div class="form-nav">
         <button class="btn-back" onclick="goStep(1)">← Atrás</button>
-        <button class="btn-next" onclick="goStep(3)">Siguiente → Horarios</button>
+        <button class="btn-next" onclick="goStep(4)">Siguiente → Plan</button>
       </div>
     </div>
 
@@ -479,7 +478,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
         🎉 <strong>Sin costo.</strong> Tu perfil se activará de inmediato. Puedes actualizar al plan Destacado desde tu panel cuando quieras.
       </div>
       <div class="form-nav">
-        <button class="btn-back" onclick="goStep(3)">← Atrás</button>
+        <button class="btn-back" onclick="goStep(2)">← Atrás</button>
         <button class="btn-next" onclick="activarCuenta()" id="btn-activar">Activar mi perfil gratis →</button>
       </div>
     </div>
@@ -641,16 +640,36 @@ function initRegSelects(){
 
 // ══ STEPS ══
 let currentStep=1;
+function validarPaso1(){
+  var nombre   =(document.getElementById('f-nombre')?.value||'').trim();
+  var apellido =(document.getElementById('f-apellido')?.value||'').trim();
+  var email    =(document.getElementById('f-email')?.value||'').trim();
+  var pass     = document.getElementById('f-pass')?.value||'';
+  var pass2    = document.getElementById('f-pass2')?.value||'';
+  var errEl    = document.getElementById('error-paso1');
+  function showErr(msg){if(errEl){errEl.textContent=msg;errEl.style.display='block';}};
+  if(!nombre||!apellido){showErr('Ingresa tu nombre y apellido.');return;}
+  if(!email||!email.includes('@')){showErr('Ingresa un correo electrónico válido.');return;}
+  if(pass.length<8){showErr('La contraseña debe tener mínimo 8 caracteres.');return;}
+  if(pass!==pass2){showErr('Las contraseñas no coinciden.');return;}
+  if(errEl)errEl.style.display='none';
+  goStep(2);
+}
+
 function goStep(n){
   document.getElementById('panel-'+currentStep).classList.remove('active');
   document.getElementById('panel-'+n).classList.add('active');
-  for(let i=1;i<=4;i++){
+  // Mapa panel → visual step (flujo: 1→2→4→5, paso 3 eliminado del flujo)
+  var panelToVisual={1:1,2:2,4:3};
+  var v=panelToVisual[n]||0;
+  for(let i=1;i<=3;i++){
     const num=document.getElementById('sn-'+i);
     const lbl=document.getElementById('sl-'+i);
-    if(i<n){num.className='step-num done';num.textContent='✓';lbl.className='step-label done';}
-    else if(i===n){num.className='step-num active';num.textContent=i;lbl.className='step-label active';}
+    if(!num||!lbl) continue;
+    if(i<v){num.className='step-num done';num.textContent='✓';lbl.className='step-label done';}
+    else if(i===v){num.className='step-num active';num.textContent=i;lbl.className='step-label active';}
     else{num.className='step-num';num.textContent=i;lbl.className='step-label';}
-    if(i<=3)document.getElementById('sc-'+i).className='step-connector'+(i<n?' done':'');
+    if(i<=2)document.getElementById('sc-'+i).className='step-connector'+(i<v?' done':'');
   }
   if(n===4)updatePaymentStep();
   currentStep=n;
@@ -706,7 +725,8 @@ async function activarCuenta(){
 
     // 3. Días
     const diasMap={'Lun':'lun','Mar':'mar','Mié':'mie','Jue':'jue','Vie':'vie','Sáb':'sab','Dom':'dom'};
-    const dias=Array.from(document.querySelectorAll('.day-chip.selected')).map(el=>diasMap[el.textContent]||el.textContent.toLowerCase());
+    const diasSel=Array.from(document.querySelectorAll('.day-chip.selected')).map(el=>diasMap[el.textContent]||el.textContent.toLowerCase());
+    const dias=diasSel.length>0?diasSel:['lun','mar','mie','jue','vie']; // default Lun-Vie
 
     // 4. País y ciudad
     const paisVal=regPais?.getValue()||'ecuador';
