@@ -563,6 +563,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
     <div class="nav-section-label" style="margin-top:.4rem">Configuración</div>
     <div class="nav-item" onclick="showPanel('horarios',this)"><span class="nav-icon">🕐</span>Horarios</div>
     <div class="nav-item" onclick="showPanel('perfil',this)"><span class="nav-icon">👤</span>Mi perfil</div>
+    <div class="nav-item" onclick="showPanel('sitio',this)"><span class="nav-icon">🌐</span>Mi Sitio Web<span style="margin-left:auto;font-size:.56rem;font-weight:700;padding:.1rem .4rem;border-radius:50px;background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.25)">WEB</span></div>
   </nav>
   <div class="sidebar-bottom">
     <div class="url-card">
@@ -968,6 +969,113 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       </div>
 
     </div>
+  <!-- PANEL MI SITIO WEB -->
+  <div class="panel" id="panel-sitio">
+
+    <!-- Header + URL bar -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <div>
+        <h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin-bottom:.25rem">Tu sitio médico profesional</h2>
+        <p style="font-size:.84rem;color:#6b7280;margin:0">Tu presencia online independiente dentro de CitaDoc Health Network.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:.5rem .8rem;flex-wrap:wrap">
+        <span id="webUrlText" style="font-size:.78rem;color:#374151;font-family:monospace">web.citadoc.lat/—</span>
+        <button onclick="copiarWebUrl()" style="padding:.3rem .6rem;background:#fff;border:1px solid #e5e7eb;border-radius:7px;font-size:.73rem;font-weight:600;color:#374151;cursor:pointer;font-family:'DM Sans',sans-serif">Copiar</button>
+        <a id="webUrlOpen" href="#" target="_blank" rel="noopener" style="padding:.3rem .6rem;background:var(--teal);color:#fff;border-radius:7px;font-size:.73rem;font-weight:600;text-decoration:none">Abrir ↗</a>
+      </div>
+    </div>
+
+    <!-- Template selector + Preview -->
+    <div style="display:grid;grid-template-columns:180px 1fr;gap:1.2rem;margin-bottom:1.5rem;align-items:start">
+
+      <!-- Templates -->
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem">Template</div>
+        <div style="display:flex;flex-direction:column;gap:.55rem" id="webTplSelector">
+          <div class="web-tpl-card sel" data-tpl="minimal-white" onclick="seleccionarTemplate(this,'minimal-white')" style="border:2px solid var(--teal);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s">
+            <div style="height:42px;background:linear-gradient(135deg,#0b7c6e,#065f46)"></div>
+            <div style="padding:.5rem .65rem;background:#fff"><div style="font-size:.77rem;font-weight:700;color:#374151">Minimal White</div><div style="font-size:.68rem;color:#9ca3af">Limpio y profesional</div></div>
+          </div>
+          <div class="web-tpl-card" data-tpl="premium-dark" onclick="seleccionarTemplate(this,'premium-dark')" style="border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s">
+            <div style="height:42px;background:linear-gradient(135deg,#0a0f0e,#1a1a2e)"><div style="width:18px;height:3px;background:#c9a94a;margin:12px auto 0;border-radius:2px"></div></div>
+            <div style="padding:.5rem .65rem;background:#0f0f0f"><div style="font-size:.77rem;font-weight:700;color:#f5f5f5">Premium Dark</div><div style="font-size:.68rem;color:#6b7280">Elegante y premium</div></div>
+          </div>
+          <div class="web-tpl-card" data-tpl="clinica-moderna" onclick="seleccionarTemplate(this,'clinica-moderna')" style="border:2px solid #e5e7eb;border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s">
+            <div style="height:42px;background:linear-gradient(135deg,#0e7490,#164e63)"></div>
+            <div style="padding:.5rem .65rem;background:#fff"><div style="font-size:.77rem;font-weight:700;color:#374151">Clínica Moderna</div><div style="font-size:.68rem;color:#9ca3af">Corporativo y confiable</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div style="border-radius:14px;overflow:hidden;background:#e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.1)">
+        <!-- Browser chrome -->
+        <div style="background:#f3f4f6;padding:.4rem .7rem;display:flex;align-items:center;gap:.4rem">
+          <div style="width:9px;height:9px;border-radius:50%;background:#fc5c5c"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#fdbc40"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#34c84a"></div>
+          <div style="flex:1;background:#fff;border-radius:4px;height:18px;margin:0 .5rem;display:flex;align-items:center;padding:0 .5rem"><span id="webPreviewUrl" style="font-size:.6rem;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">web.citadoc.lat/—</span></div>
+          <button onclick="refreshWebPreview()" style="padding:.15rem .4rem;background:none;border:none;cursor:pointer;font-size:.7rem;color:#9ca3af" title="Refrescar">↻</button>
+        </div>
+        <!-- iframe -->
+        <div style="position:relative;overflow:hidden;height:420px;background:#fff">
+          <iframe id="webPreviewFrame" style="width:150%;height:630px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Editor tabs -->
+    <div style="border-bottom:2px solid #f3f4f6;margin-bottom:1.3rem;display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none" id="webEditorTabs">
+      <button class="web-etab active" onclick="showWebTab('identidad',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid var(--teal);margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;color:var(--teal);cursor:pointer;white-space:nowrap">Identidad</button>
+      <button class="web-etab" onclick="showWebTab('servicios',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Servicios</button>
+      <button class="web-etab" onclick="showWebTab('sobremí',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Sobre mí</button>
+      <button class="web-etab" onclick="showWebTab('seo',this)" style="padding:.5rem .9rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">SEO</button>
+    </div>
+
+    <!-- Tab: Identidad -->
+    <div id="web-tab-identidad" class="web-etab-content" style="display:block">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TITULAR PRINCIPAL</label><input id="wc_headline" placeholder="Tu salud, nuestro compromiso" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+        <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SUBTÍTULO / PROPUESTA DE VALOR</label><textarea id="wc_subheadline" rows="2" placeholder="Especialista con 15 años de experiencia en Quito." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
+        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TEXTO DEL BOTÓN PRINCIPAL</label><input id="wc_cta_text" placeholder="Agendar consulta" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">COLOR PRINCIPAL</label>
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <input type="color" id="wc_color" value="#0b7c6e" style="width:40px;height:34px;padding:2px;border:1.5px solid #e5e7eb;border-radius:8px;cursor:pointer;background:none" oninput="document.getElementById('wc_color_hex').value=this.value">
+            <input type="text" id="wc_color_hex" value="#0b7c6e" maxlength="7" style="width:88px;padding:.48rem .65rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.83rem;font-family:monospace;box-sizing:border-box" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))document.getElementById('wc_color').value=this.value">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Servicios -->
+    <div id="web-tab-servicios" class="web-etab-content" style="display:none">
+      <div id="wcServiciosList" style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:.8rem"></div>
+      <button onclick="wcAgregarServicio()" style="padding:.48rem .9rem;background:none;border:1.5px dashed #d1d5db;border-radius:9px;font-size:.82rem;color:#6b7280;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar servicio</button>
+    </div>
+
+    <!-- Tab: Sobre mí -->
+    <div id="web-tab-sobremí" class="web-etab-content" style="display:none">
+      <div style="margin-bottom:.8rem"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">DIFERENCIADORES (uno por línea)</label><textarea id="wc_highlights" rows="4" placeholder="15 años de experiencia&#10;Especialista en dolor crónico&#10;Atención personalizada&#10;Tecnología de diagnóstico avanzada" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
+      <div style="font-size:.75rem;color:#9ca3af">Aparecen como chips de confianza en la sección "Sobre mí".</div>
+    </div>
+
+    <!-- Tab: SEO -->
+    <div id="web-tab-seo" class="web-etab-content" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:.9rem">
+        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TÍTULO SEO (Google)</label><input id="wc_seo_title" placeholder="Dr. Mateo Alarcón — Traumatólogo en Quito" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+        <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">DESCRIPCIÓN SEO</label><textarea id="wc_seo_desc" rows="2" placeholder="Especialista en traumatología con enfoque en cirugía mínimamente invasiva. Agenda online en Quito." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical;font-family:'DM Sans',sans-serif" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea><div style="font-size:.72rem;color:#9ca3af;margin-top:.2rem">Máximo 155 caracteres. <span id="wcSeoDescCount">0</span>/155</div></div>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div style="display:flex;gap:.8rem;margin-top:1.5rem;flex-wrap:wrap">
+      <button onclick="abrirCrearSitioMedico()" style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1.2rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">✨ Regenerar con AI</button>
+      <button onclick="guardarWebConfig(this)" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">Guardar cambios</button>
+    </div>
+
+  </div><!-- /panel-sitio -->
+
   <!-- PANEL PACIENTES -->
   <div class="panel" id="panel-pacientes">
 
@@ -1203,6 +1311,7 @@ function showPanel(id, el) {
     showPerfilTab('info', document.querySelector('#panel-perfil .ptab.active') || document.querySelector('#panel-perfil .ptab'));
     if (M && typeof cargarFormPerfil === 'function') cargarFormPerfil(M);
   }
+  if (id==='sitio' && M) cargarMiSitio(M);
 }
 
 // Wrapper seguro para cualquier render
@@ -2036,6 +2145,152 @@ function renderEvolucionSection(isPro) {
       btn.onclick = abrirGestionarPlan;
     }
   }
+}
+
+// ── MI SITIO WEB ──
+var _wcTpl = 'minimal-white';
+
+function cargarMiSitio(m) {
+  if (!m) return;
+  var slug = m.slug||'';
+  var webUrl = 'web.citadoc.lat/'+slug;
+  setText('webUrlText', webUrl);
+  setText('webPreviewUrl', webUrl);
+  var openLink = document.getElementById('webUrlOpen');
+  if (openLink) openLink.href = 'citadoc-web.html?slug='+slug;
+
+  var wc = m.web_config||{};
+  _wcTpl = wc.template||'minimal-white';
+
+  // Destacar template seleccionado
+  document.querySelectorAll('.web-tpl-card').forEach(function(c){
+    var sel = c.dataset.tpl === _wcTpl;
+    c.style.borderColor = sel ? 'var(--teal)' : '#e5e7eb';
+  });
+
+  // Llenar campos
+  var map = {
+    'wc_headline':    wc.headline||'',
+    'wc_subheadline': wc.subheadline||'',
+    'wc_cta_text':    wc.cta_primary_text||'',
+    'wc_color':       wc.primary_color||'#0b7c6e',
+    'wc_color_hex':   wc.primary_color||'#0b7c6e',
+    'wc_seo_title':   wc.seo_title||'',
+    'wc_seo_desc':    wc.seo_desc||''
+  };
+  Object.keys(map).forEach(function(id){ var e=document.getElementById(id); if(e) e.value=map[id]; });
+
+  // Highlights
+  var hl = document.getElementById('wc_highlights');
+  if (hl) hl.value = (wc.sobre_mi_highlights||[]).join('\n');
+
+  // SEO counter
+  var seoDesc = document.getElementById('wc_seo_desc');
+  if (seoDesc) {
+    updateWcSeoCount();
+    seoDesc.addEventListener('input', updateWcSeoCount);
+  }
+
+  // Servicios
+  wcRenderServicios(wc.servicios||[]);
+
+  // Preview
+  refreshWebPreview();
+}
+
+function updateWcSeoCount() {
+  var el = document.getElementById('wc_seo_desc');
+  var cnt = document.getElementById('wcSeoDescCount');
+  if (el && cnt) cnt.textContent = (el.value||'').length;
+}
+
+function seleccionarTemplate(card, tpl) {
+  _wcTpl = tpl;
+  document.querySelectorAll('.web-tpl-card').forEach(function(c){ c.style.borderColor='#e5e7eb'; });
+  card.style.borderColor = 'var(--teal)';
+  refreshWebPreview();
+}
+
+function refreshWebPreview() {
+  var frame = document.getElementById('webPreviewFrame');
+  var slug = M && M.slug ? M.slug : '';
+  if (frame && slug) frame.src = 'citadoc-web.html?slug='+slug+'&tpl='+_wcTpl+'&t='+Date.now();
+}
+
+function showWebTab(tab, btn) {
+  document.querySelectorAll('.web-etab-content').forEach(function(c){ c.style.display='none'; });
+  document.querySelectorAll('.web-etab').forEach(function(b){ b.style.borderBottomColor='transparent'; b.style.color='#6b7280'; b.style.fontWeight='600'; });
+  var c = document.getElementById('web-tab-'+tab);
+  if (c) c.style.display = 'block';
+  if (btn) { btn.style.borderBottomColor='var(--teal)'; btn.style.color='var(--teal)'; btn.style.fontWeight='700'; }
+}
+
+function wcRenderServicios(servs) {
+  var cont = document.getElementById('wcServiciosList');
+  if (!cont) return;
+  cont.innerHTML = '';
+  (servs.length ? servs : [{titulo:'',desc:''}]).forEach(function(s, i) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1.5fr auto;gap:.5rem;align-items:center';
+    row.innerHTML = '<input class="wc-serv-titulo" value="'+(s.titulo||'')+'" placeholder="Nombre del servicio" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+      +'<input class="wc-serv-desc" value="'+(s.desc||'')+'" placeholder="Descripción breve" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+      +'<button onclick="this.parentNode.remove()" style="padding:.4rem .55rem;background:none;border:1px solid #fecaca;color:#dc2626;border-radius:7px;font-size:.75rem;cursor:pointer;flex-shrink:0">✕</button>';
+    cont.appendChild(row);
+  });
+}
+
+function wcAgregarServicio() {
+  var cont = document.getElementById('wcServiciosList');
+  if (!cont) return;
+  var row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1.5fr auto;gap:.5rem;align-items:center';
+  row.innerHTML = '<input class="wc-serv-titulo" placeholder="Nombre del servicio" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+    +'<input class="wc-serv-desc" placeholder="Descripción breve" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+    +'<button onclick="this.parentNode.remove()" style="padding:.4rem .55rem;background:none;border:1px solid #fecaca;color:#dc2626;border-radius:7px;font-size:.75rem;cursor:pointer;flex-shrink:0">✕</button>';
+  cont.appendChild(row);
+}
+
+async function guardarWebConfig(btnArg) {
+  if (!M||!M.id) return;
+  var btn = btnArg || document.querySelector('#panel-sitio button[onclick*="guardarWebConfig"]');
+  if (btn) { btn.disabled=true; btn.textContent='Guardando...'; }
+
+  var servs = [];
+  document.querySelectorAll('#wcServiciosList > div').forEach(function(row){
+    var t = (row.querySelector('.wc-serv-titulo')||{}).value||'';
+    var d = (row.querySelector('.wc-serv-desc')||{}).value||'';
+    if (t) servs.push({titulo:t, desc:d});
+  });
+
+  var hlRaw = (document.getElementById('wc_highlights')||{}).value||'';
+  var highlights = hlRaw.split('\n').map(function(h){ return h.trim(); }).filter(Boolean);
+
+  var hex = (document.getElementById('wc_color_hex')||{}).value||'#0b7c6e';
+
+  var wc = {
+    template:           _wcTpl,
+    headline:           (document.getElementById('wc_headline')||{}).value||null,
+    subheadline:        (document.getElementById('wc_subheadline')||{}).value||null,
+    cta_primary_text:   (document.getElementById('wc_cta_text')||{}).value||null,
+    primary_color:      /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#0b7c6e',
+    servicios:          servs.length ? servs : null,
+    sobre_mi_highlights:highlights.length ? highlights : null,
+    seo_title:          (document.getElementById('wc_seo_title')||{}).value||null,
+    seo_desc:           (document.getElementById('wc_seo_desc')||{}).value||null
+  };
+
+  var res = await _sb.from('medicos').update({web_config: wc}).eq('id', M.id);
+  if (btn) { btn.disabled=false; btn.textContent='Guardar cambios'; }
+  if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
+  M.web_config = wc;
+  mostrarToast('Sitio actualizado ✓');
+  refreshWebPreview();
+}
+
+function copiarWebUrl() {
+  var url = (document.getElementById('webUrlText')||{}).textContent||'';
+  if (navigator.clipboard) navigator.clipboard.writeText('https://'+url);
+  mostrarToast('URL copiada ✓');
 }
 
 // ── CREAR SITIO MÉDICO — flujo AI ──
