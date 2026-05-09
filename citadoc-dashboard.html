@@ -527,7 +527,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 #evolProWebBtn{position:relative;overflow:hidden;transition:background .25s ease,border-color .25s ease,color .25s ease}
 #evolProWebBtn:hover{background:linear-gradient(135deg,rgba(167,139,250,.28),rgba(124,58,237,.32))!important;border-color:rgba(167,139,250,.45)!important;color:#f3e8ff!important}
 #evolProWebBtn::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);transition:left .5s ease}
-#evolProWebBtn:hover::after{left:150%}
+
+/* ── Crear sitio médico — modal AI ── */
+#modalCrearSitio .tono-opt{border:1.5px solid #e5e7eb;border-radius:10px;padding:.45rem .85rem;font-size:.82rem;font-weight:500;color:#6b7280;cursor:pointer;transition:all .2s;background:#fff;font-family:'DM Sans',sans-serif}
+#modalCrearSitio .tono-opt.sel{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6;font-weight:700}
+#modalCrearSitio .estilo-card{border:2px solid #e5e7eb;border-radius:14px;padding:1rem;cursor:pointer;transition:all .2s;background:#fff;text-align:center}
+#modalCrearSitio .estilo-card:hover{border-color:#7c3aed;transform:translateY(-2px)}
+#modalCrearSitio .estilo-card.sel{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+#modalCrearSitio .swatch{width:36px;height:36px;border-radius:50%;margin:0 auto .5rem;border:2px solid rgba(0,0,0,.08)}
+@keyframes shimmerAI{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.ai-shimmer{background:linear-gradient(90deg,#f3f4f6 25%,#e9e9e9 50%,#f3f4f6 75%);background-size:200% 100%;animation:shimmerAI 1.4s infinite;border-radius:6px}
 </style>
   <!-- PayPhone SDK -->
 </head>
@@ -716,7 +725,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
                 <span style="width:18px;height:18px;border-radius:50%;background:rgba(167,139,250,.12);display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;color:#a78bfa">✓</span>Conversión de pacientes
               </div>
             </div>
-            <button id="evolProWebBtn" style="width:100%;padding:.78rem;background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(124,58,237,.2));color:#e9d5ff;border:1px solid rgba(167,139,250,.22);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Crear mi sitio médico →</button>
+            <button id="evolProWebBtn" onclick="abrirCrearSitioMedico()" style="width:100%;padding:.78rem;background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(124,58,237,.2));color:#e9d5ff;border:1px solid rgba(167,139,250,.22);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer">Crear mi sitio médico →</button>
           </div>
 
         </div>
@@ -2027,6 +2036,168 @@ function renderEvolucionSection(isPro) {
       btn.onclick = abrirGestionarPlan;
     }
   }
+}
+
+// ── CREAR SITIO MÉDICO — flujo AI ──
+var _csmTono = 'Humano';
+var _csmEstilo = 'Deep teal';
+
+function abrirCrearSitioMedico() {
+  var ex = document.getElementById('modalCrearSitio'); if (ex) ex.remove();
+  var ov = document.createElement('div');
+  ov.id = 'modalCrearSitio';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(10,15,14,.75);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto';
+  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+  ov.innerHTML = '<div onclick="event.stopPropagation()" style="background:#fff;border-radius:24px;padding:2.2rem;width:100%;max-width:520px;box-shadow:0 40px 100px rgba(0,0,0,.25)">'
+    // Header
+    +'<div style="margin-bottom:1.8rem">'
+    +'<div style="font-size:.65rem;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">PRO+WEB</div>'
+    +'<div style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:700;color:#0f1a18;line-height:1.2;margin-bottom:.35rem">Crea tu presencia médica online</div>'
+    +'<div style="font-size:.85rem;color:#6b7280;line-height:1.6">Nuestro AI construirá una página médica profesional basada en tu perfil, especialidad y experiencia.</div>'
+    +'</div>'
+    // Paso 1
+    +'<div id="csmStep1">'
+    +'<div style="font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.5rem"><span style="width:20px;height:20px;border-radius:50%;background:#7c3aed;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0">1</span>Identidad profesional</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.3rem">'
+    +'<input id="csm_diferencia" placeholder="¿Qué te diferencia de otros médicos?" style="width:100%;padding:.65rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:\'DM Sans\',sans-serif" onfocus="this.style.borderColor=\'#7c3aed\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+    +'<input id="csm_pacientes" placeholder="¿Qué tipo de pacientes atiendes?" style="width:100%;padding:.65rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:\'DM Sans\',sans-serif" onfocus="this.style.borderColor=\'#7c3aed\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+    +'</div>'
+    +'<div style="font-size:.75rem;font-weight:600;color:#374151;margin-bottom:.65rem">¿Qué tono quieres transmitir?</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem" id="csmTonoWrap">'
+    +['Elegante','Moderno','Premium','Humano','Tecnológico','Académico'].map(function(t){
+      return '<button class="tono-opt'+(t==='Humano'?' sel':'')+'" onclick="csmSelectTono(this,\''+t+'\')" >'+t+'</button>';
+    }).join('')
+    +'</div>'
+    +'<button onclick="csmGoStep(2)" style="width:100%;padding:.78rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:12px;font-family:\'DM Sans\',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer">Continuar →</button>'
+    +'</div>'
+    // Paso 2
+    +'<div id="csmStep2" style="display:none">'
+    +'<div style="font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.5rem"><span style="width:20px;height:20px;border-radius:50%;background:#7c3aed;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0">2</span>Elige tu estilo visual</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem" id="csmEstiloWrap">'
+    +[
+      {n:'Deep teal',c:'#0b7c6e',bg:'#f0fdf4'},
+      {n:'Clínica premium',c:'#065f46',bg:'#ecfdf5'},
+      {n:'Médico moderno',c:'#0891b2',bg:'#f0f9ff'},
+      {n:'Elegante oscuro',c:'#1e293b',bg:'#f8fafc'},
+      {n:'Violeta PRO',c:'#7c3aed',bg:'#f5f3ff'},
+    ].map(function(s,i){
+      return '<div class="estilo-card'+(i===0?' sel':'')+'" onclick="csmSelectEstilo(this,\''+s.n+'\')">'
+        +'<div class="swatch" style="background:'+s.c+'"></div>'
+        +'<div style="font-size:.75rem;font-weight:600;color:#374151">'+s.n+'</div>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    +'<div style="display:flex;gap:.75rem">'
+    +'<button onclick="csmGoStep(1)" style="flex:1;padding:.72rem;background:#f9fafb;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer">← Atrás</button>'
+    +'<button onclick="csmGenerar()" style="flex:2;padding:.72rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer">✨ Crear mi sitio</button>'
+    +'</div>'
+    +'</div>'
+    // Paso 3 — generando
+    +'<div id="csmStep3" style="display:none;text-align:center;padding:1rem 0">'
+    +'<div id="csmGenStatus" style="font-size:.92rem;font-weight:600;color:#374151;margin-bottom:1.5rem">Analizando tu perfil…</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.8rem" id="csmShimmerLines">'
+    +'<div class="ai-shimmer" style="height:12px;width:80%"></div>'
+    +'<div class="ai-shimmer" style="height:12px;width:60%"></div>'
+    +'<div class="ai-shimmer" style="height:12px;width:70%"></div>'
+    +'</div>'
+    +'<div id="csmDoneMsg" style="display:none">'
+    +'<div style="font-size:2.5rem;margin-bottom:.6rem">✨</div>'
+    +'<div style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#0f1a18;margin-bottom:.3rem">Tu sitio está listo</div>'
+    +'<div style="font-size:.83rem;color:#6b7280;margin-bottom:1.3rem">Personalizalo en Mi Perfil → Redes & Landing</div>'
+    +'<div style="display:flex;gap:.7rem;justify-content:center">'
+    +'<button onclick="document.getElementById(\'modalCrearSitio\').remove()" style="padding:.65rem 1.2rem;background:#f9fafb;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:10px;font-family:\'DM Sans\',sans-serif;font-size:.87rem;font-weight:500;cursor:pointer">Cerrar</button>'
+    +'<a id="csmVerLink" href="#" target="_blank" rel="noopener" style="padding:.65rem 1.2rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border-radius:10px;font-family:\'DM Sans\',sans-serif;font-size:.87rem;font-weight:700;text-decoration:none">Ver mi sitio →</a>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(ov);
+}
+
+function csmSelectTono(btn, tono) {
+  _csmTono = tono;
+  document.querySelectorAll('#csmTonoWrap .tono-opt').forEach(function(b){ b.classList.remove('sel'); });
+  btn.classList.add('sel');
+}
+
+function csmSelectEstilo(card, estilo) {
+  _csmEstilo = estilo;
+  document.querySelectorAll('#csmEstiloWrap .estilo-card').forEach(function(c){ c.classList.remove('sel'); });
+  card.classList.add('sel');
+}
+
+function csmGoStep(n) {
+  document.getElementById('csmStep1').style.display = n===1 ? 'block' : 'none';
+  document.getElementById('csmStep2').style.display = n===2 ? 'block' : 'none';
+  document.getElementById('csmStep3').style.display = n===3 ? 'block' : 'none';
+}
+
+function csmGenerar() {
+  csmGoStep(3);
+  var msgs = ['Analizando tu perfil…','Optimizando estructura…','Generando presencia digital…','Preparando SEO médico…','Configurando branding…'];
+  var i = 0;
+  var el = document.getElementById('csmGenStatus');
+  var iv = setInterval(function(){
+    i++; if(i < msgs.length){ if(el) el.textContent = msgs[i]; }
+    else { clearInterval(iv); csmFinalizarGeneracion(); }
+  }, 600);
+}
+
+var _ESTILOS_COLOR = {
+  'Deep teal':'#0b7c6e','Clínica premium':'#065f46','Médico moderno':'#0891b2',
+  'Elegante oscuro':'#1e293b','Violeta PRO':'#7c3aed'
+};
+var _TONOS_CFG = {
+  'Elegante':    {cta:'Solicitar consulta', hero:'Excelencia médica a tu alcance'},
+  'Moderno':     {cta:'Agenda en línea',    hero:'Medicina del siglo 21'},
+  'Premium':     {cta:'Reservar consulta',  hero:'Atención médica de alto nivel'},
+  'Humano':      {cta:'Agendar cita',       hero:'Tu salud, nuestro compromiso'},
+  'Tecnológico': {cta:'Agenda digital',     hero:'Medicina inteligente y precisa'},
+  'Académico':   {cta:'Solicitar consulta', hero:'Experiencia clínica y evidencia científica'}
+};
+
+async function csmFinalizarGeneracion() {
+  if (!M) return;
+  var cfg = _TONOS_CFG[_csmTono] || _TONOS_CFG['Humano'];
+  var color = _ESTILOS_COLOR[_csmEstilo] || '#0b7c6e';
+  var esp = (M.especialidades||[])[0]||'';
+  var ciudad = M.ciudad||'';
+  var anos = M.anos_experiencia||'';
+  var diferencia = ((document.getElementById('csm_diferencia')||{}).value||'').trim();
+  var pacientes  = ((document.getElementById('csm_pacientes')||{}).value||'').trim();
+
+  // Generar hero_subtitle inteligente
+  var sub = '';
+  if (diferencia) sub = diferencia;
+  else if (esp && anos) sub = esp + ' con ' + anos + ' años de experiencia' + (ciudad ? ' en ' + ciudad : '');
+  else if (esp) sub = 'Especialista en ' + esp + (ciudad ? ' — ' + ciudad : '');
+  else if (ciudad) sub = 'Atención médica especializada en ' + ciudad;
+  else sub = (M.bio||'').slice(0,120) || 'Atención médica de calidad';
+
+  var lc = Object.assign({}, M.landing_config||{}, {
+    hero_title:        cfg.hero,
+    hero_subtitle:     sub,
+    cta_text:          cfg.cta,
+    accent_color:      color,
+    show_formacion:    true,
+    show_logros:       true,
+    show_seguros:      true,
+    show_ubicaciones:  true,
+    show_precio:       true,
+    whatsapp_primary:  true
+  });
+
+  var res = await _sb.from('medicos').update({landing_config: lc}).eq('id', M.id);
+  if (res.error) { mostrarToast('Error al guardar','error'); return; }
+  M.landing_config = lc;
+
+  // Mostrar resultado
+  var shimmer = document.getElementById('csmShimmerLines');
+  if (shimmer) shimmer.style.display = 'none';
+  var done = document.getElementById('csmDoneMsg');
+  if (done) done.style.display = 'block';
+  var link = document.getElementById('csmVerLink');
+  if (link && M.slug) link.href = '/citadoc-perfil.html?slug='+M.slug;
 }
 
 function abrirGestionarPlan() {
