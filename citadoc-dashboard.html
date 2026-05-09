@@ -1022,8 +1022,6 @@ function showPanel(id, el) {
     else cargarPacientes();
   }
   if (id==='perfil') {
-    var _pf = document.getElementById('panel-perfil');
-    if (_pf) _pf.innerHTML = '<div style="padding:2rem"><h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin-bottom:.5rem">Mi perfil funciona</h2><p style="color:#6b7280">Cargando datos...</p></div>';
     if (M && typeof cargarFormPerfil === 'function') cargarFormPerfil(M);
   }
 }
@@ -1343,6 +1341,59 @@ function guardarDireccionDB(direccion, url, lat, lon) {
         mostrarToast('Dirección guardada');
       }
     });
+}
+
+// ── AUTOCOMPLETE DIRECCIÓN — modal de ubicación ──
+// Self-contained: no depende de pfDireccion ni dirSuggestions globales.
+// Rellena ub_direccion y ub_maps al seleccionar; guardarUbicacion() los lee.
+function initModalDireccionInput() {
+  var inp = document.getElementById('ub_direccion');
+  var sug = document.getElementById('modalDirSuggestions');
+  if (!inp || !sug) return;
+  var _mt = null;
+  inp.addEventListener('input', function() {
+    clearTimeout(_mt);
+    var q = inp.value.trim();
+    if (q.length < 4) { sug.style.display = 'none'; return; }
+    _mt = setTimeout(function() { buscarDireccionModal(q, inp, sug); }, 400);
+  });
+  inp.addEventListener('blur', function() {
+    setTimeout(function(){ sug.style.display = 'none'; }, 200);
+  });
+}
+
+function buscarDireccionModal(query, inp, sug) {
+  sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Buscando...</div>';
+  sug.style.display = 'block';
+  fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(query)+'&limit=5&accept-language=es', {
+    headers: {'User-Agent': 'CitaDoc/1.0'}
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    sug.innerHTML = '';
+    if (!data || !data.length) {
+      sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Sin resultados. Intenta con más detalle.</div>';
+      return;
+    }
+    data.forEach(function(place) {
+      var div = document.createElement('div');
+      div.style.cssText = 'padding:.5rem .85rem;font-size:.82rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6';
+      div.textContent = place.display_name;
+      div.addEventListener('mouseenter', function(){ div.style.background='#f0fdf4'; });
+      div.addEventListener('mouseleave', function(){ div.style.background=''; });
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault(); // evitar que blur oculte el dropdown antes del click
+        inp.value = place.display_name;
+        var mapsInp = document.getElementById('ub_maps');
+        if (mapsInp) mapsInp.value = 'https://www.google.com/maps?q='+place.lat+','+place.lon;
+        sug.style.display = 'none';
+      });
+      sug.appendChild(div);
+    });
+  })
+  .catch(function() {
+    sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Error buscando. Intenta de nuevo.</div>';
+  });
 }
 
 // ══ PERFIL TABS ══
@@ -4276,7 +4327,10 @@ function abrirModalUbicacion() {
     +'</div>'
     +'<div style="display:flex;flex-direction:column;gap:.8rem">'
     +'<input id="ub_nombre" placeholder="Nombre del consultorio" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<div style="position:relative">'
     +'<input id="ub_direccion" placeholder="Dirección completa" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<div id="modalDirSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:200px;overflow-y:auto;margin-top:3px"></div>'
+    +'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">'
     +'<input id="ub_telefono" placeholder="Teléfono" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'<input id="ub_ciudad" placeholder="Ciudad" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
@@ -4289,6 +4343,7 @@ function abrirModalUbicacion() {
     +'</div>';
   m.appendChild(inner); document.body.appendChild(m);
   document.getElementById('btnGuardarUb').onclick = guardarUbicacion;
+  initModalDireccionInput();
 }
 
 async function guardarUbicacion() {
