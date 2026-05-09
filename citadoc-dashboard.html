@@ -4257,7 +4257,7 @@ function uiError(containerId, msg, retryFn) {
 </script>
 
     <!-- PayPhone — implementación según doc oficial -->
-  <script type="module">
+  <script>
   // REEMPLAZA ESTOS 2 VALORES:
   var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';    // ← tu token
   var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef'; // ← tu storeId
@@ -4320,7 +4320,6 @@ document.addEventListener("DOMContentLoaded", function(){ initMobile(); });
 // ══ PERFIL v2 ══
 
 function showPerfilTab(tab, btn) {
-  console.log('[TAB] showPerfilTab llamado con tab=', tab, 'btn=', btn);
   document.querySelectorAll('.ptab-content').forEach(function(el){ el.style.display='none'; });
   document.querySelectorAll('.ptab').forEach(function(b){
     b.style.borderBottomColor='transparent'; b.style.color='#6b7280'; b.style.fontWeight='600';
