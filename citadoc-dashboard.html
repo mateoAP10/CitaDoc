@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -985,75 +986,98 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       </div>
     </div>
 
-    <!-- ✨ AI GENERATOR HERO -->
-    <div style="background:linear-gradient(148deg,#0a0f0e 0%,#12071e 100%);border-radius:20px;padding:2rem 2.2rem;margin-bottom:1.8rem;position:relative;overflow:hidden">
-      <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 80% 20%,rgba(124,58,237,.15),transparent 60%);pointer-events:none"></div>
-      <div style="position:relative;z-index:1">
-        <div style="font-size:.63rem;font-weight:700;color:rgba(167,139,250,.7);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem">CitaDoc AI</div>
-        <h3 style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.3rem">✨ Genera tu sitio médico con AI</h3>
-        <p style="font-size:.83rem;color:rgba(255,255,255,.45);margin-bottom:1.3rem;line-height:1.6">Describe tu práctica ideal y nuestra IA construirá una presencia médica premium en minutos.</p>
-
-        <!-- Textarea principal -->
-        <textarea id="webAiPrompt" rows="3" placeholder="Ej: Quiero una web elegante y moderna para mi clínica de fisioterapia deportiva. Enfoque en atletas y personas activas. Tono profesional pero cercano..." style="width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:.9rem;color:#fff;resize:none;line-height:1.65;box-sizing:border-box;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='rgba(167,139,250,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
-
-        <!-- Quick chips -->
-        <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0 1.2rem">
-          <span style="font-size:.68rem;color:rgba(255,255,255,.3);padding:.3rem 0;margin-right:.2rem">Inspírate →</span>
-          <button onclick="document.getElementById('webAiPrompt').value='Minimalista y premium, cirugía estética'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Minimalista premium</button>
-          <button onclick="document.getElementById('webAiPrompt').value='Deportivo y energético, fisioterapia y rehabilitación'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Deportivo y dinámico</button>
-          <button onclick="document.getElementById('webAiPrompt').value='Elegante tipo clínica europea, especialidad de alto nivel'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Clínica europea</button>
-          <button onclick="document.getElementById('webAiPrompt').value='Moderno y tecnológico, cardiología avanzada'" style="padding:.28rem .7rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s" onmouseenter="this.style.background='rgba(167,139,250,.15)';this.style.borderColor='rgba(167,139,250,.3)'" onmouseleave="this.style.background='rgba(255,255,255,.05)';this.style.borderColor='rgba(255,255,255,.1)'">Tecnológico moderno</button>
-        </div>
-
-        <!-- Template inline + CTA -->
-        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
-          <div style="display:flex;gap:.4rem">
-            <button class="web-ai-tpl-btn sel" data-tpl="minimal-white" onclick="webAiSelectTpl(this,'minimal-white')" style="padding:.3rem .75rem;background:rgba(11,124,110,.25);border:1px solid rgba(11,124,110,.5);border-radius:50px;font-size:.73rem;color:rgba(255,255,255,.75);cursor:pointer;font-family:'DM Sans',sans-serif">Minimal</button>
-            <button class="web-ai-tpl-btn" data-tpl="premium-dark" onclick="webAiSelectTpl(this,'premium-dark')" style="padding:.3rem .75rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.73rem;color:rgba(255,255,255,.5);cursor:pointer;font-family:'DM Sans',sans-serif">Dark</button>
-            <button class="web-ai-tpl-btn" data-tpl="clinica-moderna" onclick="webAiSelectTpl(this,'clinica-moderna')" style="padding:.3rem .75rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.73rem;color:rgba(255,255,255,.5);cursor:pointer;font-family:'DM Sans',sans-serif">Clínica</button>
-          </div>
-          <button onclick="webAiGenerar(this)" style="flex:1;min-width:200px;padding:.82rem 1.5rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;letter-spacing:.01em;box-shadow:0 6px 28px rgba(124,58,237,.35);transition:opacity .18s" onmouseenter="this.style.opacity='.9'" onmouseleave="this.style.opacity='1'">✨ Generar sitio premium con AI</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Preview + templates sidebar -->
-    <div style="display:grid;grid-template-columns:160px 1fr;gap:1rem;margin-bottom:1.5rem;align-items:start">
-
-      <!-- Template selector -->
+    <!-- ✨ AI STRIP — compact trigger -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;background:linear-gradient(135deg,#09060f,#0d0818);border:1px solid rgba(167,139,250,.14);border-radius:16px;padding:1rem 1.4rem;margin-bottom:1.4rem;flex-wrap:wrap">
       <div>
-        <div style="font-size:.67rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">Template activo</div>
-        <div style="display:flex;flex-direction:column;gap:.5rem" id="webTplSelector">
-          <div class="web-tpl-card sel" data-tpl="minimal-white" onclick="seleccionarTemplate(this,'minimal-white')" style="border:2px solid var(--teal);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s">
-            <div style="height:36px;background:linear-gradient(135deg,#0b7c6e,#065f46)"></div>
-            <div style="padding:.4rem .55rem;background:#fff"><div style="font-size:.72rem;font-weight:700;color:#374151">Minimal</div></div>
-          </div>
-          <div class="web-tpl-card" data-tpl="premium-dark" onclick="seleccionarTemplate(this,'premium-dark')" style="border:2px solid #e5e7eb;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s">
-            <div style="height:36px;background:linear-gradient(135deg,#0a0f0e,#1a1a2e);display:flex;align-items:center;justify-content:center"><div style="width:16px;height:2px;background:#c9a94a;border-radius:2px"></div></div>
-            <div style="padding:.4rem .55rem;background:#0f0f0f"><div style="font-size:.72rem;font-weight:700;color:#f5f5f5">Dark</div></div>
-          </div>
-          <div class="web-tpl-card" data-tpl="clinica-moderna" onclick="seleccionarTemplate(this,'clinica-moderna')" style="border:2px solid #e5e7eb;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s">
-            <div style="height:36px;background:linear-gradient(135deg,#0e7490,#164e63)"></div>
-            <div style="padding:.4rem .55rem;background:#fff"><div style="font-size:.72rem;font-weight:700;color:#374151">Clínica</div></div>
-          </div>
-        </div>
+        <div style="font-size:.58rem;font-weight:700;color:rgba(167,139,250,.65);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.2rem">CitaDoc AI · PRO+WEB</div>
+        <div id="aiStripStatus" style="font-size:.87rem;font-weight:600;color:rgba(255,255,255,.75)">Genera tu identidad médica premium con AI</div>
       </div>
-
-      <!-- Preview -->
-      <div style="border-radius:12px;overflow:hidden;background:#e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.1)">
-        <div style="background:#f3f4f6;padding:.35rem .65rem;display:flex;align-items:center;gap:.35rem">
-          <div style="width:8px;height:8px;border-radius:50%;background:#fc5c5c"></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#fdbc40"></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#34c84a"></div>
-          <div style="flex:1;background:#fff;border-radius:4px;height:16px;margin:0 .45rem;display:flex;align-items:center;padding:0 .45rem"><span id="webPreviewUrl" style="font-size:.58rem;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">—.citadoc.site</span></div>
-          <button onclick="refreshWebPreview()" style="padding:.1rem .35rem;background:none;border:none;cursor:pointer;font-size:.68rem;color:#9ca3af">↻</button>
-        </div>
-        <div style="position:relative;overflow:hidden;height:400px;background:#fff">
-          <iframe id="webPreviewFrame" style="width:150%;height:600px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
-        </div>
+      <div style="display:flex;align-items:center;gap:.55rem;flex-shrink:0">
+        <a id="aiVerSitioBtn" href="#" target="_blank" rel="noopener" style="display:none;padding:.42rem .85rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:rgba(255,255,255,.65);font-weight:500;text-decoration:none">Ver borrador ↗</a>
+        <button id="aiActivarBtn" onclick="activarSitioWeb()" style="display:none;padding:.42rem .85rem;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:#34d399;font-weight:600;cursor:pointer">⚡ Activar</button>
+        <button onclick="abrirAiWebModal()" style="display:flex;align-items:center;gap:.4rem;padding:.48rem 1.1rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(124,58,237,.35);transition:transform .18s,box-shadow .18s;white-space:nowrap" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 28px rgba(124,58,237,.5)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 4px 18px rgba(124,58,237,.35)'">✨ Generar con AI</button>
       </div>
-
     </div>
+
+    <!-- Preview full-width -->
+    <div style="border-radius:14px;overflow:hidden;background:#e5e7eb;box-shadow:0 4px 24px rgba(0,0,0,.1);margin-bottom:1.5rem">
+      <div style="background:#f3f4f6;padding:.35rem .65rem;display:flex;align-items:center;gap:.35rem">
+        <div style="width:8px;height:8px;border-radius:50%;background:#fc5c5c"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#fdbc40"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#34c84a"></div>
+        <div style="flex:1;background:#fff;border-radius:4px;height:16px;margin:0 .45rem;display:flex;align-items:center;padding:0 .45rem"><span id="webPreviewUrl" style="font-size:.58rem;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">—.citadoc.site</span></div>
+        <button onclick="refreshWebPreview()" style="padding:.1rem .35rem;background:none;border:none;cursor:pointer;font-size:.68rem;color:#9ca3af" title="Refrescar">↻</button>
+        <a id="webUrlOpen2" href="#" target="_blank" rel="noopener" style="padding:.1rem .35rem;background:none;border:none;font-size:.68rem;color:#9ca3af;text-decoration:none" title="Abrir">↗</a>
+      </div>
+      <div style="position:relative;overflow:hidden;height:480px;background:#fff">
+        <iframe id="webPreviewFrame" style="width:150%;height:720px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
+      </div>
+    </div>
+
+    <!-- AI WEB MODAL -->
+    <div id="aiWebModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;padding:1.5rem">
+      <div onclick="cerrarAiWebModal()" style="position:absolute;inset:0;background:rgba(5,3,12,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)"></div>
+      <div onclick="event.stopPropagation()" style="position:relative;width:min(680px,94vw);max-height:92vh;overflow-y:auto;background:radial-gradient(circle at 80% 10%,rgba(122,58,255,.18),transparent 40%),radial-gradient(circle at 10% 90%,rgba(0,180,120,.06),transparent 40%),#08060e;border:1px solid rgba(167,139,250,.16);border-radius:26px;padding:2.2rem 2.4rem;box-shadow:0 40px 100px rgba(0,0,0,.6);animation:aiModalIn .35s cubic-bezier(.16,1,.3,1)">
+
+        <button onclick="cerrarAiWebModal()" style="position:absolute;top:1.2rem;right:1.2rem;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.45);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseenter="this.style.background='rgba(255,255,255,.12)'" onmouseleave="this.style.background='rgba(255,255,255,.06)'">✕</button>
+
+        <!-- FORM STATE -->
+        <div id="aiModalForm">
+          <div style="font-size:.6rem;font-weight:700;color:rgba(167,139,250,.65);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.8rem">CitaDoc AI · PRO+WEB</div>
+          <h3 style="font-family:Fraunces,serif;font-size:1.7rem;font-weight:700;color:#fff;line-height:1.1;margin-bottom:.3rem">Tu identidad médica<br><em style="font-style:italic;font-weight:300;opacity:.75">generada con AI</em></h3>
+          <p style="font-size:.83rem;color:rgba(255,255,255,.36);margin-bottom:1.8rem;line-height:1.65">Sube tus assets. La IA analiza tu marca y construye una presencia premium única para ti.</p>
+
+          <!-- Uploads -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.3rem">
+            <label id="webPhotoCard" style="border:1.5px dashed rgba(255,255,255,.13);border-radius:16px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .22s;background:rgba(255,255,255,.025);display:block" onmouseenter="this.style.borderColor='rgba(167,139,250,.38)';this.style.background='rgba(167,139,250,.04)'" onmouseleave="webPhotoCardLeave()">
+              <input type="file" id="webPhotoInput" accept="image/*" style="display:none" onchange="webOnPhotoSelected(this)">
+              <div id="webPhotoThumb" style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;margin:0 auto .55rem;font-size:1.4rem;overflow:hidden">🖼</div>
+              <div id="webPhotoLbl" style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6)">Foto profesional</div>
+              <div style="font-size:.65rem;color:rgba(255,255,255,.26);margin-top:.15rem">Click para subir</div>
+            </label>
+            <label id="webLogoCard" style="border:1.5px dashed rgba(255,255,255,.13);border-radius:16px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .22s;background:rgba(255,255,255,.025);display:block" onmouseenter="this.style.borderColor='rgba(167,139,250,.38)';this.style.background='rgba(167,139,250,.04)'" onmouseleave="webLogoCardLeave()">
+              <input type="file" id="webLogoInput" accept="image/*" style="display:none" onchange="webOnLogoSelected(this)">
+              <div id="webLogoThumb" style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;margin:0 auto .55rem;font-size:1.4rem;overflow:hidden">⬡</div>
+              <div id="webLogoLbl" style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6)">Logo / Isotipo</div>
+              <div style="font-size:.65rem;color:rgba(255,255,255,.26);margin-top:.15rem">PNG o SVG</div>
+            </label>
+          </div>
+
+          <!-- Prompt -->
+          <textarea id="webAiPrompt" rows="2" placeholder="Ej: Clínica de fisioterapia deportiva, atletas de alto rendimiento, tono premium y cercano..." style="width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:.9rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:.88rem;color:#fff;resize:none;line-height:1.65;box-sizing:border-box;outline:none;transition:border-color .2s;margin-bottom:1rem" onfocus="this.style.borderColor='rgba(167,139,250,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
+
+          <!-- Perception chips -->
+          <div style="margin-bottom:1.5rem">
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">¿Cómo quieres que te perciban?</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.45rem" id="webPerceptionChips"></div>
+          </div>
+
+          <button onclick="webAiGenerar()" style="width:100%;padding:.95rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 10px 36px rgba(124,58,237,.42);transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 16px 50px rgba(124,58,237,.6)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 10px 36px rgba(124,58,237,.42)'">✨ Generar identidad médica con AI</button>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div id="aiModalLoading" style="display:none;text-align:center;padding:2rem 0">
+          <div id="aiLoadOrb" style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 1.2rem;box-shadow:0 0 40px rgba(124,58,237,.55);animation:aiOrbPulse 1.4s ease-in-out infinite">✨</div>
+          <div id="aiLoadStatus" style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:1.1rem">Analizando identidad médica...</div>
+          <div style="display:flex;flex-direction:column;gap:.45rem;max-width:300px;margin:0 auto" id="aiLoadSteps"></div>
+        </div>
+
+        <!-- DONE STATE -->
+        <div id="aiModalDone" style="display:none;text-align:center;padding:2rem 0">
+          <div style="width:58px;height:58px;border-radius:50%;background:rgba(52,211,153,.12);border:1.5px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 1rem;color:#34d399">✦</div>
+          <div style="font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:.3rem">Tu sitio está listo</div>
+          <div style="font-size:.82rem;color:rgba(255,255,255,.38);margin-bottom:1.6rem;line-height:1.6">Draft generado con tu identidad médica real.<br>El preview se actualizó en el panel.</div>
+          <div style="display:flex;gap:.65rem;justify-content:center;flex-wrap:wrap">
+            <button onclick="cerrarAiWebModal()" style="padding:.65rem 1.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">Ver preview ↙</button>
+            <button onclick="activarSitioWeb()" id="aiActivarBtnModal" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(124,58,237,.38)">⚡ Activar por $89</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <style>
+    @keyframes aiOrbPulse{0%,100%{box-shadow:0 0 40px rgba(124,58,237,.55)}50%{box-shadow:0 0 70px rgba(124,58,237,.85),0 0 110px rgba(124,58,237,.28)}}
+    @keyframes aiModalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+    </style>
 
     <!-- Personalizar manualmente (colapsable) -->
     <div style="border-top:1.5px solid #f3f4f6;padding-top:1.2rem">
@@ -2193,7 +2217,20 @@ function cargarMiSitio(m) {
   setText('webUrlText', webUrl);
   setText('webPreviewUrl', webUrl);
   var openLink = document.getElementById('webUrlOpen');
-  if (openLink) openLink.href = 'citadoc-web.html?slug='+slug;
+  if (openLink) openLink.href = 'citadoc-web.html?slug='+slug+(m.web_config_draft?'&preview=draft':'');
+
+  // Update AI strip state
+  if (m.web_config_draft) {
+    var stripStatus=document.getElementById('aiStripStatus');
+    if(stripStatus) stripStatus.textContent='Draft generado ✦ — Listo para activar';
+    var verBtn=document.getElementById('aiVerSitioBtn');
+    if(verBtn&&slug){verBtn.href='citadoc-web.html?slug='+slug+'&preview=draft';verBtn.style.display='inline-flex';}
+    var actBtn=document.getElementById('aiActivarBtn');
+    if(actBtn) actBtn.style.display='inline-flex';
+  }
+  // Update open link
+  var openLink2=document.getElementById('webUrlOpen2');
+  if(openLink2) openLink2.href='citadoc-web.html?slug='+slug+(m.web_config_draft?'&preview=draft':'');
 
   var wc = m.web_config||{};
   _wcTpl = wc.template||'minimal-white';
@@ -2243,46 +2280,208 @@ function toggleWebEditor(btn) {
   if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
 }
 
-var _webAiTpl = 'minimal-white';
-function webAiSelectTpl(btn, tpl) {
-  _webAiTpl = tpl;
-  document.querySelectorAll('.web-ai-tpl-btn').forEach(function(b){
-    b.style.background='rgba(255,255,255,.04)'; b.style.borderColor='rgba(255,255,255,.1)'; b.style.color='rgba(255,255,255,.5)';
-  });
-  btn.style.background='rgba(167,139,250,.2)'; btn.style.borderColor='rgba(167,139,250,.5)'; btn.style.color='rgba(255,255,255,.85)';
-  // Sync template selector
-  _wcTpl = tpl;
-  document.querySelectorAll('.web-tpl-card').forEach(function(c){ c.style.borderColor = c.dataset.tpl===tpl ? 'var(--teal)' : '#e5e7eb'; });
+// ── AI BUILDER v2 ──
+var _webPerception = 'cercania-humana';
+var _webPhotoUploaded = false;
+var _webLogoUploaded = false;
+var _webLogoPalette = null;
+
+var _PERCEPTION_MAP = {
+  'alto-rendimiento': {label:'Alto rendimiento',     dna:'sport',     energy:'high', headlines:['Vuelve a rendir al máximo.','El rendimiento comienza aquí.','Supera tus límites, recupera tu mejor versión.']},
+  'elegancia-premium':{label:'Elegancia premium',    dna:'luxury',    energy:'mid',  headlines:['Excelencia médica sin compromiso.','La mejor versión de tu salud.','Medicina de alto nivel, resultados reales.']},
+  'confianza-clinica':{label:'Confianza clínica',    dna:'corporate', energy:'low',  headlines:['Experiencia que inspira confianza.','Diagnóstico preciso, atención integral.','Tu salud en manos expertas.']},
+  'cercania-humana':  {label:'Cercanía humana',      dna:'default',   energy:'warm', headlines:['Tu bienestar, nuestra prioridad.','Atención médica que transforma vidas.','Contigo en cada paso del camino.']},
+  'innovacion-medica':{label:'Innovación médica',    dna:'sport',     energy:'high', headlines:['Medicina del siglo 21.','Tecnología avanzada, resultados reales.','El futuro de la medicina, hoy.']},
+  'recuperacion-dep': {label:'Recuperación deportiva',dna:'sport',    energy:'high', headlines:['Vuelve a moverte sin límites.','Recupera tu rendimiento deportivo.','De la lesión al podio.']}
+};
+
+function abrirAiWebModal() {
+  var m=document.getElementById('aiWebModal'); if(m){m.style.display='flex';document.body.style.overflow='hidden';}
+  webInitPerceptionChips();
+  aiModalState('form');
+}
+function cerrarAiWebModal() {
+  var m=document.getElementById('aiWebModal'); if(m){m.style.display='none';document.body.style.overflow='';}
 }
 
-async function webAiGenerar(btn) {
-  if (!M||!M.id) return;
-  var prompt = (document.getElementById('webAiPrompt')||{}).value||'';
-  if (btn) { btn.disabled=true; btn.textContent='✨ Generando…'; }
+function aiModalState(state) {
+  var form=document.getElementById('aiModalForm');
+  var load=document.getElementById('aiModalLoading');
+  var done=document.getElementById('aiModalDone');
+  if(form) form.style.display = state==='form'    ? 'block':'none';
+  if(load) load.style.display = state==='loading' ? 'block':'none';
+  if(done) done.style.display = state==='done'    ? 'block':'none';
+}
 
-  // Use existing csmFinalizarGeneracion logic but inline
-  var cfg = _TONOS_CFG[_csmTono]||_TONOS_CFG['Humano'];
-  var color = _ESTILOS_COLOR[_webAiTpl]||'#0b7c6e';
-  var esp = (M.especialidades||[])[0]||'';
-  var ciudad = M.ciudad||'';
-  var anos = M.anos_experiencia||'';
+function webBuilderState(state) {
+  // Legacy: redirect to modal states
+  if(state==='form') abrirAiWebModal();
+}
 
-  var sub = prompt || (esp&&anos ? esp+' con '+anos+' años de experiencia'+(ciudad?' en '+ciudad:'') : '');
-  var lc = Object.assign({}, M.web_config||{}, {
-    template: _webAiTpl,
-    headline: cfg.hero,
-    subheadline: sub||null,
-    cta_primary_text: cfg.cta,
+function webInitPerceptionChips() {
+  var wrap = document.getElementById('webPerceptionChips');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  Object.keys(_PERCEPTION_MAP).forEach(function(key) {
+    var cfg = _PERCEPTION_MAP[key];
+    var active = key === _webPerception;
+    var btn = document.createElement('button');
+    btn.dataset.perception = key;
+    btn.textContent = cfg.label;
+    btn.style.cssText = 'padding:.3rem .75rem;border-radius:50px;font-family:\'DM Sans\',sans-serif;font-size:.72rem;font-weight:500;cursor:pointer;transition:all .18s;'
+      + (active ? 'background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.5);color:#e9d5ff;' : 'background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.52);');
+    btn.onclick = function() {
+      _webPerception = key;
+      if (wrap) wrap.querySelectorAll('button').forEach(function(b) {
+        var on = b.dataset.perception === key;
+        b.style.background = on ? 'rgba(167,139,250,.2)' : 'rgba(255,255,255,.04)';
+        b.style.borderColor = on ? 'rgba(167,139,250,.5)' : 'rgba(255,255,255,.1)';
+        b.style.color = on ? '#e9d5ff' : 'rgba(255,255,255,.52)';
+      });
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function webPhotoCardLeave() { if (!_webPhotoUploaded) { var c=document.getElementById('webPhotoCard'); if(c){c.style.borderColor='rgba(255,255,255,.13)';c.style.background='rgba(255,255,255,.025)';} } }
+function webLogoCardLeave()  { if (!_webLogoUploaded)  { var c=document.getElementById('webLogoCard');  if(c){c.style.borderColor='rgba(255,255,255,.13)';c.style.background='rgba(255,255,255,.025)';} } }
+
+function webOnPhotoSelected(input) {
+  if (!input.files||!input.files[0]) return;
+  var file = input.files[0];
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var thumb = document.getElementById('webPhotoThumb');
+    if (thumb) { thumb.innerHTML=''; var img=document.createElement('img'); img.src=e.target.result; img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:8px'; thumb.appendChild(img); }
+    _webPhotoUploaded = true;
+    var lbl = document.getElementById('webPhotoLbl'); if(lbl) lbl.textContent = file.name.slice(0,18)+(file.name.length>18?'…':'');
+    var card = document.getElementById('webPhotoCard'); if(card){card.style.borderColor='rgba(52,211,153,.4)';card.style.background='rgba(52,211,153,.05)';}
+  };
+  reader.readAsDataURL(file);
+}
+
+function webOnLogoSelected(input) {
+  if (!input.files||!input.files[0]) return;
+  var file = input.files[0];
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var thumb = document.getElementById('webLogoThumb');
+    var img = document.createElement('img'); img.src=e.target.result; img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:8px;padding:3px';
+    if (thumb) { thumb.innerHTML=''; thumb.appendChild(img); }
+    _webLogoUploaded = true;
+    var lbl = document.getElementById('webLogoLbl'); if(lbl) lbl.textContent = file.name.slice(0,18)+(file.name.length>18?'…':'');
+    var card = document.getElementById('webLogoCard'); if(card){card.style.borderColor='rgba(167,139,250,.45)';card.style.background='rgba(167,139,250,.06)';}
+    img.onload = function() {
+      try {
+        var ct = new ColorThief();
+        var palette = ct.getPalette(img, 4);
+        _webLogoPalette = palette.map(function(rgb){ return '#'+[rgb[0],rgb[1],rgb[2]].map(function(v){return v.toString(16).padStart(2,'0');}).join(''); });
+      } catch(ex) { _webLogoPalette = null; }
+    };
+  };
+  reader.readAsDataURL(file);
+}
+
+async function webUploadAsset(inputId, bucket, path) {
+  var input = document.getElementById(inputId);
+  if (!input||!input.files||!input.files[0]) return null;
+  var file = input.files[0];
+  var ext = file.name.split('.').pop().toLowerCase();
+  var res = await _sb.storage.from(bucket).upload(path+'.'+ext, file, {upsert:true, contentType:file.type});
+  if (res.error) return null;
+  var pub = _sb.storage.from(bucket).getPublicUrl(path+'.'+ext);
+  return pub.data ? pub.data.publicUrl : null;
+}
+
+function webAiDeriveConfig(prompt, perception, palette, esp, city, anos) {
+  var pcfg = _PERCEPTION_MAP[perception] || _PERCEPTION_MAP['cercania-humana'];
+  var headlines = pcfg.headlines;
+  var headline = headlines[Math.floor(Math.random() * headlines.length)];
+  var sub = prompt
+    || (esp && anos ? 'Especialista en '+esp+' con '+anos+' años de experiencia'+(city?' en '+city:'')+'.' : '')
+    || (esp ? 'Especialista en '+esp+(city?' · '+city:'')+'. Atención personalizada y profesional.' : '')
+    || 'Atención médica personalizada y de excelencia.';
+  var color = (palette && palette.length) ? palette[0] : '#0d2318';
+  var ctaMap = {'elegancia-premium':'Solicitar consulta','confianza-clinica':'Reservar consulta'};
+  return {
+    perception: perception,
+    brand_direction: pcfg.dna,
+    visual_energy: pcfg.energy,
+    headline: headline,
+    subheadline: sub,
+    cta_primary_text: ctaMap[perception] || 'Agendar cita',
     primary_color: color,
-    servicios: null,
-    sobre_mi_highlights: null
+    generated_at: new Date().toISOString()
+  };
+}
+
+async function webAiGenerar() {
+  if (!M||!M.id) return;
+  webBuilderState('loading');
+
+  var steps = [
+    {label:'Analizando foto profesional',      ms:500},
+    {label:'Extrayendo paleta del logo',        ms:950},
+    {label:'Detectando identidad visual',       ms:1400},
+    {label:'Generando copywriting médico',      ms:1900},
+    {label:'Construyendo experiencia premium',  ms:2400}
+  ];
+  aiModalState('loading');
+  var stepsEl = document.getElementById('aiLoadSteps');
+  if (stepsEl) stepsEl.innerHTML = steps.map(function(s,i){
+    return '<div id="aiSt'+i+'" style="display:flex;align-items:center;gap:.62rem;padding:.4rem .75rem;border-radius:9px;background:rgba(255,255,255,.04)">'
+      +'<span id="aiSi'+i+'" style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(167,139,250,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.55rem"></span>'
+      +'<span style="font-size:.79rem;color:rgba(255,255,255,.42)">'+s.label+'</span></div>';
+  }).join('');
+
+  steps.forEach(function(s,i) {
+    setTimeout(function(){
+      var icon=document.getElementById('aiSi'+i);
+      if(icon){icon.style.background='rgba(167,139,250,.3)';icon.style.borderColor='rgba(167,139,250,.7)';icon.style.boxShadow='0 0 8px rgba(124,58,237,.4)';}
+      var status=document.getElementById('aiLoadStatus');
+      if(status) status.textContent=s.label+'...';
+      if(i>0){var prev=document.getElementById('aiSi'+(i-1));if(prev){prev.innerHTML='✓';prev.style.background='rgba(52,211,153,.25)';prev.style.border='none';prev.style.color='#34d399';prev.style.boxShadow='none';}}
+    }, s.ms);
   });
 
-  var res = await _sb.from('medicos').update({web_config: lc}).eq('id', M.id);
-  if (btn) { btn.disabled=false; btn.textContent='✨ Generar sitio premium con AI'; }
-  if (res.error) { mostrarToast('Error al guardar','error'); return; }
-  M.web_config = lc;
-  mostrarToast('Sitio generado ✓');
+  var esp = (M.especialidades||[])[0]||'';
+  var prompt = (document.getElementById('webAiPrompt')||{}).value||'';
+  var photoUrl = _webPhotoUploaded ? await webUploadAsset('webPhotoInput','fotos-medicos','web/photo-'+M.id) : null;
+  var logoUrl  = _webLogoUploaded  ? await webUploadAsset('webLogoInput', 'fotos-medicos','web/logo-'+M.id)  : null;
+  var cfg = webAiDeriveConfig(prompt, _webPerception, _webLogoPalette, esp, M.ciudad||'', M.anos_experiencia||'');
+  if (photoUrl) cfg.doctor_photo_url = photoUrl;
+  if (logoUrl)  cfg.logo_url = logoUrl;
+
+  setTimeout(async function() {
+    var last=document.getElementById('aiSi'+(steps.length-1));
+    if(last){last.innerHTML='✓';last.style.background='rgba(52,211,153,.25)';last.style.border='none';last.style.color='#34d399';last.style.boxShadow='none';}
+    var res = await _sb.from('medicos').update({web_config_draft:cfg, web_status:M.web_status==='active'?'active':'draft'}).eq('id',M.id);
+    if (res.error) { mostrarToast('Error al guardar draft','error'); aiModalState('form'); return; }
+    M.web_config_draft = cfg;
+    refreshWebPreview(true);
+    // Update strip
+    var stripStatus=document.getElementById('aiStripStatus');
+    if(stripStatus) stripStatus.textContent='Draft generado ✦ — Preview actualizado';
+    var verBtn=document.getElementById('aiVerSitioBtn');
+    if(verBtn&&M.slug){verBtn.href='citadoc-web.html?slug='+M.slug+'&preview=draft';verBtn.style.display='inline-flex';}
+    var actBtn=document.getElementById('aiActivarBtn');
+    if(actBtn) actBtn.style.display='inline-flex';
+    // Modal → done
+    setTimeout(function(){aiModalState('done');},250);
+    mostrarToast('Identidad médica generada ✦');
+  }, 2750);
+}
+
+async function activarSitioWeb() {
+  if (!M||!M.id||!M.web_config_draft) { mostrarToast('Genera un sitio primero','error'); return; }
+  var btn=document.getElementById('aiActivarBtn');
+  if(btn){btn.disabled=true;btn.textContent='Activando...';}
+  var res = await _sb.from('medicos').update({web_config:M.web_config_draft,web_status:'active'}).eq('id',M.id);
+  if(btn){btn.disabled=false;btn.textContent='⚡ Activar por $89';}
+  if(res.error){mostrarToast('Error: '+res.error.message,'error');return;}
+  M.web_config=M.web_config_draft; M.web_status='active';
+  cerrarAiWebModal();
+  mostrarToast('¡Sitio activado! ✦ Publicado en '+M.slug+'.citadoc.site');
   cargarMiSitio(M);
 }
 
@@ -2299,10 +2498,13 @@ function seleccionarTemplate(card, tpl) {
   refreshWebPreview();
 }
 
-function refreshWebPreview() {
+function refreshWebPreview(draft) {
   var frame = document.getElementById('webPreviewFrame');
   var slug = M && M.slug ? M.slug : '';
-  if (frame && slug) frame.src = 'citadoc-web.html?slug='+slug+'&tpl='+_wcTpl+'&t='+Date.now();
+  if (!frame || !slug) return;
+  var url = 'citadoc-web.html?slug='+slug+'&t='+Date.now();
+  if (draft || M.web_config_draft) url += '&preview=draft';
+  frame.src = url;
 }
 
 function showWebTab(tab, btn) {
