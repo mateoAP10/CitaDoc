@@ -283,6 +283,49 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 @media(max-width:768px){
   html,body{height:auto;min-height:100svh}
   html{padding-top:env(safe-area-inset-top)}
+.perfil-grid{
+  display:grid;
+  grid-template-columns:1fr !important;
+  gap:1rem;
+}
+
+.panel,
+.ptab-content,
+.profile-header-card{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box;
+}
+
+.panel-tabs{
+  overflow-x:auto;
+  width:100%;
+}
+
+.panel-tabs::-webkit-scrollbar{
+  display:none;
+}
+.main{
+  width:100% !important;
+  max-width:100% !important;
+  overflow-x:hidden;
+}
+
+.content{
+  width:100% !important;
+  max-width:100% !important;
+  overflow-x:hidden;
+  overflow-y:auto !important;
+  padding-left:1rem !important;
+  padding-right:1rem !important;
+  padding-bottom:220px !important;
+}
+
+body{
+  overflow-x:hidden;
+}
+
   /* Side nav → hidden, replaced by bottom */
   .sidebar{
     position:fixed;left:-100%;top:0;bottom:0;z-index:400;
@@ -298,13 +341,75 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   .content{padding:1.2rem 4% calc(80px + env(safe-area-inset-bottom))}
   /* Hamburger button */
   .mobile-ham{
-    display:flex;align-items:center;justify-content:center;
-    width:38px;height:38px;border-radius:10px;
-    background:rgba(11,124,110,.08);border:none;cursor:pointer;
-    font-size:1.1rem;-webkit-tap-highlight-color:transparent;
-  }
+display:flex;
+  flex-direction:column;
+  gap:4px;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  background:#f3f4f6;
+  border:1px solid rgba(0,0,0,.05);
+  cursor:pointer;
+  margin-right:.35rem;
+  flex-shrink:0;
+}
+
+  .ham-line{
+  display:block;
+  width:18px;
+  height:2.5px;
+  background:#374151;
+  border-radius:99px;
+}
   /* Top bar on mobile */
   .topbar{padding:0 4%;height:56px}
+.topbar-right{
+  gap:.5rem;
+}
+
+.topbar-user{
+  max-width:140px;
+}
+
+.topbar-info-name{
+  font-size:.9rem;
+  line-height:1;
+}
+
+.topbar-info-plan{
+  font-size:.72rem;
+}
+
+.btn-ver-perfil{
+  padding:.55rem .7rem !important;
+  font-size:.8rem !important;
+  border-radius:12px !important;
+  white-space:nowrap;
+}
+
+.topbar-avatar{
+  width:34px !important;
+  height:34px !important;
+  font-size:.9rem !important;
+}
+.topbar-info-name{
+  display:none;
+}
+
+.topbar-user{
+  gap:.35rem;
+}
+
+.btn-ver-perfil{
+  padding:.5rem .65rem !important;
+  font-size:.76rem !important;
+}
+
+.topbar-title{
+  font-size:1.05rem;
+}
   /* Dashboard bottom nav */
   .dash-bottom-nav{
     display:flex;
@@ -332,6 +437,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   input,select,textarea{font-size:1rem!important}
   /* Cards full-width */
   .stats-row{grid-template-columns:repeat(2,1fr)!important}
+.form-grid,
+.profile-grid,
+.field-row{
+  grid-template-columns:1fr !important;
+}
+
+.panel-tabs{
+  overflow-x:auto;
+  flex-wrap:nowrap;
+  padding-bottom:.4rem;
+}
+
+.panel-tabs::-webkit-scrollbar{
+  display:none;
+}
+
+.panel-tab{
+  flex-shrink:0;
+}
   .cal-grid{font-size:.75rem}
   /* AI builder modal */
   #aiWebModal .ai-builder-modal-content,#modalCrearSitio{
@@ -616,6 +740,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .ai-shimmer{background:linear-gradient(90deg,#f3f4f6 25%,#e9e9e9 50%,#f3f4f6 75%);background-size:200% 100%;animation:shimmerAI 1.4s infinite;border-radius:6px}
 </style>
   <!-- PayPhone SDK -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -668,13 +794,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   <!-- Sidebar overlay para mobile -->
   <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:blur(2px)"></div>
 
-  <header class="topbar">
-    <div style="display:flex;align-items:center;gap:.75rem">
-      <button id="btnHamburger" class="mobile-ham" onclick="toggleSidebar()" style="display:none" aria-label="Menu">
-        <span style="display:block;width:20px;height:2px;background:#374151;border-radius:2px"></span>
-        <span style="display:block;width:20px;height:2px;background:#374151;border-radius:2px"></span>
-        <span style="display:block;width:20px;height:2px;background:#374151;border-radius:2px"></span>
-      </button>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:.75rem">
+
+    <button id="btnHamburger" class="mobile-ham" onclick="toggleSidebar()" aria-label="Menu">
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+      <span class="ham-line"></span>
+    </button>
       <div class="topbar-title" id="topbarTitle">Panel médico</div>
     </div>
     <div class="topbar-right">
@@ -935,7 +1062,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 
       <!-- TAB: INFORMACIÓN -->
       <div id="ptab-info" class="ptab-content" style="display:block">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+        <div class="perfil-grid">
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">NOMBRE</label><input id="inf-nombre" placeholder="Mateo" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">APELLIDO</label><input id="inf-apellido" placeholder="Alarcon" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TÍTULO</label><input id="inf-titulo" placeholder="Dr." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
@@ -955,7 +1082,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
       <div id="ptab-ubicaciones" class="ptab-content" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
           <div style="font-size:.85rem;color:#6b7280">Agrega todos los consultorios donde atiendes</div>
-          <button onclick="abrirModalUbicacion()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar ubicación</button>
+          <button onclick="abrirMapaModal()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar ubicación</button>
         </div>
         <div id="ubicacionesList"></div>
       </div>
@@ -2203,7 +2330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     aplicarMedico(medico);
-
+window.medicoGlobal = medico;
     // Sidebar trigger — hover en tablet
     var sidebarTriggerEl = document.getElementById('sidebarTrigger');
     var sidebarEl = document.getElementById('sidebar');
@@ -2231,6 +2358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Error al cargar dashboard:',err);
     setText('sidebarNombre','Error - recarga');
   }
+
 });
 
 // ════════════════════════════════════════
@@ -5861,5 +5989,125 @@ if (typeof showPanel === 'function') {
     dashNavActive(id);
   };
 }
+let mapa;
+let marker;
+
+function abrirMapaModal(){
+
+  document.getElementById('mapModal').style.display='flex';
+
+  setTimeout(() => {
+
+    if(!mapa){
+
+      mapa = L.map('mapaUbicacion').setView([-2.170998, -79.922359], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:'© OpenStreetMap'
+      }).addTo(mapa);
+
+      marker = L.marker([-2.170998, -79.922359], {
+        draggable:true
+      }).addTo(mapa);
+marker.on('dragend', async function(){
+
+  const pos = marker.getLatLng();
+
+  const direccion =
+    document.getElementById('direccionManual').value || 'Ubicación seleccionada';
+
+  await guardarUbicacionMapa(
+    direccion,
+    pos.lat,
+    pos.lng
+  );
+
+});
+      L.Control.geocoder({
+        defaultMarkGeocode:false
+      })
+      .on('markgeocode', function(e){
+
+        const center = e.geocode.center;
+
+        mapa.setView(center, 17);
+
+        marker.setLatLng(center);
+
+        document.getElementById('direccionManual').value =
+          e.geocode.name;
+
+      })
+      .addTo(mapa);
+
+    }
+
+    mapa.invalidateSize();
+setTimeout(() => {
+  mapa.invalidateSize();
+}, 100);
+  }, 200);
+
+}
+
+function cerrarMapaModal(){
+  document.getElementById('mapModal').style.display='none';
+}
+
+async function guardarUbicacionMapa(direccion, lat, lng){
+
+  try{
+
+    const { data:{session} } = await _sb.auth.getSession();
+
+    await _sb.from('doctor_locations').insert({
+      medico_id: medicoGlobal.id,
+      nombre: direccion,
+      direccion: direccion,
+      direccion_manual: direccion,
+      lat: lat,
+      lng: lng
+    });
+
+    alert('Ubicación guardada 😄');
+
+    cerrarMapaModal();
+
+    cargarUbicaciones();
+
+  }catch(err){
+
+    console.error(err);
+
+    alert('Error guardando ubicación');
+
+  }
+
+}
 </script>
+<div id="mapModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+
+  <div style="background:#fff;width:100%;max-width:720px;border-radius:22px;padding:1rem">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 style="font-size:1.1rem">Seleccionar ubicación</h3>
+
+      <button onclick="cerrarMapaModal()" style="border:none;background:none;font-size:1.4rem;cursor:pointer">
+        ×
+      </button>
+    </div>
+
+    <input
+      id="direccionManual"
+      placeholder="Buscar dirección"
+      style="width:100%;padding:.85rem 1rem;border:1.5px solid #e5e7eb;border-radius:12px;margin-bottom:1rem"
+    >
+
+    <div id="mapaUbicacion"
+      style="height:380px;border-radius:18px;overflow:hidden">
+    </div>
+
+  </div>
+
+</div>
 </body>

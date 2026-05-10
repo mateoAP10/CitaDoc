@@ -196,7 +196,27 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .btn-dashboard:hover{background:var(--teal);color:#fff}
 
 @media(max-width:900px){.page-wrap{grid-template-columns:1fr}.plans-side{position:static;height:auto}.field-row{grid-template-columns:1fr}.schedule-grid{grid-template-columns:repeat(4,1fr)}.insurance-grid{grid-template-columns:1fr}}
+@media(max-width:768px){
 
+  .plans-side{
+    padding:2rem 1.2rem;
+  }
+
+  .plans-title{
+    font-size:2rem;
+    line-height:1.1;
+  }
+
+  .plan-card{
+    padding:1.2rem;
+    border-radius:20px;
+  }
+
+  .plan-price{
+    font-size:1.8rem;
+  }
+
+}
 /* ══ AUTH NAV ══ */
 .nav-auth{display:flex;align-items:center;gap:.8rem}
 .nav-logged-out{display:flex;align-items:center;gap:.7rem}
@@ -259,7 +279,9 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
   .logo{font-size:1.25rem}
   .nav-back{display:none}
   .page-wrap{grid-template-columns:1fr;padding-top:56px}
-  .plans-side{display:none}
+  .plans-side{
+  display:block;
+}
   .form-side{padding:1.4rem 5% calc(2rem + env(safe-area-inset-bottom))}
   /* Mobile plan pill — shown only on mobile */
   .mobile-plan-pill{display:flex}
@@ -272,6 +294,9 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
     width:100%;padding:1rem 1.5rem;font-size:1rem;
     border-radius:14px;-webkit-tap-highlight-color:transparent;
   }
+.step-3 .btn-next{
+  display:none;
+}
   .btn-back{padding:.75rem 1.2rem;-webkit-tap-highlight-color:transparent}
   .form-nav{
     position:sticky;bottom:0;
@@ -326,7 +351,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
     <a href="index.html" class="nav-back">← Volver al inicio</a>
     <div class="nav-auth">
       <div class="nav-logged-out" id="navLoggedOut" style="display:flex;align-items:center;gap:.7rem">
-        <a href="#" class="nav-link" onclick="openLogin?openLogin(event):null;return false">Iniciar sesión</a>
+       <a href="index.html?login=1" class="nav-link">Iniciar sesión</a>
         <a href="citadoc-registro.html" class="btn-nav">Registrarme</a>
       </div>
       <div class="nav-user-dropdown" id="navUserDropdown">
@@ -388,11 +413,14 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
           <div class="plan-radio"></div>
         </div>
         <ul class="plan-features">
-          <li>Todo lo del plan gratuito</li>
-          <li>Primero en resultados de búsqueda</li>
-          <li>Badge "Destacado" en tu perfil</li>
-          <li>Soporte prioritario</li>
-          <li>30 días gratis al inicio</li>
+          <li>Historias clínicas digitales</li>
+<li>Todo lo incluido en el plan gratuito</li>
+<li>Agenda inteligente de pacientes</li>
+<li>Envío de recetas médicas PDF</li>
+<li>Envío de pedidos de laboratorio e imágenes</li>
+<li>Prioridad en búsquedas</li>
+<li>Soporte prioritario</li>
+<li>30 días gratis al inicio</li>
         </ul>
       </div>
       <p class="trial-note"><strong>Sin tarjeta de crédito</strong> para el plan gratuito.</p>
@@ -438,7 +466,6 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
         <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" placeholder="Ej: +593 99 123 4567" id="f-tel"></div>
       </div>
       <p id="error-paso1" style="display:none;color:#dc2626;font-size:.83rem;margin-bottom:.8rem;padding:.6rem .9rem;background:#fef2f2;border-radius:9px"></p>
-      <div class="form-nav"><span></span><button class="btn-next" onclick="validarPaso1()">Siguiente → Tu perfil</button></div>
     </div>
 
     <!-- PASO 2 -->
@@ -811,7 +838,11 @@ async function activarCuenta(){
       especialidades:Array.from(selectedSpecs),
       seguros:Array.from(selectedIns),
       telefono:tel,horario_desde:desde,horario_hasta:hasta,dias_atencion:dias,
-      plan:selectedPlan==='featured'?'destacado':'gratuito',activo:true,
+      plan:selectedPlan==='featured'?'pro':'gratuito',
+trial_ends_at:selectedPlan==='featured'
+  ? new Date(Date.now() + 30*24*60*60*1000).toISOString()
+  : null,
+activo:true,
     }).select().single();
 
     if(medicoError){
