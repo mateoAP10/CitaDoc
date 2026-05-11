@@ -94,6 +94,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .cal-nav{width:26px;height:26px;border-radius:7px;background:var(--cream);border:1px solid var(--border);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .cal-nav:hover{background:var(--teal-lite);border-color:var(--teal)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:1rem}
+.cal-grid-desktop{display:block}
+.cal-days-mobile{display:none}
+.day-card{flex:0 0 64px;height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;scroll-snap-align:start;transition:all .2s ease}
+.day-card .day-name{font-size:.68rem;font-weight:600;color:var(--muted2);text-transform:uppercase}
+.day-card .day-num{font-size:1.1rem;font-weight:700;color:var(--ink);margin-top:.15rem}
+.day-card.available{border-color:var(--teal-mid);background:var(--cream)}
+.day-card.available .day-name{color:var(--teal)}
+.day-card.selected{background:var(--teal);border-color:var(--teal);box-shadow:0 4px 16px rgba(11,124,110,.2)}
+.day-card.selected .day-name,.day-card.selected .day-num{color:#fff}
+.day-card.past{opacity:.35;cursor:default}
+.day-card.today{border-color:var(--teal)}
 .cal-dow{font-size:.62rem;font-weight:700;color:var(--muted2);text-align:center;padding:.2rem 0}
 .cal-day{font-size:.76rem;text-align:center;padding:.32rem .1rem;border-radius:7px;color:var(--muted2)}
 .cal-day.available{color:var(--ink2);cursor:pointer;font-weight:600;background:var(--cream)}
@@ -139,12 +150,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .sede-info-label strong{color:var(--ink);font-weight:600}
 /* ── Mobile calendar premium ── */
 @media(max-width:768px){
-  .cal-grid{gap:4px}
-  .cal-day{padding:.42rem .1rem;font-size:.84rem;border-radius:10px}
-  .cal-dow{font-size:.66rem;padding:.3rem 0}
-  .cal-nav{width:32px;height:32px;font-size:.95rem}
-  .slots-grid{grid-template-columns:repeat(3,1fr);gap:.45rem}
-  .slot{padding:.52rem .2rem;font-size:.81rem;border-radius:10px}
+  /* Desktop calendar hidden on mobile */
+  .cal-grid-desktop{display:none!important}
+  .cal-days-mobile{display:flex!important;gap:.5rem;overflow-x:auto;padding:.3rem 0 .6rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .cal-days-mobile::-webkit-scrollbar{display:none}
+  .cal-header .cal-nav{display:none}
+  .cal-title{font-size:.95rem}
+  .day-card{flex:0 0 68px;height:76px;border-radius:18px}
+  .day-card .day-name{font-size:.72rem}
+  .day-card .day-num{font-size:1.15rem}
+  /* Slots premium mobile */
+  .slots-grid{grid-template-columns:repeat(2,1fr);gap:.5rem}
+  .slot{padding:.72rem .2rem;font-size:.9rem;border-radius:12px;font-weight:600}
 }
 .login-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem}
 .login-overlay.open{display:flex}
@@ -422,7 +439,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
                 <div class="cal-title" id="calTitle">--</div>
                 <button class="cal-nav" id="btnNext">&#8250;</button>
               </div>
-              <div class="cal-grid" id="calGrid"></div>
+              <div class="cal-grid-desktop" id="calGridDesktop">
+                <div class="cal-grid" id="calGrid"></div>
+              </div>
+              <div class="cal-days-mobile" id="calDaysMobile"></div>
               <div class="slots-wrap" id="slotsWrap" style="display:none">
                 <div class="slots-title" id="slotsTitle">Horarios disponibles</div>
                 <div class="slots-grid" id="slotsGrid"></div>
@@ -575,6 +595,49 @@ function renderCal() {
       })(fStr, d);
     }
     grid.appendChild(div);
+  }
+  // Render mobile day cards
+  renderMobileDays();
+}
+
+function renderMobileDays() {
+  var container = el('calDaysMobile');
+  if (!container) return;
+  container.innerHTML = '';
+  var today = new Date(); today.setHours(0,0,0,0);
+  var diaNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  for (var i = 0; i < 60; i++) {
+    var date = new Date(today);
+    date.setDate(today.getDate() + i);
+    var fStr = date.toISOString().split('T')[0];
+    var isPast = false;
+    var isToday = date.getTime() === today.getTime();
+    var isAvail = !!_disp[fStr];
+    var isSel = selectedDate === fStr;
+
+    var card = document.createElement('div');
+    card.className = 'day-card';
+    if (isPast) card.className += ' past';
+    if (isToday) card.className += ' today';
+    if (isAvail) card.className += ' available';
+    if (isSel) card.className += ' selected';
+
+    var nameEl = document.createElement('span');
+    nameEl.className = 'day-name';
+    nameEl.textContent = diaNames[date.getDay()];
+    card.appendChild(nameEl);
+
+    var numEl = document.createElement('span');
+    numEl.className = 'day-num';
+    numEl.textContent = date.getDate();
+    card.appendChild(numEl);
+
+    if (isAvail) {
+      (function(fechaStr, dayNum) {
+        card.addEventListener('click', function() { selectFecha(fechaStr, dayNum); });
+      })(fStr, date.getDate());
+    }
+    container.appendChild(card);
   }
 }
 

@@ -120,6 +120,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .modal-cal-title{font-size:.88rem;font-weight:700;color:var(--ink)}
 .modal-cal-nav{width:26px;height:26px;border-radius:7px;background:var(--cream);border:1px solid var(--border);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center}
 .modal-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:1rem}
+.modal-cal-grid-desktop{display:block}
+.modal-cal-days-mobile{display:none}
+.modal-day-card{flex:0 0 64px;height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;scroll-snap-align:start;transition:all .2s ease}
+.modal-day-card .day-name{font-size:.68rem;font-weight:600;color:var(--muted2);text-transform:uppercase}
+.modal-day-card .day-num{font-size:1.1rem;font-weight:700;color:var(--ink);margin-top:.15rem}
+.modal-day-card.available{border-color:var(--teal-mid);background:var(--cream)}
+.modal-day-card.available .day-name{color:var(--teal)}
+.modal-day-card.selected{background:var(--teal);border-color:var(--teal);box-shadow:0 4px 16px rgba(11,124,110,.2)}
+.modal-day-card.selected .day-name,.modal-day-card.selected .day-num{color:#fff}
+.modal-day-card.past{opacity:.35;cursor:default}
+.modal-day-card.today{border-color:var(--teal)}
 .modal-cal-dow{font-size:.62rem;font-weight:700;color:var(--muted2);text-align:center;padding:.2rem 0}
 .modal-cal-day{font-size:.78rem;text-align:center;padding:.35rem .1rem;border-radius:7px;color:var(--muted2)}
 .modal-cal-day.available{color:var(--ink2);cursor:pointer;font-weight:600}
@@ -149,12 +160,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .sede-info-label strong{color:var(--ink);font-weight:600}
 /* ── Mobile calendar premium ── */
 @media(max-width:768px){
-  .modal-cal-grid{gap:4px}
-  .modal-cal-day{padding:.42rem .1rem;font-size:.84rem;border-radius:10px}
-  .modal-cal-dow{font-size:.66rem;padding:.3rem 0}
-  .modal-cal-nav{width:32px;height:32px;font-size:.95rem}
-  .time-slots{grid-template-columns:repeat(3,1fr);gap:.45rem}
-  .time-slot{padding:.52rem .2rem;font-size:.81rem;border-radius:10px}
+  /* Desktop calendar hidden on mobile */
+  .modal-cal-grid-desktop{display:none!important}
+  .modal-cal-days-mobile{display:flex!important;gap:.5rem;overflow-x:auto;padding:.3rem 0 .6rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .modal-cal-days-mobile::-webkit-scrollbar{display:none}
+  .modal-cal-header .modal-cal-nav{display:none}
+  .modal-cal-title{font-size:.95rem}
+  .modal-day-card{flex:0 0 68px;height:76px;border-radius:18px}
+  .modal-day-card .day-name{font-size:.72rem}
+  .modal-day-card .day-num{font-size:1.15rem}
+  /* Slots premium mobile */
+  .time-slots{grid-template-columns:repeat(2,1fr);gap:.5rem}
+  .time-slot{padding:.72rem .2rem;font-size:.9rem;border-radius:12px;font-weight:600}
 }
 .modal-field input:focus{border-color:var(--teal-mid);background:var(--white)}
 .btn-confirm{width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;cursor:pointer;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;transition:background .2s}
@@ -716,7 +733,10 @@ footer a{color:var(--teal-mid);text-decoration:none}
             <div class="modal-cal-title" id="calTitle">--</div>
             <button class="modal-cal-nav" id="btnCalNext">&#8250;</button>
           </div>
-          <div class="modal-cal-grid" id="calGrid"></div>
+          <div class="modal-cal-grid-desktop" id="modalCalDesktop">
+            <div class="modal-cal-grid" id="calGrid"></div>
+          </div>
+          <div class="modal-cal-days-mobile" id="modalCalDaysMobile"></div>
           <div id="slotsWrap" style="display:none">
             <div class="modal-slots-label" id="slotsLabel">Horarios disponibles</div>
             <div class="time-slots" id="timeSlots"></div>
@@ -1220,6 +1240,46 @@ function renderCal() {
       })(fStr, d);
     }
     grid.appendChild(div);
+  }
+  renderMobileDaysModal();
+}
+
+function renderMobileDaysModal() {
+  var container = el('modalCalDaysMobile');
+  if (!container) return;
+  container.innerHTML = '';
+  var today = new Date(); today.setHours(0,0,0,0);
+  var diaNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  for (var i = 0; i < 60; i++) {
+    var date = new Date(today);
+    date.setDate(today.getDate() + i);
+    var fStr = date.toISOString().split('T')[0];
+    var isToday = date.getTime() === today.getTime();
+    var isAvail = !!dispModal[fStr];
+    var isSel = selectedDate === fStr;
+
+    var card = document.createElement('div');
+    card.className = 'modal-day-card';
+    if (isToday) card.className += ' today';
+    if (isAvail) card.className += ' available';
+    if (isSel) card.className += ' selected';
+
+    var nameEl = document.createElement('span');
+    nameEl.className = 'day-name';
+    nameEl.textContent = diaNames[date.getDay()];
+    card.appendChild(nameEl);
+
+    var numEl = document.createElement('span');
+    numEl.className = 'day-num';
+    numEl.textContent = date.getDate();
+    card.appendChild(numEl);
+
+    if (isAvail) {
+      (function(fechaStr, dayNum) {
+        card.addEventListener('click', function() { selectFecha(fechaStr, dayNum); });
+      })(fStr, date.getDate());
+    }
+    container.appendChild(card);
   }
 }
 
