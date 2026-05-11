@@ -718,6 +718,8 @@ display:flex;
 .btn-del-bloque:hover{color:#dc2626;background:#fef2f2}
 .btn-add-bloque{width:100%;padding:.42rem;background:none;border:1.5px dashed #d1d5db;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#6b7280;cursor:pointer;margin-top:.2rem}
 .btn-add-bloque:hover{border-color:#0b7c6e;color:#0b7c6e;background:#f0fdf4}
+.bloque-location{width:100%;padding:.3rem .55rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--ink2);background:var(--white);margin-bottom:.35rem;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none}
+.bloque-location:focus{border-color:var(--teal-mid)}
 .dia-inactivo{text-align:center;padding:.9rem 0;font-size:.8rem;color:#9ca3af}
 
 .ux-spinner{width:28px;height:28px;border:3px solid #e5e7eb;border-top-color:#0b7c6e;border-radius:50%;animation:spin .7s linear infinite}
@@ -1640,27 +1642,56 @@ var DIAS_SEMANA = [
   {key:'dom', label:'Domingo'}
 ];
 
-// Modelo de horarios: { lun: {activo, bloques:[{desde,hasta}]}, ... }
+// Modelo de horarios: { lun: {activo, bloques:[{desde,hasta,location_id}]}, ... }
 var horariosBloques = {};
 DIAS_SEMANA.forEach(function(d) {
   horariosBloques[d.key] = {
     activo: ['lun','mar','mie','jue','vie'].indexOf(d.key) > -1,
     bloques: [
-      {desde:'09:00', hasta:'13:00'},
-      {desde:'15:00', hasta:'18:00'}
+      {desde:'09:00', hasta:'13:00', location_id: null},
+      {desde:'15:00', hasta:'18:00', location_id: null}
     ]
   };
 });
 
-function inicializarSlots(m) {
-  // Cargar desde horarios_config si existe
-  if (m.horarios_config) {
+async function inicializarSlots(m) {
+  // ── PRIMERO: intentar cargar nuevo sistema ──
+  var resBlocks = await _sb
+    .from('doctor_schedule_blocks')
+    .select('*')
+    .eq('medico_id', m.id);
+
+  var blocks = resBlocks.data || [];
+
+  // Reiniciar estructura
+  DIAS_SEMANA.forEach(function(d){
+    horariosBloques[d.key] = {
+      activo: false,
+      bloques: []
+    };
+  });
+
+  // ── Nuevo sistema ──
+  if (blocks.length) {
+    blocks.forEach(function(b){
+      if (!horariosBloques[b.day]) return;
+      horariosBloques[b.day].activo = true;
+      horariosBloques[b.day].bloques.push({
+        desde: b.start_time,
+        hasta: b.end_time,
+        location_id: b.location_id || null
+      });
+    });
+  }
+  // ── Legacy fallback ──
+  else if (m.horarios_config) {
     DIAS_SEMANA.forEach(function(d) {
       var cfg = m.horarios_config[d.key];
       if (cfg) {
         horariosBloques[d.key] = {
           activo: cfg.activo !== false,
-          bloques: cfg.bloques || [{desde: cfg.desde||'09:00', hasta: cfg.hasta||'17:00'}]
+          bloques: (cfg.bloques || [{desde: cfg.desde||'09:00', hasta: cfg.hasta||'17:00'}])
+            .map(function(b){ return {desde: b.desde, hasta: b.hasta, location_id: b.location_id || null}; })
         };
       }
     });
@@ -1672,7 +1703,7 @@ function inicializarSlots(m) {
     DIAS_SEMANA.forEach(function(d) {
       horariosBloques[d.key] = {
         activo: dias.indexOf(d.key) > -1,
-        bloques: [{desde: desde, hasta: hasta}]
+        bloques: [{desde: desde, hasta: hasta, location_id: null}]
       };
     });
   }
@@ -1735,7 +1766,7 @@ function bloquesASlots(bloques, duracion) {
 
 function normalizarBloques(bloques) {
   return (bloques||[]).map(function(b) {
-    return { desde: (b.desde||'').slice(0,5), hasta: (b.hasta||'').slice(0,5) };
+    return { desde: (b.desde||'').slice(0,5), hasta: (b.hasta||'').slice(0,5), location_id: b.location_id || null };
   });
 }
 
@@ -1791,6 +1822,38 @@ async function guardarHorarios(btn) {
     };
   });
 
+  // ── Persistencia nuevo sistema ──
+  await _sb
+    .from('doctor_schedule_blocks')
+    .delete()
+    .eq('medico_id', M.id);
+
+  var blocksToInsert = [];
+  DIAS_SEMANA.forEach(function(d){
+    var hd = horariosBloques[d.key];
+    if (!hd.activo) return;
+    hd.bloques.forEach(function(b){
+      if (!b.desde || !b.hasta || b.desde >= b.hasta) return;
+      console.log('[DEBUG] push block:', d.key, b.desde, b.hasta, 'location_id:', b.location_id);
+      blocksToInsert.push({
+        medico_id: M.id,
+        day: d.key,
+        start_time: b.desde,
+        end_time: b.hasta,
+        location_id: b.location_id || null,
+        is_active: true
+      });
+    });
+  });
+
+  console.log('[DEBUG] blocksToInsert:', JSON.stringify(blocksToInsert));
+
+  if (blocksToInsert.length) {
+    var insertRes = await _sb.from('doctor_schedule_blocks').insert(blocksToInsert);
+    console.log('[DEBUG] insert result:', insertRes.error ? 'ERROR: '+insertRes.error.message : 'OK');
+  }
+
+  // ── Legacy update ──
   await _sb.from('medicos').update({
     dias_atencion:   activos,
     horario_desde:   primerBloque.desde,
@@ -2196,7 +2259,7 @@ async function cargarFormacion(medicoId){
 }
 
 // ══ APLICAR MÉDICO AL DOM ══
-function aplicarMedico(m) {
+async function aplicarMedico(m) {
   M = m;
   slugActual = m.slug || '';
   AppState.medico = m;       // misma referencia — mutaciones en M.prop se reflejan aquí
@@ -2291,7 +2354,7 @@ function aplicarMedico(m) {
   updatePreview();
 
   // Horarios
-  inicializarSlots(m);
+  await inicializarSlots(m);
 
   // Datos de Supabase
   if(m.id){
@@ -2329,7 +2392,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error:',error);
       return;
     }
-    aplicarMedico(medico);
+    await aplicarMedico(medico);
 window.medicoGlobal = medico;
     // Sidebar trigger — hover en tablet
     var sidebarTriggerEl = document.getElementById('sidebarTrigger');
@@ -4663,6 +4726,28 @@ function renderDiasHorarios() {
         var del = document.createElement('button'); del.className='btn-del-bloque'; del.textContent='✕';
         row.appendChild(d1); row.appendChild(sep); row.appendChild(d2); row.appendChild(del);
         body.appendChild(row);
+
+        // Selector de consultorio
+        var locSelect = document.createElement('select');
+        locSelect.className = 'bloque-location';
+        locSelect.innerHTML = '<option value="">📍 Seleccionar consultorio</option>';
+        (window.locationsMedico || []).forEach(function(loc){
+          var opt = document.createElement('option');
+          opt.value = loc.id;
+          opt.textContent = loc.nombre || 'Consultorio';
+          if (String(b.location_id) === String(loc.id)) {
+            opt.selected = true;
+          }
+          locSelect.appendChild(opt);
+        });
+        (function(dk, bi, sel){
+          sel.addEventListener('change', function(){
+            horariosBloques[dk].bloques[bi].location_id = sel.value || null;
+            console.log('[DEBUG] location_id updated:', dk, 'bloque', bi, '→', sel.value || null);
+          });
+        })(d.key, i, locSelect);
+        body.appendChild(locSelect);
+
         (function(dk, bi) {
           d1.addEventListener('change', function(){ horariosBloques[dk].bloques[bi].desde=d1.value; });
           d2.addEventListener('change', function(){ horariosBloques[dk].bloques[bi].hasta=d2.value; });
@@ -4671,7 +4756,7 @@ function renderDiasHorarios() {
       });
       var addBtn = document.createElement('button'); addBtn.className='btn-add-bloque'; addBtn.textContent='+ Agregar bloque';
       addBtn.addEventListener('click', function(){
-        horariosBloques[d.key].bloques.push({desde:'09:00',hasta:'17:00'}); renderDiasHorarios();
+        horariosBloques[d.key].bloques.push({desde:'09:00',hasta:'17:00',location_id:null}); renderDiasHorarios();
       });
       body.appendChild(addBtn);
     } else {
@@ -5529,7 +5614,7 @@ async function guardarPerfil(btnArg) {
   if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
   Object.assign(M, upd);
   mostrarToast('Perfil actualizado correctamente \u2713');
-  aplicarMedico(M); cargarFormPerfil(M);
+  await aplicarMedico(M); cargarFormPerfil(M);
 }
 
 async function guardarRedesSociales() {
@@ -5580,6 +5665,7 @@ async function cargarUbicaciones() {
   uiLoading('ubicacionesList','Cargando ubicaciones...');
   var res = await _sb.from('doctor_locations').select('*').eq('medico_id',M.id).order('created_at');
   if (res.error) { uiError('ubicacionesList',res.error.message,cargarUbicaciones); return; }
+  window.locationsMedico = res.data || [];
   renderUbicaciones(res.data||[]);
 }
 

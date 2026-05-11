@@ -132,9 +132,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .time-slot:hover{border-color:var(--teal);color:var(--teal)}
 .time-slot.selected{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
 .time-slot.taken{opacity:.35;cursor:not-allowed;text-decoration:line-through}
-.modal-field{margin-bottom:.9rem}
+.modal-field{margin-bottom:.75rem}
 .modal-field label{display:block;font-size:.76rem;font-weight:600;color:var(--ink2);margin-bottom:.35rem}
-.modal-field input{width:100%;padding:.68rem .95rem;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none;transition:border-color .2s}
+.modal-field input{width:100%;padding:.58rem .85rem;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none;transition:border-color .2s}
 .modal-field input:focus{border-color:var(--teal-mid);background:var(--white)}
 .btn-confirm{width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;cursor:pointer;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;transition:background .2s}
 .btn-confirm:hover{background:var(--teal-mid)}
@@ -150,7 +150,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .success-check{width:60px;height:60px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .9rem}
 .login-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem}
 .login-overlay.open{display:flex}
-.login-modal{background:var(--white);border-radius:20px;width:100%;max-width:380px;padding:2rem;box-shadow:var(--shadow-lg);position:relative}
+.login-modal{background:var(--white);border-radius:20px;width:100%;max-width:380px;padding:1.6rem 1.8rem;box-shadow:var(--shadow-lg);position:relative}
 footer{background:var(--ink);color:rgba(255,255,255,.5);text-align:center;padding:2rem 5%;font-size:.82rem;margin-top:4rem}
 footer a{color:var(--teal-mid);text-decoration:none}
 @media(max-width:640px){
@@ -531,6 +531,13 @@ footer a{color:var(--teal-mid);text-decoration:none}
     animation:bkSheet .35s cubic-bezier(.16,1,.3,1)!important;
   }
   .login-overlay,.booking-overlay{align-items:flex-end!important;padding:0!important}
+  /* Login modal: floating centered card on mobile */
+  .login-overlay{align-items:center!important;padding:1rem!important}
+  .login-modal{
+    border-radius:20px!important;
+    max-width:340px!important;
+    animation:none!important;
+  }
   @keyframes bkSheet{from{transform:translateY(100%)}to{transform:none}}
   /* Footer */
   footer{padding-bottom:calc(1.5rem + 64px + env(safe-area-inset-bottom))}
@@ -739,11 +746,11 @@ footer a{color:var(--teal-mid);text-decoration:none}
   <div class="login-modal">
     <button id="btnCloseLogin" style="position:absolute;top:1.2rem;right:1.2rem;width:32px;height:32px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:1rem">✕</button>
     <h3 style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;color:var(--ink);margin-bottom:.25rem">Acceso médicos</h3>
-    <p style="font-size:.84rem;color:var(--muted);margin-bottom:1.4rem">Entra a tu panel de CitaDoc</p>
+    <p style="font-size:.84rem;color:var(--muted);margin-bottom:1rem">Entra a tu panel de CitaDoc</p>
     <div class="modal-field"><label>Correo electrónico</label><input type="email" id="loginEmail" placeholder="tu@email.com"></div>
     <div class="modal-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••"></div>
     <p id="loginError" style="font-size:.82rem;color:#dc2626;margin-bottom:.8rem;display:none"></p>
-    <button id="btnDoLogin" style="width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:1rem">Entrar al dashboard →</button>
+    <button id="btnDoLogin" style="width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:.6rem">Entrar al dashboard →</button>
     <p style="text-align:center;font-size:.84rem"><a href="citadoc-registro.html" style="color:var(--teal);font-weight:600;text-decoration:none">¿No tienes cuenta? Regístrate gratis</a></p>
   </div>
 </div>

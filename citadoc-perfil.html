@@ -127,7 +127,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .share-btn:hover{border-color:var(--teal);color:var(--teal)}
 .login-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem}
 .login-overlay.open{display:flex}
-.login-modal{background:var(--white);border-radius:20px;width:100%;max-width:360px;padding:2rem;box-shadow:var(--shadow-lg);position:relative}
+.login-modal{background:var(--white);border-radius:20px;width:100%;max-width:360px;padding:1.6rem 1.8rem;box-shadow:var(--shadow-lg);position:relative}
 /* ── PUBLIC BOTTOM NAV ── */
 .pub-bottom-nav {
   display: none;
@@ -472,11 +472,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
   <div class="login-modal">
     <button id="btnCloseLogin" style="position:absolute;top:1rem;right:1rem;width:30px;height:30px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:.9rem">✕</button>
     <h3 style="font-family:'Fraunces',serif;font-size:1.3rem;margin-bottom:.25rem">Acceso médicos</h3>
-    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem">Entra a tu panel de CitaDoc</p>
-    <div style="margin-bottom:.8rem"><label style="display:block;font-size:.74rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem">Email</label><input type="email" id="loginEmail" style="width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none" placeholder="tu@email.com"></div>
-    <div style="margin-bottom:.8rem"><label style="display:block;font-size:.74rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem">Contraseña</label><input type="password" id="loginPass" style="width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none" placeholder="••••••••"></div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:.9rem">Entra a tu panel de CitaDoc</p>
+    <div style="margin-bottom:.65rem"><label style="display:block;font-size:.74rem;font-weight:600;color:var(--ink2);margin-bottom:.28rem">Email</label><input type="email" id="loginEmail" style="width:100%;padding:.58rem .85rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none" placeholder="tu@email.com"></div>
+    <div style="margin-bottom:.65rem"><label style="display:block;font-size:.74rem;font-weight:600;color:var(--ink2);margin-bottom:.28rem">Contraseña</label><input type="password" id="loginPass" style="width:100%;padding:.58rem .85rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none" placeholder="••••••••"></div>
     <p id="loginError" style="font-size:.8rem;color:#dc2626;margin-bottom:.7rem;display:none"></p>
-    <button id="btnDoLogin" style="width:100%;padding:.82rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:600;cursor:pointer;margin-bottom:.8rem">Entrar →</button>
+    <button id="btnDoLogin" style="width:100%;padding:.82rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:600;cursor:pointer;margin-bottom:.5rem">Entrar →</button>
     <p style="text-align:center;font-size:.82rem"><a href="citadoc-registro.html" style="color:var(--teal);font-weight:600;text-decoration:none">¿No tienes cuenta? Regístrate</a></p>
   </div>
 </div>
