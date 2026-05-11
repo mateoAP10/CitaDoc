@@ -149,6 +149,118 @@ function cargarDisponibilidadConBloqueos(medico, citas, sbClient) {
   });
 }
 
+// ── DISPONIBILIDAD POR SEDE (lee doctor_schedule_blocks) ──
+function cargarDisponibilidadPorSede(medico, citas, sbClient, locationId) {
+  var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  var en60 = new Date(hoy); en60.setDate(hoy.getDate() + 60);
+  var fechaHoy = hoy.toISOString().split('T')[0];
+  var fecha60  = en60.toISOString().split('T')[0];
+
+  return sbClient.from('doctor_schedule_blocks')
+    .select('day, start_time, end_time, location_id')
+    .eq('medico_id', medico.id)
+    .eq('is_active', true)
+    .then(function(resBlocks) {
+      var blocks = resBlocks.data || [];
+      // Fallback legacy si no hay bloques nuevos
+      if (!blocks.length) {
+        return cargarDisponibilidadConBloqueos(medico, citas, sbClient);
+      }
+
+      // Filtrar por sede si se especificó
+      if (locationId != null) {
+        blocks = blocks.filter(function(b) {
+          return String(b.location_id || '') === String(locationId);
+        });
+      }
+
+      return Promise.all([
+        sbClient.from('bloqueos_medico')
+          .select('fecha_inicio, fecha_fin')
+          .eq('medico_id', medico.id)
+          .gte('fecha_fin', fechaHoy)
+          .lte('fecha_inicio', fecha60),
+        sbClient.from('excepciones_medico')
+          .select('fecha, tipo, desde, hasta')
+          .eq('medico_id', medico.id)
+          .gte('fecha', fechaHoy)
+          .lte('fecha', fecha60)
+      ]).then(function(results) {
+        var bloqueos    = results[0].data || [];
+        var excepciones = results[1].data || [];
+
+        var fechasBloqueadas = {};
+        bloqueos.forEach(function(b) {
+          var cur = new Date(b.fecha_inicio + 'T12:00:00');
+          var fin = new Date(b.fecha_fin + 'T12:00:00');
+          while (cur <= fin) {
+            fechasBloqueadas[cur.toISOString().split('T')[0]] = true;
+            cur.setDate(cur.getDate() + 1);
+          }
+        });
+
+        var excMap = {};
+        excepciones.forEach(function(e) { excMap[e.fecha] = e; });
+
+        var DIAS_KEY = ['dom','lun','mar','mie','jue','vie','sab'];
+        var disp = {};
+
+        // Agrupar bloques por día de semana para lookup rápido
+        var bloquesPorDia = {};
+        blocks.forEach(function(b) {
+          if (!bloquesPorDia[b.day]) bloquesPorDia[b.day] = [];
+          bloquesPorDia[b.day].push(b);
+        });
+
+        for (var i = 0; i < 60; i++) {
+          var fecha = new Date(hoy);
+          fecha.setDate(hoy.getDate() + i);
+          var fechaStr = fecha.toISOString().split('T')[0];
+
+          if (fechasBloqueadas[fechaStr]) continue;
+
+          if (excMap[fechaStr]) {
+            var exc = excMap[fechaStr];
+            if (exc.tipo === 'bloqueado') continue;
+            if (exc.tipo === 'custom' && exc.desde && exc.hasta) {
+              var slots = [];
+              var min = parseInt(exc.desde.split(':')[0]) * 60 + parseInt(exc.desde.split(':')[1]);
+              var max = parseInt(exc.hasta.split(':')[0]) * 60 + parseInt(exc.hasta.split(':')[1]);
+              var limHoy2 = (i === 0) ? (new Date().getHours() * 60 + new Date().getMinutes() + 120) : 0;
+              while (min < max) {
+                var horaStr = String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+                var ocupado2 = citas.some(function(ct) { return ct.fecha === fechaStr && ct.hora === horaStr; });
+                if (!ocupado2 && !(i === 0 && min < limHoy2)) slots.push(horaStr);
+                min += 30;
+              }
+              if (slots.length) disp[fechaStr] = slots;
+              continue;
+            }
+          }
+
+          var diaKey = DIAS_KEY[new Date(fechaStr + 'T12:00:00').getDay()];
+          var diaBloques = bloquesPorDia[diaKey];
+          if (!diaBloques || !diaBloques.length) continue;
+
+          var limHoy3 = (i === 0) ? (new Date().getHours() * 60 + new Date().getMinutes() + 120) : 0;
+          var slotsNorm = [];
+          diaBloques.forEach(function(b) {
+            var min2 = parseInt(b.start_time.split(':')[0]) * 60 + parseInt(b.start_time.split(':')[1]);
+            var hH2  = parseInt(b.end_time.split(':')[0]) * 60 + parseInt(b.end_time.split(':')[1]);
+            while (min2 < hH2) {
+              var hora = String(Math.floor(min2 / 60)).padStart(2, '0') + ':' + String(min2 % 60).padStart(2, '0');
+              var ocup = citas.some(function(ct) { return ct.fecha === fechaStr && ct.hora === hora; });
+              if (!ocup && !(i === 0 && min2 < limHoy3)) slotsNorm.push(hora);
+              min2 += 30;
+            }
+          });
+          if (slotsNorm.length) disp[fechaStr] = slotsNorm;
+        }
+        return disp;
+      });
+    });
+}
+
 // ── DISPONIBILIDAD BÁSICA (fallback sin bloqueos) ──
 function generarDisponibilidad(medico, citas) {
   var hoy = new Date(); hoy.setHours(0, 0, 0, 0);

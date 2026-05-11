@@ -135,6 +135,27 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .modal-field{margin-bottom:.75rem}
 .modal-field label{display:block;font-size:.76rem;font-weight:600;color:var(--ink2);margin-bottom:.35rem}
 .modal-field input{width:100%;padding:.58rem .85rem;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:var(--cream);outline:none;transition:border-color .2s}
+/* ── Selector de sede ── */
+.sede-selector-wrap{margin-bottom:1rem}
+.sede-selector-label{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.5rem}
+.sede-card{border:1.5px solid var(--border);border-radius:14px;padding:.85rem 1rem;background:var(--white);cursor:pointer;transition:all .2s;margin-bottom:.45rem}
+.sede-card:hover{border-color:var(--teal-mid)}
+.sede-card.selected{border-color:var(--teal);background:var(--teal-lite);box-shadow:0 0 0 3px rgba(11,124,110,.08)}
+.sede-name{font-weight:700;font-size:.84rem;color:var(--ink)}
+.sede-addr{font-size:.75rem;color:var(--muted);margin-top:.12rem;line-height:1.4}
+.sede-chip{display:inline-block;margin-top:.4rem;padding:.22rem .6rem;background:var(--white);border:1.5px solid var(--teal);border-radius:8px;color:var(--teal);font-size:.72rem;font-weight:600}
+.sede-card.selected .sede-chip{background:var(--teal);color:#fff}
+.sede-info-label{font-size:.78rem;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.35rem}
+.sede-info-label strong{color:var(--ink);font-weight:600}
+/* ── Mobile calendar premium ── */
+@media(max-width:768px){
+  .modal-cal-grid{gap:4px}
+  .modal-cal-day{padding:.42rem .1rem;font-size:.84rem;border-radius:10px}
+  .modal-cal-dow{font-size:.66rem;padding:.3rem 0}
+  .modal-cal-nav{width:32px;height:32px;font-size:.95rem}
+  .time-slots{grid-template-columns:repeat(3,1fr);gap:.45rem}
+  .time-slot{padding:.52rem .2rem;font-size:.81rem;border-radius:10px}
+}
 .modal-field input:focus{border-color:var(--teal-mid);background:var(--white)}
 .btn-confirm{width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;cursor:pointer;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;transition:background .2s}
 .btn-confirm:hover{background:var(--teal-mid)}
@@ -689,6 +710,7 @@ footer a{color:var(--teal-mid);text-decoration:none}
         </div>
         <div id="mStep1">
           <div id="waBanner"></div>
+          <div id="sedeSelectorWrap" style="display:none"></div>
           <div class="modal-cal-header">
             <button class="modal-cal-nav" id="btnCalPrev">&#8249;</button>
             <div class="modal-cal-title" id="calTitle">--</div>
@@ -794,6 +816,8 @@ var currentSort = 'destacado';
 var selectedDoctor = null;
 var selectedDate = null;
 var selectedSlot = null;
+var selectedLocationId = null;
+var _locationsModal = [];
 var currentStep = 1;
 var calYear = new Date().getFullYear();
 var calMonth = new Date().getMonth();
@@ -1015,7 +1039,7 @@ function openModal(id) {
     } else { bw.innerHTML = ''; }
   }
   // Reset
-  selectedDate = null; selectedSlot = null; currentStep = 1;
+  selectedDate = null; selectedSlot = null; selectedLocationId = null; currentStep = 1;
   calYear = new Date().getFullYear(); calMonth = new Date().getMonth();
   resetSteps();
   el('slotsWrap').style.display = 'none';
@@ -1023,8 +1047,13 @@ function openModal(id) {
   el('successState').style.display = 'none';
   el('btnSig1').disabled = true;
   el('btnSig1').style.opacity = '.4';
-  // Cargar disponibilidad
-  cargarDispModal();
+  // Cargar ubicaciones y disponibilidad
+  _sb.from('doctor_locations').select('*').eq('medico_id', selectedDoctor.id).order('created_at')
+    .then(function(resLoc) {
+      _locationsModal = resLoc.data || [];
+      renderSedeSelectorModal(_locationsModal);
+      cargarDispModal();
+    });
   el('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1047,7 +1076,12 @@ function goStep(n) {
     if (!nom||!tel) { alert('Completa nombre y teléfono.'); return; }
     setText('resMedico', selectedDoctor.name);
     var parts = selectedDate.split('-');
-    setText('resHora', selectedSlot+' · '+parseInt(parts[2])+' '+MESES[parseInt(parts[1])-1]);
+    var horaLabel = selectedSlot+' · '+parseInt(parts[2])+' '+MESES[parseInt(parts[1])-1];
+    if (selectedLocationId && _locationsModal.length) {
+      var sedeSel = _locationsModal.find(function(l){ return String(l.id) === String(selectedLocationId); });
+      if (sedeSel) horaLabel += ' · 📍 ' + (sedeSel.nombre || 'Consultorio');
+    }
+    setText('resHora', horaLabel);
     setText('resNombre', nom);
     setText('resTel', tel);
   }
@@ -1074,12 +1108,75 @@ function cargarDispModal() {
   var fin = en60.toISOString().split('T')[0];
   _sb.from('citas').select('fecha,hora').eq('medico_id', selectedDoctor.id).gte('fecha',hoy).lte('fecha',fin).neq('estado','cancelada')
     .then(function(res) {
-      cargarDisponibilidadConBloqueos(selectedDoctor, res.data||[], _sb)
+      cargarDisponibilidadPorSede(selectedDoctor, res.data||[], _sb, selectedLocationId)
         .then(function(disp) {
           dispModal = disp;
           renderCal();
         });
     });
+}
+
+function renderSedeSelectorModal(locs) {
+  _locationsModal = locs || [];
+  var wrap = el('sedeSelectorWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  if (!locs || locs.length === 0) {
+    wrap.style.display = 'none';
+    selectedLocationId = null;
+    return;
+  }
+
+  if (locs.length === 1) {
+    selectedLocationId = locs[0].id;
+    wrap.style.display = 'block';
+    var label = document.createElement('div');
+    label.className = 'sede-info-label';
+    label.innerHTML = '📍 <strong>' + (locs[0].nombre || 'Consultorio') + '</strong> · ' + (locs[0].direccion ? locs[0].direccion.split(',').slice(0,2).join(',') : '');
+    wrap.appendChild(label);
+    return;
+  }
+
+  wrap.style.display = 'block';
+  var title = document.createElement('div');
+  title.className = 'sede-selector-label';
+  title.textContent = 'Selecciona una sede';
+  wrap.appendChild(title);
+
+  locs.forEach(function(loc) {
+    var card = document.createElement('div');
+    card.className = 'sede-card';
+    if (String(selectedLocationId) === String(loc.id)) card.classList.add('selected');
+
+    var name = document.createElement('div');
+    name.className = 'sede-name';
+    name.textContent = loc.nombre || 'Consultorio';
+    card.appendChild(name);
+
+    var addr = document.createElement('div');
+    addr.className = 'sede-addr';
+    addr.textContent = loc.direccion ? loc.direccion.split(',').slice(0,2).join(',') : '';
+    card.appendChild(addr);
+
+    var chip = document.createElement('span');
+    chip.className = 'sede-chip';
+    chip.textContent = 'Elegir esta sede';
+    card.appendChild(chip);
+
+    card.addEventListener('click', function() {
+      selectedLocationId = loc.id;
+      selectedDate = null;
+      selectedSlot = null;
+      el('slotsWrap').style.display = 'none';
+      el('btnSig1').disabled = true;
+      el('btnSig1').style.opacity = '.4';
+      renderSedeSelectorModal(locs);
+      cargarDispModal();
+    });
+
+    wrap.appendChild(card);
+  });
 }
 
 function renderCal() {
@@ -1245,7 +1342,12 @@ function confirmarCita() {
   }
   el('bookingForm').style.display = 'none';
   el('successState').style.display = 'block';
-  setText('successMsg', nombre+', tu cita con '+selectedDoctor.name+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'+(email?' Enviamos confirmacion a '+email+'.':''));
+  var sedeConfirmModal = '';
+  if (selectedLocationId && _locationsModal.length) {
+    var sedeSelM = _locationsModal.find(function(l){ return String(l.id) === String(selectedLocationId); });
+    if (sedeSelM) sedeConfirmModal = ' 📍 ' + (sedeSelM.nombre || 'Consultorio');
+  }
+  setText('successMsg', nombre+', tu cita con '+selectedDoctor.name+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'+sedeConfirmModal+(email?' Enviamos confirmacion a '+email+'.':''));
   if (btn) { btn.textContent='Confirmar cita'; btn.disabled=false; }
   // WhatsApp al médico desde el dispositivo del paciente
   var waWrapDir = el('waNotificarWrapDir'), waBtnDir = el('btnWANotificarDir');

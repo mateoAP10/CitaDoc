@@ -125,6 +125,27 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .share-btns{display:flex;gap:.5rem}
 .share-btn{flex:1;padding:.5rem .4rem;border-radius:9px;border:1.5px solid var(--border);background:var(--white);font-size:.75rem;font-weight:600;cursor:pointer;color:var(--ink2);font-family:'DM Sans',sans-serif;transition:all .2s;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.3rem}
 .share-btn:hover{border-color:var(--teal);color:var(--teal)}
+/* ── Selector de sede ── */
+.sede-selector-wrap{margin-bottom:1rem}
+.sede-selector-label{font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:.5rem}
+.sede-card{border:1.5px solid var(--border);border-radius:14px;padding:.85rem 1rem;background:var(--white);cursor:pointer;transition:all .2s;margin-bottom:.45rem}
+.sede-card:hover{border-color:var(--teal-mid)}
+.sede-card.selected{border-color:var(--teal);background:var(--teal-lite);box-shadow:0 0 0 3px rgba(11,124,110,.08)}
+.sede-name{font-weight:700;font-size:.84rem;color:var(--ink)}
+.sede-addr{font-size:.75rem;color:var(--muted);margin-top:.12rem;line-height:1.4}
+.sede-chip{display:inline-block;margin-top:.4rem;padding:.22rem .6rem;background:var(--white);border:1.5px solid var(--teal);border-radius:8px;color:var(--teal);font-size:.72rem;font-weight:600}
+.sede-card.selected .sede-chip{background:var(--teal);color:#fff}
+.sede-info-label{font-size:.78rem;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;gap:.35rem}
+.sede-info-label strong{color:var(--ink);font-weight:600}
+/* ── Mobile calendar premium ── */
+@media(max-width:768px){
+  .cal-grid{gap:4px}
+  .cal-day{padding:.42rem .1rem;font-size:.84rem;border-radius:10px}
+  .cal-dow{font-size:.66rem;padding:.3rem 0}
+  .cal-nav{width:32px;height:32px;font-size:.95rem}
+  .slots-grid{grid-template-columns:repeat(3,1fr);gap:.45rem}
+  .slot{padding:.52rem .2rem;font-size:.81rem;border-radius:10px}
+}
 .login-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem}
 .login-overlay.open{display:flex}
 .login-modal{background:var(--white);border-radius:20px;width:100%;max-width:360px;padding:1.6rem 1.8rem;box-shadow:var(--shadow-lg);position:relative}
@@ -395,6 +416,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
             <div id="orDivider" style="display:none" class="divider-or">o agenda online</div>
             <!-- Paso 1: Fecha -->
             <div id="step1">
+              <div id="sedeSelectorWrap" style="display:none"></div>
               <div class="cal-header">
                 <button class="cal-nav" id="btnPrev">&#8249;</button>
                 <div class="cal-title" id="calTitle">--</div>
@@ -507,6 +529,8 @@ var _medico = null;
 var _disp   = {};
 var selectedDate = null;
 var selectedSlot = null;
+var selectedLocationId = null;
+var _locationsMedico = [];
 var calYear  = new Date().getFullYear();
 var calMonth = new Date().getMonth();
 
@@ -581,6 +605,83 @@ function selectFecha(fechaStr, d) {
   if (b) { b.disabled=true; b.style.opacity='.4'; }
 }
 
+
+// ── SELECTOR DE SEDE ──
+function renderSedeSelector(locs) {
+  _locationsMedico = locs || [];
+  var wrap = el('sedeSelectorWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  if (!locs || locs.length === 0) {
+    wrap.style.display = 'none';
+    selectedLocationId = null;
+    return;
+  }
+
+  if (locs.length === 1) {
+    selectedLocationId = locs[0].id;
+    wrap.style.display = 'block';
+    var label = document.createElement('div');
+    label.className = 'sede-info-label';
+    label.innerHTML = '📍 <strong>' + (locs[0].nombre || 'Consultorio') + '</strong> · ' + (locs[0].direccion ? locs[0].direccion.split(',').slice(0,2).join(',') : '');
+    wrap.appendChild(label);
+    // Recargar disponibilidad filtrada por la única sede
+    cargarDisponibilidadPorSede(_medico, [], _sb, selectedLocationId)
+      .then(function(disp) {
+        _disp = disp;
+        renderCal();
+      });
+    return;
+  }
+
+  // 2+ sedes → cards
+  wrap.style.display = 'block';
+  var title = document.createElement('div');
+  title.className = 'sede-selector-label';
+  title.textContent = 'Selecciona una sede';
+  wrap.appendChild(title);
+
+  locs.forEach(function(loc, idx) {
+    var card = document.createElement('div');
+    card.className = 'sede-card';
+    if (String(selectedLocationId) === String(loc.id)) card.classList.add('selected');
+
+    var name = document.createElement('div');
+    name.className = 'sede-name';
+    name.textContent = loc.nombre || 'Consultorio';
+    card.appendChild(name);
+
+    var addr = document.createElement('div');
+    addr.className = 'sede-addr';
+    addr.textContent = loc.direccion ? loc.direccion.split(',').slice(0,2).join(',') : '';
+    card.appendChild(addr);
+
+    var chip = document.createElement('span');
+    chip.className = 'sede-chip';
+    chip.textContent = 'Elegir esta sede';
+    card.appendChild(chip);
+
+    card.addEventListener('click', function() {
+      selectedLocationId = loc.id;
+      // Reset calendar selection
+      selectedDate = null;
+      selectedSlot = null;
+      el('slotsWrap').style.display = 'none';
+      var btn = el('btnToForm');
+      if (btn) { btn.disabled = true; btn.style.opacity = '.4'; }
+      // Re-render selector + calendar
+      renderSedeSelector(locs);
+      cargarDisponibilidadPorSede(_medico, [], _sb, selectedLocationId)
+        .then(function(disp) {
+          _disp = disp;
+          renderCal();
+        });
+    });
+
+    wrap.appendChild(card);
+  });
+}
 
 // ── CONFIRMAR ──
 function confirmarCita() {
@@ -673,7 +774,12 @@ function confirmarCita() {
   }
   el('step2').style.display = 'none';
   el('bookingSuccess').style.display = 'block';
-  setText('successMsg', nombre+', tu cita con '+nombreMedico+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'+(email?' Confirmacion enviada a '+email+'.':''));
+  var sedeConfirm = '';
+  if (selectedLocationId && _locationsMedico.length) {
+    var sedeSel = _locationsMedico.find(function(l){ return String(l.id) === String(selectedLocationId); });
+    if (sedeSel) sedeConfirm = ' 📍 ' + (sedeSel.nombre || 'Consultorio');
+  }
+  setText('successMsg', nombre+', tu cita con '+nombreMedico+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.'+sedeConfirm+(email?' Confirmacion enviada a '+email+'.':''));
   if (btn) { btn.textContent='Confirmar cita'; btn.disabled=false; }
   // WhatsApp al médico desde el dispositivo del paciente
   var waWrap = el('waNotificarWrap'), waBtn = el('btnWANotificar');
@@ -1076,12 +1182,15 @@ if (locsSection && locsCont && locs && locs.length) {
   var perfilUrl = 'https://citadoc.lat/citadoc-perfil.html?slug='+(m.slug||'');
   window._perfilUrl = perfilUrl;
 
-  // Disponibilidad y calendario — con bloqueos
-  cargarDisponibilidadConBloqueos(m, citas||[], _sb)
+  // Disponibilidad y calendario — con sede
+  cargarDisponibilidadPorSede(m, citas||[], _sb, selectedLocationId)
     .then(function(disp) {
       _disp = disp;
       renderCal();
     });
+
+  // Selector de sede
+  renderSedeSelector(locs||[]);
 
   // Auth nav
   var vp = el('ddVerPerfil');
