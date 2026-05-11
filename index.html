@@ -151,6 +151,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .login-overlay{position:fixed;inset:0;z-index:600;background:rgba(15,26,24,.55);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem}
 .login-overlay.open{display:flex}
 .login-modal{background:var(--white);border-radius:20px;width:100%;max-width:380px;padding:1.6rem 1.8rem;box-shadow:var(--shadow-lg);position:relative}
+.login-cta-secundaria{margin-top:.85rem;padding-bottom:.35rem}
 footer{background:var(--ink);color:rgba(255,255,255,.5);text-align:center;padding:2rem 5%;font-size:.82rem;margin-top:4rem}
 footer a{color:var(--teal-mid);text-decoration:none}
 @media(max-width:640px){
@@ -751,7 +752,7 @@ footer a{color:var(--teal-mid);text-decoration:none}
     <div class="modal-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••"></div>
     <p id="loginError" style="font-size:.82rem;color:#dc2626;margin-bottom:.8rem;display:none"></p>
     <button id="btnDoLogin" style="width:100%;padding:.85rem;background:var(--teal);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:.6rem">Entrar al dashboard →</button>
-    <p style="text-align:center;font-size:.84rem"><a href="citadoc-registro.html" style="color:var(--teal);font-weight:600;text-decoration:none">¿No tienes cuenta? Regístrate gratis</a></p>
+    <p class="login-cta-secundaria" style="text-align:center;font-size:.84rem"><a href="citadoc-registro.html" style="color:var(--teal);font-weight:600;text-decoration:none">¿No tienes cuenta? Regístrate gratis</a></p>
   </div>
 </div>
 
