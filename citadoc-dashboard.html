@@ -771,9 +771,28 @@ display:flex;
 #modalCrearSitio .swatch{width:36px;height:36px;border-radius:50%;margin:0 auto .5rem;border:2px solid rgba(0,0,0,.08)}
 @keyframes shimmerAI{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .ai-shimmer{background:linear-gradient(90deg,#f3f4f6 25%,#e9e9e9 50%,#f3f4f6 75%);background-size:200% 100%;animation:shimmerAI 1.4s infinite;border-radius:6px}
+
+/* ── CHECKOUT PREMIUM SHELL ── */
+.pay-shell-close{position:absolute;top:1rem;right:1rem;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.06);color:var(--mu);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:10}
+.pay-shell-close:hover{background:rgba(0,0,0,.08);color:var(--ink)}
+.pay-steps{display:flex;align-items:center;justify-content:center;gap:.35rem;margin:1rem 0 .6rem}
+.pay-step{display:flex;align-items:center;gap:.35rem;font-size:.65rem;color:var(--su);font-weight:600}
+.pay-step-dot{width:18px;height:18px;border-radius:50%;background:var(--bo);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#fff}
+.pay-step.active .pay-step-dot{background:var(--teal)}
+.pay-step.active{color:var(--teal)}
+.pay-step.done .pay-step-dot{background:var(--gg)}
+.pay-step.done{color:var(--gg)}
+.pay-step-line{width:12px;height:1px;background:var(--bo)}
+.pay-badges{display:flex;align-items:center;justify-content:center;gap:.4rem;margin:.6rem 0;flex-wrap:wrap}
+.pay-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.25rem .55rem;background:rgba(11,124,110,.06);border:1px solid rgba(11,124,110,.12);border-radius:20px;font-size:.65rem;font-weight:600;color:var(--teal)}
+.pay-sep{height:1px;background:linear-gradient(90deg,transparent,var(--bo),transparent);margin:1.1rem 0 .9rem}
+.pay-card{background:linear-gradient(135deg,#fafcfb,#f4faf7);border:1px solid rgba(11,124,110,.1);border-radius:16px;padding:1rem .8rem;margin:.6rem 0;position:relative}
+.pay-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),#34d399);border-radius:16px 16px 0 0;opacity:.6}
+.pay-micro{font-size:.72rem;color:var(--mu);text-align:center;margin-top:.4rem;line-height:1.5}
 </style>
   <!-- PayPhone SDK -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
@@ -1256,6 +1275,12 @@ display:flex;
       </div>
       <div style="position:relative;overflow:hidden;height:480px;background:#fff">
         <iframe id="webPreviewFrame" style="width:150%;height:720px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
+        <!-- LOCK: preview banner when not published -->
+        <div id="webPreviewLock" style="display:none;position:absolute;inset:0;z-index:10;align-items:center;justify-content:center;background:rgba(255,255,255,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);flex-direction:column;gap:.7rem;padding:1.5rem;text-align:center">
+          <div style="font-family:Fraunces,serif;font-size:1.05rem;font-weight:700;color:var(--ink);letter-spacing:-.01em">Vista previa de tu sitio médico</div>
+          <div style="font-size:.78rem;color:var(--muted);max-width:280px;line-height:1.6">Tu borrador está listo. Activa <strong>PRO+WEB</strong> para publicarlo con tu dominio profesional.</div>
+          <button onclick="activarSitioWeb()" style="padding:.62rem 1.3rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(11,124,110,.24);transition:all .2s ease;margin-top:.2rem">✨ Publicar mi sitio médico</button>
+        </div>
       </div>
     </div>
 
@@ -1305,6 +1330,48 @@ display:flex;
           <div id="aiLoadOrb" style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 1.2rem;box-shadow:0 0 40px rgba(124,58,237,.55);animation:aiOrbPulse 1.4s ease-in-out infinite">✨</div>
           <div id="aiLoadStatus" style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:1.1rem">Analizando identidad médica...</div>
           <div style="display:flex;flex-direction:column;gap:.45rem;max-width:300px;margin:0 auto" id="aiLoadSteps"></div>
+        </div>
+
+        <!-- REVIEW STATE -->
+        <div id="aiModalReview" style="display:none;text-align:center;padding:2rem 0">
+          <div style="font-size:.6rem;font-weight:700;color:rgba(167,139,250,.65);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.6rem" id="aiReviewSource">CitaDoc AI · PRO+WEB</div>
+          <div style="width:58px;height:58px;border-radius:50%;background:rgba(52,211,153,.12);border:1.5px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto .8rem;color:#34d399">✦</div>
+          <div style="font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:.3rem">Tu identidad médica está lista</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.38);margin-bottom:1.1rem;line-height:1.5">Esta web fue creada <strong style="color:rgba(255,255,255,.65)">para ti</strong>. Revisa y ajusta antes de publicar.</div>
+
+          <div id="aiReviewSourceBadge" style="display:inline-block;padding:.25rem .7rem;border-radius:20px;font-size:.68rem;font-weight:700;margin-bottom:1.2rem"></div>
+
+          <div style="text-align:left;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.2rem">
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Headline</div>
+            <div id="aiReviewHeadline" style="font-family:Fraunces,serif;font-size:1.05rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:.6rem"></div>
+
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Subheadline</div>
+            <div id="aiReviewSubheadline" style="font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:.8rem"></div>
+
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Tono</div>
+            <div id="aiReviewTone" style="font-size:.82rem;color:rgba(255,255,255,.7);margin-bottom:.8rem"></div>
+
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Filosofía</div>
+            <div id="aiReviewPhilosophy" style="font-size:.82rem;color:rgba(255,255,255,.55);font-style:italic;line-height:1.55;margin-bottom:.8rem"></div>
+
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Diferenciadores</div>
+            <div id="aiReviewDiffs" style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem"></div>
+
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">CTA Principal</div>
+            <div id="aiReviewCta" style="display:inline-block;padding:.3rem .7rem;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:8px;font-size:.78rem;color:#34d399;font-weight:600;margin-bottom:.8rem"></div>
+
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">SEO Preview</div>
+            <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:.7rem .85rem">
+              <div id="aiReviewSeoTitle" style="font-size:.75rem;color:#8ab4f8;font-weight:500;margin-bottom:.15rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>
+              <div id="aiReviewSeoDesc" style="font-size:.68rem;color:rgba(255,255,255,.4);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:.55rem;justify-content:center;flex-wrap:wrap">
+            <button onclick="aiModalState('form')" style="padding:.6rem 1.1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.6);cursor:pointer">↻ Regenerar</button>
+            <button onclick="cerrarAiWebModal();refreshWebPreview();" style="padding:.6rem 1.1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.6);cursor:pointer">Ver preview ↙</button>
+            <button onclick="activarSitioWeb()" style="padding:.6rem 1.2rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(124,58,237,.38)">⚡ Publicar mi sitio</button>
+          </div>
         </div>
 
         <!-- DONE STATE -->
@@ -2670,13 +2737,24 @@ function cargarMiSitio(m) {
   if (openLink) openLink.href = 'citadoc-web.html?slug='+slug+(m.web_config_draft?'&preview=draft':'');
 
   // Update AI strip state
+  var isPublished = m.web_config && m.web_status === 'active';
   if (m.web_config_draft) {
     var stripStatus=document.getElementById('aiStripStatus');
-    if(stripStatus) stripStatus.textContent='Draft generado ✦ — Listo para activar';
+    if(stripStatus) {
+      stripStatus.textContent = isPublished
+        ? 'Sitio activo ✦ Publicado en tu dominio'
+        : 'Borrador listo — Activa PRO+WEB para publicar';
+    }
     var verBtn=document.getElementById('aiVerSitioBtn');
     if(verBtn&&slug){verBtn.href='citadoc-web.html?slug='+slug+'&preview=draft';verBtn.style.display='inline-flex';}
     var actBtn=document.getElementById('aiActivarBtn');
     if(actBtn) actBtn.style.display='inline-flex';
+  }
+  // Preview lock banner
+  var lockBanner = document.getElementById('webPreviewLock');
+  if(lockBanner) {
+    var showLock = m.web_config_draft && !isPublished;
+    lockBanner.style.display = showLock ? 'flex' : 'none';
   }
   // Update open link
   var openLink2=document.getElementById('webUrlOpen2');
@@ -2757,9 +2835,11 @@ function cerrarAiWebModal() {
 function aiModalState(state) {
   var form=document.getElementById('aiModalForm');
   var load=document.getElementById('aiModalLoading');
+  var review=document.getElementById('aiModalReview');
   var done=document.getElementById('aiModalDone');
   if(form) form.style.display = state==='form'    ? 'block':'none';
   if(load) load.style.display = state==='loading' ? 'block':'none';
+  if(review) review.style.display = state==='review' ? 'block':'none';
   if(done) done.style.display = state==='done'    ? 'block':'none';
 }
 
@@ -2843,7 +2923,7 @@ async function webUploadAsset(inputId, bucket, path) {
   return pub.data ? pub.data.publicUrl : null;
 }
 
-function webAiDeriveConfig(prompt, perception, palette, esp, city, anos) {
+function webAiDeriveConfig(prompt, perception, palette, esp, city, anos, bio) {
   var pcfg = _PERCEPTION_MAP[perception] || _PERCEPTION_MAP['cercania-humana'];
   var headlines = pcfg.headlines;
   var headline = headlines[Math.floor(Math.random() * headlines.length)];
@@ -2853,21 +2933,83 @@ function webAiDeriveConfig(prompt, perception, palette, esp, city, anos) {
     || 'Atención médica personalizada y de excelencia.';
   var color = (palette && palette.length) ? palette[0] : '#0d2318';
   var ctaMap = {'elegancia-premium':'Solicitar consulta','confianza-clinica':'Reservar consulta'};
+  var cta = ctaMap[perception] || 'Agendar cita';
+  var defaultPhilosophy = '"Cada paciente es una historia única. Mi compromiso es escuchar, diagnosticar con precisión y acompañarte en cada paso de tu recuperación."';
+  var defaultApproach = 'Abordaje integral que combina la evidencia científica más reciente con una atención cercana y humana. Cada tratamiento se personaliza según tus necesidades específicas.';
+  var defaultExperience = 'Desde tu primera consulta, experimentarás un proceso médico diferente: tiempos de espera mínimos, explicaciones claras de tu diagnóstico, y un seguimiento continuo que no termina cuando sales del consultorio.';
+
+  var diffs = [];
+  if(anos) diffs.push(anos+' años de experiencia clínica');
+  if(esp) diffs.push('Especialista en '+esp);
+  diffs.push('Atención personalizada y continua');
+  diffs.push('Medicina basada en evidencia');
+
   return {
+    // ── Core visual & copy ──
+    headline: headline,
+    subheadline: sub,
+    primary_color: color,
+
+    // ── New enriched fields ──
+    about_text: bio || sub,
+    philosophy: defaultPhilosophy,
+    doctor_story: bio || sub,
+    differentiators: diffs,
+    treatment_approach: defaultApproach,
+    patient_experience: defaultExperience,
+    tone: perception,
+    benefits: null,
+    faq: null,
+
+    // ── CTAs ──
+    cta_primary: cta,
+    cta_final: null,
+
+    // ── SEO ──
+    seo_title: null,
+    seo_description: null,
+
+    // ── Backwards compatibility ──
+    cta_primary_text: cta,
+    seo_desc: null,
+    sobre_quote: defaultPhilosophy,
+    sobre_mi_highlights: diffs,
+
+    // ── Metadata ──
     perception: perception,
     brand_direction: pcfg.dna,
     visual_energy: pcfg.energy,
-    headline: headline,
-    subheadline: sub,
-    cta_primary_text: ctaMap[perception] || 'Agendar cita',
-    primary_color: color,
     generated_at: new Date().toISOString()
   };
+}
+
+var HOOKS={
+  'traumatología':'Recupera tu movimiento, vuelve a vivir sin límites.',
+  'ortopedia':'Movilidad plena. Vida activa.',
+  'fisioterapia':'Muévete mejor. Vive sin dolor.',
+  'cardiología':'Tu corazón en las mejores manos.',
+  'dermatología':'Cuida tu piel con expertos.',
+  'pediatría':'El mejor cuidado para los que más quieres.',
+  'ginecología':'Atención especializada en cada etapa.',
+  'neurología':'Tu sistema nervioso, en control.',
+  'psiquiatría':'Salud mental con acompañamiento real.',
+  'odontología':'Tu sonrisa, transformada.',
+  'oftalmología':'Ve el mundo con claridad.',
+  'nutrición':'Transforma tu salud desde adentro.',
+  'default':'Atención médica que transforma vidas.'
+};
+function hookForEsp(esp){
+  if(!esp) return HOOKS.default;
+  var k=Object.keys(HOOKS).find(function(k){return esp.toLowerCase().indexOf(k)!==-1;});
+  return HOOKS[k||'default'];
 }
 
 async function webAiGenerar() {
   if (!M||!M.id) return;
   webBuilderState('loading');
+  window._aiGenSource = null;
+  window._aiGenConfig  = null;
+  var t0 = performance.now();
 
   var steps = [
     {label:'Analizando foto profesional',      ms:500},
@@ -2896,30 +3038,166 @@ async function webAiGenerar() {
 
   var esp = (M.especialidades||[])[0]||'';
   var prompt = (document.getElementById('webAiPrompt')||{}).value||'';
-  var photoUrl = _webPhotoUploaded ? await webUploadAsset('webPhotoInput','fotos-medicos','web/photo-'+M.id) : null;
-  var logoUrl  = _webLogoUploaded  ? await webUploadAsset('webLogoInput', 'fotos-medicos','web/logo-'+M.id)  : null;
-  var cfg = webAiDeriveConfig(prompt, _webPerception, _webLogoPalette, esp, M.ciudad||'', M.anos_experiencia||'');
+
+  // Start asset uploads in parallel
+  var photoPromise = _webPhotoUploaded ? webUploadAsset('webPhotoInput','fotos-medicos','web/photo-'+M.id) : Promise.resolve(null);
+  var logoPromise  = _webLogoUploaded  ? webUploadAsset('webLogoInput', 'fotos-medicos','web/logo-'+M.id)  : Promise.resolve(null);
+
+  // ─── Call real Kimi pipeline via Edge Function ───
+  var apiPromise = (async function() {
+    try {
+      var result = null;
+      var payload = { medico_id: M.id, perception: _webPerception, prompt: prompt };
+      console.log('[AI PIPELINE] ⏳ Starting Edge Function call. Payload:', JSON.stringify(payload));
+
+      var invokeMethod = 'none';
+      // Bypass _sb.functions.invoke() — its relay has ~15s timeout.
+      // Use fetch directo which has no browser timeout limit.
+      invokeMethod = 'fetch';
+      var fetchRes = await fetch('https://qxoomcqaafogczrvsyhg.functions.supabase.co/generate-website-config', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!fetchRes.ok) {
+        var errBody = await fetchRes.text();
+        throw new Error('HTTP ' + fetchRes.status + ': ' + errBody.slice(0,300));
+      }
+      result = await fetchRes.json();
+
+      var latency = Math.round(performance.now() - t0);
+      console.log('[AI PIPELINE] ✅ Edge Function responded. Method='+invokeMethod+' Latency='+latency+'ms');
+      console.log('[AI PIPELINE] Raw result:', JSON.stringify(result).slice(0,1200));
+
+      if (!result || !result.ok) {
+        var errDetail = (result && result.error ? result.error + (result.detail ? ': ' + result.detail : '') : 'Unknown error');
+        throw new Error(errDetail);
+      }
+
+      var source = result.source || 'kimi';
+      window._aiGenSource = source;
+      console.log('[AI PIPELINE] Source detected:', source, '| config keys:', Object.keys(result.config||{}).join(', '));
+      return { config: result.config, source: source, latency: latency };
+    } catch (e) {
+      var latencyErr = Math.round(performance.now() - t0);
+      var errMsg = (e && e.message) ? e.message : String(e);
+      console.error('[AI PIPELINE] ❌ Kimi pipeline failed after '+latencyErr+'ms:', errMsg);
+      window._aiGenSource = 'error';
+      return { error: errMsg };
+    }
+  })();
+
+  // Minimum visual delay for premium feel (2.5s)
+  var minDelayPromise = new Promise(function(resolve){ setTimeout(resolve, 2500); });
+
+  // Wait for both API and minimum delay
+  var apiResult = await apiPromise;
+  await minDelayPromise;
+
+  // ─── Handle Edge Function errors explicitly (NO silent fallback) ───
+  if (apiResult && apiResult.error) {
+    console.error('[AI PIPELINE] ❌ Edge Function error:', apiResult.error);
+    mostrarToast('Error de generación AI: ' + apiResult.error, 'error');
+    aiModalState('form');
+    return;
+  }
+
+  var cfg = null;
+  var useLocal = false;
+  var sourceLabel = 'fallback';
+
+  if (apiResult && apiResult.config) {
+    cfg = apiResult.config;
+    sourceLabel = apiResult.source || 'kimi';
+    window._aiGenSource = sourceLabel;
+    console.log('[AI PIPELINE] ✦ Using Kimi config. Source='+sourceLabel);
+  } else {
+    // Fallback to local mock ONLY if Edge Function completely unreachable
+    cfg = webAiDeriveConfig(prompt, _webPerception, _webLogoPalette, esp, M.ciudad||'', M.anos_experiencia||'', M.bio||'');
+    useLocal = true;
+    sourceLabel = 'fallback';
+    window._aiGenSource = 'fallback';
+    console.log('[AI PIPELINE] ⚠ Fallback to local mock. Config keys:', Object.keys(cfg||{}).join(', '));
+  }
+
+  // Attach uploaded assets
+  var photoUrl = await photoPromise;
+  var logoUrl  = await logoPromise;
   if (photoUrl) cfg.doctor_photo_url = photoUrl;
   if (logoUrl)  cfg.logo_url = logoUrl;
 
-  setTimeout(async function() {
-    var last=document.getElementById('aiSi'+(steps.length-1));
-    if(last){last.innerHTML='✓';last.style.background='rgba(52,211,153,.25)';last.style.border='none';last.style.color='#34d399';last.style.boxShadow='none';}
-    var res = await _sb.from('medicos').update({web_config_draft:cfg, web_status:M.web_status==='active'?'active':'draft'}).eq('id',M.id);
-    if (res.error) { mostrarToast('Error al guardar draft','error'); aiModalState('form'); return; }
-    M.web_config_draft = cfg;
-    refreshWebPreview(true);
-    // Update strip
-    var stripStatus=document.getElementById('aiStripStatus');
-    if(stripStatus) stripStatus.textContent='Draft generado ✦ — Preview actualizado';
-    var verBtn=document.getElementById('aiVerSitioBtn');
-    if(verBtn&&M.slug){verBtn.href='citadoc-web.html?slug='+M.slug+'&preview=draft';verBtn.style.display='inline-flex';}
-    var actBtn=document.getElementById('aiActivarBtn');
-    if(actBtn) actBtn.style.display='inline-flex';
-    // Modal → done
-    setTimeout(function(){aiModalState('done');},250);
-    mostrarToast('Identidad médica generada ✦');
-  }, 2750);
+  window._aiGenConfig = cfg;
+  var totalLatency = Math.round(performance.now() - t0);
+  console.log('[AI PIPELINE] ✦ Pipeline complete. Total='+totalLatency+'ms Source='+sourceLabel+' useLocal='+useLocal);
+
+  // Mark all steps complete
+  for (var i = 0; i < steps.length; i++) {
+    var icon = document.getElementById('aiSi'+i);
+    if (icon) { icon.innerHTML='✓'; icon.style.background='rgba(52,211,153,.25)'; icon.style.border='none'; icon.style.color='#34d399'; icon.style.boxShadow='none'; }
+  }
+  var statusEl = document.getElementById('aiLoadStatus');
+  if (statusEl) statusEl.textContent = useLocal ? 'Finalizando (plantilla local)...' : 'Copywriting médico generado ✦';
+
+  // Save draft to DB
+  var res = await _sb.from('medicos').update({web_config_draft:cfg, web_status:M.web_status==='active'?'active':'draft'}).eq('id',M.id);
+  if (res.error) { mostrarToast('Error al guardar draft','error'); aiModalState('form'); return; }
+  M.web_config_draft = cfg;
+
+  refreshWebPreview(true);
+  // Update strip
+  var stripStatus=document.getElementById('aiStripStatus');
+  if(stripStatus) stripStatus.textContent='Draft generado ✦ — Preview actualizado';
+  var verBtn=document.getElementById('aiVerSitioBtn');
+  if(verBtn&&M.slug){verBtn.href='citadoc-web.html?slug='+M.slug+'&preview=draft';verBtn.style.display='inline-flex';}
+  var actBtn=document.getElementById('aiActivarBtn');
+  if(actBtn) actBtn.style.display='inline-flex';
+
+  // ─── Review state ───
+  var badgeEl = document.getElementById('aiReviewSourceBadge');
+  var isKimi = sourceLabel === 'kimi';
+  if (badgeEl) {
+    if (isKimi) {
+      badgeEl.textContent = '✅ Generado por Kimi AI · '+totalLatency+'ms';
+      badgeEl.style.background = 'rgba(52,211,153,.12)';
+      badgeEl.style.color = '#34d399';
+      badgeEl.style.border = '1px solid rgba(52,211,153,.25)';
+    } else {
+      badgeEl.textContent = '⚠ Plantilla inteligente · modo fallback';
+      badgeEl.style.background = 'rgba(251,191,36,.1)';
+      badgeEl.style.color = '#fbbf24';
+      badgeEl.style.border = '1px solid rgba(251,191,36,.25)';
+    }
+  }
+  var hlEl = document.getElementById('aiReviewHeadline');
+  if (hlEl) hlEl.textContent = cfg.headline || cfg.seo_title || hookForEsp(esp);
+  var subEl = document.getElementById('aiReviewSubheadline');
+  if (subEl) subEl.textContent = cfg.subheadline || cfg.about_text ? (cfg.about_text||'').split('.')[0]+'.' : 'Atención médica personalizada.';
+  var toneEl = document.getElementById('aiReviewTone');
+  if (toneEl) toneEl.textContent = cfg.tone || 'Profesional, cercano y confiable';
+  var philEl = document.getElementById('aiReviewPhilosophy');
+  if (philEl) philEl.textContent = cfg.philosophy || cfg.sobre_quote || cfg.about_text || 'Un enfoque humano para la medicina moderna.';
+  
+  var diffEl = document.getElementById('aiReviewDiffs');
+  if (diffEl) {
+    var diffs = cfg.differentiators || cfg.sobre_mi_highlights || [];
+    diffEl.innerHTML = diffs.slice(0,5).map(function(d){
+      return '<span style="padding:.2rem .55rem;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.18);border-radius:6px;font-size:.68rem;color:rgba(167,139,250,.8)">'+d+'</span>';
+    }).join('');
+  }
+  
+  var ctaEl = document.getElementById('aiReviewCta');
+  if (ctaEl) ctaEl.textContent = cfg.cta_primary || cfg.cta_primary_text || 'Agendar cita';
+  
+  var seoT = document.getElementById('aiReviewSeoTitle');
+  if (seoT) seoT.textContent = cfg.seo_title || cfg.headline || '';
+  var seoD = document.getElementById('aiReviewSeoDesc');
+  if (seoD) seoD.textContent = cfg.seo_description || cfg.seo_desc || cfg.subheadline || '';
+
+  setTimeout(function(){ aiModalState('review'); }, 250);
+  mostrarToast((isKimi ? 'Identidad generada por Kimi AI ✦' : 'Identidad generada (modo local) ✦') + ' · '+totalLatency+'ms');
 }
 
 async function activarSitioWeb() {
@@ -2982,10 +3260,12 @@ function wcRenderServicios(servs) {
   if (!cont) return;
   cont.innerHTML = '';
   (servs.length ? servs : [{titulo:'',desc:''}]).forEach(function(s, i) {
+    var titulo = s.titulo || s.t || '';
+    var desc = s.desc || s.d || '';
     var row = document.createElement('div');
     row.style.cssText = 'display:grid;grid-template-columns:1fr 1.5fr auto;gap:.5rem;align-items:center';
-    row.innerHTML = '<input class="wc-serv-titulo" value="'+(s.titulo||'')+'" placeholder="Nombre del servicio" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
-      +'<input class="wc-serv-desc" value="'+(s.desc||'')+'" placeholder="Descripción breve" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+    row.innerHTML = '<input class="wc-serv-titulo" value="'+titulo+'" placeholder="Nombre del servicio" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+      +'<input class="wc-serv-desc" value="'+desc+'" placeholder="Descripción breve" style="padding:.5rem .7rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.85rem;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
       +'<button onclick="this.parentNode.remove()" style="padding:.4rem .55rem;background:none;border:1px solid #fecaca;color:#dc2626;border-radius:7px;font-size:.75rem;cursor:pointer;flex-shrink:0">✕</button>';
     cont.appendChild(row);
   });
@@ -3019,17 +3299,23 @@ async function guardarWebConfig(btnArg) {
 
   var hex = (document.getElementById('wc_color_hex')||{}).value||'#0b7c6e';
 
-  var wc = {
+  // Normalize servicios shape to {t,d,i} for renderer compatibility
+  var servsNorm = servs.map(function(s){ return {t:s.titulo,d:s.desc,i:'◆'}; });
+
+  var wc = Object.assign({}, M.web_config || {}, {
     template:           _wcTpl,
     headline:           (document.getElementById('wc_headline')||{}).value||null,
     subheadline:        (document.getElementById('wc_subheadline')||{}).value||null,
     cta_primary_text:   (document.getElementById('wc_cta_text')||{}).value||null,
+    cta_primary:        (document.getElementById('wc_cta_text')||{}).value||null,
     primary_color:      /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#0b7c6e',
-    servicios:          servs.length ? servs : null,
+    servicios:          servsNorm.length ? servsNorm : null,
     sobre_mi_highlights:highlights.length ? highlights : null,
+    differentiators:    highlights.length ? highlights : null,
     seo_title:          (document.getElementById('wc_seo_title')||{}).value||null,
-    seo_desc:           (document.getElementById('wc_seo_desc')||{}).value||null
-  };
+    seo_desc:           (document.getElementById('wc_seo_desc')||{}).value||null,
+    seo_description:    (document.getElementById('wc_seo_desc')||{}).value||null
+  });
 
   var res = await _sb.from('medicos').update({web_config: wc}).eq('id', M.id);
   if (btn) { btn.disabled=false; btn.textContent='Guardar cambios'; }
@@ -3423,9 +3709,126 @@ function testPayPhone() {
 // ── PAYPHONE — usa las variables del script aislado al final ──
 // Las credenciales están en el bloque SCRIPT antes de /body
 
+// ── TELEFONO: normalización E.164 para PayPhone ──
+function normalizarTelefonoE164(numero, pais) {
+  if (!numero || typeof numero !== 'string') return null;
+  pais = (pais || 'ecuador').toLowerCase();
+  var codigos = { ecuador:'593', colombia:'57', peru:'51', argentina:'54', chile:'56', mexico:'52' };
+  var codigo = codigos[pais] || '593';
+
+  // Limpiar: solo dígitos y +
+  var limpio = numero.replace(/[^0-9+]/g, '');
+
+  // Si empieza con +, validar que tenga código de país
+  if (limpio.charAt(0) === '+') {
+    var digitsOnly = limpio.replace(/\D/g, '');
+    if (digitsOnly.length < 10) return null;
+    return limpio;
+  }
+
+  // Si empieza con 0 (formato local), quitar 0 y agregar código
+  if (limpio.charAt(0) === '0') {
+    limpio = limpio.substring(1);
+  }
+
+  // Si ya tiene el código de país al inicio sin +
+  if (limpio.startsWith(codigo)) {
+    return '+' + limpio;
+  }
+
+  // Agregar código de país
+  var finalNum = '+' + codigo + limpio;
+  var finalDigits = finalNum.replace(/\D/g, '');
+  if (finalDigits.length < 10) return null;
+  return finalNum;
+}
+
+function obtenerTelefonoValido() {
+  if (!M) return null;
+  // Preferir whatsapp, fallback a telefono
+  var candidatos = [M.whatsapp, M.telefono];
+  for (var i = 0; i < candidatos.length; i++) {
+    var normalizado = normalizarTelefonoE164(candidatos[i], M.pais);
+    if (normalizado) return normalizado;
+  }
+  return null;
+}
+
+function validarTelefonoAntesDePago(planType, containerId) {
+  var telefono = obtenerTelefonoValido();
+  if (telefono) return telefono;
+  mostrarModalTelefonoFaltante(planType, containerId);
+  return null;
+}
+
+function mostrarModalTelefonoFaltante(planType, containerId) {
+  var modal = document.getElementById('telRequiredModal');
+  if (!modal) return;
+  // Guardar contexto para retomar después de guardar teléfono
+  window._telPendingPlan = planType;
+  window._telPendingContainer = containerId;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  // Prellenar con lo que tengamos
+  var inp = document.getElementById('telRequiredInput');
+  if (inp) {
+    var raw = M.whatsapp || M.telefono || '';
+    inp.value = raw;
+    setTimeout(function(){ inp.focus(); }, 100);
+  }
+}
+
+function cerrarModalTelefono() {
+  var modal = document.getElementById('telRequiredModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+  window._telPendingPlan = null;
+  window._telPendingContainer = null;
+}
+
+async function guardarTelefonoDesdeModal() {
+  var inp = document.getElementById('telRequiredInput');
+  var raw = (inp && inp.value || '').trim();
+  if (!raw) { mostrarToast('Ingresa un número de teléfono','error'); return; }
+
+  var normalizado = normalizarTelefonoE164(raw, M && M.pais);
+  if (!normalizado) {
+    mostrarToast('Número inválido. Usa formato: +593 99 123 4567','error');
+    return;
+  }
+
+  // Guardar en perfil médico
+  var update = { telefono: raw, whatsapp: raw };
+  var res = await _sb.from('medicos').update(update).eq('id', M.id);
+  if (res.error) { mostrarToast('Error al guardar: ' + res.error.message,'error'); return; }
+
+  // Actualizar objeto local
+  M.telefono = raw;
+  M.whatsapp = raw;
+
+  // Actualizar input del perfil si está visible
+  var perfilTel = document.getElementById('inf-telefono');
+  if (perfilTel) perfilTel.value = raw;
+
+  cerrarModalTelefono();
+  mostrarToast('Teléfono guardado ✓ Reintentando pago...','success');
+
+  // Retomar el checkout
+  if (window._telPendingPlan) {
+    setTimeout(function(){
+      initPayPhone(window._telPendingPlan, window._telPendingContainer);
+    }, 400);
+  }
+}
+
 function initPayPhone(planType, containerId) {
   if (!M) return;
-  planType = planType || 'pro'; // 'pro' ($19) o 'pro_web' ($150)
+
+  // Validar teléfono antes de renderizar PayPhone
+  var telefonoValido = validarTelefonoAntesDePago(planType, containerId);
+  if (!telefonoValido) return; // modal abierto, esperar a que complete
+
+  planType = planType || 'pro';
   var container = document.getElementById(containerId || 'pp-button');
   if (!container) return;
   container.innerHTML = '';
@@ -3450,9 +3853,16 @@ function initPayPhone(planType, containerId) {
       lang:                'es',
       defaultMethod:       'card',
       email:               M.email     || '',
-      phoneNumber:         M.whatsapp  || ''
+      phoneNumber:         telefonoValido
     });
-    ppb.render('pp-button');
+    ppb.render(containerId || 'pp-button');
+
+    // Ocultar fallback CTA y mostrar contenedor PayPhone del modal correspondiente
+    var fallbackId = (containerId === 'pp-button-web') ? 'btnProWebFallback' : 'btnUpgradePro';
+    var fallbackBtn = document.getElementById(fallbackId);
+    if (fallbackBtn) fallbackBtn.style.display = 'none';
+    var ppContainer = document.getElementById(containerId || 'pp-button');
+    if (ppContainer) ppContainer.style.display = 'block';
 
     // Guardar transactionId para validar callback
     window._ppPendingTx = { id: transactionId, plan: planType, startedAt: Date.now() };
@@ -3592,7 +4002,17 @@ function mostrarProModal(feature) {
   document.body.style.overflow = 'hidden';
 }
 
+function transaccionEnProgreso() {
+  var tx = window._ppPendingTx;
+  if (!tx || !tx.startedAt) return false;
+  return (Date.now() - tx.startedAt) < 300000; // 5 minutos
+}
+
 function cerrarProModal() {
+  if (transaccionEnProgreso()) {
+    if (!confirm('⚠️ Tienes un pago en proceso. ¿Seguro que quieres cerrar?')) return;
+    window._ppPendingTx = null;
+  }
   var modal = document.getElementById('proModal');
   if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
@@ -3607,10 +4027,14 @@ function mostrarProWebModal() {
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   // Inicializar PayPhone para PRO+WEB en su contenedor dedicado
-  setTimeout(function(){ initPayPhone('pro_web', 'pp-button-web'); }, 300);
+  // CTA principal visible; PayPhone se renderiza al hacer clic
 }
 
 function cerrarProWebModal() {
+  if (transaccionEnProgreso()) {
+    if (!confirm('⚠️ Tienes un pago en proceso. ¿Seguro que quieres cerrar?')) return;
+    window._ppPendingTx = null;
+  }
   var modal = document.getElementById('proWebModal');
   if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
@@ -5684,8 +6108,13 @@ function enviarRecetaWhatsApp() {
 <!-- ═══════════════════════════════════════ -->
 <!-- MODAL PRO GLOBAL — fixed, sobre todo   -->
 <!-- ═══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL PRO GLOBAL — checkout premium $19 -->
+<!-- ═══════════════════════════════════════ -->
 <div id="proModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:1.5rem">
-  <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative">
+  <div id="proModalCard" style="background:#fff;border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:420px;box-shadow:0 32px 100px rgba(15,26,24,.28);animation:proModalIn .25s ease;text-align:center;position:relative;max-height:92vh;overflow-y:auto">
+    <button class="pay-shell-close" onclick="cerrarProModal()">✕</button>
+
     <div style="font-size:.68rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">🔒 Vista previa Pro</div>
     <div id="proModalIcon" style="font-size:2.2rem;margin-bottom:.6rem">🧠</div>
     <div id="proModalTitle" style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.2">Gestión Inteligente de Pacientes</div>
@@ -5697,21 +6126,48 @@ function enviarRecetaWhatsApp() {
       <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Detección de patrones del paciente</li>
       <li style="font-size:.8rem;color:var(--ink2);padding:.22rem 0;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal);font-weight:700">✓</span>Seguimiento clínico más preciso</li>
     </ul>
+
+    <!-- Steps UX -->
+    <div class="pay-steps">
+      <div class="pay-step done"><span class="pay-step-dot">1</span>Activación</div>
+      <div class="pay-step-line"></div>
+      <div class="pay-step active"><span class="pay-step-dot">2</span>Pago seguro</div>
+      <div class="pay-step-line"></div>
+      <div class="pay-step"><span class="pay-step-dot">3</span>Acceso inmediato</div>
+    </div>
+
+    <!-- Badges -->
+    <div class="pay-badges">
+      <span class="pay-badge">🔒 SSL</span>
+      <span class="pay-badge">🛡 Seguro</span>
+      <span class="pay-badge">↩ Cancelable</span>
+    </div>
+
     <div style="font-family:Fraunces,serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$19.99</div>
-    <div style="font-size:.72rem;color:var(--muted2);margin:.15rem 0 1.2rem">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
-    <div id="pp-button" style="margin-bottom:.5rem"></div>
-          <button id="btnProModalUpgrade" onclick="initPayPhone()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none">💬 Activar PRO por WhatsApp</button>
+    <div style="font-size:.72rem;color:var(--muted2);margin:.15rem 0 .6rem">Acceso completo a herramientas clínicas · cancela cuando quieras</div>
+
+    <div class="pay-sep"></div>
+    <div class="pay-micro">Tu acceso PRO se activará automáticamente tras confirmar el pago.</div>
+
+    <!-- Payment Card -->
+    <div class="pay-card">
+      <div id="pp-button" style="margin-bottom:.5rem"></div>
+      <button id="btnProModalUpgrade" onclick="initPayPhone()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none">💬 Activar PRO por WhatsApp</button>
+    </div>
+
     <button id="btnProModalCancel" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════ -->
-<!-- MODAL PRO+WEB — flujo exclusivo $150     -->
+<!-- MODAL PRO+WEB — checkout premium $150    -->
 <!-- ═══════════════════════════════════════ -->
 <div id="proWebModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.52);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:1.5rem">
-  <div id="proWebModalCard" style="background:#fff;border-radius:24px;padding:2.2rem 2rem;width:100%;max-width:440px;box-shadow:0 32px 100px rgba(15,26,24,.24);animation:proModalIn .28s cubic-bezier(.16,1,.3,1);text-align:center;position:relative;overflow:hidden">
+  <div id="proWebModalCard" style="background:#fff;border-radius:24px;padding:2.2rem 2rem;width:100%;max-width:440px;box-shadow:0 32px 100px rgba(15,26,24,.24);animation:proModalIn .28s cubic-bezier(.16,1,.3,1);text-align:center;position:relative;overflow:hidden;max-height:92vh;overflow-y:auto">
     <!-- Decorative top gradient line -->
     <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal),#34d399,#a78bfa)"></div>
+
+    <button class="pay-shell-close" onclick="cerrarProWebModal()">✕</button>
 
     <div style="font-size:.65rem;font-weight:800;color:var(--muted2);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.7rem">Premium Web</div>
 
@@ -5728,17 +6184,62 @@ function enviarRecetaWhatsApp() {
       <li style="font-size:.81rem;color:var(--ink2);padding:.28rem 0;display:flex;align-items:center;gap:.5rem"><span style="width:18px;height:18px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--teal);font-weight:700;flex-shrink:0">✓</span>SEO local y visibilidad en Google</li>
     </ul>
 
+    <!-- Steps UX -->
+    <div class="pay-steps">
+      <div class="pay-step done"><span class="pay-step-dot">1</span>Activación</div>
+      <div class="pay-step-line"></div>
+      <div class="pay-step active"><span class="pay-step-dot">2</span>Pago seguro</div>
+      <div class="pay-step-line"></div>
+      <div class="pay-step"><span class="pay-step-dot">3</span>Publicación automática</div>
+    </div>
+
+    <!-- Badges -->
+    <div class="pay-badges">
+      <span class="pay-badge">🔒 SSL</span>
+      <span class="pay-badge">🛡 Seguro</span>
+      <span class="pay-badge">↩ Cancelable</span>
+    </div>
+
     <div style="display:flex;align-items:flex-end;justify-content:center;gap:.35rem;margin-bottom:.15rem">
       <div style="font-family:Fraunces,serif;font-size:2rem;font-weight:700;color:var(--teal);line-height:1">$150</div>
       <div style="font-size:.75rem;color:var(--muted);font-weight:500;margin-bottom:.35rem">setup inicial</div>
     </div>
     <div style="font-size:.78rem;color:var(--muted2);margin-bottom:.3rem;font-weight:500">🎉 <strong style="color:var(--teal)">Primer mes incluido</strong></div>
-    <div style="font-size:.78rem;color:var(--muted2);margin-bottom:1.1rem;font-weight:500">Luego <strong style="color:var(--ink)">$29.99/mes</strong> · se cobra desde el segundo mes · cancela cuando quieras</div>
+    <div style="font-size:.78rem;color:var(--muted2);margin-bottom:.6rem;font-weight:500">Luego <strong style="color:var(--ink)">$29.99/mes</strong> · se cobra desde el segundo mes · cancela cuando quieras</div>
 
-    <div id="pp-button-web" style="margin-bottom:.6rem"></div>
-    <button id="btnProWebFallback" onclick="initPayPhone('pro_web','pp-button-web')" style="width:100%;padding:.82rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none;box-shadow:0 4px 18px rgba(11,124,110,.22);transition:all .2s ease">✨ Activar mi sitio web</button>
+    <div class="pay-sep"></div>
+    <div class="pay-micro">Tu sitio se activará automáticamente tras confirmar el pago.</div>
+
+    <!-- Payment Card -->
+    <div class="pay-card">
+      <button id="btnProWebFallback" onclick="this.style.display='none';initPayPhone('pro_web','pp-button-web');" style="width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.6rem;display:block;box-shadow:0 6px 22px rgba(11,124,110,.28);transition:all .2s ease;letter-spacing:.01em">✨ Activar mi sitio web</button>
+      <div id="pp-button-web" style="margin-bottom:.6rem;display:none"></div>
+    </div>
 
     <button onclick="cerrarProWebModal()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MODAL TELÉFONO REQUERIDO — checkout gate -->
+<!-- ═══════════════════════════════════════ -->
+<div id="telRequiredModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.52);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:1.5rem">
+  <div style="background:#fff;border-radius:24px;padding:2.2rem 2rem;width:100%;max-width:400px;box-shadow:0 32px 100px rgba(15,26,24,.24);animation:proModalIn .28s cubic-bezier(.16,1,.3,1);text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--teal),#34d399)"></div>
+
+    <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--teal-lite),rgba(167,139,250,.12));display:flex;align-items:center;justify-content:center;margin:0 auto .9rem;font-size:1.5rem;box-shadow:0 4px 16px rgba(11,124,110,.12)">📱</div>
+
+    <div style="font-family:Fraunces,serif;font-size:1.25rem;font-weight:700;color:var(--ink);margin-bottom:.35rem;line-height:1.15;letter-spacing:-.02em">Completa tu número de contacto</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.55;margin-bottom:1.2rem;max-width:300px;margin-left:auto;margin-right:auto">Necesitamos un teléfono válido para procesar tu pago de forma segura con PayPhone.</div>
+
+    <div style="margin-bottom:1.1rem;text-align:left">
+      <label style="display:block;font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Teléfono / WhatsApp</label>
+      <input id="telRequiredInput" type="tel" placeholder="+593 99 123 4567" style="width:100%;padding:.78rem 1rem;border:1.5px solid #e5e7eb;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--ink);box-sizing:border-box;outline:none;transition:border-color .2s,box-shadow .2s" onfocus="this.style.borderColor='var(--teal)';this.style.boxShadow='0 0 0 3px rgba(11,124,110,.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+      <div style="font-size:.7rem;color:var(--muted2);margin-top:.3rem">Formato internacional: +593 99 123 4567</div>
+    </div>
+
+    <button onclick="guardarTelefonoDesdeModal()" style="width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:block;box-shadow:0 6px 22px rgba(11,124,110,.28);transition:all .2s ease;letter-spacing:.01em">💳 Continuar al pago</button>
+    <button onclick="cerrarModalTelefono()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
   </div>
 </div>
 

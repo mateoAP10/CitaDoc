@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/shared.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -950,6 +951,7 @@ button,a{-webkit-tap-highlight-color:transparent}
       <button class="bk-close" onclick="cerrarBooking()">✕</button>
     </div>
     <div id="bkStep1" class="bk-body">
+      <div id="bkSedeWrap" style="display:none;margin-bottom:.9rem"></div>
       <div class="bk-cal-nav">
         <button class="bk-arr" onclick="bkNavMes(-1)">‹</button>
         <div class="bk-cal-title" id="bkCalTitle"></div>
@@ -963,6 +965,13 @@ button,a{-webkit-tap-highlight-color:transparent}
         <button class="bk-btn" id="bkStep1Btn" onclick="bkGoStep2()" disabled>Continuar →</button>
       </div>
       <div id="bkNoSlots" style="display:none;text-align:center;padding:1rem 0;font-size:.85rem;color:var(--su)">Sin horarios disponibles este día.</div>
+    </div>
+    <div id="bkStepLock" class="bk-body" style="display:none;text-align:center;padding:2.5rem 1.5rem">
+      <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--teal-lite),rgba(167,139,250,.12));display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;box-shadow:0 4px 16px rgba(11,124,110,.12)">🔒</div>
+      <div style="font-family:var(--D);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:.4rem;line-height:1.2">Sitio en modo borrador</div>
+      <div style="font-size:.82rem;color:var(--mu);line-height:1.6;margin-bottom:1.4rem;max-width:280px;margin-left:auto;margin-right:auto">Este es una vista previa de tu sitio médico. Publica tu sitio para comenzar a recibir citas en línea.</div>
+      <a href="citadoc-dashboard.html" style="display:inline-block;padding:.75rem 1.4rem;background:linear-gradient(135deg,var(--ga),var(--gg));color:#fff;border:none;border-radius:12px;font-family:var(--B);font-size:.88rem;font-weight:700;text-decoration:none;box-shadow:0 4px 18px rgba(11,124,110,.24)">✨ Publicar mi sitio médico</a>
+      <button onclick="cerrarBooking()" style="display:block;width:100%;padding:.5rem;background:none;border:none;color:var(--mu);font-family:var(--B);font-size:.8rem;cursor:pointer;margin-top:.8rem">Cerrar</button>
     </div>
     <div id="bkStep2" class="bk-body" style="display:none">
       <div style="font-size:.74rem;color:var(--mu);margin-bottom:1.1rem">
@@ -1031,13 +1040,24 @@ function hookForEsp(esp){
   return HOOKS[k||'default'];
 }
 function servsForEsp(wc,esp){
-  if(wc&&wc.servicios&&wc.servicios.length)return wc.servicios;
+  if(wc&&wc.servicios&&wc.servicios.length){
+    // Normalize legacy {titulo,desc} → {t,d,i}
+    return wc.servicios.map(function(s){
+      return {
+        t: s.t || s.titulo || 'Servicio',
+        d: s.d || s.desc || s.descripcion || '',
+        i: s.i || s.icono || '◆'
+      };
+    });
+  }
   var k=Object.keys(DEFAULT_SERVS).find(function(k){return esp&&esp.toLowerCase().indexOf(k)!==-1;});
   return DEFAULT_SERVS[k||'default'];
 }
 
-function renderWeb(m,locs,wc){
+function renderWeb(m,locs,wc,isPreview){
   wc=wc||{};
+  _M.locs = locs || [];
+  window._isPreviewDraft = !!isPreview;
   if(wc.primary_color){
     document.documentElement.style.setProperty('--ga',wc.primary_color);
     document.documentElement.style.setProperty('--p',wc.primary_color);
@@ -1048,11 +1068,11 @@ function renderWeb(m,locs,wc){
   var anos=m.anos_experiencia||'';
 
   document.title=wc.seo_title||(nombre+(esp?' — '+esp:'')+(ciudad?' en '+ciudad:''));
-  var md=el('pageDesc');if(md)md.setAttribute('content',(wc.seo_desc||m.bio||nombre+' '+esp).slice(0,155));
+  var md=el('pageDesc');if(md)md.setAttribute('content',(wc.seo_description||wc.seo_desc||m.bio||nombre+' '+esp).slice(0,155));
 
   setText('wNavName',nombre);
   if(esp)setText('wNavEsp',esp);
-  var nc=el('navCta');if(nc)nc.textContent=wc.cta_primary_text||'Agendar cita';
+  var nc=el('navCta');if(nc)nc.textContent=wc.cta_primary||wc.cta_primary_text||'Agendar cita';
   setText('wFooterBrand',nombre+(esp?' · '+esp:''));
 
   // Hero photo
@@ -1151,14 +1171,14 @@ function renderWeb(m,locs,wc){
   var sb=el('wSobreBadge');
   if(sb&&anos){sb.style.display='inline-flex';setText('wSobreBadgeTxt',anos+' años de experiencia');}
 
-  var q=wc.sobre_quote||(m.bio?'"'+m.bio.slice(0,115).trim()+(m.bio.length>115?'…':'')+'"':'');
+  var q=wc.philosophy||wc.sobre_quote||(m.bio?'"'+m.bio.slice(0,115).trim()+(m.bio.length>115?'…':'')+'"':'');
   if(!q)q='"La medicina es un compromiso diario con la vida de mis pacientes."';
   setText('wSobreQuote',q);
-  setText('wSobreBio',m.bio||('Especialista en '+(esp||'medicina')+(ciudad?' con consultorio en '+ciudad:'')+'. Comprometido con la salud y el bienestar de cada paciente.'));
+  setText('wSobreBio',wc.about_text||wc.doctor_story||m.bio||('Especialista en '+(esp||'medicina')+(ciudad?' con consultorio en '+ciudad:'')+'. Comprometido con la salud y el bienestar de cada paciente.'));
 
   var hlList=el('wHlList');
   if(hlList){
-    var chips=wc.sobre_mi_highlights||[];
+    var chips=wc.differentiators||wc.sobre_mi_highlights||[];
     if(!chips.length){
       if(anos)chips.push(anos+' años de experiencia clínica');
       if(esp)chips.push('Especialista en '+esp);
@@ -1191,9 +1211,9 @@ function renderWeb(m,locs,wc){
 
   // CTA
   setText('wCtaH2',wc.cta_final||(esp?'Agenda tu consulta de '+esp:(ciudad?'Agenda en '+ciudad:'Da el primer paso hacia tu bienestar')));
-  setText('wCtaSub','Atención personalizada, diagnóstico preciso y acompañamiento en cada etapa de tu recuperación.');
+  setText('wCtaSub',wc.patient_experience||'Atención personalizada, diagnóstico preciso y acompañamiento en cada etapa de tu recuperación.');
   var cb=el('wCtaBtn');
-  if(cb)cb.innerHTML='<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'+(wc.cta_primary_text||'Agendar ahora');
+  if(cb)cb.innerHTML='<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'+(wc.cta_primary||wc.cta_primary_text||'Agendar ahora');
   var cw=el('wCtaWa');if(cw&&m.whatsapp_activo&&m.whatsapp){cw.href='https://wa.me/'+m.whatsapp.replace(/\D/g,'');cw.style.display='inline-flex';}
 
   [el('navCta'),el('wBtnBook'),el('wCtaBtn')].forEach(function(b){if(b)b.onclick=abrirBooking;});
@@ -1220,6 +1240,40 @@ function renderWeb(m,locs,wc){
     var blob=new Blob([mf],{type:'application/json'});
     var mfEl=el('pwaManifest');if(mfEl){URL.revokeObjectURL(mfEl.href);mfEl.href=URL.createObjectURL(blob);}
   }catch(e){}
+
+  // ── PREVIEW LOCK: draft mode visuals ──
+  if(isPreview){
+    // Top banner
+    var banner=document.createElement('div');
+    banner.id='wPreviewBanner';
+    banner.innerHTML='<span style="font-size:.9rem">🔒</span> <strong>Vista previa</strong> — Tu sitio médico aún no está publicado';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:400;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06);padding:.45rem 1rem;text-align:center;font-size:.72rem;font-weight:500;color:var(--ink2);font-family:var(--B);letter-spacing:.01em';
+    document.body.appendChild(banner);
+    document.body.style.paddingTop='32px';
+    var nav=el('wNav');if(nav)nav.style.top='32px';
+
+    // Subtle watermark
+    var wm=document.createElement('div');
+    wm.id='wPreviewWatermark';
+    wm.textContent='BORRADOR';
+    wm.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:.025;font-family:var(--D);font-size:clamp(4rem,15vw,10rem);font-weight:900;color:#000;transform:rotate(-12deg);letter-spacing:.15em;text-transform:uppercase;user-select:none';
+    document.body.appendChild(wm);
+
+    // Mobile sticky CTA
+    var sticky=document.createElement('a');
+    sticky.id='wPreviewStickyCTA';
+    sticky.href='citadoc-dashboard.html';
+    sticky.textContent='✨ Publicar mi sitio médico';
+    sticky.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:400;background:linear-gradient(135deg,var(--ga),var(--gg));color:#fff;padding:.75rem 1rem;text-align:center;font-size:.85rem;font-weight:700;font-family:var(--B);text-decoration:none;box-shadow:0 -4px 20px rgba(0,0,0,.15);display:none';
+    document.body.appendChild(sticky);
+
+    // Show sticky CTA only on mobile
+    function toggleSticky(){
+      if(sticky)sticky.style.display=window.innerWidth<768?'block':'none';
+    }
+    toggleSticky();
+    window.addEventListener('resize',toggleSticky);
+  }
 }
 
 /* ── SCROLL EFFECTS ── */
@@ -1259,7 +1313,7 @@ document.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
 })();
 
 /* ── BOOKING ── */
-var _bkY,_bkM,_bkDate=null,_bkSlot=null,_bkCitas=[];
+var _bkY,_bkM,_bkDate=null,_bkSlot=null,_bkCitas=[],_bkDisp={},_bkSedeId=null;
 var _DIAS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 var _MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var _DI={lun:1,mar:2,mie:3,'mié':3,jue:4,vie:5,sab:6,'sáb':6,dom:0};
@@ -1270,34 +1324,75 @@ function abrirBooking(){
   ov.style.display='flex';document.body.style.overflow='hidden';
   setText('bkDrName',(_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido);
   setText('bkDrEsp',(_M.especialidades||[])[0]||'');
-  var n=new Date();_bkY=n.getFullYear();_bkM=n.getMonth();_bkDate=null;_bkSlot=null;
-  bkCargarCitas().then(bkRenderCal);
+
+  // Preview lock: show lock screen instead of booking
+  if(window._isPreviewDraft){
+    el('bkStep1').style.display='none';
+    el('bkStep2').style.display='none';
+    el('bkStep3').style.display='none';
+    var lock=el('bkStepLock');if(lock)lock.style.display='block';
+    return;
+  }
+
+  var n=new Date();_bkY=n.getFullYear();_bkM=n.getMonth();_bkDate=null;_bkSlot=null;_bkSedeId=null;
+  // Render sede selector if multiple locations
+  var sedeWrap=el('bkSedeWrap');
+  if(sedeWrap){
+    var locs=_M.locs||[];
+    if(locs.length>1){
+      var sel='<select id="bkSedeSel" class="bk-inp" style="font-size:.78rem;padding:.42rem .6rem;margin:0" onchange="bkCambiarSede()">';
+      sel+='<option value="">Todas las sedes</option>';
+      locs.forEach(function(l,i){sel+='<option value="'+(l.id||'')+'">'+(l.nombre||'Sede '+(i+1))+'</option>';});
+      sel+='</select>';
+      sedeWrap.innerHTML=sel;
+      sedeWrap.style.display='block';
+    } else if(locs.length===1&&locs[0].id){
+      _bkSedeId=String(locs[0].id);
+      sedeWrap.innerHTML='';
+      sedeWrap.style.display='none';
+    } else {
+      sedeWrap.innerHTML='';
+      sedeWrap.style.display='none';
+    }
+  }
+  bkCargarDisponibilidad(_bkSedeId).then(bkRenderCal);
+}
+function bkCambiarSede(){
+  var sel=el('bkSedeSel');
+  _bkSedeId=(sel&&sel.value)?String(sel.value):null;
+  _bkDate=null;_bkSlot=null;
+  var b=el('bkStep1Btn');if(b)b.disabled=true;
+  bkCargarDisponibilidad(_bkSedeId).then(bkRenderCal);
 }
 function cerrarBooking(){var ov=el('bkOverlay');if(ov)ov.style.display='none';document.body.style.overflow='';bkGoStep1();}
-async function bkCargarCitas(){
+async function bkCargarDisponibilidad(locationId){
   if(!_M)return;
   var hoy=new Date().toISOString().split('T')[0];
   var e90=new Date();e90.setDate(e90.getDate()+90);
   var r=await _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',e90.toISOString().split('T')[0]).neq('estado','cancelada');
   _bkCitas=r.data||[];
-}
-function bkDiasActivos(){
-  return (_M.dias_atencion||['lun','mar','mie','jue','vie']).map(function(d){return _DI[d.toLowerCase()];}).filter(function(n){return n!==undefined;});
+  // Use shared.js modern schedule system (doctor_schedule_blocks with bloqueos/excepciones)
+  if(typeof cargarDisponibilidadPorSede==='function'){
+    try{_bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,locationId||null);}catch(e){_bkDisp={};}
+  } else {
+    _bkDisp={};
+  }
 }
 function bkRenderCal(){
   setText('bkCalTitle',_MESES[_bkM]+' '+_bkY);
   var g=el('bkCalGrid');if(!g)return;g.innerHTML='';
   _DIAS.forEach(function(d){var h=document.createElement('div');h.className='bk-cal-hdr';h.textContent=d.charAt(0);g.appendChild(h);});
   var fd=new Date(_bkY,_bkM,1).getDay(),dm=new Date(_bkY,_bkM+1,0).getDate();
-  var hoy=new Date();hoy.setHours(0,0,0,0);var act=bkDiasActivos();
+  var hoy=new Date();hoy.setHours(0,0,0,0);
   var hoyS=hoy.toISOString().split('T')[0];
   for(var i=0;i<fd;i++){var e=document.createElement('div');e.className='bk-day empty';g.appendChild(e);}
   for(var d=1;d<=dm;d++){
     var f=new Date(_bkY,_bkM,d),fs=f.toISOString().split('T')[0];
+    var hasSlots=_bkDisp&&_bkDisp[fs]&&_bkDisp[fs].length>0;
     var c=document.createElement('div');c.textContent=d;
     var cls=['bk-day'];
     if(fs===hoyS)cls.push('today');
-    if(f<hoy||act.indexOf(f.getDay())===-1){cls.push(f<hoy?'past':'unavail');}
+    if(f<hoy||!hasSlots){cls.push(f<hoy?'past':'unavail');}
     else{cls.push('avail');if(fs===_bkDate)cls.push('sel');(function(s){c.onclick=function(){bkSelDate(s);};})(fs);}
     c.className=cls.join(' ');g.appendChild(c);
   }
@@ -1314,7 +1409,6 @@ function bkRenderMobileDays(){
   var hoy=new Date();hoy.setHours(0,0,0,0);
   var diaNames=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   var mesesCortos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  var act=bkDiasActivos();
   var hoyS=hoy.toISOString().split('T')[0];
   var currentMonth=-1;
   var selCard=null;
@@ -1325,7 +1419,8 @@ function bkRenderMobileDays(){
     var fs=date.toISOString().split('T')[0];
     var isToday=fs===hoyS;
     var isPast=date<hoy;
-    var isAvail=!isPast&&act.indexOf(date.getDay())!==-1;
+    var hasSlots=_bkDisp&&_bkDisp[fs]&&_bkDisp[fs].length>0;
+    var isAvail=!isPast&&hasSlots;
     var isSel=fs===_bkDate;
 
     // Month separator
@@ -1373,13 +1468,9 @@ function bkSelDate(f){_bkDate=f;_bkSlot=null;var b=el('bkStep1Btn');if(b)b.disab
 function bkRenderSlots(fecha){
   var sl=el('bkSlotsLabel');
   if(sl){var d=new Date(fecha+'T12:00:00');sl.textContent=d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});}
-  var desde=_M.horario_desde||'08:00',hasta=_M.horario_hasta||'17:00',dur=parseInt(_M.duracion_cita||30);
+  // Use pre-computed availability from shared.js (respects doctor_schedule_blocks + bloqueos + excepciones)
+  var slots=(_bkDisp&&_bkDisp[fecha])?_bkDisp[fecha].slice():[];
   var tomados=_bkCitas.filter(function(c){return c.fecha===fecha;}).map(function(c){return c.hora;});
-  var slots=[],h1=parseInt(desde.split(':')[0]),m1=parseInt(desde.split(':')[1]);
-  var h2=parseInt(hasta.split(':')[0]),m2=parseInt(hasta.split(':')[1]),mins=h1*60+m1,end=h2*60+m2;
-  while(mins<end){slots.push((Math.floor(mins/60)).toString().padStart(2,'0')+':'+(mins%60).toString().padStart(2,'0'));mins+=dur;}
-  var n=new Date(),hoyS=n.toISOString().split('T')[0],ahora=n.getHours()*60+n.getMinutes();
-  if(fecha===hoyS)slots=slots.filter(function(s){return parseInt(s.split(':')[0])*60+parseInt(s.split(':')[1])>ahora;});
   var cont=el('bkSlots');cont.innerHTML='';var disp=0;
   slots.forEach(function(s){
     var chip=document.createElement('div');
@@ -1392,7 +1483,12 @@ function bkRenderSlots(fecha){
   el('bkSlotsWrap').style.display='block';
 }
 function bkSelSlot(s){_bkSlot=s;document.querySelectorAll('.bk-slot').forEach(function(c){c.classList.toggle('sel',c.textContent===s);});var b=el('bkStep1Btn');if(b)b.disabled=false;}
-function bkGoStep1(){el('bkStep1').style.display='block';el('bkStep2').style.display='none';el('bkStep3').style.display='none';}
+function bkGoStep1(){
+  el('bkStep1').style.display='block';
+  el('bkStep2').style.display='none';
+  el('bkStep3').style.display='none';
+  var lock=el('bkStepLock');if(lock)lock.style.display='none';
+}
 function bkGoStep2(){
   if(!_bkDate||!_bkSlot)return;
   el('bkStep1').style.display='none';el('bkStep2').style.display='block';el('bkStep3').style.display='none';
@@ -1418,7 +1514,7 @@ async function bkConfirmar(){
     wl.href='https://wa.me/'+_M.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+dr+', confirmé mi cita para el '+nd.toLocaleDateString('es',{day:'numeric',month:'long'})+' a las '+_bkSlot+'. Soy '+n+' ('+t+').');
     wl.style.display='block';
   }
-  bkCargarCitas();
+  bkCargarDisponibilidad(_bkSedeId);
 }
 
 /* ── MOBILE UX ── */
@@ -1461,6 +1557,7 @@ function mnavActive(item){
   var slug=p.get('slug')||'';
   var tplO=p.get('tpl')||null;
   var previewDraft=p.get('preview')==='draft';
+  window._isPreviewDraft=previewDraft;
   if(!slug){setText('wH1','Médico no encontrado');return;}
   _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single()
     .then(function(r){
@@ -1470,8 +1567,8 @@ function mnavActive(item){
       var wc = (previewDraft && _M.web_config_draft) ? _M.web_config_draft : (_M.web_config||null);
       if(tplO&&wc) wc=Object.assign({},wc,{template:tplO});
       else if(tplO) wc={template:tplO};
-      _sb.from('doctor_locations').select('nombre,direccion,telefono,ciudad,maps_url').eq('medico_id',_M.id).order('created_at')
-        .then(function(rl){renderWeb(_M,rl.data||[],wc);});
+      _sb.from('doctor_locations').select('id,nombre,direccion,telefono,ciudad,maps_url').eq('medico_id',_M.id).order('created_at')
+        .then(function(rl){renderWeb(_M,rl.data||[],wc,previewDraft);});
     });
 })();
 </script>
