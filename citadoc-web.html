@@ -348,6 +348,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
 .bk-day.today{border:1.5px solid var(--gg)}
 .bk-day.past,.bk-day.unavail{opacity:.22;cursor:default;pointer-events:none}
 .bk-day.empty{pointer-events:none}
+.bk-days-mobile{display:none}
 .bk-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem;margin-bottom:1.2rem}
 .bk-slot{padding:.54rem .3rem;text-align:center;border:1.5px solid var(--bo);border-radius:10px;font-size:.82rem;font-weight:500;color:var(--ink2);cursor:pointer;transition:all .18s;background:var(--s)}
 .bk-slot:hover{border-color:var(--gg);background:var(--gpl);color:var(--gm)}
@@ -372,7 +373,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
   .hero{grid-template-columns:1fr}
   .hero-left{padding:130px 6% 56px;min-height:auto}
   .hero-left::after{display:none}
-  .hero-right{min-height:55vw;max-height:68vh}
+  .hero-right{min-height:auto;max-height:45vh;aspect-ratio:16/10}
   .nav-links{display:none}
   .ben-grid{grid-template-columns:repeat(2,1fr)}
   .sobre-grid{grid-template-columns:1fr}
@@ -396,57 +397,90 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
    MOBILE-FIRST PREMIUM — ≤768px
    ════════════════════════════════ */
 @media(max-width:768px){
-  /* ── Hero fullscreen cinematic ── */
+  /* ── Hero compact app-style ── */
   .hero{
-    display:block;
-    min-height:100svh;
-    position:relative;
-    overflow:hidden;
+    display:flex!important;
+    flex-direction:column;
+    align-items:center;
+    min-height:auto;
+    padding:72px 5% 3rem;
+    background:#fff;
   }
   .hero-right{
-    position:absolute;inset:0;
-    min-height:100svh;max-height:none;
-    z-index:0;
+    position:relative!important;
+    order:-1;
+    width:152px!important;
+    height:152px!important;
+    border-radius:26px;
+    margin:0 auto 1.1rem;
+    overflow:hidden;
+    flex-shrink:0;
+    background:var(--gd);
+    box-shadow:0 14px 44px rgba(13,35,24,.14),0 2px 8px rgba(13,35,24,.08);
+  }
+  .hero-right-img{
+    position:static!important;
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center top;
+    opacity:0;animation:imgIn 1.1s cubic-bezier(.16,1,.3,1) .1s forwards;
   }
   .hero-right-ov{
-    background:linear-gradient(0deg,rgba(7,21,16,.96) 0%,rgba(7,21,16,.65) 42%,rgba(7,21,16,.18) 75%,transparent 100%);
+    background:linear-gradient(180deg,transparent 60%,rgba(7,21,16,.3) 100%);
   }
+  .hero-right-init{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:3.2rem;font-weight:900;
+    color:rgba(255,255,255,.04);
+    user-select:none;
+  }
+  .hero-right-card{display:none}
   .hero-left{
-    position:absolute;bottom:0;left:0;right:0;z-index:2;
+    position:static!important;
     background:transparent;
-    padding:0 6% calc(80px + env(safe-area-inset-bottom));
-    min-height:0;
-    justify-content:flex-end;
+    padding:0;
+    width:100%;
+    max-width:420px;
+    margin:0 auto;
+    text-align:center;
+    align-items:center;
+    justify-content:flex-start;
   }
   .hero-left::after{display:none}
-  /* Text adapts to white-over-dark */
-  .h-pill{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.85)}
-  .h-pill-dot{background:rgba(255,255,255,.7)}
-  .h-h1{color:#fff}
-  .h-h1 strong{color:#fff}
-  .h-h1 em{color:rgba(82,183,136,.9)}
-  .h-sub{color:rgba(255,255,255,.62);max-width:100%}
-  /* CTAs full-width on mobile */
-  .h-actions{flex-direction:column;gap:.6rem}
-  .btn-main{
-    background:#fff;color:var(--gm);
-    width:100%;justify-content:center;
-    padding:.9rem;font-size:.97rem;border-radius:14px;
-    box-shadow:0 4px 20px rgba(0,0,0,.25);
+  .h-pill{margin:0 auto .85rem;font-size:.64rem;padding:.2rem .7rem}
+  .h-h1{
+    font-size:clamp(1.7rem,6.5vw,2.2rem);
+    margin-bottom:.25rem;
+    letter-spacing:-.03em;
   }
-  .btn-main:hover{background:#fff;transform:none;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+  .h-h1 strong{display:inline;color:var(--gm)}
+  .h-sub{
+    font-size:.93rem;
+    color:var(--mu);
+    margin-bottom:1.3rem;
+    max-width:100%;
+    line-height:1.55;
+  }
+  .h-actions{flex-direction:column;gap:.5rem;margin-bottom:1.1rem;width:100%}
+  .btn-main{
+    background:var(--gm);color:#fff;
+    width:100%;justify-content:center;
+    padding:.85rem;font-size:.94rem;border-radius:14px;
+    box-shadow:none;
+  }
+  .btn-main:hover{background:var(--gm);transform:none;box-shadow:none}
   .btn-ghost{
-    background:rgba(255,255,255,.1);color:#fff;
-    border-color:rgba(255,255,255,.18);
-    width:100%;justify-content:center;padding:.9rem;font-size:.97rem;border-radius:14px;
+    background:transparent;color:var(--ink);
+    border-color:var(--gb);
+    width:100%;justify-content:center;padding:.85rem;font-size:.94rem;border-radius:14px;
   }
   .btn-ghost:hover{transform:none;box-shadow:none}
-  /* Trust pills on mobile */
-  .h-trust{gap:.8rem}
-  .h-trust-pill{font-size:.74rem;color:rgba(255,255,255,.72)}
-  .h-trust-icon{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
-  /* Hero floating card */
-  .hero-right-card{display:none}
+  .h-trust{gap:.5rem;justify-content:center;flex-wrap:wrap;width:100%}
+  .h-trust-pill{font-size:.72rem;color:var(--mu)}
+  .h-trust-icon{background:var(--gpl);color:var(--gg)}
   /* Nav transparent on mobile */
   .nav{padding:0 5%;height:56px}
   .nav-cta{display:none}
@@ -479,7 +513,131 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
   .bk-body{padding:1.2rem 1.5rem}
   .bk-hdr{padding:1.2rem 1.5rem .8rem}
   .bk-inp{font-size:1rem} /* prevent iOS zoom on focus */
-  .bk-slot{padding:.65rem .2rem;font-size:.88rem}
+
+  /* Mobile calendar — hide desktop grid, show horizontal day cards */
+  .bk-cal-grid{display:none!important}
+  .bk-days-mobile{
+    display:flex!important;
+    gap:.6rem;
+    overflow-x:auto;
+    padding:.5rem .3rem 1rem;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    margin:0 -.3rem;
+  }
+  .bk-days-mobile::-webkit-scrollbar{display:none}
+
+  /* Compact premium header */
+  .bk-cal-nav{
+    margin-bottom:.5rem;
+    justify-content:center;
+    position:relative;
+    min-height:36px;
+  }
+  .bk-cal-nav .bk-arr{display:none}
+  .bk-cal-title{
+    font-size:1.05rem;
+    font-family:var(--D);
+    font-weight:700;
+    letter-spacing:-.01em;
+    color:var(--ink);
+    text-align:center;
+  }
+
+  /* Day cards — large, tactile, premium */
+  .bk-day-card{
+    flex:0 0 76px;
+    height:88px;
+    border-radius:20px;
+    gap:.15rem;
+    border:2px solid var(--bo);
+    background:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    scroll-snap-align:start;
+    transition:all .2s cubic-bezier(.16,1,.3,1);
+    -webkit-tap-highlight-color:transparent;
+    position:relative;
+    flex-shrink:0;
+  }
+  .bk-day-card:active{transform:scale(.93)}
+  .bk-day-card .bk-dn{
+    font-size:.7rem;
+    font-weight:700;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--mu);
+  }
+  .bk-day-card .bk-dnum{
+    font-size:1.3rem;
+    font-weight:800;
+    color:var(--ink);
+    margin-top:.1rem;
+  }
+  .bk-day-card.avail{
+    background:var(--gpl);
+    border-color:rgba(29,77,52,.15);
+  }
+  .bk-day-card.avail .bk-dn{color:var(--ga)}
+  .bk-day-card.sel{
+    background:var(--gm)!important;
+    border-color:var(--gm)!important;
+    box-shadow:0 8px 28px rgba(13,35,24,.28);
+    transform:scale(1.04);
+    z-index:1;
+  }
+  .bk-day-card.sel .bk-dn,
+  .bk-day-card.sel .bk-dnum{color:#fff}
+  .bk-day-card.today{border-color:var(--gg);background:#fff}
+  .bk-day-card.today.sel{background:var(--gm);border-color:var(--gm)}
+  .bk-day-card.past{opacity:.25;cursor:default}
+
+  /* Month section label inside scroll */
+  .bk-month-label{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    padding-right:.3rem;
+  }
+  .bk-month-label span{
+    font-size:.65rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--su);
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+    white-space:nowrap;
+  }
+
+  /* Slots — premium, large, tactile */
+  .bk-slots{
+    grid-template-columns:repeat(2,1fr);
+    gap:.6rem;
+    margin-bottom:1.4rem;
+  }
+  .bk-slot{
+    padding:.9rem .3rem;
+    font-size:.98rem;
+    border-radius:14px;
+    font-weight:600;
+    min-height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-width:2px;
+    transition:all .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .bk-slot:active{transform:scale(.96)}
+  .bk-slot.sel{
+    box-shadow:0 4px 16px rgba(13,35,24,.22);
+  }
+
   @keyframes bkSheet{from{transform:translateY(100%)}to{transform:none}}
 }
 
@@ -798,6 +956,7 @@ button,a{-webkit-tap-highlight-color:transparent}
         <button class="bk-arr" onclick="bkNavMes(1)">›</button>
       </div>
       <div class="bk-cal-grid" id="bkCalGrid"></div>
+      <div class="bk-days-mobile" id="bkDaysMobile"></div>
       <div id="bkSlotsWrap" style="display:none">
         <div style="font-size:.63rem;font-weight:700;color:var(--su);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.65rem" id="bkSlotsLabel"></div>
         <div class="bk-slots" id="bkSlots"></div>
@@ -1142,8 +1301,72 @@ function bkRenderCal(){
     else{cls.push('avail');if(fs===_bkDate)cls.push('sel');(function(s){c.onclick=function(){bkSelDate(s);};})(fs);}
     c.className=cls.join(' ');g.appendChild(c);
   }
+  // Render mobile horizontal day cards
+  bkRenderMobileDays();
   el('bkSlotsWrap').style.display=_bkDate?'block':'none';
   if(_bkDate)bkRenderSlots(_bkDate);
+}
+
+function bkRenderMobileDays(){
+  var container=el('bkDaysMobile');
+  if(!container)return;
+  container.innerHTML='';
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var diaNames=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  var mesesCortos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var act=bkDiasActivos();
+  var hoyS=hoy.toISOString().split('T')[0];
+  var currentMonth=-1;
+  var selCard=null;
+
+  for(var i=0;i<60;i++){
+    var date=new Date(hoy);
+    date.setDate(hoy.getDate()+i);
+    var fs=date.toISOString().split('T')[0];
+    var isToday=fs===hoyS;
+    var isPast=date<hoy;
+    var isAvail=!isPast&&act.indexOf(date.getDay())!==-1;
+    var isSel=fs===_bkDate;
+
+    // Month separator
+    if(date.getMonth()!==currentMonth){
+      currentMonth=date.getMonth();
+      var labelWrap=document.createElement('div');
+      labelWrap.className='bk-month-label';
+      var labelSpan=document.createElement('span');
+      labelSpan.textContent=mesesCortos[currentMonth];
+      labelWrap.appendChild(labelSpan);
+      container.appendChild(labelWrap);
+    }
+
+    var card=document.createElement('div');
+    var cls=['bk-day-card'];
+    if(isToday)cls.push('today');
+    if(isPast)cls.push('past');
+    if(isAvail)cls.push('avail');
+    if(isSel){cls.push('sel');selCard=card;}
+    card.className=cls.join(' ');
+
+    var nameEl=document.createElement('span');
+    nameEl.className='bk-dn';
+    nameEl.textContent=diaNames[date.getDay()];
+    card.appendChild(nameEl);
+
+    var numEl=document.createElement('span');
+    numEl.className='bk-dnum';
+    numEl.textContent=date.getDate();
+    card.appendChild(numEl);
+
+    if(isAvail){
+      (function(s){card.onclick=function(){bkSelDate(s);};})(fs);
+    }
+    container.appendChild(card);
+  }
+
+  // Scroll selected into view
+  if(selCard){
+    setTimeout(function(){selCard.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});},50);
+  }
 }
 function bkNavMes(d){_bkM+=d;if(_bkM<0){_bkM=11;_bkY--;}if(_bkM>11){_bkM=0;_bkY++;}bkRenderCal();}
 function bkSelDate(f){_bkDate=f;_bkSlot=null;var b=el('bkStep1Btn');if(b)b.disabled=true;bkRenderCal();}

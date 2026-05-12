@@ -167,6 +167,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .big-day-num{font-size:.75rem;font-weight:700;color:var(--ink2);margin-bottom:.2rem}
 .big-day.today .big-day-num{color:var(--teal)}
 .cal-event{font-size:.63rem;background:#dcfce7;color:var(--green);padding:.1rem .3rem;border-radius:4px;margin-bottom:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── MOBILE CALENDAR AGENDA ── */
+.mobile-cal{display:none}
+.mobile-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.mobile-cal-nav{width:34px;height:34px;border-radius:10px;background:var(--cream);border:1.5px solid var(--border);cursor:pointer;font-size:1.1rem;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mobile-cal-nav:active{transform:scale(.92)}
+.mobile-cal-title{font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.mobile-cal-days{display:flex;flex-direction:column;gap:.7rem}
+.mobile-day-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:1rem;transition:all .2s ease}
+.mobile-day-card.today{border-color:var(--teal);box-shadow:0 0 0 3px rgba(11,124,110,.08)}
+.mobile-day-card.past{opacity:.45}
+.mobile-day-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+.mobile-day-name{font-size:.75rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em}
+.mobile-day-num{font-size:1.15rem;font-weight:800;color:var(--ink);margin-left:auto}
+.mobile-day-badge{font-size:.68rem;font-weight:700;padding:.18rem .5rem;border-radius:50px;background:var(--teal-lite);color:var(--teal)}
+.mobile-event{display:flex;align-items:center;gap:.6rem;padding:.55rem .7rem;background:var(--cream);border-radius:10px;margin-bottom:.35rem;font-size:.84rem;color:var(--ink2)}
+.mobile-event:last-child{margin-bottom:0}
+.mobile-event-time{font-weight:700;color:var(--teal);font-size:.78rem;min-width:36px}
+.mobile-event-name{font-weight:500}
+.mobile-event-status{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.mobile-event-status.pending{background:var(--gold)}
+.mobile-location-group{margin-bottom:.5rem}
+.mobile-location-group:last-child{margin-bottom:0}
+.mobile-location-name{font-size:.75rem;font-weight:700;color:var(--teal-dark);margin-bottom:.35rem;margin-top:.15rem;display:flex;align-items:center;gap:.35rem}
+.mobile-location-name::before{content:'📍'}
+.mobile-day-empty{text-align:center;padding:1.2rem 0;font-size:.82rem;color:var(--muted2)}
+.mobile-day-empty-icon{font-size:1.4rem;margin-bottom:.3rem}
+
 .days-tabs{display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap}
 .day-tab{padding:.4rem .85rem;border-radius:8px;border:1.5px solid var(--border);font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;background:var(--white);transition:all .2s}
 .day-tab:hover{border-color:var(--teal);color:var(--teal)}
@@ -266,6 +294,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
   .topbar-date{display:none}
   .stats-row{grid-template-columns:repeat(2,1fr)}
   .dash-grid,.cal-layout,.perfil-layout{grid-template-columns:1fr}
+  /* Mobile calendar — hide desktop grid, show agenda */
+  .cal-layout{display:none!important}
+  .mobile-cal{display:block!important}
   .seguros-grid{grid-template-columns:repeat(2,1fr)}
   .panel{padding:1rem}
   #pacientesList{grid-template-columns:1fr !important}
@@ -960,7 +991,7 @@ display:flex;
     <!-- CALENDARIO -->
     <div class="panel" id="panel-calendario">
       <div class="section-header"><h2>Calendario</h2><p>Vista mensual de tus citas.</p></div>
-      <div class="cal-layout">
+      <div class="cal-layout" id="calLayoutDesktop">
         <div class="card">
           <div class="mini-cal-header">
             <button class="mini-cal-nav" onclick="calPrev()">‹</button>
@@ -978,6 +1009,15 @@ display:flex;
           <div class="big-cal-dows" id="bigCalDow"></div>
           <div class="big-cal-days" id="bigCalDays"></div>
         </div>
+      </div>
+      <!-- Mobile calendar agenda -->
+      <div class="mobile-cal" id="mobileCal">
+        <div class="mobile-cal-header">
+          <button class="mobile-cal-nav" onclick="calPrev()">‹</button>
+          <div class="mobile-cal-title" id="mobileCalTitle">—</div>
+          <button class="mobile-cal-nav" onclick="calNext()">›</button>
+        </div>
+        <div class="mobile-cal-days" id="mobileCalDays"></div>
       </div>
     </div>
 
@@ -1594,8 +1634,10 @@ function renderCal() {
   const titulo = MESES[calMonth]+' '+calYear;
   setText('miniCalTitle', titulo);
   setText('bigCalTitle',  titulo);
+  setText('mobileCalTitle', titulo);
   renderMiniCal();
   renderBigCal();
+  renderMobileCal();
 }
 function renderMiniCal() {
   var el = _el('miniCal'); if (!el) return;
@@ -1625,6 +1667,133 @@ function renderBigCal() {
     h+=`<div class="big-day${isT?' today':''}"><div class="big-day-num">${d}</div>${evs}</div>`;
   }
   days.innerHTML=h;
+}
+function renderMobileCal() {
+  var container = _el('mobileCalDays');
+  if (!container) return;
+  container.innerHTML = '';
+  const total = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diaNombres = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const mesNombre = MESES[calMonth];
+
+  var hasAnyEvent = false;
+  for (var d = 1; d <= total; d++) {
+    var evs = EVENTS[d] || [];
+    if (evs.length) hasAnyEvent = true;
+
+    var date = new Date(calYear, calMonth, d);
+    var isToday = date.getTime() === today.getTime();
+    var isPast = date < today;
+
+    var card = document.createElement('div');
+    card.className = 'mobile-day-card' + (isToday ? ' today' : '') + (isPast ? ' past' : '');
+
+    var header = document.createElement('div');
+    header.className = 'mobile-day-header';
+
+    var nameEl = document.createElement('span');
+    nameEl.className = 'mobile-day-name';
+    nameEl.textContent = diaNombres[date.getDay()];
+    header.appendChild(nameEl);
+
+    var numEl = document.createElement('span');
+    numEl.className = 'mobile-day-num';
+    numEl.textContent = d;
+    header.appendChild(numEl);
+
+    if (evs.length) {
+      var badge = document.createElement('span');
+      badge.className = 'mobile-day-badge';
+      badge.textContent = evs.length + (evs.length === 1 ? ' cita' : ' citas');
+      header.appendChild(badge);
+    }
+
+    card.appendChild(header);
+
+    if (evs.length) {
+      // Agrupar citas por sede
+      var grupos = {};
+      var sinSede = [];
+      evs.forEach(function(e) {
+        if (e.location_id) {
+          var lid = String(e.location_id);
+          if (!grupos[lid]) grupos[lid] = [];
+          grupos[lid].push(e);
+        } else {
+          sinSede.push(e);
+        }
+      });
+      // Renderizar grupos con sede
+      Object.keys(grupos).forEach(function(lid) {
+        var loc = (window.locationsMedico || []).find(function(l){ return String(l.id) === lid; });
+        if (loc) {
+          var locHeader = document.createElement('div');
+          locHeader.className = 'mobile-location-name';
+          locHeader.textContent = loc.nombre || 'Consultorio';
+          card.appendChild(locHeader);
+        }
+        grupos[lid].forEach(function(e) {
+          var parts = e.text.split(' ');
+          var hora = parts[0];
+          var nombre = parts.slice(1).join(' ');
+          var row = document.createElement('div');
+          row.className = 'mobile-event';
+          var timeSpan = document.createElement('span');
+          timeSpan.className = 'mobile-event-time';
+          timeSpan.textContent = hora;
+          var nameSpan = document.createElement('span');
+          nameSpan.className = 'mobile-event-name';
+          nameSpan.textContent = nombre;
+          var statusDot = document.createElement('span');
+          statusDot.className = 'mobile-event-status';
+          if (e.estado === 'pendiente') statusDot.classList.add('pending');
+          row.appendChild(timeSpan);
+          row.appendChild(nameSpan);
+          row.appendChild(statusDot);
+          card.appendChild(row);
+        });
+      });
+      // Renderizar citas sin sede (fallback legacy)
+      sinSede.forEach(function(e) {
+        var parts = e.text.split(' ');
+        var hora = parts[0];
+        var nombre = parts.slice(1).join(' ');
+        var row = document.createElement('div');
+        row.className = 'mobile-event';
+        var timeSpan = document.createElement('span');
+        timeSpan.className = 'mobile-event-time';
+        timeSpan.textContent = hora;
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'mobile-event-name';
+        nameSpan.textContent = nombre;
+        var statusDot = document.createElement('span');
+        statusDot.className = 'mobile-event-status';
+        if (e.estado === 'pendiente') statusDot.classList.add('pending');
+        row.appendChild(timeSpan);
+        row.appendChild(nameSpan);
+        row.appendChild(statusDot);
+        card.appendChild(row);
+      });
+    } else {
+      var empty = document.createElement('div');
+      empty.className = 'mobile-day-empty';
+      empty.innerHTML = '<div class="mobile-day-empty-icon">📅</div>Sin citas';
+      card.appendChild(empty);
+    }
+
+    container.appendChild(card);
+  }
+
+  // Estado vacío elegante si el mes entero no tiene citas
+  if (!hasAnyEvent && total > 0) {
+    container.innerHTML = '';
+    var emptyState = document.createElement('div');
+    emptyState.style.cssText = 'text-align:center;padding:3rem 1.5rem;color:var(--muted2)';
+    emptyState.innerHTML = '<div style="font-size:2.5rem;margin-bottom:.8rem">📅</div><div style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:600;color:var(--ink);margin-bottom:.3rem">Sin citas este mes</div><div style="font-size:.85rem;color:var(--muted);line-height:1.55">Tu agenda aparecerá aquí cuando los pacientes reserven.</div>';
+    container.appendChild(emptyState);
+  }
 }
 function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} AppState.cal.month=calMonth; AppState.cal.year=calYear; renderCal(); }
 function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} AppState.cal.month=calMonth; AppState.cal.year=calYear; renderCal(); }
@@ -2244,11 +2413,11 @@ async function cargarStats(medicoId){
 async function cargarCitasCal(medicoId){
   const ini=new Date(calYear,calMonth,1).toISOString().split('T')[0];
   const fin=new Date(calYear,calMonth+1,0).toISOString().split('T')[0];
-  const {data,error:eCal}=await _sb.from('citas').select('fecha,hora,paciente_nombre,estado').eq('medico_id',medicoId).gte('fecha',ini).lte('fecha',fin).neq('estado','cancelada');
+  const {data,error:eCal}=await _sb.from('citas').select('fecha,hora,paciente_nombre,estado,location_id').eq('medico_id',medicoId).gte('fecha',ini).lte('fecha',fin).neq('estado','cancelada');
   if(eCal){ logError('cargarCitasCal', eCal); return; }
   EVENTS={};
-  AppState.cal.events = EVENTS; // re-anclar: mutaciones a EVENTS[d] reflejan en AppState.cal.events[d]
-  (data||[]).forEach(c=>{const d=parseInt(c.fecha.split('-')[2]);if(!EVENTS[d])EVENTS[d]=[];EVENTS[d].push({text:c.hora+' '+c.paciente_nombre.split(' ')[0]});});
+  AppState.cal.events = EVENTS;
+  (data||[]).forEach(c=>{const d=parseInt(c.fecha.split('-')[2]);if(!EVENTS[d])EVENTS[d]=[];EVENTS[d].push({text:c.hora+' '+c.paciente_nombre.split(' ')[0],estado:c.estado,location_id:c.location_id});});
   renderCal();
 }
 async function cargarFormacion(medicoId){
@@ -2353,7 +2522,8 @@ async function aplicarMedico(m) {
   if(wrap) wrap.style.display=m.whatsapp_activo?'block':'none';
   updatePreview();
 
-  // Horarios
+  // Horarios — cargar ubicaciones PRIMERO para evitar race condition en selects de consultorio
+  await cargarUbicaciones();
   await inicializarSlots(m);
 
   // Datos de Supabase
@@ -2375,7 +2545,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if(dateEl) dateEl.textContent=DS[now.getDay()]+', '+now.getDate()+' de '+MS[now.getMonth()]+' '+now.getFullYear();
 
   // Init UI
-  renderSlots();
   renderSeguros();
   renderFormList();
   renderLogrosList();
