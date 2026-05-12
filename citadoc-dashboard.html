@@ -2910,10 +2910,23 @@ async function webAiGenerar() {
 
 async function activarSitioWeb() {
   if (!M||!M.id||!M.web_config_draft) { mostrarToast('Genera un sitio primero','error'); return; }
+
+  // Si aún no tiene PRO+WEB pagado, iniciar checkout primero
+  if (!esProWeb()) {
+    cerrarAiWebModal();
+    window._proUpgradeType = 'pro_web';
+    mostrarProModal('pacientes');
+    return;
+  }
+
+  // Ya pagó: proceder con publicación
   var btn=document.getElementById('aiActivarBtn');
+  var btnModal=document.getElementById('aiActivarBtnModal');
   if(btn){btn.disabled=true;btn.textContent='Activando...';}
+  if(btnModal){btnModal.disabled=true;btnModal.textContent='Activando...';}
   var res = await _sb.from('medicos').update({web_config:M.web_config_draft,web_status:'active'}).eq('id',M.id);
   if(btn){btn.disabled=false;btn.textContent='⚡ Activar por $89';}
+  if(btnModal){btnModal.disabled=false;btnModal.textContent='⚡ Activar por $89';}
   if(res.error){mostrarToast('Error: '+res.error.message,'error');return;}
   M.web_config=M.web_config_draft; M.web_status='active';
   cerrarAiWebModal();
@@ -3244,7 +3257,7 @@ function abrirGestionarPlan() {
     +'<div style="font-size:.83rem;color:#374151;display:flex;gap:.5rem;align-items:center"><span style="color:#0b7c6e;font-weight:700">✓</span>Seguimiento clínico</div>'
     +'</div></div>'
     +'<div style="display:flex;flex-direction:column;gap:.65rem">'
-    +'<button onclick="document.getElementById(\'modalGestionPlan\').remove();mostrarProModal(\'pacientes\')" style="width:100%;padding:.78rem 1rem;background:linear-gradient(148deg,#0a1512,#111827);color:#e9d5ff;border:1px solid rgba(167,139,250,.2);border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;text-align:left">✨ Activar PRO+WEB — $89 + $29/mes →</button>'
+    +'<button onclick="document.getElementById(\'modalGestionPlan\').remove();window._proUpgradeType=\'pro_web\';mostrarProModal(\'pacientes\')" style="width:100%;padding:.78rem 1rem;background:linear-gradient(148deg,#0a1512,#111827);color:#e9d5ff;border:1px solid rgba(167,139,250,.2);border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;text-align:left">✨ Activar PRO+WEB — $89 + $29/mes →</button>'
     +'<button onclick="document.getElementById(\'modalGestionPlan\').remove()" style="width:100%;padding:.72rem;background:#f9fafb;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.86rem;font-weight:500;cursor:pointer">Volver al plan básico</button>'
     +'</div>'
     +'<div style="text-align:center;margin-top:.9rem;font-size:.71rem;color:#b8c4c2">Sin permanencia · Cambias cuando quieras</div>'
@@ -3253,16 +3266,21 @@ function abrirGestionarPlan() {
 }
 
 function esPro() {
-  // plan_activo===true: requiere confirmación de pago vía webhook
-  // plan_activo===null/undefined: médico registrado con plan destacado pero sin webhook aún
-  // Para early-stage: plan_activo null se trata igual que true si el plan es destacado/pro
+  // plan_activo===true: pago confirmado (via webhook o frontend callback)
+  // plan_activo===null/undefined: legacy — tratado como activo para backward compat
   if (!M) return false;
-  var esPlanPro = M.plan === 'destacado' || M.plan === 'pro';
+  var esPlanPro = M.plan === 'destacado' || M.plan === 'pro' || M.plan === 'pro_web';
   var activado  = M.plan_activo === true || M.plan_activo === null || M.plan_activo === undefined;
   return esPlanPro && activado;
 }
 
+function esProWeb() {
+  if (!M) return false;
+  return M.plan === 'pro_web' && (M.plan_activo === true || M.plan_activo === null || M.plan_activo === undefined);
+}
+
 function getPlanLabel(plan) {
+  if (plan === 'pro_web') return '⭐ PRO+WEB';
   if (plan === 'destacado' || plan === 'pro') return '⭐ PRO';
   return 'Plan Gratuito';
 }
@@ -3392,11 +3410,12 @@ function testPayPhone() {
 // ── PAYPHONE — usa las variables del script aislado al final ──
 // Las credenciales están en el bloque SCRIPT antes de /body
 
-function initPayPhone() {
+function initPayPhone(planType) {
   if (!M) return;
+  planType = planType || 'pro'; // 'pro' ($19) o 'pro_web' ($89)
   var container = document.getElementById('pp-button');
   if (!container) return;
-  container.innerHTML = ''; // limpiar si se reabre el modal
+  container.innerHTML = '';
 
   if (typeof PPaymentButtonBox === 'undefined') {
     showProFallback();
@@ -3404,15 +3423,17 @@ function initPayPhone() {
   }
 
   try {
-    var transactionId = 'citadoc-' + Date.now();
+    var isWeb = planType === 'pro_web';
+    var transactionId = 'citadoc-' + planType + '-' + Date.now();
+    var amount = isWeb ? 8900 : 1999;
     var ppb = new PPaymentButtonBox({
       token:               PAYPHONE_TOKEN,
       storeId:             PAYPHONE_STOREID,
       clientTransactionId: transactionId,
-      amount:              1999,
-      amountWithoutTax:    1999,
+      amount:              amount,
+      amountWithoutTax:    amount,
       currency:            'USD',
-      reference:           'CitaDoc Pro - ' + M.id,
+      reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' — ' + M.id,
       lang:                'es',
       defaultMethod:       'card',
       email:               M.email     || '',
@@ -3420,10 +3441,8 @@ function initPayPhone() {
     });
     ppb.render('pp-button');
 
-    // Activación optimista — click en la cajita después del pago
-    container.addEventListener('click', function() {
-      setTimeout(activarProLocal, 4000);
-    }, { once: true });
+    // Guardar transactionId para validar callback
+    window._ppPendingTx = { id: transactionId, plan: planType, startedAt: Date.now() };
 
   } catch(e) {
     console.error('PayPhone error:', e);
@@ -3449,20 +3468,84 @@ async function activarProLocal() {
     M.plan = 'pro'; M.plan_activo = true;
     cerrarProModal();
     mostrarToast('🎉 Plan PRO activado. Bienvenido!');
-    // Actualizar UI sin recargar
-    var planEl = document.getElementById('sidebarPlan');
-    if (planEl) planEl.textContent = getPlanLabel('pro');
+    await refreshMedico();
+  } else {
+    mostrarToast('Error activando PRO. Contacta soporte.','error');
   }
 }
+
+async function activarProWebLocal() {
+  if (!M) return;
+  var upd = {
+    plan:        'pro_web',
+    plan_activo: true,
+    web_status:  'active'
+  };
+  // Si hay draft, publicarlo automáticamente al pagar PRO+WEB
+  if (M.web_config_draft) {
+    upd.web_config = M.web_config_draft;
+  }
+  var res = await _sb.from('medicos').update(upd).eq('id', M.id);
+
+  if (!res.error) {
+    M.plan = 'pro_web'; M.plan_activo = true; M.web_status = 'active';
+    if (M.web_config_draft) M.web_config = M.web_config_draft;
+    cerrarProModal();
+    mostrarToast('🎉 PRO+WEB activado. Tu sitio premium está en vivo!');
+    await refreshMedico();
+    cargarMiSitio(M);
+  } else {
+    mostrarToast('Error activando PRO+WEB. Contacta soporte.','error');
+  }
+}
+
+async function refreshMedico() {
+  if (!M || !M.id) return;
+  try {
+    var session = await _sb.auth.getSession();
+    if (!session.data.session) return;
+    var r = await _sb.from('medicos').select('*').eq('id', M.id).single();
+    if (r.data && !r.error) {
+      Object.assign(M, r.data);
+      await aplicarMedico(M);
+      cargarLandingStatus();
+    }
+  } catch(e) {
+    console.error('refreshMedico error:', e);
+  }
+}
+
+// Listener global para callbacks de PayPhone (postMessage desde iframe)
+window.addEventListener('message', function(event) {
+  if (event.origin !== 'https://pay.payphonetodoesposible.com') return;
+  var data = event.data;
+  if (!data || typeof data !== 'object') return;
+
+  var tx = window._ppPendingTx;
+  if (!tx) return;
+
+  // Validar que el callback corresponde a la transacción pendiente
+  if (data.clientTransactionId && data.clientTransactionId !== tx.id) return;
+
+  if (data.transactionStatus === 'Approved') {
+    window._ppPendingTx = null;
+    if (tx.plan === 'pro_web') {
+      activarProWebLocal();
+    } else {
+      activarProLocal();
+    }
+  }
+});
 
 // Fallback WhatsApp si PayPhone falla
 function irAPro() {
   if (!M) return;
   var nombre = (M.titulo||'Dr.')+' '+(M.nombre||'')+' '+(M.apellido||'');
-  var msg = 'Hola, soy '+nombre.trim()+' y quiero activar CitaDoc PRO ($19.99/mes). Email: '+(M.email||'')+'. ID: '+M.id;
+  var isWeb = window._proUpgradeType === 'pro_web';
+  var msg = 'Hola, soy '+nombre.trim()+' y quiero activar CitaDoc '+(isWeb?'PRO+WEB ($89 setup + $29/mes)':'PRO ($19.99/mes)')+'. Email: '+(M.email||'')+'. ID: '+M.id;
   window.open('https://wa.me/593989173062?text='+encodeURIComponent(msg), '_blank');
   cerrarProModal();
-  mostrarToast('Te contactaremos en menos de 24h para activar tu PRO');
+  mostrarToast('Te contactaremos en menos de 24h para activar tu plan');
 }
 
 // ── SUCCESS HANDLER — activación manual por admin ──
@@ -3474,7 +3557,9 @@ function checkStripeSuccess() {
 
 function mostrarProModal(feature) {
   // Inicializar PayPhone cuando se abre el modal
-  setTimeout(initPayPhone, 300);
+  var planType = window._proUpgradeType || 'pro';
+  window._proUpgradeType = null; // reset para próxima vez
+  setTimeout(function(){ initPayPhone(planType); }, 300);
   var modal = document.getElementById('proModal');
   if (!modal) return;
   var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
