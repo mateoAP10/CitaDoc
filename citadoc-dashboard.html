@@ -1827,7 +1827,7 @@ async function inicializarSlots(m) {
   // ── PRIMERO: intentar cargar nuevo sistema ──
   var resBlocks = await _sb
     .from('doctor_schedule_blocks')
-    .select('*')
+    .select('day, start_time, end_time, location_id, is_active')
     .eq('medico_id', m.id);
 
   var blocks = resBlocks.data || [];
@@ -1851,6 +1851,20 @@ async function inicializarSlots(m) {
         location_id: b.location_id || null
       });
     });
+    // Fallback: si doctor_schedule_blocks no trae location_id, intentar leerlo de horarios_config
+    if (m.horarios_config) {
+      DIAS_SEMANA.forEach(function(d){
+        var cfg = m.horarios_config[d.key];
+        var bloques = horariosBloques[d.key].bloques;
+        if (cfg && cfg.bloques && bloques.length) {
+          bloques.forEach(function(b, i){
+            if (!b.location_id && cfg.bloques[i] && cfg.bloques[i].location_id) {
+              b.location_id = cfg.bloques[i].location_id;
+            }
+          });
+        }
+      });
+    }
   }
   // ── Legacy fallback ──
   else if (m.horarios_config) {
@@ -5970,11 +5984,16 @@ function cargarLandingStatus() {
 // ── UBICACIONES ──
 async function cargarUbicaciones() {
   if (!M||!M.id) return;
+  window.locationsMedico = []; // inicializar para evitar undefined
   uiLoading('ubicacionesList','Cargando ubicaciones...');
   var res = await _sb.from('doctor_locations').select('*').eq('medico_id',M.id).order('created_at');
   if (res.error) { uiError('ubicacionesList',res.error.message,cargarUbicaciones); return; }
   window.locationsMedico = res.data || [];
   renderUbicaciones(res.data||[]);
+  // Si horarios ya están renderizados, refrescar selects de consultorio
+  if (Object.keys(horariosBloques).length > 0) {
+    renderDiasHorarios();
+  }
 }
 
 function renderUbicaciones(locs) {
