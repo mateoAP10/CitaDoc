@@ -942,10 +942,10 @@ display:flex;
             <div style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.25rem">Tu presencia médica online</div>
             <div style="font-size:.78rem;color:rgba(255,255,255,.38);margin-bottom:.85rem;line-height:1.5">Tu clínica digital completa.</div>
             <div style="margin-bottom:.2rem">
-              <span style="font-family:Fraunces,serif;font-size:1.9rem;font-weight:700;color:#fff;line-height:1">$89</span>
+              <span style="font-family:Fraunces,serif;font-size:1.9rem;font-weight:700;color:#fff;line-height:1">$150</span>
             </div>
             <div style="font-size:.77rem;color:rgba(255,255,255,.55);margin-bottom:.25rem;font-weight:500">Creación profesional de tu sitio médico</div>
-            <div style="font-size:.71rem;color:rgba(255,255,255,.3);margin-bottom:1.1rem">+ $29/mes mantenimiento y soporte</div>
+            <div style="font-size:.71rem;color:rgba(255,255,255,.3);margin-bottom:1.1rem">Primer mes incluido · Luego $29.99/mes</div>
             <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.3rem">
               <div style="display:flex;align-items:center;gap:.65rem;font-size:.83rem;color:rgba(255,255,255,.72)">
                 <span style="width:18px;height:18px;border-radius:50%;background:rgba(167,139,250,.12);display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;color:#a78bfa">✓</span>Sitio médico profesional
@@ -1314,7 +1314,7 @@ display:flex;
           <div style="font-size:.82rem;color:rgba(255,255,255,.38);margin-bottom:1.6rem;line-height:1.6">Draft generado con tu identidad médica real.<br>El preview se actualizó en el panel.</div>
           <div style="display:flex;gap:.65rem;justify-content:center;flex-wrap:wrap">
             <button onclick="cerrarAiWebModal()" style="padding:.65rem 1.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">Ver preview ↙</button>
-            <button onclick="activarSitioWeb()" id="aiActivarBtnModal" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(124,58,237,.38)">⚡ Activar por $89</button>
+            <button onclick="activarSitioWeb()" id="aiActivarBtnModal" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(124,58,237,.38)">⚡ Activar por $150</button>
           </div>
         </div>
       </div>
@@ -2924,8 +2924,8 @@ async function activarSitioWeb() {
   if(btn){btn.disabled=true;btn.textContent='Activando...';}
   if(btnModal){btnModal.disabled=true;btnModal.textContent='Activando...';}
   var res = await _sb.from('medicos').update({web_config:M.web_config_draft,web_status:'active'}).eq('id',M.id);
-  if(btn){btn.disabled=false;btn.textContent='⚡ Activar por $89';}
-  if(btnModal){btnModal.disabled=false;btnModal.textContent='⚡ Activar por $89';}
+  if(btn){btn.disabled=false;btn.textContent='⚡ Activar por $150';}
+  if(btnModal){btnModal.disabled=false;btnModal.textContent='⚡ Activar por $150';}
   if(res.error){mostrarToast('Error: '+res.error.message,'error');return;}
   M.web_config=M.web_config_draft; M.web_status='active';
   cerrarAiWebModal();
@@ -3256,7 +3256,7 @@ function abrirGestionarPlan() {
     +'<div style="font-size:.83rem;color:#374151;display:flex;gap:.5rem;align-items:center"><span style="color:#0b7c6e;font-weight:700">✓</span>Seguimiento clínico</div>'
     +'</div></div>'
     +'<div style="display:flex;flex-direction:column;gap:.65rem">'
-    +'<button onclick="document.getElementById(\'modalGestionPlan\').remove();mostrarProWebModal()" style="width:100%;padding:.78rem 1rem;background:linear-gradient(148deg,#0a1512,#111827);color:#e9d5ff;border:1px solid rgba(167,139,250,.2);border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;text-align:left">✨ Activar PRO+WEB — $89 + $29/mes →</button>'
+    +'<button onclick="document.getElementById(\'modalGestionPlan\').remove();mostrarProWebModal()" style="width:100%;padding:.78rem 1rem;background:linear-gradient(148deg,#0a1512,#111827);color:#e9d5ff;border:1px solid rgba(167,139,250,.2);border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;text-align:left">✨ Activar PRO+WEB — $150 setup + $29.99/mes →</button>'
     +'<button onclick="document.getElementById(\'modalGestionPlan\').remove()" style="width:100%;padding:.72rem;background:#f9fafb;color:#6b7280;border:1.5px solid #e5e7eb;border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.86rem;font-weight:500;cursor:pointer">Volver al plan básico</button>'
     +'</div>'
     +'<div style="text-align:center;margin-top:.9rem;font-size:.71rem;color:#b8c4c2">Sin permanencia · Cambias cuando quieras</div>'
@@ -3411,7 +3411,7 @@ function testPayPhone() {
 
 function initPayPhone(planType, containerId) {
   if (!M) return;
-  planType = planType || 'pro'; // 'pro' ($19) o 'pro_web' ($89)
+  planType = planType || 'pro'; // 'pro' ($19) o 'pro_web' ($150)
   var container = document.getElementById(containerId || 'pp-button');
   if (!container) return;
   container.innerHTML = '';
@@ -3424,7 +3424,7 @@ function initPayPhone(planType, containerId) {
   try {
     var isWeb = planType === 'pro_web';
     var transactionId = 'citadoc-' + planType + '-' + Date.now();
-    var amount = isWeb ? 8900 : 1999;
+    var amount = isWeb ? 15000 : 1999;
     var ppb = new PPaymentButtonBox({
       token:               PAYPHONE_TOKEN,
       storeId:             PAYPHONE_STOREID,
@@ -3541,7 +3541,7 @@ function irAPro() {
   if (!M) return;
   var nombre = (M.titulo||'Dr.')+' '+(M.nombre||'')+' '+(M.apellido||'');
   var isWeb = window._proUpgradeType === 'pro_web';
-  var msg = 'Hola, soy '+nombre.trim()+' y quiero activar CitaDoc '+(isWeb?'PRO+WEB ($89 setup + $29/mes)':'PRO ($19.99/mes)')+'. Email: '+(M.email||'')+'. ID: '+M.id;
+  var msg = 'Hola, soy '+nombre.trim()+' y quiero activar CitaDoc '+(isWeb?'PRO+WEB ($150 setup + $29.99/mes)':'PRO ($19.99/mes)')+'. Email: '+(M.email||'')+'. ID: '+M.id;
   window.open('https://wa.me/593989173062?text='+encodeURIComponent(msg), '_blank');
   cerrarProModal();
   mostrarToast('Te contactaremos en menos de 24h para activar tu plan');
@@ -3584,7 +3584,7 @@ function cerrarProModal() {
   document.body.style.overflow = '';
 }
 
-// ── MODAL PRO+WEB ($89) — flujo separado ──
+// ── MODAL PRO+WEB ($150) — flujo separado ──
 function mostrarProWebModal() {
   var modal = document.getElementById('proWebModal');
   if (!modal) return;
@@ -5692,7 +5692,7 @@ function enviarRecetaWhatsApp() {
 </div>
 
 <!-- ═══════════════════════════════════════ -->
-<!-- MODAL PRO+WEB — flujo exclusivo $89     -->
+<!-- MODAL PRO+WEB — flujo exclusivo $150     -->
 <!-- ═══════════════════════════════════════ -->
 <div id="proWebModal" style="position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(15,26,24,.52);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:1.5rem">
   <div id="proWebModalCard" style="background:#fff;border-radius:24px;padding:2.2rem 2rem;width:100%;max-width:440px;box-shadow:0 32px 100px rgba(15,26,24,.24);animation:proModalIn .28s cubic-bezier(.16,1,.3,1);text-align:center;position:relative;overflow:hidden">
@@ -5715,10 +5715,11 @@ function enviarRecetaWhatsApp() {
     </ul>
 
     <div style="display:flex;align-items:flex-end;justify-content:center;gap:.35rem;margin-bottom:.15rem">
-      <div style="font-family:Fraunces,serif;font-size:2rem;font-weight:700;color:var(--teal);line-height:1">$89</div>
+      <div style="font-family:Fraunces,serif;font-size:2rem;font-weight:700;color:var(--teal);line-height:1">$150</div>
       <div style="font-size:.75rem;color:var(--muted);font-weight:500;margin-bottom:.35rem">setup inicial</div>
     </div>
-    <div style="font-size:.78rem;color:var(--muted2);margin-bottom:1.1rem;font-weight:500">Luego <strong style="color:var(--ink)">$29.99/mes</strong> · mantenimiento y hosting · cancela cuando quieras</div>
+    <div style="font-size:.78rem;color:var(--muted2);margin-bottom:.3rem;font-weight:500">🎉 <strong style="color:var(--teal)">Primer mes incluido</strong></div>
+    <div style="font-size:.78rem;color:var(--muted2);margin-bottom:1.1rem;font-weight:500">Luego <strong style="color:var(--ink)">$29.99/mes</strong> · se cobra desde el segundo mes · cancela cuando quieras</div>
 
     <div id="pp-button-web" style="margin-bottom:.6rem"></div>
     <button id="btnProWebFallback" onclick="initPayPhone('pro_web','pp-button-web')" style="width:100%;padding:.82rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none;box-shadow:0 4px 18px rgba(11,124,110,.22);transition:all .2s ease">✨ Activar mi sitio web</button>
