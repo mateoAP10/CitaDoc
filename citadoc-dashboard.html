@@ -489,7 +489,7 @@ display:flex;
 }
   .cal-grid{font-size:.75rem}
   /* AI builder modal */
-  #aiWebModal .ai-builder-modal-content,#modalCrearSitio{
+  #aiWebModal .ai-builder-modal-content{
     border-radius:22px 22px 0 0!important;
     width:100%!important;max-width:100%!important;
     max-height:94svh;
@@ -762,13 +762,6 @@ display:flex;
 #evolProWebBtn:hover{background:linear-gradient(135deg,rgba(167,139,250,.28),rgba(124,58,237,.32))!important;border-color:rgba(167,139,250,.45)!important;color:#f3e8ff!important}
 #evolProWebBtn::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);transition:left .5s ease}
 
-/* ── Crear sitio médico — modal AI ── */
-#modalCrearSitio .tono-opt{border:1.5px solid #e5e7eb;border-radius:10px;padding:.45rem .85rem;font-size:.82rem;font-weight:500;color:#6b7280;cursor:pointer;transition:all .2s;background:#fff;font-family:'DM Sans',sans-serif}
-#modalCrearSitio .tono-opt.sel{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6;font-weight:700}
-#modalCrearSitio .estilo-card{border:2px solid #e5e7eb;border-radius:14px;padding:1rem;cursor:pointer;transition:all .2s;background:#fff;text-align:center}
-#modalCrearSitio .estilo-card:hover{border-color:#7c3aed;transform:translateY(-2px)}
-#modalCrearSitio .estilo-card.sel{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}
-#modalCrearSitio .swatch{width:36px;height:36px;border-radius:50%;margin:0 auto .5rem;border:2px solid rgba(0,0,0,.08)}
 @keyframes shimmerAI{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .ai-shimmer{background:linear-gradient(90deg,#f3f4f6 25%,#e9e9e9 50%,#f3f4f6 75%);background-size:200% 100%;animation:shimmerAI 1.4s infinite;border-radius:6px}
 
@@ -3339,209 +3332,10 @@ function copiarWebUrl() {
   mostrarToast('URL copiada ✓');
 }
 
-// ── CREAR SITIO MÉDICO — flujo AI ──
-var _csmTono = 'Humano';
-var _csmEstilo = 'Deep teal';
-
+// ── CREAR SITIO MÉDICO — flujo AI unificado ──
+// Todos los entrypoints usan el mismo builder AI moderno (aiWebModal)
 function abrirCrearSitioMedico() {
-  var ex = document.getElementById('modalCrearSitio'); if (ex) ex.remove();
-  var ov = document.createElement('div');
-  ov.id = 'modalCrearSitio';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(5,8,7,.88);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto';
-  // Modal AI premium — fullscreen inmersivo
-  ov.innerHTML = '<div onclick="event.stopPropagation()" style="width:100%;max-width:560px;position:relative">'
-
-    // HEADER
-    +'<div style="text-align:center;margin-bottom:2.2rem">'
-    +'<div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6d28d9,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto .9rem;box-shadow:0 8px 32px rgba(124,58,237,.4)">✨</div>'
-    +'<div style="font-size:.62rem;font-weight:700;color:rgba(167,139,250,.7);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem">CitaDoc AI · PRO+WEB</div>'
-    +'<div style="font-family:Fraunces,serif;font-size:1.7rem;font-weight:700;color:#fff;line-height:1.12;margin-bottom:.4rem">Tu presencia médica<br><em style="font-style:italic;font-weight:300;opacity:.8">generada con AI</em></div>'
-    +'</div>'
-
-    // Step 1 — Describe
-    +'<div id="csmStep1">'
-    // Textarea con label
-    +'<div style="font-size:.65rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">Describe tu práctica médica</div>'
-    +'<div style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:16px;padding:1rem 1.2rem;margin-bottom:.75rem;transition:border-color .2s" onfocusin="this.style.borderColor=\'rgba(167,139,250,.4)\'" onfocusout="this.style.borderColor=\'rgba(255,255,255,.08)\'">'
-    +'<textarea id="csm_prompt" rows="3" placeholder="Quiero una web elegante para mi clínica de rehabilitación deportiva. Enfoque en atletas, tono profesional pero humano…" style="width:100%;background:none;border:none;outline:none;font-family:\'DM Sans\',sans-serif;font-size:.9rem;color:#fff;resize:none;line-height:1.65"></textarea>'
-    +'</div>'
-    +'<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.4rem">'
-    +['Rehabilitación elite','Cirugía premium','Clínica europea','Salud deportiva','Neurología avanzada'].map(function(ex){
-      return '<button onclick="document.getElementById(\'csm_prompt\').value=\''+ex+'\'" style="padding:.28rem .72rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-family:\'DM Sans\',sans-serif;font-size:.72rem;color:rgba(255,255,255,.5);cursor:pointer;transition:all .18s" onmouseenter="this.style.background=\'rgba(167,139,250,.12)\';this.style.borderColor=\'rgba(167,139,250,.3)\';this.style.color=\'rgba(255,255,255,.8)\'" onmouseleave="this.style.background=\'rgba(255,255,255,.04)\';this.style.borderColor=\'rgba(255,255,255,.1)\';this.style.color=\'rgba(255,255,255,.5)\'">'+ex+'</button>';
-    }).join('')
-    +'</div>'
-
-    // Upload cards (visual)
-    +'<div style="font-size:.65rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">Assets visuales <span style="opacity:.5;font-weight:400;font-style:italic;font-size:.6rem">— opcional</span></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1.4rem">'
-    +'<div style="border:1.5px dashed rgba(255,255,255,.12);border-radius:14px;padding:1.1rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)" onmouseenter="this.style.borderColor=\'rgba(167,139,250,.3)\';this.style.background=\'rgba(167,139,250,.05)\'" onmouseleave="this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.background=\'rgba(255,255,255,.02)\'">'
-    +'<div style="font-size:1.4rem;margin-bottom:.35rem">🖼</div>'
-    +'<div style="font-size:.77rem;font-weight:600;color:rgba(255,255,255,.6)">Foto profesional</div>'
-    +'<div style="font-size:.67rem;color:rgba(255,255,255,.28);margin-top:.15rem">Arrastra o selecciona</div>'
-    +'</div>'
-    +'<div style="border:1.5px dashed rgba(255,255,255,.12);border-radius:14px;padding:1.1rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02)" onmouseenter="this.style.borderColor=\'rgba(167,139,250,.3)\';this.style.background=\'rgba(167,139,250,.05)\'" onmouseleave="this.style.borderColor=\'rgba(255,255,255,.12)\';this.style.background=\'rgba(255,255,255,.02)\'">'
-    +'<div style="font-size:1.4rem;margin-bottom:.35rem">⬡</div>'
-    +'<div style="font-size:.77rem;font-weight:600;color:rgba(255,255,255,.6)">Logo / Isotipo</div>'
-    +'<div style="font-size:.67rem;color:rgba(255,255,255,.28);margin-top:.15rem">PNG o SVG</div>'
-    +'</div>'
-    +'</div>'
-
-    // Template + Tono inline
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.5rem">'
-    +'<div><div style="font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Template</div>'
-    +'<div style="display:flex;gap:.35rem;flex-wrap:wrap" id="csmEstiloWrap">'
-    +[{n:'Minimal',t:'minimal-white',c:'#0b7c6e'},{n:'Dark',t:'premium-dark',c:'#c9a94a'},{n:'Clínica',t:'clinica-moderna',c:'#0891b2'}].map(function(s,i){
-      return '<button class="estilo-card'+(i===0?' sel':'')+'" data-tpl="'+s.t+'" onclick="csmSelectEstilo(this,\''+s.t+'\')" style="padding:.3rem .65rem;border:1px solid rgba(255,255,255,.12);border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;background:rgba(255,255,255,.04);display:flex;align-items:center;gap:.35rem"><span style="width:8px;height:8px;border-radius:50%;background:'+s.c+';flex-shrink:0;display:inline-block"></span>'+s.n+'</button>';
-    }).join('')+'</div></div>'
-    +'<div><div style="font-size:.62rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Tono</div>'
-    +'<div style="display:flex;gap:.35rem;flex-wrap:wrap" id="csmTonoWrap">'
-    +['Elegante','Moderno','Humano','Académico'].map(function(t){
-      return '<button class="tono-opt'+(t==='Humano'?' sel':'')+'" onclick="csmSelectTono(this,\''+t+'\')" style="padding:.3rem .65rem;border:1px solid rgba(255,255,255,.12);border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:.72rem;color:rgba(255,255,255,.55);cursor:pointer;background:rgba(255,255,255,.04)">'+t+'</button>';
-    }).join('')+'</div></div>'
-    +'</div>'
-
-    // CTA principal
-    +'<button onclick="csmGenerar()" style="width:100%;padding:1rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:15px;font-family:\'DM Sans\',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.01em;box-shadow:0 10px 40px rgba(124,58,237,.4);transition:transform .18s,box-shadow .18s" onmouseenter="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 14px 50px rgba(124,58,237,.55)\'" onmouseleave="this.style.transform=\'\';this.style.boxShadow=\'0 10px 40px rgba(124,58,237,.4)\'">✨ Generar sitio premium con AI</button>'
-    +'<div style="text-align:center;margin-top:.75rem"><button onclick="document.getElementById(\'modalCrearSitio\').remove()" style="background:none;border:none;font-size:.75rem;color:rgba(255,255,255,.25);cursor:pointer;font-family:\'DM Sans\',sans-serif">Cancelar</button></div>'
-    +'</div>'
-
-    // Step 3 — generando (full dark)
-    +'<div id="csmStep3" style="display:none;text-align:center;padding:2rem 0">'
-    +'<div id="csmGenOrb" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#7c3aed);margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 50px rgba(124,58,237,.4)">✨</div>'
-    +'<div id="csmGenStatus" style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:.5rem">Analizando identidad médica…</div>'
-    +'<div id="csmGenSub" style="font-size:.83rem;color:rgba(255,255,255,.4);margin-bottom:2rem;line-height:1.6">Esto tomará solo un momento.</div>'
-    +'<div style="display:flex;flex-direction:column;gap:.6rem;max-width:320px;margin:0 auto" id="csmProgressSteps">'
-    +'<div id="csmPs1" style="display:flex;align-items:center;gap:.75rem;padding:.55rem .9rem;border-radius:10px;background:rgba(255,255,255,.04)"><span style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(167,139,250,.4);flex-shrink:0" id="csmPi1"></span><span style="font-size:.83rem;color:rgba(255,255,255,.5)">Analizando identidad médica</span></div>'
-    +'<div id="csmPs2" style="display:flex;align-items:center;gap:.75rem;padding:.55rem .9rem;border-radius:10px;background:rgba(255,255,255,.04)"><span style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(167,139,250,.4);flex-shrink:0" id="csmPi2"></span><span style="font-size:.83rem;color:rgba(255,255,255,.5)">Construyendo branding visual</span></div>'
-    +'<div id="csmPs3" style="display:flex;align-items:center;gap:.75rem;padding:.55rem .9rem;border-radius:10px;background:rgba(255,255,255,.04)"><span style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(167,139,250,.4);flex-shrink:0" id="csmPi3"></span><span style="font-size:.83rem;color:rgba(255,255,255,.5)">Optimizando estructura SEO</span></div>'
-    +'<div id="csmPs4" style="display:flex;align-items:center;gap:.75rem;padding:.55rem .9rem;border-radius:10px;background:rgba(255,255,255,.04)"><span style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(167,139,250,.4);flex-shrink:0" id="csmPi4"></span><span style="font-size:.83rem;color:rgba(255,255,255,.5)">Generando experiencia premium</span></div>'
-    +'</div>'
-    // Done
-    +'<div id="csmDoneMsg" style="display:none;margin-top:2rem">'
-    +'<div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.4rem">Tu sitio está listo ✦</div>'
-    +'<div style="font-size:.83rem;color:rgba(255,255,255,.45);margin-bottom:1.5rem">Edítalo cuando quieras desde Mi Sitio Web.</div>'
-    +'<div style="display:flex;gap:.8rem;justify-content:center">'
-    +'<button onclick="document.getElementById(\'modalCrearSitio\').remove()" style="padding:.7rem 1.3rem;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer">Cerrar</button>'
-    +'<a id="csmVerLink" href="#" target="_blank" rel="noopener" style="padding:.7rem 1.5rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem">Ver mi sitio →</a>'
-    +'</div>'
-    +'</div>'
-    +'</div>'
-
-    +'</div>';
-  document.body.appendChild(ov);
-}
-
-function csmSelectTono(btn, tono) {
-  _csmTono = tono;
-  document.querySelectorAll('#csmTonoWrap .tono-opt').forEach(function(b){
-    b.style.background='rgba(255,255,255,.04)'; b.style.borderColor='rgba(255,255,255,.15)'; b.style.color='rgba(255,255,255,.6)';
-  });
-  btn.style.background='rgba(167,139,250,.2)'; btn.style.borderColor='rgba(167,139,250,.5)'; btn.style.color='#e9d5ff';
-}
-
-function csmSelectEstilo(card, tpl) {
-  _csmEstilo = tpl;
-  document.querySelectorAll('#csmEstiloWrap .estilo-card').forEach(function(c){
-    c.style.background='rgba(255,255,255,.04)'; c.style.borderColor='rgba(255,255,255,.15)'; c.style.color='rgba(255,255,255,.6)';
-  });
-  card.style.background='rgba(167,139,250,.2)'; card.style.borderColor='rgba(167,139,250,.5)'; card.style.color='#e9d5ff';
-}
-
-function csmGoStep(n) {
-  var s1=document.getElementById('csmStep1'), s3=document.getElementById('csmStep3');
-  if(s1) s1.style.display = n===1?'block':'none';
-  if(s3) s3.style.display = n===3?'block':'none';
-}
-
-function csmGenerar() {
-  csmGoStep(3);
-  // Animar pasos secuencialmente
-  var steps = [
-    {id:'csmPi1', label:'Analizando identidad médica'},
-    {id:'csmPi2', label:'Construyendo branding visual'},
-    {id:'csmPi3', label:'Optimizando estructura SEO'},
-    {id:'csmPi4', label:'Generando experiencia premium'}
-  ];
-  var i = 0;
-  function tickStep() {
-    if (i > 0) {
-      var prev = document.getElementById(steps[i-1].id);
-      if (prev) { prev.textContent='✓'; prev.style.background='rgba(52,211,153,.3)'; prev.style.border='none'; prev.style.color='#34d399'; prev.style.fontSize='.7rem'; prev.style.display='flex'; prev.style.alignItems='center'; prev.style.justifyContent='center'; }
-      var prevRow = document.getElementById('csmPs'+i);
-      if (prevRow) { var sp=prevRow.querySelector('span:last-child'); if(sp){sp.style.color='rgba(255,255,255,.75)';} }
-    }
-    if (i < steps.length) {
-      var cur = document.getElementById(steps[i].id);
-      if (cur) { cur.style.background='rgba(167,139,250,.3)'; cur.style.borderColor='rgba(167,139,250,.6)'; cur.style.boxShadow='0 0 12px rgba(124,58,237,.4)'; }
-      var status = document.getElementById('csmGenStatus');
-      if (status) status.textContent = steps[i].label+'…';
-      i++;
-      setTimeout(tickStep, 800);
-    } else {
-      setTimeout(csmFinalizarGeneracion, 400);
-    }
-  }
-  setTimeout(tickStep, 200);
-}
-
-var _ESTILOS_COLOR = {
-  'Deep teal':'#0b7c6e','Clínica premium':'#065f46','Médico moderno':'#0891b2',
-  'Elegante oscuro':'#1e293b','Violeta PRO':'#7c3aed'
-};
-var _TONOS_CFG = {
-  'Elegante':    {cta:'Solicitar consulta', hero:'Excelencia médica a tu alcance'},
-  'Moderno':     {cta:'Agenda en línea',    hero:'Medicina del siglo 21'},
-  'Premium':     {cta:'Reservar consulta',  hero:'Atención médica de alto nivel'},
-  'Humano':      {cta:'Agendar cita',       hero:'Tu salud, nuestro compromiso'},
-  'Tecnológico': {cta:'Agenda digital',     hero:'Medicina inteligente y precisa'},
-  'Académico':   {cta:'Solicitar consulta', hero:'Experiencia clínica y evidencia científica'}
-};
-
-async function csmFinalizarGeneracion() {
-  if (!M) return;
-  var cfg = _TONOS_CFG[_csmTono] || _TONOS_CFG['Humano'];
-  var color = _ESTILOS_COLOR[_csmEstilo] || '#0b7c6e';
-  var esp = (M.especialidades||[])[0]||'';
-  var ciudad = M.ciudad||'';
-  var anos = M.anos_experiencia||'';
-  var prompt = ((document.getElementById('csm_prompt')||{}).value||'').trim();
-  var diferencia = prompt;
-
-  // Generar hero_subtitle inteligente
-  var sub = '';
-  if (diferencia) sub = diferencia;
-  else if (esp && anos) sub = esp + ' con ' + anos + ' años de experiencia' + (ciudad ? ' en ' + ciudad : '');
-  else if (esp) sub = 'Especialista en ' + esp + (ciudad ? ' — ' + ciudad : '');
-  else if (ciudad) sub = 'Atención médica especializada en ' + ciudad;
-  else sub = (M.bio||'').slice(0,120) || 'Atención médica de calidad';
-
-  var lc = Object.assign({}, M.landing_config||{}, {
-    hero_title:        cfg.hero,
-    hero_subtitle:     sub,
-    cta_text:          cfg.cta,
-    accent_color:      color,
-    show_formacion:    true,
-    show_logros:       true,
-    show_seguros:      true,
-    show_ubicaciones:  true,
-    show_precio:       true,
-    whatsapp_primary:  true
-  });
-
-  var res = await _sb.from('medicos').update({landing_config: lc}).eq('id', M.id);
-  if (res.error) { mostrarToast('Error al guardar','error'); return; }
-  M.landing_config = lc;
-
-  // Orb → done, mostrar resultado
-  var orb = document.getElementById('csmGenOrb');
-  if (orb) { orb.textContent='✦'; orb.style.background='linear-gradient(135deg,#065f46,#0b7c6e)'; orb.style.boxShadow='0 0 60px rgba(11,124,110,.5)'; }
-  var statusEl = document.getElementById('csmGenStatus');
-  if (statusEl) statusEl.textContent='Tu sitio está listo.';
-  var done = document.getElementById('csmDoneMsg');
-  if (done) done.style.display = 'block';
-  var link = document.getElementById('csmVerLink');
-  if (link && M.slug) link.href = 'citadoc-web.html?slug='+M.slug;
-  if (M) cargarMiSitio(M);
+  abrirAiWebModal();
 }
 
 function abrirGestionarPlan() {
@@ -3987,10 +3781,10 @@ function checkStripeSuccess() {
 }
 
 function mostrarProModal(feature) {
-  // Inicializar PayPhone cuando se abre el modal
   var planType = window._proUpgradeType || 'pro';
   window._proUpgradeType = null; // reset para próxima vez
-  setTimeout(function(){ initPayPhone(planType); }, 300);
+  // Reset checkout state: always show interstitial first
+  ocultarPayCheckout('pro');
   var modal = document.getElementById('proModal');
   if (!modal) return;
   var feat = PRO_MODAL_CONTENT[feature] || PRO_MODAL_CONTENT.clinica;
@@ -4034,8 +3828,8 @@ function mostrarProWebModal() {
   if (card) { card.style.animation='none'; void card.offsetWidth; card.style.animation='proModalIn .28s cubic-bezier(.16,1,.3,1)'; }
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  // Inicializar PayPhone para PRO+WEB en su contenedor dedicado
-  // CTA principal visible; PayPhone se renderiza al hacer clic
+  // Reset checkout state: always show interstitial first
+  ocultarPayCheckout('pro_web');
 }
 
 function cerrarProWebModal() {
@@ -4046,6 +3840,32 @@ function cerrarProWebModal() {
   var modal = document.getElementById('proWebModal');
   if (modal) modal.style.display = 'none';
   document.body.style.overflow = '';
+}
+
+// ── PAYPHONE CHECKOUT INTERSTITIAL ──
+function mostrarPayCheckout(planType) {
+  var isWeb = planType === 'pro_web';
+  var interId = isWeb ? 'proWebModalInterstitial' : 'proModalInterstitial';
+  var checkId = isWeb ? 'proWebModalCheckout' : 'proModalCheckout';
+  var containerId = isWeb ? 'pp-button-web' : 'pp-button';
+  var inter = document.getElementById(interId);
+  var check = document.getElementById(checkId);
+  if (inter) inter.style.display = 'none';
+  if (check) check.style.display = 'block';
+  // Render PayPhone embed only when user explicitly enters checkout
+  setTimeout(function() {
+    initPayPhone(planType, containerId);
+  }, 100);
+}
+
+function ocultarPayCheckout(planType) {
+  var isWeb = planType === 'pro_web';
+  var interId = isWeb ? 'proWebModalInterstitial' : 'proModalInterstitial';
+  var checkId = isWeb ? 'proWebModalCheckout' : 'proModalCheckout';
+  var inter = document.getElementById(interId);
+  var check = document.getElementById(checkId);
+  if (inter) inter.style.display = 'block';
+  if (check) check.style.display = 'none';
 }
 
 // ── CARGAR PACIENTES ──
@@ -6157,13 +5977,21 @@ function enviarRecetaWhatsApp() {
     <div class="pay-sep"></div>
     <div class="pay-micro">Tu acceso PRO se activará automáticamente tras confirmar el pago.</div>
 
-    <!-- Payment Card -->
-    <div class="pay-card">
+    <!-- Interstitial CTA -->
+    <div id="proModalInterstitial">
+      <button onclick="mostrarPayCheckout('pro')" style="width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.6rem;display:block;box-shadow:0 6px 22px rgba(11,124,110,.28);transition:all .2s ease;letter-spacing:.01em">🔒 Continuar al pago seguro</button>
+      <button onclick="cerrarProModal()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
+    </div>
+
+    <!-- Checkout embed (hidden initially) -->
+    <div id="proModalCheckout" style="display:none">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+        <button onclick="ocultarPayCheckout('pro')" style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0">← Volver</button>
+      </div>
+      <div style="font-size:.72rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem">Pago seguro con PayPhone</div>
       <div id="pp-button" style="margin-bottom:.5rem"></div>
       <button id="btnProModalUpgrade" onclick="initPayPhone()" style="width:100%;padding:.82rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:.5rem;display:none">💬 Activar PRO por WhatsApp</button>
     </div>
-
-    <button id="btnProModalCancel" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
   </div>
 </div>
 
@@ -6218,13 +6046,20 @@ function enviarRecetaWhatsApp() {
     <div class="pay-sep"></div>
     <div class="pay-micro">Tu sitio se activará automáticamente tras confirmar el pago.</div>
 
-    <!-- Payment Card -->
-    <div class="pay-card">
-      <button id="btnProWebFallback" onclick="this.style.display='none';initPayPhone('pro_web','pp-button-web');" style="width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.6rem;display:block;box-shadow:0 6px 22px rgba(11,124,110,.28);transition:all .2s ease;letter-spacing:.01em">✨ Activar mi sitio web</button>
-      <div id="pp-button-web" style="margin-bottom:.6rem;display:none"></div>
+    <!-- Interstitial CTA -->
+    <div id="proWebModalInterstitial">
+      <button onclick="mostrarPayCheckout('pro_web')" style="width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.6rem;display:block;box-shadow:0 6px 22px rgba(11,124,110,.28);transition:all .2s ease;letter-spacing:.01em">🔒 Continuar al pago seguro</button>
+      <button onclick="cerrarProWebModal()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
     </div>
 
-    <button onclick="cerrarProWebModal()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
+    <!-- Checkout embed (hidden initially) -->
+    <div id="proWebModalCheckout" style="display:none">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem">
+        <button onclick="ocultarPayCheckout('pro_web')" style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0">← Volver</button>
+      </div>
+      <div style="font-size:.72rem;font-weight:700;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem">Pago seguro con PayPhone</div>
+      <div id="pp-button-web" style="margin-bottom:.6rem"></div>
+    </div>
   </div>
 </div>
 
@@ -6335,23 +6170,8 @@ function uiError(containerId, msg, retryFn) {
   window.ppTest       = ppTest;
   window.renderPayPhone = renderPayPhone;
 
-  // Cuando se abre el modal Pro, renderizar la cajita
-  window.addEventListener('DOMContentLoaded', function() {
-    // Observar cuando el modal Pro se hace visible
-    var modal = document.getElementById('proModal');
-    if (modal) {
-      var observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(m) {
-          if (m.type === 'attributes' && m.attributeName === 'style') {
-            if (modal.style.display !== 'none' && modal.style.display !== '') {
-              setTimeout(function() { renderPayPhone('pp-button'); }, 200);
-            }
-          }
-        });
-      });
-      observer.observe(modal, { attributes: true });
-    }
-  });
+  // PayPhone se renderiza bajo demanda cuando el usuario entra al checkout interstitial
+  // (ver mostrarPayCheckout / ocultarPayCheckout)
   
 document.addEventListener("DOMContentLoaded", function(){ initMobile(); });
 
