@@ -161,11 +161,9 @@ JSON requerido:
   "treatment_approach": "1 párrafo. Metodología específica. Herramientas o técnicas.",
   "patient_experience": "1 párrafo. Sensaciones del paciente, no características.",
   "tone": "cercania-humana | elegancia-premium | confianza-clinica | innovacion-tecnica",
-  "benefits": null,
-  "faq": null,
   "services": [{"t":"nombre","d":"descripción","i":"emoji"}],
   "cta_primary": "2-3 palabras",
-  "cta_final": null,
+  "cta_final": "1 frase emotiva para la sección CTA final (max 60 chars)",
   "seo_title": "title optimizado",
   "seo_description": "meta description, 150-160 chars"
 }`

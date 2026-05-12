@@ -845,10 +845,10 @@ button,a{-webkit-tap-highlight-color:transparent}
 <!-- TESTIMONIOS -->
 <section class="sec testi-bg rv" id="testimonios">
   <div class="sec-inner">
-    <div class="sec-lbl">Testimonios</div>
-    <h2 class="sec-h2 rv d1">Lo que dicen mis pacientes</h2>
-    <p class="sec-sub rv d2">Historias reales de personas que recuperaron su calidad de vida.</p>
-    <div class="testi-grid">
+    <div class="sec-lbl" id="wTestiLbl">Testimonios</div>
+    <h2 class="sec-h2 rv d1" id="wTestiH2">Lo que dicen mis pacientes</h2>
+    <p class="sec-sub rv d2" id="wTestiSub">Historias reales de personas que recuperaron su calidad de vida.</p>
+    <div class="testi-grid" id="wTestiGrid">
       <div class="testi-card rv d1">
         <div class="testi-stars">★★★★★</div>
         <span class="testi-qmark">"</span>
@@ -1040,13 +1040,14 @@ function hookForEsp(esp){
   return HOOKS[k||'default'];
 }
 function servsForEsp(wc,esp){
-  if(wc&&wc.servicios&&wc.servicios.length){
-    // Normalize legacy {titulo,desc} → {t,d,i}
-    return wc.servicios.map(function(s){
+  // Kimi generates 'services' (not 'servicios'). Normalize both keys + legacy shapes.
+  var src = (wc&&wc.services&&wc.services.length) ? wc.services : (wc&&wc.servicios&&wc.servicios.length ? wc.servicios : null);
+  if(src){
+    return src.map(function(s){
       return {
-        t: s.t || s.titulo || 'Servicio',
-        d: s.d || s.desc || s.descripcion || '',
-        i: s.i || s.icono || '◆'
+        t: s.t || s.titulo || s.name || s.nombre || 'Servicio',
+        d: s.d || s.desc || s.descripcion || s.description || '',
+        i: s.i || s.icono || s.emoji || '◆'
       };
     });
   }
@@ -1093,17 +1094,27 @@ function renderWeb(m,locs,wc,isPreview){
     if(ciudad)setText('wCardSub',ciudad);
   }
 
-  // Hero text
+  // Hero text — use Kimi-generated content verbatim. No destructive splitting.
   var eyebrow=el('wEyebrow');
-  if(eyebrow){eyebrow.innerHTML='<span class="h-pill-dot"></span><span>'+(esp||'Especialista médico')+'</span>';}
+  if(eyebrow){
+    var eyebrowText = wc.eyebrow || esp || 'Especialista médico';
+    eyebrow.innerHTML='<span class="h-pill-dot"></span><span>'+eyebrowText+'</span>';
+  }
 
   var h1=el('wH1');
   if(h1){
     var hl=wc.headline||hookForEsp(esp);
-    var parts=hl.split(/[,—–]/);
-    if(parts.length>1){
-      h1.innerHTML='<strong>'+parts[0].trim()+'</strong><em>'+parts.slice(1).join(' ').trim()+'</em>';
+    // Only split legacy hooks (they contain em-dashes). Keep Kimi headlines intact.
+    var isLegacyHook = !wc.headline && hl.indexOf('—')!==-1;
+    if(isLegacyHook){
+      var parts=hl.split(/[,—–]/);
+      if(parts.length>1){
+        h1.innerHTML='<strong>'+parts[0].trim()+'</strong><em>'+parts.slice(1).join(' ').trim()+'</em>';
+      } else {
+        h1.innerHTML='<strong>'+hl+'</strong>';
+      }
     } else {
+      // Kimi headline — render as-is for maximum personality
       h1.innerHTML='<strong>'+hl+'</strong>';
     }
   }
@@ -1119,23 +1130,47 @@ function renderWeb(m,locs,wc,isPreview){
     else btnW.style.display='none';
   }
 
+  // Trust pills — replace static ones with differentiators when Kimi data exists
   var trust=el('wTrust');
   if(trust){
     trust.style.display='flex';
-    if(anos){var ta=el('wTrustAnos');if(ta)ta.style.display='flex';setText('wTrustAnosN',anos+'+');}
-    if(ciudad){var tc=el('wTrustCity');if(tc)tc.style.display='flex';setText('wTrustCityTxt',ciudad);}
+    var diffPills = wc.differentiators && wc.differentiators.length ? wc.differentiators.slice(0,3) : null;
+    if(diffPills){
+      // Rebuild trust pills from real differentiators
+      var diffIcons = ['✓','🔬','⭐','🎯','⚡'];
+      trust.innerHTML = ''
+        +(anos?'<div class="h-trust-pill" id="wTrustAnos"><div class="h-trust-icon">⭐</div><span><strong id="wTrustAnosN">'+anos+'+</strong> años exp.</span></div>':'')
+        +diffPills.map(function(d,i){return '<div class="h-trust-pill"><div class="h-trust-icon">'+diffIcons[i%diffIcons.length]+'</div><span>'+d+'</span></div>';}).join('')
+        +(ciudad?'<div class="h-trust-pill" id="wTrustCity"><div class="h-trust-icon">📍</div><span id="wTrustCityTxt">'+ciudad+'</span></div>':'');
+    } else {
+      // Legacy static pills
+      if(anos){var ta=el('wTrustAnos');if(ta)ta.style.display='flex';setText('wTrustAnosN',anos+'+');}
+      if(ciudad){var tc=el('wTrustCity');if(tc)tc.style.display='flex';setText('wTrustCityTxt',ciudad);}
+    }
   }
 
-  // Benefits
+  // Benefits — use Kimi-generated benefits first, then differentiators, then specialty fallback
   var benGrid=el('wBenGrid');
-  if(benGrid&&esp){
-    var espKey=Object.keys(BENEFITS_ESP).find(function(k){return esp.toLowerCase().indexOf(k)!==-1;});
-    if(espKey){
-      benGrid.innerHTML=BENEFITS_ESP[espKey].map(function(b,i){
+  if(benGrid){
+    var benSrc = null;
+    if(wc.benefits && wc.benefits.length){
+      benSrc = wc.benefits.map(function(b){return {i:b.i||'✦',t:b.t||b.title||b.name||'Beneficio',d:b.d||b.desc||b.description||''};});
+    } else if(wc.differentiators && wc.differentiators.length){
+      // Turn differentiators into benefit cards with generic icons
+      var diffIcons = ['🎯','⚡','🔬','✦','🛡'];
+      benSrc = wc.differentiators.slice(0,4).map(function(d,i){return {i:diffIcons[i%diffIcons.length],t:d,d:''};});
+    }
+    if(!benSrc && esp){
+      var espKey=Object.keys(BENEFITS_ESP).find(function(k){return esp.toLowerCase().indexOf(k)!==-1;});
+      if(espKey) benSrc = BENEFITS_ESP[espKey];
+    }
+    if(benSrc && benSrc.length){
+      benGrid.innerHTML=benSrc.map(function(b,i){
         return '<div class="ben-card rv d'+(i+1)+'">'
-          +'<div class="ben-icon"><span>'+b.i+'</span></div>'
+          +'<div class="ben-icon"><span>'+(b.i||'✦')+'</span></div>'
           +'<div class="ben-title">'+b.t+'</div>'
-          +'<div class="ben-desc">'+b.d+'</div></div>';
+          +(b.d?'<div class="ben-desc">'+b.d+'</div>':'')
+          +'</div>';
       }).join('');
       if(window._ro)benGrid.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
     }
@@ -1153,8 +1188,9 @@ function renderWeb(m,locs,wc,isPreview){
     });
     if(window._ro)grid.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
   }
-  setText('wSrvH2',esp?'Especialidades en '+esp:'¿En qué te puedo ayudar?');
-  setText('wSrvSub',esp?'Tratamientos especializados con la más alta tecnología médica.':'Atención médica integral y personalizada en cada etapa de tu salud.');
+  // Service section titles — use Kimi-generated when available
+  setText('wSrvH2', wc.services_title || (esp?'Especialidades en '+esp:'¿En qué te puedo ayudar?'));
+  setText('wSrvSub', wc.services_subtitle || wc.treatment_approach || (esp?'Tratamientos especializados con la más alta tecnología médica.':'Atención médica integral y personalizada en cada etapa de tu salud.'));
 
   // Sobre mí
   var leftWrap=el('wSobreLeft');
@@ -1207,6 +1243,28 @@ function renderWeb(m,locs,wc,isPreview){
     });
     ls.style.display='block';
     if(window._ro)lg.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
+  }
+
+  // Testimonials — use Kimi-generated if available, otherwise hide section to avoid template feel
+  var testiSection=el('testimonios');
+  var testiGrid=el('wTestiGrid');
+  if(testiGrid && wc.testimonials && wc.testimonials.length){
+    if(testiSection) testiSection.style.display='block';
+    setText('wTestiH2', wc.testimonials_title || 'Lo que dicen mis pacientes');
+    setText('wTestiSub', wc.testimonials_subtitle || 'Historias reales de personas que confiaron en mi práctica médica.');
+    testiGrid.innerHTML = wc.testimonials.map(function(t,i){
+      var initials = (t.name||'P').split(' ').map(function(n){return n[0];}).join('').slice(0,2).toUpperCase();
+      return '<div class="testi-card rv d'+Math.min(i+1,5)+'">'
+        +'<div class="testi-stars">★★★★★</div>'
+        +'<span class="testi-qmark">"</span>'
+        +'<p class="testi-text">'+t.text+'</p>'
+        +'<div class="testi-author"><div class="testi-av">'+initials+'</div><div><div class="testi-name">'+t.name+'</div>'+(t.role?'<div class="testi-role">'+t.role+'</div>':'')+'</div></div>'
+        +'</div>';
+    }).join('');
+    if(window._ro) testiGrid.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
+  } else if(testiSection && wc.headline){
+    // If Kimi generated real content but no testimonials, hide the section to avoid generic feel
+    testiSection.style.display='none';
   }
 
   // CTA
