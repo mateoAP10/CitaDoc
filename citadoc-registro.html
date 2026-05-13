@@ -24,8 +24,6 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>window.addEventListener('load',function(){if(typeof emailjs!=='undefined')emailjs.init('HwpQ3DPRMmtcVZVt1');});</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -865,16 +863,6 @@ async function activarCuenta(){
     document.getElementById('success-url').textContent=url;
     sessionStorage.setItem('citadoc_user',JSON.stringify({...medicoData,nombre,apellido,titulo,email,slug,ciudad:ciudadLabel,especialidades:Array.from(selectedSpecs)}));
 
-    // 7. Email de bienvenida
-    if(typeof emailjs!=='undefined'){
-      emailjs.send('service_63xln0n','template_xnrw4eb',{
-        medico_nombre:titulo+' '+nombre+' '+apellido,
-        medico_email:email,
-        plan:selectedPlan==='featured'?'Plan Destacado':'Plan Gratuito',
-        url_perfil:'https://citadoc.lat/medico/'+slug,
-        url_dashboard:'https://citadoc.lat/citadoc-dashboard.html',
-      }).catch(e=>console.warn('EmailJS:',e));
-    }
 
     // 8. Paso 5
     goStep(5);
