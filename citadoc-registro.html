@@ -336,6 +336,85 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
 .mobile-plan-pill-label{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.15rem}
 .mobile-plan-pill-name{font-size:.9rem;font-weight:700;color:#fff}
 .mobile-plan-change{font-size:.75rem;font-weight:600;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:.25rem .65rem;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.check-email-state{
+  text-align:center;
+  padding:20px 8px 10px;
+}
+
+.check-icon{
+  width:82px;
+  height:82px;
+  margin:0 auto 26px;
+  border-radius:24px;
+  background:linear-gradient(135deg,#2563eb,#0ea5e9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:38px;
+  box-shadow:0 12px 35px rgba(37,99,235,.35);
+}
+
+.check-email-state h2{
+  font-size:34px;
+  font-weight:700;
+  letter-spacing:-0.04em;
+  margin-bottom:16px;
+  color:var(--ink);
+}
+
+.check-email-state p{
+  color:var(--muted);
+  line-height:1.8;
+  font-size:16px;
+}
+
+.email-highlight{
+  margin:18px auto;
+  padding:14px 18px;
+  border-radius:16px;
+  background:rgba(11,124,110,.06);
+  border:1px solid rgba(11,124,110,.10);
+  color:var(--ink);
+  font-weight:600;
+  word-break:break-word;
+}
+
+.subtext{
+  margin-top:12px;
+}
+
+.check-actions{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top:34px;
+}
+
+.primary-btn{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:18px;
+  border-radius:18px;
+  background:linear-gradient(135deg,var(--teal),var(--teal-mid));
+  color:#fff;
+  text-decoration:none;
+  font-weight:600;
+  box-shadow:0 12px 35px rgba(11,124,110,.22);
+}
+
+.secondary-btn{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:18px;
+  border-radius:18px;
+  background:#fff;
+  border:1px solid var(--border);
+  color:var(--ink2);
+  text-decoration:none;
+  font-weight:600;
+}
 </style>
 <!-- Analytics -->
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
@@ -819,7 +898,14 @@ async function activarCuenta(){
       alert(authError.message.includes('already registered')?'Este correo ya está registrado. Inicia sesión.':'Error: '+authError.message);
       btn.textContent='Activar mi perfil →';btn.disabled=false;return;
     }
-    const userId=authData.user?.id;
+    const userId = authData?.user?.id;
+
+if (!userId) {
+  alert('No se pudo crear el usuario correctamente.');
+  btn.textContent='Activar mi perfil →';
+  btn.disabled=false;
+  return;
+}
 
     // 2. Slug
     function toSlug(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().replace(/\s+/g,'-');}
@@ -857,7 +943,56 @@ async function activarCuenta(){
       alert('Error al guardar perfil: '+medicoError.message);
       btn.textContent='Activar mi perfil →';btn.disabled=false;return;
     }
+// Registro exitoso
+localStorage.removeItem('citadoc_pago_pro');
 
+document.querySelector('.registro-card').innerHTML = `
+  <div class="check-email-state">
+
+    <div class="check-icon">
+      ✉️
+    </div>
+
+    <h2>Check your email</h2>
+
+    <p>
+      We’ve sent a confirmation link to:
+    </p>
+
+    <div class="email-highlight">
+      ${email}
+    </div>
+
+    <p class="subtext">
+      Please confirm your account before accessing your CitaDoc dashboard.
+    </p>
+
+    <div class="check-actions">
+
+      <a
+        href="https://mail.google.com"
+        target="_blank"
+        class="primary-btn"
+      >
+        Open Gmail
+      </a>
+
+      <a
+        href="index.html"
+        class="secondary-btn"
+      >
+        Back to Login
+      </a>
+
+    </div>
+
+  </div>
+`;
+
+btn.textContent='Activar mi perfil →';
+btn.disabled=false;
+
+return;
     // 6. URL y sessionStorage
     const url='citadoc.lat/medico/'+slug;
     document.getElementById('success-url').textContent=url;
