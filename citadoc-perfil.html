@@ -428,6 +428,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .trust-chip{font-size:.7rem;font-weight:600;padding:.28rem .8rem;border-radius:50px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.14);letter-spacing:.02em;white-space:nowrap;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:all .2s ease}
 .trust-chip:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25)}
 .hero-ctas-v2{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.35rem}
+.hero-price-pill{display:inline-flex;align-items:center;gap:.55rem;background:rgba(245,158,11,.15);border:1.5px solid rgba(245,158,11,.35);border-radius:50px;padding:.45rem 1.1rem;margin-top:.4rem;backdrop-filter:blur(8px)}
+.hero-price-pill .pill-label{font-size:.72rem;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.hero-price-pill .pill-amount{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;color:#fbbf24;letter-spacing:-.02em;line-height:1}
+.hero-price-pill .pill-currency{font-size:.72rem;color:rgba(255,255,255,.55);font-weight:600;align-self:flex-end;padding-bottom:.12rem}
 .btn-wa-hero{display:inline-flex;align-items:center;gap:.45rem;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;padding:.72rem 1.3rem;border-radius:12px;font-size:.88rem;font-weight:700;text-decoration:none;transition:all .2s cubic-bezier(.16,1,.3,1);border:none;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(37,211,102,.25)}
 .btn-wa-hero:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,211,102,.32)}
 .btn-book-hero{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.1);color:#fff;padding:.72rem 1.3rem;border-radius:12px;font-size:.88rem;font-weight:600;text-decoration:none;border:1.5px solid rgba(255,255,255,.22);transition:all .2s cubic-bezier(.16,1,.3,1);cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -550,6 +554,11 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <h1 class="hero-name-v2" id="profName">Cargando...</h1>
         <div class="hero-spec-v2" id="profSub"></div>
         <div class="hero-trust-v2" id="heroTrust"></div>
+        <div id="heroPricePill" class="hero-price-pill" style="display:none">
+          <span class="pill-label">Precio consulta</span>
+          <span class="pill-amount" id="heroPriceAmt">$0</span>
+          <span class="pill-currency">USD</span>
+        </div>
         <div class="hero-ctas-v2">
           <a class="btn-wa-hero" id="btnWAHero" href="#" target="_blank" rel="noopener" style="display:none">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -596,16 +605,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <!-- Ubicaciones — siempre visible, fuera de tabs -->
     <div id="ubicacionesSection" style="display:none">
       <div class="card">
-        <h3>Dónde atiende</h3>
-        <div id="pubUbicaciones"
-  style="
-    display:flex;
-    gap:.8rem;
-    overflow-x:auto;
-    padding:.3rem 0 .2rem 0;
-    scrollbar-width:none;
-  ">
-</div>
+        <h3>Sedes donde atiende</h3>
+        <div id="pubUbicaciones"></div>
       </div>
     </div>
   </div>
@@ -1193,8 +1194,12 @@ function aplicarMedico(m, formacion, citas, locs) {
     bookHeroBtn.textContent = '📅 Agendar consulta en '+ciudad;
   }
 
-  // Precio en booking card
+  // Precio en booking card y hero pill
   setText('bookPrice', '$'+(m.precio||0));
+  if (m.precio && m.precio > 0) {
+    var pill = el('heroPricePill');
+    if (pill) { setText('heroPriceAmt', '$'+m.precio); pill.style.display='inline-flex'; }
+  }
 
   // Bio
   var bioEl = el('profBio');
@@ -1301,145 +1306,31 @@ function aplicarMedico(m, formacion, citas, locs) {
   }
 
   // ── Ubicaciones públicas ──
-  // ── Ubicaciones públicas ──
-var locsSection = el('ubicacionesSection');
-var locsCont    = el('pubUbicaciones');
+  var locsSection = el('ubicacionesSection');
+  var locsCont    = el('pubUbicaciones');
 
-if (locsSection && locsCont && locs && locs.length) {
-
-  locsCont.innerHTML = '';
-
-  locs.forEach(function(loc){
-
-    var bubble = document.createElement('div');
-
-    bubble.style.cssText = `
-      min-width:230px;
-      text-decoration:none;
-      background:#fff;
-      border:1px solid rgba(11,124,110,.1);
-      border-radius:20px;
-      padding:1.1rem 1.2rem;
-      display:flex;
-      flex-direction:column;
-      gap:.35rem;
-      box-shadow:0 4px 16px rgba(15,26,24,.06),0 1px 3px rgba(15,26,24,.04);
-      transition:all .25s cubic-bezier(.16,1,.3,1);
-      flex-shrink:0;
-      cursor:pointer;
-    `;
-
-    bubble.onmouseenter = function(){
-      bubble.style.transform = 'translateY(-3px)';
-      bubble.style.boxShadow = '0 12px 32px rgba(15,26,24,.1),0 2px 6px rgba(15,26,24,.04)';
-      bubble.style.borderColor = 'rgba(11,124,110,.18)';
-    };
-    bubble.onmouseleave = function(){
-      bubble.style.transform = 'translateY(0px)';
-      bubble.style.boxShadow = '0 4px 16px rgba(15,26,24,.06),0 1px 3px rgba(15,26,24,.04)';
-      bubble.style.borderColor = 'rgba(11,124,110,.1)';
-    };
-
-    bubble.innerHTML = `
-
-      <div style="
-        font-size:.9rem;
-        font-weight:700;
-        color:var(--ink);
-        letter-spacing:-.01em;
-      ">
-        📍 ${loc.nombre || 'Consultorio'}
-      </div>
-
-<div style="
-  font-size:.78rem;
-  color:var(--muted);
-  line-height:1.45;
-  margin-top:.05rem;
-">
-
-  ${loc.direccion
-    ? loc.direccion.split(',').slice(0,2).join(',')
-    : ''
+  if (locsSection && locsCont && locs && locs.length) {
+    locsCont.innerHTML = '';
+    locs.forEach(function(loc, idx) {
+      var card = document.createElement('div');
+      card.className = 'sede-card';
+      var chipLabel = idx === 0 ? 'Sede principal' : 'Sede secundaria';
+      var addr = loc.direccion ? loc.direccion.split(',').slice(0,2).join(',') : '';
+      var extra = [loc.piso ? 'Piso '+loc.piso : '', loc.oficina ? 'Oficina '+loc.oficina : ''].filter(Boolean).join(' · ');
+      card.innerHTML =
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">'+
+          '<div class="sede-name">📍 '+(loc.nombre||'Consultorio')+'</div>'+
+          '<span class="sede-chip">'+chipLabel+'</span>'+
+        '</div>'+
+        (addr ? '<div class="sede-addr">'+addr+(extra ? '<br><span style="color:var(--muted2)">'+extra+'</span>' : '')+'</div>' : '')+
+        '<div style="display:flex;gap:.5rem;margin-top:.65rem;flex-wrap:wrap">'+
+          (loc.maps_url ? '<a href="'+loc.maps_url+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;background:#faf9f7;color:var(--teal);border:1px solid rgba(11,124,110,.12);border-radius:10px;font-size:.74rem;font-weight:700;text-decoration:none">🧭 Cómo llegar</a>' : '')+
+          '<button onclick="document.getElementById(\'agendaSection\')?.scrollIntoView({behavior:\'smooth\'})" style="display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-size:.74rem;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(11,124,110,.2)">📅 Agendar aquí</button>'+
+        '</div>';
+      locsCont.appendChild(card);
+    });
+    locsSection.style.display = 'block';
   }
-
-</div>
-
-<div style="
-  font-size:.74rem;
-  color:var(--muted2);
-  margin-top:.05rem;
-">
-
-  ${loc.piso ? 'Piso '+loc.piso : ''}
-  ${loc.oficina ? ' · Oficina '+loc.oficina : ''}
-
-</div>
-
-<div style="
-  display:flex;
-  gap:.55rem;
-  margin-top:.55rem;
-  flex-wrap:wrap;
-">
-
-<a
-  href="${loc.maps_url || '#'}"
-  target="_blank"
-  rel="noopener noreferrer"
-  style="
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:.45rem;
-    padding:.65rem .95rem;
-    background:#faf9f7;
-    color:var(--teal);
-    border:1px solid rgba(11,124,110,.12);
-    border-radius:12px;
-    font-size:.75rem;
-    font-weight:700;
-    text-decoration:none;
-    transition:all .2s ease;"
->
-  🧭 Cómo llegar
-</a>
-
-  <button
-  onclick="
-    document.getElementById('agendaSection')
-    ?.scrollIntoView({behavior:'smooth'});
-  "
-  style="
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:.45rem;
-    padding:.65rem .95rem;
-    background:linear-gradient(135deg,var(--teal),var(--teal-mid));
-    color:#fff;
-    border:none;
-    border-radius:12px;
-    font-size:.75rem;
-    font-weight:700;
-    box-shadow:0 4px 14px rgba(11,124,110,.2);
-    cursor:pointer;
-    transition:all .2s ease;"
->
-  📅 Quiero un turno aquí
-</button>
-
-</div>
-
-    `;
-
-    locsCont.appendChild(bubble);
-
-  });
-
-  locsSection.style.display = 'block';
-
-}
   // ── CTA final ──
   var ctaSection = el('ctaFinal');
   var ctaTitle   = el('ctaFinalTitle');
