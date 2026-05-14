@@ -6073,21 +6073,20 @@ async function confirmarNuevaCita(pacId, pacNombre, pacEmail, pacTel, pacCedula,
     +'. Ante cualquier duda no dudes en contactarnos.';
 
   if(pacEmail) {
-    emailjs.send('service_63xln0n','template_e8t8qkq',{
+    var emailPayload = {
       to_email:          pacEmail,
       doctor_name:       nombreMed,
       patient_name:      pacNombre,
       appointment_date:  fechaHum,
       appointment_time:  hora,
-      location_name:     sedeName||'Consultorio',
-      appointment_mode:  modal==='virtual'?'Virtual 💻':'Presencial 🏥',
+      location_name:     sedeName||'Consultorio médico',
+      appointment_mode:  modal==='virtual'?'💻 Virtual':'🏥 Presencial',
       public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M.slug||'')
-    }).then(function(){
-      mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail);
-    }).catch(function(e){
-      console.error('[emailjs] error:', e);
-      mostrarToast('Cita creada ✓ — (email no enviado: '+((e&&e.text)||'error')+')', 'error');
-    });
+    };
+    console.log('[EMAILJS SEND OBJECT]', emailPayload);
+    emailjs.send('service_63xln0n','template_e8t8qkq', emailPayload)
+      .then(function(){ mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail); })
+      .catch(function(e){ console.error('[emailjs] error:', e); mostrarToast('Email no enviado: '+((e&&e.text)||JSON.stringify(e)), 'error'); });
   }
 
   cerrarNuevaCita();
