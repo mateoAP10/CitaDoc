@@ -920,23 +920,24 @@ if (!userId) {
     const paisVal=regPais?.getValue()||'ecuador';
     const ciudadLabel=regCiudad?.getLabel()||'';
 
-    // 5. Insertar médico en Supabase
-    // Si pagó con PayPhone durante registro, forzar plan=pro
+    // 5. Insertar médico via RPC (SECURITY DEFINER — bypasea RLS pre-confirmación)
     var pagoPrevio = localStorage.getItem('citadoc_pago_pro') === 'true';
     var planFinal = selectedPlan==='featured' || pagoPrevio ? 'pro' : 'gratuito';
-    const{data:medicoData,error:medicoError}=await _supabase.from('medicos').insert({
-      user_id:userId,email,nombre,apellido,titulo,cedula,senescyt,slug,bio,precio,
-      pais:paisVal,ciudad:ciudadLabel,
-      especialidades:Array.from(selectedSpecs),
-      seguros:Array.from(selectedIns),
-      telefono:tel,horario_desde:desde,horario_hasta:hasta,dias_atencion:dias,
-      plan: planFinal,
-      plan_activo: planFinal === 'pro',
-      trial_ends_at: planFinal === 'pro'
-        ? new Date(Date.now() + 30*24*60*60*1000).toISOString()
+    const{data:medicoData,error:medicoError}=await _supabase.rpc('register_medico',{
+      p_user_id:userId, p_email:email, p_nombre:nombre, p_apellido:apellido,
+      p_titulo:titulo, p_cedula:cedula||'', p_senescyt:senescyt||'', p_slug:slug,
+      p_bio:bio||'', p_precio:precio,
+      p_pais:paisVal, p_ciudad:ciudadLabel,
+      p_especialidades:Array.from(selectedSpecs),
+      p_seguros:Array.from(selectedIns),
+      p_telefono:tel||'', p_horario_desde:desde, p_horario_hasta:hasta,
+      p_dias_atencion:dias,
+      p_plan:planFinal,
+      p_plan_activo:planFinal==='pro',
+      p_trial_ends_at:planFinal==='pro'
+        ? new Date(Date.now()+30*24*60*60*1000).toISOString()
         : null,
-      activo: true,
-    }).select().single();
+    });
 
     if(medicoError){
       console.error(medicoError);
