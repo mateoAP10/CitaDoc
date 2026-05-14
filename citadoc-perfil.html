@@ -1449,7 +1449,7 @@ function cargarPerfil() {
       var hoy = new Date().toISOString().split('T')[0];
       var en60 = new Date(); en60.setDate(en60.getDate()+60);
       var p2 = _sb.from('citas').select('fecha,hora').eq('medico_id',m.id).gte('fecha',hoy).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada');
-      var p3 = _sb.from('doctor_locations').select('nombre,direccion,telefono,ciudad,maps_url').eq('medico_id', m.id).order('created_at');
+      var p3 = _sb.from('doctor_locations').select('id,nombre,direccion,telefono,ciudad,lat,lng,maps_url').eq('medico_id', m.id).order('created_at');
       Promise.all([p1, p2, p3]).then(function(results) {
         aplicarMedico(m, results[0].data||[], results[1].data||[], results[2].data||[]);
       });
