@@ -1666,19 +1666,22 @@ display:flex;
           <label>Examen físico</label>
           <textarea id="hcExamen" placeholder="Hallazgos del examen físico..."></textarea>
         </div>
-        <div class="hc-field">
-          <label>Diagnóstico</label>
-          <div style="position:relative">
-            <input id="hcDiagSearch" type="text" autocomplete="off"
-              placeholder="Buscar diagnóstico o código CIE-10..."
-              style="width:100%;padding:.6rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);background:#faf9f7;outline:none;box-sizing:border-box;transition:border-color .2s"
-              oninput="cieBuscar(this.value)"
-              onfocus="cieBuscar(this.value)"
-              onblur="setTimeout(cieCerrar,180)"
-              onkeydown="cieKeyNav(event)">
-            <div id="cieDrop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:200;max-height:220px;overflow-y:auto"></div>
+        <div class="hc-field" style="grid-column:1/-1">
+          <label>Diagnóstico CIE-10</label>
+          <div style="position:static">
+            <div style="position:relative">
+              <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:.85rem;pointer-events:none">🔍</span>
+              <input id="hcDiagSearch" type="text" autocomplete="off"
+                placeholder="Buscar por nombre o código — ej: gonartrosis, M17, diabetes..."
+                style="width:100%;padding:.7rem .9rem .7rem 2.2rem;border:1.5px solid var(--teal-mid);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);background:var(--white);outline:none;box-sizing:border-box;transition:border-color .2s;box-shadow:0 0 0 3px rgba(11,124,110,.08)"
+                oninput="cieBuscar(this.value)"
+                onfocus="this.style.borderColor='var(--teal)';cieBuscar(this.value)"
+                onblur="this.style.borderColor='var(--teal-mid)';setTimeout(cieCerrar,200)"
+                onkeydown="cieKeyNav(event)">
+            </div>
+            <div id="cieDrop" style="display:none;position:fixed;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:240px;overflow-y:auto;width:400px"></div>
           </div>
-          <div id="cieTags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem"></div>
+          <div id="cieTags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.55rem"></div>
           <textarea id="hcDiagnostico" style="display:none" placeholder="Diagnóstico principal..."></textarea>
         </div>
         <div class="hc-field">
@@ -4654,9 +4657,19 @@ var CIE10 = [
   {c:'M96.0',l:'Pseudoartrosis post-fusión espinal'},{c:'T84.0',l:'Complicación mecánica de prótesis articular'}
 ];
 
+function ciePositionar() {
+  var inp=document.getElementById('hcDiagSearch');
+  var drop=document.getElementById('cieDrop');
+  if(!inp||!drop) return;
+  var r=inp.getBoundingClientRect();
+  drop.style.top=(r.bottom+4)+'px';
+  drop.style.left=r.left+'px';
+  drop.style.width=r.width+'px';
+}
 function cieBuscar(q) {
   var drop = document.getElementById('cieDrop'); if(!drop) return;
-  if(!q||q.length<2){drop.style.display='none';return;}
+  if(!q||q.length<1){drop.style.display='none';return;}
+  ciePositionar();
   var ql=q.toLowerCase();
   var hits=CIE10.filter(function(d){
     return d.c.toLowerCase().includes(ql)||d.l.toLowerCase().includes(ql);
