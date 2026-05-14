@@ -4107,8 +4107,13 @@ async function iniciarPagoRedirect(planType) {
       })
     });
 
+    var rawText = await res.text();
+    console.log('[payphone] status', res.status);
+    console.log('[payphone] raw response text', rawText);
+    var data = {};
+    try { data = JSON.parse(rawText); } catch(pe) { console.error('[payphone] JSON parse error', pe); }
+    console.log('[payphone] full prepare response', data);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    var data = await res.json();
     if (!data.paymentUrl) throw new Error('No paymentUrl in response');
 
     // Guardar en localStorage para verificar al retorno
