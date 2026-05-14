@@ -664,6 +664,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
               <div class="form-field"><label>Teléfono *</label><input type="tel" id="inpTel" placeholder="0998 123 456"></div>
               <div class="form-field"><label>Email</label><input type="email" id="inpEmail" placeholder="maria@email.com"></div>
               <div class="form-field"><label>Motivo (opcional)</label><input type="text" id="inpMotivo" placeholder="Control de rutina"></div>
+              <div id="insuranceBadge" style="display:none;background:linear-gradient(135deg,#f0fdf8,#e8f8f2);border:1px solid rgba(11,124,110,.2);border-radius:10px;padding:.55rem .9rem;font-size:.8rem;font-weight:600;color:var(--teal-dark);margin-bottom:.5rem"></div>
               <div style="display:flex;gap:.5rem">
                 <button id="btnBackStep" style="flex:0 0 auto;padding:.65rem .9rem;background:var(--cream);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--ink2)">← Atrás</button>
                 <button class="btn-confirm" id="btnConfirm" style="flex:1">✓ Confirmar cita</button>
@@ -757,6 +758,7 @@ var _sb = supabase.createClient(
 
 // ── ESTADO ──
 var _medico = null;
+var _selectedInsurance = null;
 var _disp   = {};
 var selectedDate = null;
 var selectedSlot = null;
@@ -1040,6 +1042,7 @@ function confirmarCita() {
           paciente_email:  email||null,
           paciente_tel:    tel,
           motivo:          motivo||null,
+          seguro:          _selectedInsurance||null,
           fecha:           selectedDate,
           hora:            selectedSlot,
           estado:          'confirmada'
@@ -1086,6 +1089,7 @@ function confirmarCita() {
       + (email ? '\nEmail: ' + email : '')
       + '\nFecha: '      + fechaLabel + ' a las ' + selectedSlot
       + '\nMotivo: '     + (motivo||'No especificado')
+      + (_selectedInsurance ? '\n🛡 Seguro: ' + _selectedInsurance : '')
       + '\n\n👉 Ver cita en tu dashboard:'
       + '\nhttps://citadoc.lat/citadoc-dashboard.html'
       + (waPacNum ? '\n\n💬 Contactar paciente por WhatsApp:'
@@ -1244,9 +1248,35 @@ function aplicarMedico(m, formacion, citas, locs) {
     if (segEl) {
       segEl.innerHTML = '';
       m.seguros.forEach(function(s) {
-        var chip = document.createElement('span');
-        chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .85rem;background:#fff;border:1.5px solid rgba(11,124,110,.18);border-radius:50px;font-size:.76rem;font-weight:600;color:var(--teal-dark);box-shadow:0 1px 4px rgba(11,124,110,.08)';
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.dataset.seguro = s;
+        chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem;padding:.38rem .95rem;background:#fff;border:1.5px solid rgba(11,124,110,.18);border-radius:50px;font-size:.76rem;font-weight:600;color:var(--teal-dark);box-shadow:0 1px 4px rgba(11,124,110,.08);cursor:pointer;transition:all .2s;font-family:inherit';
         chip.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' + s;
+        chip.addEventListener('click', function() {
+          // Toggle selección
+          var isSelected = _selectedInsurance === s;
+          _selectedInsurance = isSelected ? null : s;
+          // Actualizar estilos de todos los chips
+          segEl.querySelectorAll('button').forEach(function(c) {
+            var sel = c.dataset.seguro === _selectedInsurance;
+            c.style.background = sel ? 'var(--teal)' : '#fff';
+            c.style.color = sel ? '#fff' : 'var(--teal-dark)';
+            c.style.borderColor = sel ? 'var(--teal)' : 'rgba(11,124,110,.18)';
+            c.style.boxShadow = sel ? '0 4px 14px rgba(11,124,110,.3)' : '0 1px 4px rgba(11,124,110,.08)';
+          });
+          // Actualizar badge en el booking
+          var badge = document.getElementById('insuranceBadge');
+          if (badge) {
+            badge.textContent = _selectedInsurance ? '🛡 Seguro: ' + _selectedInsurance : '';
+            badge.style.display = _selectedInsurance ? 'block' : 'none';
+          }
+          // Scroll al booking
+          if (!isSelected) {
+            var ag = document.getElementById('agendaSection');
+            if (ag) ag.scrollIntoView({behavior:'smooth', block:'start'});
+          }
+        });
         segEl.appendChild(chip);
       });
       el('segurosCard').style.display = 'block';
