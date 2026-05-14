@@ -109,6 +109,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .strength-meta{display:flex;justify-content:flex-end}
 .strength-label{font-size:.7rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted2);transition:color .3s}
 
+/* ── PAYPHONE WIDGET OVERRIDE ── */
+payphone-payment-box img[src*="payphone"],payphone-payment-box .payphone-logo,payphone-payment-box .pp-logo,payphone-payment-box [class*="logo"],payphone-payment-box [class*="powered"],payphone-payment-box [class*="footer"]{display:none!important}
+payphone-payment-box button[type="submit"],payphone-payment-box .pp-btn-pay,payphone-payment-box [class*="pay-btn"],payphone-payment-box [class*="btn-pay"]{background:linear-gradient(135deg,var(--teal-dark),var(--teal))!important;border-radius:14px!important;font-family:'DM Sans',sans-serif!important;font-size:.95rem!important;font-weight:700!important;letter-spacing:.01em!important;box-shadow:0 6px 22px rgba(11,124,110,.28)!important;border:none!important;padding:.95rem!important;width:100%!important}
+payphone-payment-box input,payphone-payment-box select{border-radius:10px!important;border:1.5px solid rgba(11,124,110,.15)!important;font-family:'DM Sans',sans-serif!important}
+payphone-payment-box input:focus,payphone-payment-box select:focus{border-color:var(--teal-mid)!important;box-shadow:0 0 0 3px rgba(11,124,110,.1)!important;outline:none!important}
+
 /* SEARCHABLE SELECT */
 .ss-wrap{position:relative}
 .ss-input-row{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;padding:.55rem .9rem;border:1.5px solid var(--border);border-radius:12px;background:var(--white);cursor:text;min-height:48px;transition:border-color .2s,box-shadow .2s}
