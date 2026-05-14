@@ -7358,8 +7358,57 @@ async function guardarConsulta(pacienteId) {
   var btn=document.getElementById('btnGuardarConsulta');
   if(btn){btn.disabled=true;btn.textContent='Guardando...';}
   var v=function(id){return((document.getElementById(id)||{}).value||'').trim()||null;};
+  // ── Build typed SOAP JSON ──
+  var medications = (_mcRxState.med.items||[]).map(function(item){
+    var parts = item.split(' — ');
+    var drug = parts[0].trim();
+    var detail = parts[1]||'';
+    var forma = detail.split(' · ')[0]||'';
+    var freq  = (detail.split('cada ')[1]||'').split(' · ')[0]||'';
+    var dias  = (detail.split('por ')[1]||'').trim();
+    return { drug:drug, detail:forma, frequency:freq, duration:dias, response:'pendiente', created_with:'manual' };
+  });
+
+  var diagnoses = (_cieDiags||[]).map(function(d){
+    return { cie10:d.code||'', label:d.label, certainty:'probable' };
+  });
+
+  var labs = (_mcRxState.lab.items||[]).map(function(s){ return {name:s.trim()}; });
+  var images = (_mcRxState.img.items||[]).map(function(s){ return {name:s.trim()}; });
+
+  var soapJsonb = {
+    schema_version: 'v1',
+    subjective: {
+      chief_complaint: motivo,
+      history_present_illness: v('c_enfermedad')||''
+    },
+    objective: {
+      physical_exam: v('c_examen')||'',
+      vitals: {
+        bp:  v('c_ta')||'',
+        hr:  v('c_fc')||'',
+        temp:v('c_temp')||'',
+        wt:  v('c_peso')||''
+      }
+    },
+    assessment: {
+      diagnoses: diagnoses
+    },
+    plan: {
+      medications: medications,
+      labs: labs,
+      images: images,
+      instructions: v('c_indicaciones')||''
+    },
+    metadata: {
+      created_with: 'manual',
+      location_id: (window.locationsMedico&&window.locationsMedico[0])?window.locationsMedico[0].id:null
+    }
+  };
+
   var consData = {
     medico_id: M.id, paciente_id: pacienteId,
+    schema_version: 'v1',
     motivo: motivo,
     enfermedad_actual: v('c_enfermedad'),
     examen_fisico: v('c_examen'),
@@ -7372,7 +7421,10 @@ async function guardarConsulta(pacienteId) {
     frecuencia_cardiaca: v('c_fc'),
     temperatura: v('c_temp'),
     peso: v('c_peso'),
-    notas: v('c_notas')
+    notas: v('c_notas'),
+    soap_jsonb: soapJsonb,
+    ai_raw_extraction: null,
+    voice_transcript: null
   };
   var res = await _sb.from('consultas').insert([consData]).select().single();
   if(btn){btn.disabled=false;btn.textContent='Guardar consulta';}
