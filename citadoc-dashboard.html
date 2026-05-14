@@ -1751,6 +1751,9 @@ function logError(ctx, err) { console.error('[CitaDoc:'+ctx+']', err); }
 
 // ══ NAV ══
 function showPanel(id, el) {
+  // Guard Pro-only panels before any UI change
+  if (id === 'pacientes' && !esPro()) { mostrarProModal('pacientes'); return; }
+
   AppState.currentPanel = id;
   closeSidebarOnMobile();
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
@@ -1765,10 +1768,7 @@ function showPanel(id, el) {
   if (id==='horarios')    { renderDayConfigBar(); renderGridHorarios(); cargarBloqueos(); }
   if (id==='estadisticas' && M) cargarStats(M.id);
   if (id==='ficha') { /* cargado via abrirFicha() */ }
-  if (id==='pacientes') {
-    if (!esPro()) mostrarProModal('pacientes');
-    else cargarPacientes();
-  }
+  if (id==='pacientes')   { cargarPacientes(); }
   if (id==='perfil') {
     // Forzar pointer-events:auto en container y todos los tabs
     var _pt = document.getElementById('perfilTabs');
@@ -5550,13 +5550,14 @@ function filtrarPacientes(){
   document.querySelectorAll('.pac-card').forEach(function(c){c.style.display=(c.dataset.search||'').includes(txt)?'':'none';});
 }
 function abrirModalPaciente(){
+  if(!esPro()){mostrarProModal('pacientes');return;}
   var m=document.getElementById('modalPaciente'); if(!m) return; m.style.display='flex';
   ['p_nombre','p_email','p_telefono','p_cedula','p_fecha','p_direccion','p_notas'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var g=document.getElementById('p_genero');if(g)g.value='';
 }
 function cerrarModalPaciente(){var m=document.getElementById('modalPaciente');if(m)m.style.display='none';}
 async function guardarPaciente(){
-  if(!M||!M.id) return;
+  if(!M||!M.id||!esPro()) return;
   var nombre=((document.getElementById('p_nombre')||{}).value||'').trim();
   var email=((document.getElementById('p_email')||{}).value||'').trim();
   if(!nombre){mostrarToast('Nombre obligatorio','error');return;}
