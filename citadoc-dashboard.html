@@ -6759,10 +6759,13 @@ function renderFicha(p, consultas, proximaCita) {
       body.className = 'ficha-consulta-body';
 
       var sections = [
-        ['Síntomas', con.sintomas],
+        ['Motivo', con.motivo],
+        ['Enfermedad actual', con.enfermedad_actual||con.sintomas],
         ['Examen físico', con.examen_fisico],
         ['Diagnóstico', con.diagnostico],
-        ['Tratamiento', con.plan||con.tratamiento],
+        ['Medicamentos', con.plan||con.tratamiento],
+        ['Imágenes solicitadas', con.imagenes],
+        ['Laboratorios solicitados', con.estudios],
         ['Indicaciones', con.indicaciones],
         ['Notas', con.notas]
       ].filter(function(s){ return s[1] && s[1].trim(); });
