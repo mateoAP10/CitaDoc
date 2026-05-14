@@ -415,22 +415,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .logro-title{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:.15rem;letter-spacing:-.01em}
 .logro-desc{font-size:.77rem;color:var(--muted);line-height:1.55}
 /* ── HERO V2 ── */
-.hero-v2{display:flex;gap:2rem;background:linear-gradient(145deg,var(--teal-dark) 0%,#062e2b 55%,#0a4f46 100%);border-radius:24px;padding:2.4rem;margin-bottom:1.5rem;overflow:hidden;position:relative}
+.hero-v2{display:flex;gap:2rem;background:linear-gradient(145deg,var(--teal-dark) 0%,#062e2b 55%,#0a4f46 100%);border-radius:24px;padding:2.4rem;margin-bottom:1.5rem;overflow:hidden;position:relative;transition:box-shadow .35s cubic-bezier(.16,1,.3,1),transform .35s cubic-bezier(.16,1,.3,1)}
+.hero-v2:hover{box-shadow:0 0 0 2px rgba(14,157,140,.4),0 24px 64px rgba(11,124,110,.35),0 8px 24px rgba(0,0,0,.2);transform:translateY(-2px)}
 .hero-v2::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 90% at 85% 10%,rgba(14,157,140,.38) 0%,transparent 50%),radial-gradient(ellipse 60% 60% at 10% 90%,rgba(14,157,140,.12) 0%,transparent 50%);pointer-events:none}
 .hero-photo-v2{width:150px;min-height:180px;border-radius:20px;background:var(--glass-bg);border:2px solid var(--glass-border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;z-index:1;align-self:stretch;box-shadow:0 12px 32px rgba(0,0,0,.2),inset 0 1px 2px rgba(255,255,255,.15);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .hero-photo-v2::after{content:'';position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(255,255,255,.1);pointer-events:none}
 .hero-photo-v2 img{width:100%;height:100%;object-fit:cover}
 .hero-info-v2{flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;gap:.6rem}
-.hero-name-v2{font-family:'Fraunces',serif;font-size:2.1rem;font-weight:700;color:#fff;line-height:1.1;letter-spacing:-.03em;text-shadow:0 2px 10px rgba(0,0,0,.15)}
+.hero-name-v2{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1.05;letter-spacing:-.04em;text-shadow:0 2px 20px rgba(0,0,0,.25),0 0 40px rgba(14,157,140,.15)}
 .hero-spec-v2{font-size:.9rem;color:rgba(255,255,255,.7);display:flex;flex-wrap:wrap;align-items:center;gap:.3rem}
 .hero-spec-sep{color:rgba(255,255,255,.3);margin:0 .15rem;font-weight:500}
 .hero-trust-v2{display:flex;flex-wrap:wrap;gap:.35rem}
 .trust-chip{font-size:.7rem;font-weight:600;padding:.28rem .8rem;border-radius:50px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.14);letter-spacing:.02em;white-space:nowrap;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:all .2s ease}
 .trust-chip:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25)}
 .hero-ctas-v2{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;width:100%;max-width:320px}
-.hero-price-pill{display:inline-flex;align-items:center;gap:.55rem;background:rgba(245,158,11,.15);border:1.5px solid rgba(245,158,11,.35);border-radius:50px;padding:.45rem 1.1rem;margin-top:.4rem;backdrop-filter:blur(8px)}
+.hero-price-pill{display:inline-flex;align-items:center;gap:.55rem;background:rgba(14,157,140,.18);border:1.5px solid rgba(14,157,140,.4);border-radius:50px;padding:.45rem 1.1rem;margin-top:.4rem;backdrop-filter:blur(8px)}
 .hero-price-pill .pill-label{font-size:.72rem;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
-.hero-price-pill .pill-amount{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;color:#fbbf24;letter-spacing:-.02em;line-height:1}
+.hero-price-pill .pill-amount{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;color:#4ade80;letter-spacing:-.02em;line-height:1}
 .hero-price-pill .pill-currency{font-size:.72rem;color:rgba(255,255,255,.55);font-weight:600;align-self:flex-end;padding-bottom:.12rem}
 .btn-wa-hero{display:flex;align-items:center;justify-content:center;gap:.5rem;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;padding:.82rem 1.4rem;border-radius:13px;font-size:.92rem;font-weight:700;text-decoration:none;transition:all .2s cubic-bezier(.16,1,.3,1);border:none;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(37,211,102,.3)}
 .btn-wa-hero:hover{transform:translateY(-1px);box-shadow:0 7px 22px rgba(37,211,102,.38)}
@@ -1212,6 +1213,7 @@ function aplicarMedico(m, formacion, citas, locs) {
     if (waTel.charAt(0)==='0') waTel=waTel.slice(1);
     if (!waTel.startsWith('593')) waTel='593'+waTel;
     waHeroBtn.href = 'https://wa.me/'+waTel;
+    waHeroBtn.removeAttribute('style');
     waHeroBtn.style.display = 'flex';
   }
 
