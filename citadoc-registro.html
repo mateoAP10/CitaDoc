@@ -959,6 +959,7 @@ async function activarCuenta(){
 
   try{
     // 1. Supabase Auth
+    console.log('[reg] step1: signUp');
     const{data:authData,error:authError}=await _supabase.auth.signUp({
       email,password:pass,options:{data:{nombre,apellido,titulo}}
     });
@@ -969,6 +970,7 @@ async function activarCuenta(){
       showErrActivar(msg);return;
     }
     const userId=authData?.user?.id;
+    console.log('[reg] step1 ok, userId:', userId, 'session:', authData?.session ? 'present' : 'null (expected)');
     if(!userId){showErrActivar('No se pudo crear el usuario. Intenta de nuevo.');return;}
 
     // 2. Slug
@@ -985,6 +987,7 @@ async function activarCuenta(){
     const ciudadLabel=regCiudad?.getLabel()||'';
 
     // 5. Insertar médico via RPC (SECURITY DEFINER — bypasea RLS pre-confirmación de email)
+    console.log('[reg] step5: rpc register_medico');
     var pagoPrevio=localStorage.getItem('citadoc_pago_pro')==='true';
     var planFinal=selectedPlan==='featured'||pagoPrevio?'pro':'gratuito';
     const{error:medicoError}=await _supabase.rpc('register_medico',{
@@ -1002,9 +1005,11 @@ async function activarCuenta(){
         ? new Date(Date.now()+30*24*60*60*1000).toISOString()
         : null,
     });
+    console.log('[reg] step5 rpc result — medicoError:', medicoError);
     if(medicoError){console.error(medicoError);showErrActivar('Error al guardar perfil. Intenta de nuevo.');return;}
 
     // 6. Éxito — reemplazar form con pantalla "Check your email"
+    console.log('[reg] step6: rendering success UI, .form-side exists:', !!document.querySelector('.form-side'));
     localStorage.removeItem('citadoc_pago_pro');
     document.querySelector('.form-side').innerHTML=`
       <div class="check-email-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:3rem 1.5rem;text-align:center">
@@ -1020,7 +1025,7 @@ async function activarCuenta(){
       </div>`;
 
   }catch(err){
-    console.error(err);
+    console.error('[reg] CATCH — line/stack:', err.message, err.stack);
     showErrActivar('Ocurrió un error inesperado. Intenta de nuevo.');
   }
 }
