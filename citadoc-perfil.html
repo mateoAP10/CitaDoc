@@ -1071,19 +1071,20 @@ function confirmarCita() {
   }
   var perfilUrl = 'https://citadoc.lat/citadoc-perfil.html?slug='+(_medico.slug||'');
 
-  // Email al paciente
-  if (email) {
-    emailjs.send('service_63xln0n','template_e8t8qkq',{
-      to_email:          email,
-      doctor_name:       nombreMedico,
-      patient_name:      nombre,
-      appointment_date:  fechaLabel,
-      appointment_time:  selectedSlot,
-      location_name:     sedeName||'Consultorio médico',
-      appointment_mode:  '🏥 Presencial',
-      public_profile_url:perfilUrl
-    }).catch(function(e){console.warn(e);});
-  }
+  // DEBUG — inspección visual del payload antes de enviar
+  var _debugPayload = {
+    to_email:          email,
+    doctor_name:       nombreMedico,
+    patient_name:      nombre,
+    appointment_date:  fechaLabel,
+    appointment_time:  selectedSlot,
+    location_name:     sedeName||'Consultorio médico',
+    appointment_mode:  '🏥 Presencial',
+    public_profile_url:perfilUrl
+  };
+  document.body.innerHTML = '<pre style="position:fixed;inset:0;z-index:999999;background:black;color:#00ff88;padding:40px;overflow:auto;font-size:18px">'
+    + JSON.stringify(_debugPayload, null, 2) + '</pre>';
+  return;
 
   // Email al médico
   if (_medico.email) {
