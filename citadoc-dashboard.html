@@ -6601,7 +6601,7 @@ function abrirModalUbicacion(loc) {
     +'</div>'
     +'<div style="display:flex;gap:.7rem;margin-top:1.2rem">'
     +'<button onclick="cerrarModalUbicacion()" style="flex:1;padding:.65rem;background:#f3f4f6;color:#374151;border:none;border-radius:9px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>'
-    +'<button id="btnGuardarUb" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar ubicación</button>'
+    +'<button id="btnGuardarUb" onclick="guardarOEditarUbicacion()" style="flex:2;padding:.65rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar ubicación</button>'
     +'</div>';
   m.appendChild(inner); document.body.appendChild(m);
   initModalDireccionInput();
@@ -6634,10 +6634,13 @@ function abrirModalUbicacion(loc) {
     f('ub_telefono',  loc.telefono);
     f('ub_ciudad',    loc.ciudad);
     var btn = document.getElementById('btnGuardarUb');
-    if (btn) { btn.textContent = 'Guardar cambios'; btn.onclick = editarUbicacion; }
-  } else {
-    document.getElementById('btnGuardarUb').onclick = guardarUbicacion;
+    if (btn) btn.textContent = 'Guardar cambios';
   }
+}
+
+function guardarOEditarUbicacion() {
+  var id = ((document.getElementById('ub_id')||{}).value||'').trim();
+  if (id) editarUbicacion(); else guardarUbicacion();
 }
 
 function _ubGetLatLon() {
