@@ -1667,7 +1667,18 @@ display:flex;
         </div>
         <div class="hc-field">
           <label>Diagnóstico</label>
-          <textarea id="hcDiagnostico" placeholder="Diagnóstico principal..."></textarea>
+          <div style="position:relative">
+            <input id="hcDiagSearch" type="text" autocomplete="off"
+              placeholder="Buscar diagnóstico o código CIE-10..."
+              style="width:100%;padding:.6rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);background:#faf9f7;outline:none;box-sizing:border-box;transition:border-color .2s"
+              oninput="cieBuscar(this.value)"
+              onfocus="cieBuscar(this.value)"
+              onblur="setTimeout(cieCerrar,180)"
+              onkeydown="cieKeyNav(event)">
+            <div id="cieDrop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:200;max-height:220px;overflow-y:auto"></div>
+          </div>
+          <div id="cieTags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem"></div>
+          <textarea id="hcDiagnostico" style="display:none" placeholder="Diagnóstico principal..."></textarea>
         </div>
         <div class="hc-field">
           <label>Tratamiento</label>
@@ -4433,6 +4444,8 @@ function abrirConsulta(citaId, pacienteNombre, pacienteId) {
   ['hcSintomas','hcExamen','hcDiagnostico','hcTratamiento'].forEach(function(id) {
     var e=document.getElementById(id); if(e){e.value='';e.disabled=false;}
   });
+  _cieDiags=[]; cieRenderTags();
+  var hcSearch=document.getElementById('hcDiagSearch'); if(hcSearch) hcSearch.value='';
   var aiBox = document.getElementById('hcAIBox');
   if (aiBox) aiBox.style.display = 'none';
   var btnAI = document.getElementById('btnGenerarAI');
@@ -4448,6 +4461,7 @@ function abrirConsulta(citaId, pacienteNombre, pacienteId) {
         document.getElementById('hcSintomas').value    = r.data.sintomas||'';
         document.getElementById('hcExamen').value      = r.data.examen_fisico||'';
         document.getElementById('hcDiagnostico').value = r.data.diagnostico||'';
+        cieCargar(r.data.diagnostico||'', r.data.diagnosticos_cie||null);
         document.getElementById('hcTratamiento').value = r.data.tratamiento||'';
         if (r.data.resumen_ai) mostrarAI(r.data);
         if (r.data.estado === 'finalizada') {
@@ -4599,6 +4613,124 @@ function cargarHistorialPrevio(pacienteId, citaActualId) {
     .catch(function(e){ logError('cargarHistorialPrevio:network', e); });
 }
 
+// ── CIE-10 AUTOCOMPLETE ──
+var _cieDiags = []; // diagnósticos seleccionados {code, label}
+var _cieIdx = -1;
+var CIE10 = [
+  // Traumatología y Ortopedia
+  {c:'M17.0',l:'Gonartrosis primaria bilateral'},{c:'M17.1',l:'Gonartrosis primaria unilateral'},{c:'M19.0',l:'Artrosis primaria de otras articulaciones'},
+  {c:'M75.1',l:'Síndrome del manguito rotador'},{c:'M75.0',l:'Capsulitis adhesiva del hombro'},{c:'M54.5',l:'Lumbalgia inespecífica'},{c:'M54.4',l:'Lumbociatalgia'},
+  {c:'M47.8',l:'Espondilosis con mielopatía'},{c:'M51.1',l:'Hernia de disco lumbar con radiculopatía'},{c:'M48.0',l:'Estenosis del canal espinal'},
+  {c:'S72.0',l:'Fractura del cuello del fémur'},{c:'S52.5',l:'Fractura distal del radio'},{c:'S82.0',l:'Fractura de la rótula'},{c:'S83.5',l:'Lesión del ligamento cruzado anterior'},
+  {c:'M23.2',l:'Lesión meniscal — crónica'},{c:'M65.3',l:'Tenosinovitis del tendón largo del bíceps'},{c:'M77.1',l:'Epicondilitis lateral — codo de tenista'},
+  {c:'M77.0',l:'Epicondilitis medial — codo de golfista'},{c:'M79.3',l:'Paniculitis'},{c:'M25.5',l:'Dolor articular'},{c:'M79.0',l:'Reumatismo inespecífico'},
+  // Medicina General
+  {c:'J06.9',l:'Infección aguda de vías respiratorias superiores'},{c:'J00',l:'Rinofaringitis aguda — resfrío común'},{c:'J20.9',l:'Bronquitis aguda'},{c:'J18.9',l:'Neumonía'},{c:'J45.9',l:'Asma bronquial'},
+  {c:'K29.7',l:'Gastritis crónica'},{c:'K21.0',l:'Enfermedad por reflujo gastroesofágico'},{c:'K57.3',l:'Enfermedad diverticular del colon'},{c:'K80.2',l:'Colelitiasis'},
+  {c:'I10',l:'Hipertensión arterial esencial'},{c:'I25.1',l:'Cardiopatía coronaria con angina'},{c:'I50.9',l:'Insuficiencia cardíaca'},{c:'I48',l:'Fibrilación auricular'},
+  {c:'E11.9',l:'Diabetes mellitus tipo 2'},{c:'E10.9',l:'Diabetes mellitus tipo 1'},{c:'E78.5',l:'Hiperlipidemia mixta'},{c:'E03.9',l:'Hipotiroidismo'},{c:'E05.9',l:'Hipertiroidismo'},
+  {c:'E66.9',l:'Obesidad'},{c:'E83.5',l:'Trastornos del metabolismo del calcio'},
+  {c:'N39.0',l:'Infección urinaria'},{c:'N18.3',l:'Enfermedad renal crónica estadio 3'},{c:'N40',l:'Hiperplasia prostática benigna'},
+  {c:'R05',l:'Tos'},{c:'R51',l:'Cefalea'},{c:'R42',l:'Vértigo'},{c:'R07.4',l:'Dolor torácico inespecífico'},{c:'R10.4',l:'Dolor abdominal inespecífico'},
+  {c:'F41.1',l:'Trastorno de ansiedad generalizada'},{c:'F32.9',l:'Episodio depresivo'},{c:'F43.1',l:'Trastorno de estrés postraumático'},
+  // Neurología
+  {c:'G43.9',l:'Migraña'},{c:'G40.9',l:'Epilepsia'},{c:'G35',l:'Esclerosis múltiple'},{c:'G60.0',l:'Neuropatía hereditaria sensitivo-motora'},{c:'G62.9',l:'Polineuropatía'},
+  {c:'G57.0',l:'Lesión del nervio ciático'},{c:'G56.0',l:'Síndrome del túnel carpiano'},{c:'G50.0',l:'Neuralgia del trigémino'},
+  // Dermatología
+  {c:'L20.9',l:'Dermatitis atópica'},{c:'L30.9',l:'Dermatitis inespecífica'},{c:'L40.0',l:'Psoriasis vulgar'},{c:'L03.9',l:'Celulitis'},{c:'B02.9',l:'Herpes zóster'},
+  // Ginecología
+  {c:'N94.6',l:'Dismenorrea'},{c:'N83.2',l:'Quiste ovárico'},{c:'N92.1',l:'Menorragia'},{c:'N76.0',l:'Vaginitis aguda'},{c:'O80',l:'Parto espontáneo'},
+  // Pediatría
+  {c:'J02.9',l:'Faringoamigdalitis aguda'},{c:'H66.9',l:'Otitis media aguda'},{c:'A09',l:'Gastroenteritis infecciosa'},{c:'J03.9',l:'Amigdalitis aguda'},
+  // Oftalmología
+  {c:'H52.1',l:'Miopía'},{c:'H52.0',l:'Hipermetropía'},{c:'H40.1',l:'Glaucoma'},{c:'H26.9',l:'Catarata'},
+  // Cardiología
+  {c:'I21.9',l:'Infarto agudo de miocardio'},{c:'I20.9',l:'Angina pectoris'},{c:'I35.0',l:'Estenosis aórtica'},{c:'I34.0',l:'Insuficiencia mitral'},
+  // Otros frecuentes
+  {c:'Z71.1',l:'Consulta de control preventivo'},{c:'Z00.0',l:'Examen médico general'},{c:'Z96.6',l:'Presencia de implante articular ortopédico'},
+  {c:'T14.9',l:'Traumatismo inespecífico'},{c:'S09.9',l:'Traumatismo craneoencefálico'},{c:'S20.0',l:'Contusión torácica'},
+  {c:'M96.0',l:'Pseudoartrosis post-fusión espinal'},{c:'T84.0',l:'Complicación mecánica de prótesis articular'}
+];
+
+function cieBuscar(q) {
+  var drop = document.getElementById('cieDrop'); if(!drop) return;
+  if(!q||q.length<2){drop.style.display='none';return;}
+  var ql=q.toLowerCase();
+  var hits=CIE10.filter(function(d){
+    return d.c.toLowerCase().includes(ql)||d.l.toLowerCase().includes(ql);
+  }).slice(0,10);
+  if(!hits.length){
+    drop.innerHTML='<div style="padding:.55rem .9rem;font-size:.8rem;color:#9ca3af;cursor:pointer" onmousedown="cieAgregar(null,\''+q.replace(/'/g,"\\'")+'\')">'
+      +'+ Agregar como diagnóstico libre: <strong>'+q+'</strong></div>';
+    drop.style.display='block'; return;
+  }
+  _cieIdx=-1;
+  drop.innerHTML=hits.map(function(d,i){
+    return '<div class="cie-row" data-i="'+i+'" onmousedown="cieAgregar(\''+d.c+'\',\''+d.l.replace(/'/g,"\\'")+'\')"\n'+
+    'style="padding:.5rem .9rem;font-size:.82rem;cursor:pointer;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:.6rem">\n'+
+    '<span style="font-size:.68rem;font-weight:700;color:#0b7c6e;background:#e0f5f2;padding:.15rem .5rem;border-radius:6px;flex-shrink:0">'+d.c+'</span>'+
+    '<span style="color:#374151">'+d.l+'</span></div>';
+  }).join('');
+  drop.style.display='block';
+}
+
+function cieKeyNav(e) {
+  var drop=document.getElementById('cieDrop'); if(!drop||drop.style.display==='none') return;
+  var rows=drop.querySelectorAll('.cie-row'); if(!rows.length) return;
+  if(e.key==='ArrowDown'){e.preventDefault();_cieIdx=Math.min(_cieIdx+1,rows.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();_cieIdx=Math.max(_cieIdx-1,0);}
+  else if(e.key==='Enter'&&_cieIdx>=0){e.preventDefault();rows[_cieIdx].dispatchEvent(new Event('mousedown'));return;}
+  else if(e.key==='Escape'){cieCerrar();return;}
+  rows.forEach(function(r,i){r.style.background=i===_cieIdx?'#f0fdf4':'';});
+}
+
+function cieAgregar(code, label) {
+  cieCerrar();
+  var inp=document.getElementById('hcDiagSearch'); if(inp) inp.value='';
+  if(_cieDiags.some(function(d){return d.code===code&&d.label===label;})) return;
+  _cieDiags.push({code:code||null,label:label});
+  cieRenderTags();
+  cieSync();
+}
+
+function cieRemover(idx) {
+  _cieDiags.splice(idx,1);
+  cieRenderTags(); cieSync();
+}
+
+function cieRenderTags() {
+  var cont=document.getElementById('cieTags'); if(!cont) return;
+  cont.innerHTML=_cieDiags.map(function(d,i){
+    return '<span style="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .75rem;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.2);border-radius:20px;font-size:.76rem;font-weight:600;color:var(--teal-dark)">'
+      +(d.code?'<span style="font-size:.65rem;background:#fff;padding:.1rem .4rem;border-radius:5px;color:#0b7c6e;font-weight:700">'+d.code+'</span>':'')
+      +d.label
+      +'<button type="button" onclick="cieRemover('+i+')" style="background:none;border:none;color:#0b7c6e;cursor:pointer;font-size:.85rem;padding:0;line-height:1;margin-left:.1rem">×</button>'
+    +'</span>';
+  }).join('');
+}
+
+function cieSync() {
+  var t=document.getElementById('hcDiagnostico'); if(!t) return;
+  t.value=_cieDiags.map(function(d){return (d.code?d.code+' — ':'')+d.label;}).join('\n');
+}
+
+function cieCerrar(){ var d=document.getElementById('cieDrop');if(d)d.style.display='none'; }
+
+function cieCargar(diagnosticoStr, diagsCie) {
+  _cieDiags=[];
+  if(diagsCie&&Array.isArray(diagsCie)&&diagsCie.length){
+    _cieDiags=diagsCie;
+  } else if(diagnosticoStr) {
+    // Backward compat: parse "CODE — Label" lines
+    diagnosticoStr.split('\n').forEach(function(line){
+      var l=line.trim(); if(!l) return;
+      var m=l.match(/^([A-Z][0-9]{2}\.?[0-9A-Z]*)\s*[—\-]+\s*(.+)/);
+      _cieDiags.push(m?{code:m[1],label:m[2].trim()}:{code:null,label:l});
+    });
+  }
+  cieRenderTags(); cieSync();
+}
+
 // ── GUARDAR HISTORIA CLÍNICA ──
 function guardarHC(finalizar) {
   if (!requirePro('clinica')) return;
@@ -4615,9 +4747,10 @@ function guardarHC(finalizar) {
     cita_id:       _hcCitaId     || null,
     medico_id:     M.id,
     paciente_id:   _hcPacienteId || null,
-    sintomas:      sintomas       || null,
-    examen_fisico: examen         || null,
-    diagnostico:   diagnostico,
+    sintomas:          sintomas       || null,
+    examen_fisico:     examen         || null,
+    diagnostico:       diagnostico,
+    diagnosticos_cie:  _cieDiags.length ? _cieDiags : null,
     tratamiento:   tratamiento    || null,
     estado:        estadoHC,
     updated_at:    new Date().toISOString()
