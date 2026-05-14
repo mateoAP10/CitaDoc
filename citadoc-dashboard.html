@@ -5020,16 +5020,16 @@ function enviarIndicacionesPaciente() {
       var paciente = r.data;
       var nombreMedico = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Tu medico';
       var tpl = {
-        to_name:  paciente.nombre,
-        to_email: paciente.email,
-        medico_nombre: nombreMedico,
-        mensaje: indicaciones.value.trim(),
-        hora_cita: '',
-        fecha_cita: new Date().toLocaleDateString('es-EC'),
-        paciente_nombre: paciente.nombre,
-        paciente_tel: '',
-        motivo: 'Indicaciones medicas'
+        to_email:          paciente.email,
+        doctor_name:       nombreMedico,
+        patient_name:      paciente.nombre,
+        appointment_date:  new Date().toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long'}),
+        appointment_time:  '',
+        location_name:     'Ver indicaciones adjuntas',
+        appointment_mode:  indicaciones.value.trim(),
+        public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M&&M.slug||'')
       };
+      console.log('EMAIL DEBUG HIT - indicaciones', tpl);
       emailjs.send('service_63xln0n', 'template_e8t8qkq', tpl)
         .then(function() { mostrarToast('Indicaciones enviadas a '+paciente.email); })
         .catch(function(e) { console.error('Email error:', e); alert('Error enviando email. Verifica EmailJS.'); });
