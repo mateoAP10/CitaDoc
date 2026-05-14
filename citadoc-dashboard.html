@@ -6998,16 +6998,38 @@ function abrirModalConsulta(pacienteId) {
           <div style="font-size:.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.4rem"><span>②</span> Indicaciones al paciente</div>
 
           <div class="mc-field" style="margin-bottom:.85rem">
-            <label>💊 Plan / Tratamiento</label>
-            <textarea id="c_plan" rows="4" placeholder="Medicamentos, dosis, duración, vía de administración..."></textarea>
+            <label>💊 Medicamentos</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:.8rem;pointer-events:none">🔍</span>
+              <input id="mc_med_search" type="text" autocomplete="off" placeholder="Buscar medicamento, dosis..." style="padding-left:2.1rem!important" oninput="mcRxBuscar('med',this.value)" onfocus="mcRxBuscar('med',this.value)" onblur="setTimeout(function(){mcRxCerrar('med')},200)" onkeydown="mcRxKeyNav(event,'med')">
+              <div id="mc_med_drop" style="display:none;position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:200px;overflow-y:auto"></div>
+            </div>
+            <div id="mc_med_tags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem"></div>
+            <input type="hidden" id="c_plan">
           </div>
           <div class="mc-field" style="margin-bottom:.85rem">
             <label>📝 Indicaciones generales</label>
-            <textarea id="c_indicaciones" rows="4" placeholder="Reposo, dieta, actividad física, cuidados en casa, señales de alarma..."></textarea>
+            <textarea id="c_indicaciones" rows="3" placeholder="Reposo, dieta, actividad física, cuidados en casa, señales de alarma..."></textarea>
+          </div>
+          <div class="mc-field" style="margin-bottom:.85rem">
+            <label>🩻 Imágenes</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:.8rem;pointer-events:none">🔍</span>
+              <input id="mc_img_search" type="text" autocomplete="off" placeholder="Radiografía, ecografía, TAC, RM..." style="padding-left:2.1rem!important" oninput="mcRxBuscar('img',this.value)" onfocus="mcRxBuscar('img',this.value)" onblur="setTimeout(function(){mcRxCerrar('img')},200)" onkeydown="mcRxKeyNav(event,'img')">
+              <div id="mc_img_drop" style="display:none;position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:200px;overflow-y:auto"></div>
+            </div>
+            <div id="mc_img_tags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem"></div>
+            <input type="hidden" id="c_imagenes">
           </div>
           <div class="mc-field" style="margin-bottom:0">
-            <label>🔬 Estudios solicitados</label>
-            <textarea id="c_estudios" rows="2" placeholder="Laboratorios, imágenes, interconsultas..."></textarea>
+            <label>🔬 Laboratorios</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:.8rem;pointer-events:none">🔍</span>
+              <input id="mc_lab_search" type="text" autocomplete="off" placeholder="Hemograma, glucosa, TSH, cultivo..." style="padding-left:2.1rem!important" oninput="mcRxBuscar('lab',this.value)" onfocus="mcRxBuscar('lab',this.value)" onblur="setTimeout(function(){mcRxCerrar('lab')},200)" onkeydown="mcRxKeyNav(event,'lab')">
+              <div id="mc_lab_drop" style="display:none;position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:200px;overflow-y:auto"></div>
+            </div>
+            <div id="mc_lab_tags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem"></div>
+            <input type="hidden" id="c_estudios">
           </div>
         </div>
 
@@ -7037,8 +7059,124 @@ function abrirModalConsulta(pacienteId) {
     var el=document.getElementById('mc_pacNombre'); if(el) el.textContent=p.nombre;
   });
 
-  _fichadiags=[]; fDiagRender();
+  _fichadiags=[]; fDiagRender(); mcRxReset();
   var ds=document.getElementById('c_diag_search'); if(ds) ds.value='';
+}
+
+// ── DATASETS PRESCRIPCIÓN ──
+var _mcMeds = ['Paracetamol 500mg','Paracetamol 1g','Ibuprofeno 400mg','Ibuprofeno 600mg','Diclofenaco 50mg','Diclofenaco 75mg','Naproxeno 500mg','Ketorolaco 10mg','Ketorolaco 30mg','Tramadol 50mg','Tramadol 100mg','Morfina 10mg','Codeína 30mg','Acetaminofén 500mg','Meloxicam 7.5mg','Meloxicam 15mg','Celecoxib 100mg','Celecoxib 200mg',
+  'Amoxicilina 500mg','Amoxicilina 875mg','Amoxicilina+Clavulánico 875mg','Azitromicina 500mg','Ciprofloxacino 500mg','Levofloxacino 500mg','Cefalexina 500mg','Clindamicina 300mg','Metronidazol 500mg','Doxiciclina 100mg','Trimetoprim+Sulfametoxazol 800mg','Eritromicina 500mg',
+  'Omeprazol 20mg','Omeprazol 40mg','Pantoprazol 40mg','Esomeprazol 20mg','Ranitidina 150mg','Metoclopramida 10mg','Loperamida 2mg','Simeticona 80mg','Bismuto 262mg',
+  'Enalapril 5mg','Enalapril 10mg','Lisinopril 5mg','Lisinopril 10mg','Amlodipino 5mg','Amlodipino 10mg','Atenolol 50mg','Metoprolol 25mg','Metoprolol 50mg','Losartán 50mg','Losartán 100mg','Valsartán 80mg','Hidroclorotiazida 25mg','Furosemida 40mg','Espironolactona 25mg',
+  'Metformina 500mg','Metformina 850mg','Metformina 1000mg','Glibenclamida 5mg','Sitagliptina 100mg','Empagliflozina 10mg','Insulina NPH','Insulina Glargina','Insulina Lispro',
+  'Levotiroxina 25mcg','Levotiroxina 50mcg','Levotiroxina 75mcg','Levotiroxina 100mcg','Metimazol 5mg','Metimazol 10mg',
+  'Sertralina 50mg','Sertralina 100mg','Fluoxetina 20mg','Escitalopram 10mg','Alprazolam 0.25mg','Alprazolam 0.5mg','Clonazepam 0.5mg','Clonazepam 2mg','Lorazepam 1mg','Diazepam 5mg','Quetiapina 25mg','Quetiapina 100mg',
+  'Prednisona 5mg','Prednisona 20mg','Prednisolona 5mg','Dexametasona 4mg','Betametasona 0.5mg','Hidrocortisona crema 1%','Triamcinolona 4mg',
+  'Ciclobenzaprina 5mg','Tizanidina 4mg','Metocarbamol 750mg','Baclofeno 10mg',
+  'Vitamina D 1000UI','Vitamina D 2000UI','Vitamina D 5000UI','Calcio 500mg','Calcio 600mg+D','Hierro 300mg','Ácido fólico 1mg','Vitamina B12 1000mcg','Omega 3 1000mg',
+  'Loratadina 10mg','Cetirizina 10mg','Difenhidramina 25mg','Fexofenadina 120mg','Montelukast 10mg',
+  'Salbutamol inhalador','Beclometasona inhalador','Budesonida inhalador','Ipratropio inhalador','Salbutamol solución nebulizar',
+  'Diclofenaco gel 1%','Ketoprofeno gel 2.5%','Naproxeno gel','Lidocaína ungüento 5%',
+  'Acetilcisteína 600mg','Ambroxol 30mg','Dextrometorfano 15mg','Bromhexina 8mg',
+  'Atorvastatina 10mg','Atorvastatina 20mg','Atorvastatina 40mg','Rosuvastatina 10mg','Rosuvastatina 20mg','Simvastatina 20mg',
+  'Gabapentina 300mg','Pregabalina 75mg','Pregabalina 150mg','Carbamazepina 200mg',
+  'Allopurinol 100mg','Allopurinol 300mg','Colchicina 0.5mg','Probenecid 500mg'];
+
+var _mcImgs = ['Radiografía de tórax AP','Radiografía de tórax PA y lateral','Radiografía de columna lumbar AP y lateral','Radiografía de columna cervical','Radiografía de columna torácica','Radiografía de rodilla AP y lateral','Radiografía de hombro','Radiografía de cadera','Radiografía de pelvis','Radiografía de tobillo','Radiografía de pie','Radiografía de mano','Radiografía de muñeca','Radiografía de codo','Radiografía de abdomen simple',
+  'Ecografía abdominal completa','Ecografía pélvica','Ecografía de tiroides','Ecografía de mama bilateral','Ecografía musculoesquelética','Ecografía de partes blandas','Ecografía Doppler venoso miembros inferiores','Ecografía Doppler arterial','Ecografía renal','Ecografía de próstata','Ecografía obstétrica','Ecocardiograma transtorácico',
+  'TAC de abdomen con contraste','TAC de abdomen sin contraste','TAC de tórax','TAC de tórax con contraste','TAC de columna lumbar','TAC de columna cervical','TAC de cráneo sin contraste','TAC de cráneo con contraste','TAC de pelvis',
+  'RM de columna lumbar','RM de columna cervical','RM de rodilla','RM de hombro','RM de cadera','RM de cerebro sin contraste','RM de cerebro con contraste','RM de muñeca','RM de tobillo','RM de columna torácica',
+  'Mamografía bilateral','Densitometría ósea (DEXA)','Gammagrafía ósea','Arteriografía','Angiografía','Endoscopia digestiva alta','Colonoscopia','Cistoscopia','Electrocardiograma','Holter 24h','Prueba de esfuerzo'];
+
+var _mcLabs = ['Biometría hemática completa (BHC)','Hemograma','Glucosa en ayunas','Glucosa postprandial 2h','HbA1c (hemoglobina glicosilada)','Curva de tolerancia a la glucosa',
+  'Perfil lipídico completo','Colesterol total','HDL colesterol','LDL colesterol','Triglicéridos',
+  'Creatinina sérica','Urea sérica','Ácido úrico','Filtrado glomerular (TFG estimada)','Electrolitos séricos (Na, K, Cl)','Calcio sérico','Magnesio sérico','Fósforo sérico',
+  'TGO (AST)','TGP (ALT)','Fosfatasa alcalina','GGT','Bilirrubina total y directa','Albúmina sérica','Proteínas totales','Tiempo de protrombina (TP/INR)','TTP (tiempo de tromboplastina)',
+  'TSH','T3 libre','T4 libre','Anti-TPO','Anticuerpos antitiroglobulina',
+  'Proteína C reactiva (PCR)','PCR ultrasensible','VSG (velocidad de sedimentación)','Factor reumatoide','Anti-CCP','ANCA','ANA (anticuerpos antinucleares)',
+  'Vitamina D (25-OH)','Vitamina B12','Ácido fólico sérico','Ferritina','Hierro sérico','TIBC','Transferrina',
+  'PSA total','PSA libre/total','CEA','CA 125','CA 19-9','AFP (alfafetoproteína)',
+  'Examen elemental de orina (EMO)','Urocultivo y antibiograma','Microalbuminuria','Proteínas en orina 24h','Creatinina en orina',
+  'Coprocultivo','Coproscopia','Antígeno de H. pylori en heces','Test de aliento para H. pylori',
+  'Hemocultivo','Cultivo de herida + antibiograma','Cultivo de esputo + antibiograma','BAAR (baciloscopia)','PCR para tuberculosis',
+  'HIV (ELISA)','VDRL','HBsAg (hepatitis B)','Anti-HBs','Anti-HBc','Anti-HCV (hepatitis C)','TORCH','Chagas (serología)',
+  'Beta-hCG cuantitativa','Prolactina','FSH','LH','Estradiol','Testosterona total','DHEA-S','Cortisol basal',
+  'Plaquetas','Reticulocitos','Electoforesis de hemoglobina','Coombs directo','Coombs indirecto',
+  'Gasometría arterial','Lactato','Procalcitonina','Dímero D','Fibrinógeno','INR'];
+
+// ── ENGINE GENÉRICO DE BÚSQUEDA PARA PRESCRIPCIÓN ──
+var _mcRxState = { med:{items:[],idx:-1}, img:{items:[],idx:-1}, lab:{items:[],idx:-1} };
+var _mcRxDatasets = { med:_mcMeds, img:_mcImgs, lab:_mcLabs };
+var _mcRxColors = { med:{bg:'#e0f0ff',border:'rgba(59,130,246,.2)',text:'#1e40af',icon:'💊'}, img:{bg:'#fef3c7',border:'rgba(251,191,36,.2)',text:'#92400e',icon:'🩻'}, lab:{bg:'#e0f5f2',border:'rgba(11,124,110,.2)',text:'#065f46',icon:'🔬'} };
+var _mcRxHiddenIds = { med:'c_plan', img:'c_imagenes', lab:'c_estudios' };
+
+function mcRxBuscar(type, q) {
+  var drop = document.getElementById('mc_'+type+'_drop');
+  var inp  = document.getElementById('mc_'+type+'_search');
+  if (!drop || !inp) return;
+  if (!q || q.length < 1) { drop.style.display='none'; return; }
+  var r = inp.getBoundingClientRect();
+  drop.style.top=(r.bottom+4)+'px'; drop.style.left=r.left+'px'; drop.style.width=r.width+'px';
+  var ql = q.toLowerCase();
+  var ds  = _mcRxDatasets[type] || [];
+  var hits = ds.filter(function(d){ return d.toLowerCase().includes(ql); }).slice(0, 12);
+  _mcRxState[type].idx = -1;
+  var cl = _mcRxColors[type];
+  if (!hits.length) {
+    drop.innerHTML = '<div onmousedown="mcRxAgregar(\''+type+'\',\''+q.replace(/'/g,"\\'")+'\')" style="padding:.5rem .85rem;font-size:.8rem;color:#374151;cursor:pointer" onmouseenter="this.style.background=\'#f0fdf4\'" onmouseleave="this.style.background=\'\'">✏️ Agregar: <strong>'+q+'</strong></div>';
+    drop.style.display='block'; return;
+  }
+  drop.innerHTML = hits.map(function(d,i){
+    return '<div class="mcrx-row" data-t="'+type+'" onmousedown="mcRxAgregar(\''+type+'\',\''+d.replace(/'/g,"\\'")+'\')" style="padding:.48rem .85rem;font-size:.81rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:.5rem" onmouseenter="this.style.background=\'#f0fdf4\'" onmouseleave="this.style.background=\'\'">'
+      +'<span style="font-size:.78rem;flex-shrink:0">'+cl.icon+'</span><span>'+d+'</span></div>';
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function mcRxKeyNav(e, type) {
+  var drop = document.getElementById('mc_'+type+'_drop');
+  if (!drop || drop.style.display==='none') return;
+  var rows = drop.querySelectorAll('.mcrx-row');
+  var st   = _mcRxState[type];
+  if (e.key==='ArrowDown')  { e.preventDefault(); st.idx=Math.min(st.idx+1,rows.length-1); }
+  else if (e.key==='ArrowUp') { e.preventDefault(); st.idx=Math.max(st.idx-1,0); }
+  else if (e.key==='Enter' && st.idx>=0) { e.preventDefault(); rows[st.idx].dispatchEvent(new MouseEvent('mousedown')); return; }
+  else if (e.key==='Escape') { mcRxCerrar(type); return; }
+  rows.forEach(function(r,i){ r.style.background = i===st.idx?'#e0f5f2':''; });
+}
+
+function mcRxAgregar(type, label) {
+  mcRxCerrar(type);
+  var inp = document.getElementById('mc_'+type+'_search'); if(inp) inp.value='';
+  var st = _mcRxState[type];
+  if (st.items.indexOf(label) > -1) return;
+  st.items.push(label);
+  mcRxRender(type); mcRxSync(type);
+}
+
+function mcRxRemover(type, idx) {
+  _mcRxState[type].items.splice(idx, 1);
+  mcRxRender(type); mcRxSync(type);
+}
+
+function mcRxRender(type) {
+  var cont = document.getElementById('mc_'+type+'_tags'); if(!cont) return;
+  var cl = _mcRxColors[type];
+  cont.innerHTML = _mcRxState[type].items.map(function(d,i){
+    return '<span style="display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .7rem;background:'+cl.bg+';border:1.5px solid '+cl.border+';border-radius:20px;font-size:.74rem;font-weight:600;color:'+cl.text+'">'+cl.icon+' '+d
+      +'<button type="button" onclick="mcRxRemover(\''+type+'\','+i+')" style="background:none;border:none;cursor:pointer;color:'+cl.text+';font-size:.8rem;padding:0;line-height:1;margin-left:.1rem">×</button></span>';
+  }).join('');
+}
+
+function mcRxSync(type) {
+  var h = document.getElementById(_mcRxHiddenIds[type]); if(!h) return;
+  h.value = _mcRxState[type].items.join(' | ');
+}
+
+function mcRxCerrar(type) { var d=document.getElementById('mc_'+type+'_drop'); if(d) d.style.display='none'; }
+
+function mcRxReset() {
+  ['med','img','lab'].forEach(function(t){ _mcRxState[t]={items:[],idx:-1}; mcRxRender(t); mcRxSync(t); });
 }
 
 function mcIrPaso2() {
@@ -7124,6 +7262,7 @@ async function guardarConsulta(pacienteId) {
     examen_fisico: v('c_examen'),
     diagnostico: v('c_diagnostico'),
     plan: v('c_plan'),
+    imagenes: v('c_imagenes'),
     indicaciones: v('c_indicaciones'),
     presion_arterial: v('c_ta'),
     frecuencia_cardiaca: v('c_fc'),
