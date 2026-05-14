@@ -167,11 +167,21 @@ function cargarDisponibilidadPorSede(medico, citas, sbClient, locationId) {
         return cargarDisponibilidadConBloqueos(medico, citas, sbClient);
       }
 
+      // Normalizar day: 'Lunes' → 'lun', 'Martes' → 'mar', etc.
+      var _normDay = {lunes:'lun',martes:'mar','miércoles':'mie',miercoles:'mie',
+        jueves:'jue',viernes:'vie','sábado':'sab',sabado:'sab',domingo:'dom'};
+      blocks = blocks.map(function(b) {
+        var d = (b.day||'').toLowerCase();
+        return Object.assign({}, b, {day: _normDay[d] || b.day});
+      });
+
       // Filtrar por sede si se especificó
       if (locationId != null) {
         blocks = blocks.filter(function(b) {
           return String(b.location_id || '') === String(locationId);
         });
+        // Sin bloques para esta sede → sin disponibilidad (no fallback global)
+        if (!blocks.length) return {};
       }
 
       return Promise.all([

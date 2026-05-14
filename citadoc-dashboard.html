@@ -5438,6 +5438,31 @@ function renderDiasHorarios() {
     // Render bloques inline
     body.innerHTML = '';
     if (data.activo) {
+      // Selector de sede al nivel del DÍA
+      if ((window.locationsMedico||[]).length > 0) {
+        var sedeRow = document.createElement('div');
+        sedeRow.style.cssText = 'margin-bottom:.6rem';
+        var sedeSelect = document.createElement('select');
+        sedeSelect.style.cssText = 'width:100%;padding:.45rem .75rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.83rem;font-family:DM Sans,sans-serif;color:#374151;background:#f9fafb';
+        var optDefault = document.createElement('option');
+        optDefault.value = ''; optDefault.textContent = '📍 Sede donde atiendes este día';
+        sedeSelect.appendChild(optDefault);
+        var currentLocId = data.bloques[0] && data.bloques[0].location_id || null;
+        (window.locationsMedico||[]).forEach(function(loc){
+          var opt = document.createElement('option');
+          opt.value = loc.id; opt.textContent = loc.nombre || 'Consultorio';
+          if (String(loc.id) === String(currentLocId)) opt.selected = true;
+          sedeSelect.appendChild(opt);
+        });
+        (function(dk, sel){
+          sel.addEventListener('change', function(){
+            horariosBloques[dk].bloques.forEach(function(b){ b.location_id = sel.value || null; });
+          });
+        })(d.key, sedeSelect);
+        sedeRow.appendChild(sedeSelect);
+        body.appendChild(sedeRow);
+      }
+
       data.bloques.forEach(function(b, i) {
         var row = document.createElement('div');
         row.className = 'bloque-row';
@@ -5447,27 +5472,6 @@ function renderDiasHorarios() {
         var del = document.createElement('button'); del.className='btn-del-bloque'; del.textContent='✕';
         row.appendChild(d1); row.appendChild(sep); row.appendChild(d2); row.appendChild(del);
         body.appendChild(row);
-
-        // Selector de consultorio
-        var locSelect = document.createElement('select');
-        locSelect.className = 'bloque-location';
-        locSelect.innerHTML = '<option value="">📍 Seleccionar consultorio</option>';
-        (window.locationsMedico || []).forEach(function(loc){
-          var opt = document.createElement('option');
-          opt.value = loc.id;
-          opt.textContent = loc.nombre || 'Consultorio';
-          if (String(b.location_id) === String(loc.id)) {
-            opt.selected = true;
-          }
-          locSelect.appendChild(opt);
-        });
-        (function(dk, bi, sel){
-          sel.addEventListener('change', function(){
-            horariosBloques[dk].bloques[bi].location_id = sel.value || null;
-            console.log('[DEBUG] location_id updated:', dk, 'bloque', bi, '→', sel.value || null);
-          });
-        })(d.key, i, locSelect);
-        body.appendChild(locSelect);
 
         (function(dk, bi) {
           d1.addEventListener('change', function(){ horariosBloques[dk].bloques[bi].desde=d1.value; });
