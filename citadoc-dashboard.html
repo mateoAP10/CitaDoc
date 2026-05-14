@@ -525,6 +525,68 @@ display:flex;
 .patient-name{font-size:.92rem;font-weight:700;color:var(--ink)}
 .patient-contact{font-size:.76rem;color:var(--muted2);margin-top:.1rem}
 .patient-card-body{padding-left:3.3rem}
+
+/* ── PACIENTES PAGE REDESIGN ── */
+.pac-page{display:flex;flex-direction:column;gap:1.4rem}
+/* Search */
+.pac-search-bar{position:relative}
+.pac-search-bar input{width:100%;padding:.85rem 1rem .85rem 2.8rem;border:1.5px solid var(--border);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--ink);background:var(--white);outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
+.pac-search-bar input:focus{border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)}
+.pac-search-icon{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none}
+/* Folders section */
+.pac-folders-section{background:var(--white);border-radius:18px;padding:1.3rem 1.5rem;border:1px solid rgba(11,124,110,.08);box-shadow:0 2px 12px rgba(15,26,24,.04)}
+.pac-folders-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.pac-folders-title{font-size:.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em}
+.pac-folders-nav{display:flex;gap:.4rem}
+.pac-folder-btn{width:30px;height:30px;border-radius:8px;background:var(--cream);border:1.5px solid var(--border);cursor:pointer;font-size:.95rem;color:var(--ink2);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pac-folder-btn:hover{background:var(--teal-lite);border-color:var(--teal)}
+/* Folder track */
+.pac-folder-track{display:flex;gap:.75rem;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:.2rem .1rem 1rem;cursor:grab;user-select:none}
+.pac-folder-track::-webkit-scrollbar{display:none}
+.pac-folder-track.dragging{cursor:grabbing}
+/* Individual folder */
+.pac-folder{flex:0 0 100px;scroll-snap-align:start;position:relative;cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s}
+.pac-folder-tab{position:absolute;top:-10px;left:0;width:44%;height:10px;background:#e8dfc8;border-radius:6px 6px 0 0}
+.pac-folder-body{background:#f0e8d4;border-radius:0 8px 8px 8px;padding:1.1rem .8rem .9rem;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.06);min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem}
+.pac-folder:hover .pac-folder-body{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.13),0 3px 8px rgba(0,0,0,.08)}
+.pac-folder:hover .pac-folder-tab{background:#d4c9a8}
+.pac-folder.active .pac-folder-body{background:linear-gradient(135deg,var(--teal-lite),#d4f0ea);border-color:rgba(11,124,110,.2)}
+.pac-folder.active .pac-folder-tab{background:rgba(11,124,110,.25)}
+.pac-folder-letter{font-family:'Fraunces',serif;font-size:2rem;font-weight:700;color:#5a4a2a;line-height:1}
+.pac-folder.active .pac-folder-letter{color:var(--teal-dark)}
+.pac-folder-count{font-size:.62rem;font-weight:700;color:#8a7a5a;letter-spacing:.04em}
+.pac-folder.active .pac-folder-count{color:var(--teal)}
+/* Letra results + recent cards */
+.pac-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem}
+.pac-section-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.pac-section-link{font-size:.8rem;color:var(--teal);font-weight:600;cursor:pointer;text-decoration:none}
+.pac-recent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.75rem}
+.pac-rec-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:.9rem 1rem;display:flex;align-items:center;gap:.8rem;transition:all .2s;cursor:pointer}
+.pac-rec-card:hover{border-color:var(--teal);box-shadow:0 4px 16px rgba(11,124,110,.1);transform:translateY(-1px)}
+.pac-rec-avatar{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--teal),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;color:#fff;flex-shrink:0}
+.pac-rec-info{flex:1;min-width:0}
+.pac-rec-name{font-weight:700;font-size:.88rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pac-rec-sub{font-size:.72rem;color:var(--muted);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pac-rec-actions{display:flex;gap:.35rem;flex-shrink:0}
+.pac-rec-btn{padding:.32rem .65rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:1.5px solid;transition:all .15s;white-space:nowrap}
+.pac-rec-btn-outline{background:var(--white);border-color:var(--teal);color:var(--teal)}
+.pac-rec-btn-outline:hover{background:var(--teal-lite)}
+.pac-rec-btn-fill{background:var(--teal);border-color:var(--teal);color:#fff}
+.pac-rec-btn-fill:hover{background:var(--teal-dark)}
+/* Quick actions */
+.pac-quick-actions{background:var(--white);border-radius:14px;padding:1rem 1.2rem;border:1px solid var(--border)}
+.pac-qa-title{font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem}
+.pac-qa-item{display:flex;align-items:center;gap:.6rem;padding:.45rem .5rem;border-radius:8px;cursor:pointer;transition:background .15s;font-size:.84rem;font-weight:500;color:var(--ink2)}
+.pac-qa-item:hover{background:var(--cream)}
+.pac-qa-icon{width:28px;height:28px;border-radius:7px;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+/* Empty search state */
+.pac-empty-search{text-align:center;padding:3rem 1.5rem;color:var(--muted2)}
+@media(max-width:768px){
+  .pac-folder{flex:0 0 80px}
+  .pac-folder-letter{font-size:1.6rem}
+  .pac-recent-grid{grid-template-columns:1fr}
+  .pac-rec-actions{flex-direction:column}
+}
 .patient-last-hc{font-size:.79rem;color:var(--ink2);display:flex;align-items:center;gap:.4rem}
 .patient-last-hc .hc-diag{font-weight:500;color:#0b7c6e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;display:inline-block;vertical-align:bottom}
 .patient-last-date{font-size:.73rem;color:var(--muted2)}
@@ -1629,19 +1691,77 @@ display:flex;
       </div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem">
-      <div>
-        <h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#0f1a18;margin:0 0 .25rem">Pacientes</h2>
-        <p style="font-size:.84rem;color:#6b7280;margin:0" id="pacCount">Gestiona los pacientes de tu consulta.</p>
+    <div class="pac-page">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+        <div>
+          <h2 style="font-family:Fraunces,serif;font-size:1.55rem;font-weight:700;color:var(--ink);margin:0 0 .2rem;letter-spacing:-.02em">Pacientes</h2>
+          <p style="font-size:.84rem;color:var(--muted);margin:0">Encuentra y gestiona a todos tus pacientes</p>
+        </div>
+        <button onclick="abrirModalPaciente()" style="padding:.6rem 1.2rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,124,110,.22);white-space:nowrap">+ Nuevo paciente</button>
       </div>
-      <button onclick="abrirModalPaciente()" style="padding:.6rem 1.2rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">+ Nuevo paciente</button>
-    </div>
 
-    <div style="margin-bottom:1.4rem">
-      <input id="buscarPaciente" type="text" placeholder="Buscar por nombre, email o telefono..." oninput="filtrarPacientes()" style="width:100%;padding:.7rem 1rem;border:1.5px solid #e5e7eb;border-radius:12px;font-size:.88rem;box-sizing:border-box">
-    </div>
+      <!-- Search -->
+      <div class="pac-search-bar">
+        <svg class="pac-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="buscarPaciente" type="text" autocomplete="off" placeholder="Buscar por nombre, email o teléfono..." oninput="filtrarPacientesNuevo(this.value)">
+      </div>
 
-    <div id="pacientesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:1rem"></div>
+      <!-- Folders section -->
+      <div class="pac-folders-section" id="pacFoldersSection">
+        <div class="pac-folders-header">
+          <span class="pac-folders-title">Explora por inicial del nombre</span>
+          <div class="pac-folders-nav">
+            <button class="pac-folder-btn" onclick="pacScrollFolders(-1)">&#8249;</button>
+            <button class="pac-folder-btn" onclick="pacScrollFolders(1)">&#8250;</button>
+          </div>
+        </div>
+        <div class="pac-folder-track" id="pacFolderTrack"></div>
+      </div>
+
+      <!-- Letra results -->
+      <div id="pacLetraSection" style="display:none">
+        <div class="pac-section-header">
+          <span class="pac-section-title" id="pacLetraTitle">Pacientes</span>
+          <span class="pac-section-link" onclick="pacLimpiarLetra()">← Volver a carpetas</span>
+        </div>
+        <div class="pac-recent-grid" id="pacLetraGrid"></div>
+      </div>
+
+      <!-- Search results -->
+      <div id="pacSearchSection" style="display:none">
+        <div class="pac-section-header">
+          <span class="pac-section-title" id="pacSearchTitle">Resultados</span>
+        </div>
+        <div class="pac-recent-grid" id="pacSearchGrid"></div>
+        <div class="pac-empty-search" id="pacSearchEmpty" style="display:none">
+          <div style="font-size:2rem;margin-bottom:.5rem">🔍</div>
+          <div style="font-weight:600;color:var(--ink)">Sin resultados</div>
+          <div style="font-size:.82rem;margin-top:.25rem">Intenta con otro nombre, email o teléfono</div>
+        </div>
+      </div>
+
+      <!-- Recent patients -->
+      <div id="pacRecientesSection" style="display:none">
+        <div class="pac-section-header">
+          <span class="pac-section-title">Pacientes recientes</span>
+          <span class="pac-section-link" onclick="pacVerTodos()">Ver todos</span>
+        </div>
+        <div class="pac-recent-grid" id="pacRecientesGrid"></div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="pac-quick-actions" id="pacQuickActions" style="display:none">
+        <div class="pac-qa-title">Acciones rápidas</div>
+        <div class="pac-qa-item" onclick="abrirModalPaciente()"><span class="pac-qa-icon">👤</span>Nuevo paciente</div>
+        <div class="pac-qa-item" onclick="pacVerTodos()"><span class="pac-qa-icon">👥</span>Ver todos los pacientes</div>
+      </div>
+
+    </div><!-- /pac-page -->
+
+    <!-- Hidden legacy list (kept for compatibility) -->
+    <div id="pacientesList" style="display:none"></div>
 
     </div>
 
@@ -5987,263 +6107,184 @@ function renderDayConfigBar(){}
 function renderSlots(){ renderDiasHorarios(); }
 
 // PACIENTES
+// ── PACIENTES — nuevo sistema de carpetas ──
+var _allPacientes = [];
+var _pacLetraActiva = null;
+
 function renderPacientes(rows) {
-  var grid=document.getElementById('pacientesList'); if(!grid) return;
-  if(!rows||!rows.length){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:3rem;color:#9ca3af"><div style="font-size:2rem;margin-bottom:.8rem">\u{1F465}</div><div style="font-weight:600">Sin pacientes a\u00fan</div></div>';
-    var cnt=document.getElementById('pacCount'); if(cnt) cnt.textContent='Gestiona los pacientes de tu consulta.'; return;
+  _allPacientes = rows || [];
+  pacRenderCarpetas();
+  pacRenderRecientes();
+  // Show quick actions if has patients
+  var qa = document.getElementById('pacQuickActions');
+  if(qa) qa.style.display = rows.length ? 'block' : 'none';
+}
+
+function pacRenderCarpetas() {
+  var track = document.getElementById('pacFolderTrack');
+  if (!track) return;
+  track.innerHTML = '';
+  // Build counts per letter
+  var counts = {};
+  _allPacientes.forEach(function(p) {
+    var l = ((p.nombre||'?')[0]||'?').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if (!counts[l]) counts[l] = 0;
+    counts[l]++;
+  });
+  var letras = Object.keys(counts).sort();
+  if (!letras.length) {
+    track.innerHTML = '<div style="font-size:.84rem;color:var(--muted2);padding:.5rem 0">Sin pacientes registrados aún.</div>';
+    return;
   }
-  var cnt=document.getElementById('pacCount'); if(cnt) cnt.textContent=rows.length+' paciente'+(rows.length!==1?'s':'')+' en total';
-  var seen={},pacs=[];
-  rows.forEach(function(r){ var p=r.pacientes||r; if(!p||!p.nombre) return; var key=p.id||p.nombre; if(!seen[key]){seen[key]=true;pacs.push({id:p.id,nombre:p.nombre||'',email:p.email||'',telefono:p.telefono||'',cedula:p.cedula||'',ultima:r.created_at||p.created_at||''});} });
-  if(!pacs.length){ uiEmpty('pacientesList','👥','Sin pacientes aún','Agrega tu primer paciente para comenzar a registrar consultas.','+ Nuevo paciente',abrirModalPaciente); return; }
-  var pal=['#e0f2fe:#0369a1','#d1fae5:#065f46','#fce7f3:#9d174d','#fef3c7:#92400e','#ede9fe:#5b21b6','#fee2e2:#991b1b'];
-  grid.innerHTML='';
-  pacs.forEach(function(p){
-    var ini=p.nombre.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase()||'?';
-    var col=pal[Math.abs(ini.charCodeAt(0)||0)%pal.length].split(':');
-    var ultima=p.ultima?new Date(p.ultima).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'';
-    var card=document.createElement('div');
-    card.className='pac-card'; card.dataset.search=(p.nombre+' '+p.email+' '+p.telefono+' '+p.cedula).toLowerCase();
-    card.style.cssText='background:#fff;border-radius:16px;padding:1.1rem 1.3rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.05);border:1.5px solid #f3f4f6;transition:border-color .15s,box-shadow .15s';
-    card.onmouseenter=function(){this.style.borderColor='#bbf7d0';this.style.boxShadow='0 4px 20px rgba(0,0,0,.08)';};
-    card.onmouseleave=function(){this.style.borderColor='#f3f4f6';this.style.boxShadow='0 2px 12px rgba(0,0,0,.05)';};
-    // Construir el HTML del card usando createElement para evitar problemas de comillas
-    var left=document.createElement('div'); left.style.cssText='display:flex;gap:.85rem;align-items:center;flex:1;min-width:0';
-    var avatar=document.createElement('div'); avatar.style.cssText='width:46px;height:46px;border-radius:50%;background:'+col[0]+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;color:'+col[1]+';flex-shrink:0'; avatar.textContent=ini;
-    var info=document.createElement('div'); info.style.cssText='min-width:0';
-    var name=document.createElement('div'); name.style.cssText='font-weight:700;font-size:.92rem;color:#0f1a18'; name.textContent=p.nombre;
-    var contact=document.createElement('div'); contact.style.cssText='font-size:.78rem;color:#6b7280';
-    var contactParts=[p.telefono,p.email].filter(Boolean);
-    contact.textContent=contactParts.length?contactParts.join(' · '):'Sin contacto';
-    info.appendChild(name);
-    info.appendChild(contact);
-    if(p.cedula){var ced=document.createElement('div');ced.style.cssText='font-size:.72rem;color:#9ca3af;margin-top:.05rem';ced.textContent='CI: '+p.cedula;info.appendChild(ced);}
-    if(ultima){ var ult=document.createElement('div'); ult.style.cssText='font-size:.72rem;color:#9ca3af;margin-top:.1rem'; ult.textContent='Ultima cita: '+ultima; info.appendChild(ult); }
-    left.appendChild(avatar); left.appendChild(info);
-    var actions=document.createElement('div'); actions.style.cssText='display:flex;gap:.5rem;flex-shrink:0';
-    var btnFicha=document.createElement('button'); btnFicha.style.cssText='padding:.4rem .85rem;background:#fff;color:#0b7c6e;border:1.5px solid #0b7c6e;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer'; btnFicha.textContent='Ver ficha'; btnFicha.onmouseenter=function(){this.style.background='#f0fdf4';}; btnFicha.onmouseleave=function(){this.style.background='#fff';}; (function(pid){ btnFicha.onclick=function(){ abrirFicha(pid); }; })(p.id);
-    var btnCita=document.createElement('button'); btnCita.style.cssText='padding:.4rem .85rem;background:#0b7c6e;color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer'; btnCita.textContent='Nueva cita'; btnCita.onmouseenter=function(){this.style.background='#065f46';}; btnCita.onmouseleave=function(){this.style.background='#0b7c6e';}; (function(pid){ btnCita.onclick=function(){ abrirNuevaCita(p); }; })(p);
-    actions.appendChild(btnFicha); actions.appendChild(btnCita);
-    card.appendChild(left); card.appendChild(actions);
-    grid.appendChild(card);
+  letras.forEach(function(l) {
+    var folder = document.createElement('div');
+    folder.className = 'pac-folder' + (_pacLetraActiva === l ? ' active' : '');
+    folder.innerHTML = '<div class="pac-folder-tab"></div>'
+      + '<div class="pac-folder-body">'
+        + '<div class="pac-folder-letter">'+l+'</div>'
+        + '<div class="pac-folder-count">'+counts[l]+' pac.</div>'
+      + '</div>';
+    folder.addEventListener('click', function() { pacSeleccionarLetra(l); });
+    track.appendChild(folder);
   });
-}
-// ── NUEVA CITA DESDE PACIENTE ──
-function abrirNuevaCita(pac) {
-  var ex = document.getElementById('modalNuevaCita'); if(ex) ex.remove();
-  var hoy = new Date().toISOString().split('T')[0];
-  var locs = window.locationsMedico || [];
-
-  var ov = document.createElement('div');
-  ov.id = 'modalNuevaCita';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);padding:1rem';
-  ov.onclick = function(e){ if(e.target===ov) cerrarNuevaCita(); };
-
-  var tipos = ['Control','Primera consulta','Post-operatorio','Procedimiento','Seguimiento'];
-  var sedeOpts = locs.length
-    ? locs.map(function(l){ return '<option value="'+l.id+'">'+l.nombre+'</option>'; }).join('')
-    : '<option value="">Sin sedes configuradas</option>';
-
-  ov.innerHTML = '<div style="background:#fff;border-radius:22px;padding:1.8rem;width:100%;max-width:460px;box-shadow:0 32px 80px rgba(15,26,24,.22);animation:proModalIn .22s cubic-bezier(.16,1,.3,1);max-height:92vh;overflow-y:auto">'
-
-    // Header
-    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.3rem">'
-      + '<div>'
-        + '<div style="font-size:.65rem;font-weight:700;color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem">Nueva cita</div>'
-        + '<div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:#0f1a18;letter-spacing:-.02em">'+( (pac.titulo||'')+(pac.nombre?(' '+pac.nombre):'')+(pac.apellido?(' '+pac.apellido):'')||pac.nombre||'Paciente')+'</div>'
-      + '</div>'
-      + '<button onclick="cerrarNuevaCita()" style="width:32px;height:32px;border-radius:50%;background:#f3f4f6;border:none;font-size:.9rem;cursor:pointer;color:#6b7280;display:flex;align-items:center;justify-content:center">✕</button>'
-    + '</div>'
-
-    // Sede (primero — filtra disponibilidad)
-    + (locs.length ? '<div style="margin-bottom:.85rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Sede</label>'
-      + '<select id="nc_sede" onchange="ncCargarDisp()" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:DM Sans,sans-serif;box-sizing:border-box;appearance:none;background:#fff" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
-      + sedeOpts + '</select></div>' : '')
-
-    // Fecha — solo días disponibles para esa sede
-    + '<div style="margin-bottom:.85rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Fecha</label>'
-      + '<input type="date" id="nc_fecha" value="'+hoy+'" min="'+hoy+'" onchange="ncCargarSlots()" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:DM Sans,sans-serif;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
-    + '</div>'
-
-    // Slots — horarios disponibles para fecha+sede seleccionadas
-    + '<div style="margin-bottom:.85rem" id="nc_slots_wrap"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem">Hora disponible</label>'
-      + '<div id="nc_slots" style="display:flex;flex-wrap:wrap;gap:.4rem"><div style="font-size:.8rem;color:#9ca3af">Selecciona una sede y fecha primero.</div></div>'
-      + '<input type="hidden" id="nc_hora">'
-    + '</div>'
-
-    // Tipo de cita
-    + '<div style="margin-bottom:.85rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem">Tipo</label>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:.4rem" id="nc_tipos">'
-      + tipos.map(function(t,i){ return '<button type="button" onclick="ncSelTipo(this)" data-tipo="'+t+'" style="padding:.38rem .8rem;border-radius:20px;border:1.5px solid '+(i===0?'#0b7c6e':'#e5e7eb')+';background:'+(i===0?'#0b7c6e':'#fff')+';color:'+(i===0?'#fff':'#374151')+';font-size:.76rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s">'+t+'</button>'; }).join('')
-      + '</div>'
-    + '</div>'
-
-    // Modalidad
-    + '<div style="margin-bottom:1.2rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem">Modalidad</label>'
-      + '<div style="display:flex;gap:.4rem" id="nc_modal">'
-      + '<button type="button" onclick="ncSelModal(this)" data-mod="presencial" style="flex:1;padding:.5rem;border-radius:10px;border:1.5px solid #0b7c6e;background:#0b7c6e;color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">🏥 Presencial</button>'
-      + '<button type="button" onclick="ncSelModal(this)" data-mod="virtual" style="flex:1;padding:.5rem;border-radius:10px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;font-size:.82rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">💻 Virtual</button>'
-      + '</div>'
-    + '</div>'
-
-    // Confirm
-    + '<button id="nc_btnConfirm" onclick="confirmarNuevaCita(\''+pac.id+'\',\''+((pac.nombre||'')+(pac.apellido?' '+pac.apellido:'')).replace(/'/g,"\\'")+'\',\''+((pac.email||'')).replace(/'/g,"\\'")+'\',\''+((pac.telefono||'')).replace(/'/g,"\\'")+'\',\''+((pac.cedula||'')).replace(/'/g,"\\'")+'\',\''+((pac.seguro||'')).replace(/'/g,"\\'")+'\',\''+((pac.titulo||'')).replace(/'/g,"\\'")+'\''+')" style="width:100%;padding:.9rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:13px;font-family:DM Sans,sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(11,124,110,.28);letter-spacing:.01em">Crear cita →</button>'
-
-  + '</div>';
-
-  document.body.appendChild(ov);
-  setTimeout(ncCargarDisp, 120);
+  // Drag-to-scroll
+  var isDown=false, startX, scrollL;
+  track.addEventListener('mousedown',function(e){isDown=true;track.classList.add('dragging');startX=e.pageX-track.offsetLeft;scrollL=track.scrollLeft;});
+  track.addEventListener('mouseleave',function(){isDown=false;track.classList.remove('dragging');});
+  track.addEventListener('mouseup',function(){isDown=false;track.classList.remove('dragging');});
+  track.addEventListener('mousemove',function(e){if(!isDown)return;e.preventDefault();var x=e.pageX-track.offsetLeft;track.scrollLeft=scrollL-(x-startX)*1.2;});
 }
 
-// ── NUEVA CITA — scheduling engine (usa getAvailableSlots de shared.js) ──
-var _ncDisp = {}; // {dateStr: [slots]}
+function pacRenderRecientes() {
+  var grid = document.getElementById('pacRecientesGrid');
+  var section = document.getElementById('pacRecientesSection');
+  if (!grid || !section) return;
+  var recientes = _allPacientes.slice(0, 6);
+  if (!recientes.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  grid.innerHTML = '';
+  recientes.forEach(function(p) { grid.appendChild(pacBuildCard(p)); });
+}
 
-function ncCargarDisp() {
-  var sedeSel = document.getElementById('nc_sede');
-  var locId   = sedeSel ? sedeSel.value || null : null;
-  _ncDisp = {};
-  ncActualizarSlots([]);
-  if (!M) return;
-  getAvailableSlots(M, locId, _sb).then(function(disp) {
-    _ncDisp = disp || {};
-    // Auto-avanzar al primer día disponible si la fecha actual no tiene slots
-    var fEl = document.getElementById('nc_fecha');
-    if (fEl) {
-      var fechas = Object.keys(_ncDisp).sort();
-      if (fechas.length && !_ncDisp[fEl.value]) {
-        fEl.value = fechas[0];
-      }
-    }
-    ncCargarSlots();
+function pacBuildCard(p) {
+  var ini = ((p.nombre||'P').split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('')||'P').toUpperCase();
+  var card = document.createElement('div');
+  card.className = 'pac-rec-card';
+  var sub = p.email || p.telefono || 'Sin contacto';
+  var av = document.createElement('div'); av.className='pac-rec-avatar'; av.textContent=ini;
+  var info = document.createElement('div'); info.className='pac-rec-info';
+  info.innerHTML='<div class="pac-rec-name">'+p.nombre+'</div><div class="pac-rec-sub">'+sub+'</div>';
+  var actions = document.createElement('div'); actions.className='pac-rec-actions';
+  var b1=document.createElement('button'); b1.className='pac-rec-btn pac-rec-btn-outline'; b1.textContent='Ver ficha';
+  b1.addEventListener('click',function(e){e.stopPropagation();abrirFicha(p.id);});
+  var b2=document.createElement('button'); b2.className='pac-rec-btn pac-rec-btn-fill'; b2.textContent='Nueva cita';
+  b2.addEventListener('click',function(e){e.stopPropagation();abrirNuevaCita(p);});
+  actions.appendChild(b1); actions.appendChild(b2);
+  card.appendChild(av); card.appendChild(info); card.appendChild(actions);
+  card.addEventListener('click', function(){ abrirFicha(p.id); });
+  return card;
+}
+
+function pacNuevaCitaRec(id) {
+  var p = _allPacientes.find(function(x){ return x.id===id; });
+  if(p) abrirNuevaCita(p);
+}
+
+function pacSeleccionarLetra(l) {
+  _pacLetraActiva = l;
+  pacRenderCarpetas();
+  var filtrados = _allPacientes.filter(function(p){
+    var lp = ((p.nombre||'?')[0]||'?').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return lp === l;
   });
-}
-
-function ncCargarSlots() {
-  var fEl = document.getElementById('nc_fecha');
-  if (!fEl) return;
-  var fecha = fEl.value;
-  var slots = (_ncDisp && _ncDisp[fecha]) ? _ncDisp[fecha] : [];
-  ncActualizarSlots(slots, fecha);
-}
-
-function ncActualizarSlots(slots, fecha) {
-  var cont = document.getElementById('nc_slots');
-  var horaInp = document.getElementById('nc_hora');
-  if (!cont) return;
-  if (horaInp) horaInp.value = '';
-
-  if (slots && slots.length) {
-    // Slots del engine: botones clickeables
-    cont.innerHTML = slots.map(function(s) {
-      return '<button type="button" onclick="ncSelSlot(this,\''+s+'\')" style="padding:.4rem .8rem;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s">'+s+'</button>';
-    }).join('');
-  } else {
-    // Sin slots configurados: mostrar input libre con advertencia
-    var hayOtrosDias = _ncDisp && Object.keys(_ncDisp).length > 0;
-    cont.innerHTML = (hayOtrosDias
-      ? '<div style="font-size:.76rem;color:#f59e0b;font-weight:600;margin-bottom:.4rem">⚠️ Sin horario configurado para este día.</div>'
-      : '<div style="font-size:.76rem;color:#9ca3af;margin-bottom:.4rem">Sin horarios configurados para esta sede.</div>')
-      + '<input type="time" id="nc_hora_libre" value="09:00" style="padding:.55rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;font-family:DM Sans,sans-serif" onchange="document.getElementById(\'nc_hora\').value=this.value">';
+  var section = document.getElementById('pacLetraSection');
+  var title   = document.getElementById('pacLetraTitle');
+  var grid    = document.getElementById('pacLetraGrid');
+  var rec     = document.getElementById('pacRecientesSection');
+  var qa      = document.getElementById('pacQuickActions');
+  if (section) section.style.display = 'block';
+  if (title)   title.textContent = filtrados.length+' pacientes con "'+l+'"';
+  if (rec)     rec.style.display = 'none';
+  if (qa)      qa.style.display  = 'none';
+  if (grid) {
+    grid.innerHTML = '';
+    filtrados.forEach(function(p){ grid.appendChild(pacBuildCard(p)); });
   }
+  setTimeout(function(){
+    var s=document.getElementById('pacLetraSection');
+    if(s) s.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 80);
 }
 
-function ncSelSlot(btn, slot) {
-  document.querySelectorAll('#nc_slots button').forEach(function(b) {
-    b.style.background='#fff'; b.style.color='#374151'; b.style.borderColor='#e5e7eb';
-  });
-  btn.style.background='#0b7c6e'; btn.style.color='#fff'; btn.style.borderColor='#0b7c6e';
-  var h = document.getElementById('nc_hora'); if(h) h.value = slot;
+function pacLimpiarLetra() {
+  _pacLetraActiva = null;
+  pacRenderCarpetas();
+  var s = document.getElementById('pacLetraSection');
+  var rec = document.getElementById('pacRecientesSection');
+  var qa  = document.getElementById('pacQuickActions');
+  if (s)   s.style.display = 'none';
+  if (rec) rec.style.display = _allPacientes.length ? 'block' : 'none';
+  if (qa)  qa.style.display  = _allPacientes.length ? 'block' : 'none';
 }
 
-function ncSelTipo(btn) {
-  document.querySelectorAll('#nc_tipos button').forEach(function(b){
-    b.style.background='#fff'; b.style.color='#374151'; b.style.borderColor='#e5e7eb';
-  });
-  btn.style.background='#0b7c6e'; btn.style.color='#fff'; btn.style.borderColor='#0b7c6e';
-}
-
-function ncSelModal(btn) {
-  document.querySelectorAll('#nc_modal button').forEach(function(b){
-    b.style.background='#fff'; b.style.color='#374151'; b.style.borderColor='#e5e7eb';
-  });
-  btn.style.background='#0b7c6e'; btn.style.color='#fff'; btn.style.borderColor='#0b7c6e';
-}
-
-function cerrarNuevaCita() {
-  var m = document.getElementById('modalNuevaCita'); if(m) m.remove();
-}
-
-async function confirmarNuevaCita(pacId, pacNombre, pacEmail, pacTel, pacCedula, pacSeguro, pacTitulo) {
-  if(!M||!M.id) return;
-  var fecha   = (document.getElementById('nc_fecha')||{}).value;
-  var hora    = (document.getElementById('nc_hora')||{}).value;
-  var sedeSel = document.getElementById('nc_sede');
-  var locId   = sedeSel ? sedeSel.value || null : null;
-  var tipoBtn = document.querySelector('#nc_tipos button[style*="0b7c6e"]');
-  var tipo    = tipoBtn ? tipoBtn.dataset.tipo : 'Control';
-  var modBtn  = document.querySelector('#nc_modal button[style*="0b7c6e"]');
-  var modal   = modBtn ? modBtn.dataset.mod : 'presencial';
-
-  if(!fecha||!hora){ mostrarToast('Selecciona fecha y hora','error'); return; }
-
-  var btn = document.getElementById('nc_btnConfirm');
-  if(btn){ btn.textContent='Creando...'; btn.disabled=true; }
-
-  var res = await _sb.from('citas').insert([{
-    medico_id:       M.id,
-    paciente_id:     pacId||null,
-    paciente_nombre: pacNombre,
-    paciente_email:  pacEmail||null,
-    paciente_tel:    pacTel||null,
-    motivo:          tipo,
-    tipo:            tipo,
-    modalidad:       modal,
-    location_id:     locId,
-    fecha:           fecha,
-    hora:            hora,
-    estado:          'confirmada',
-    seguro:          pacSeguro||null
-  }]);
-
-  if(res.error){ mostrarToast('Error: '+res.error.message,'error'); if(btn){btn.textContent='Crear cita →';btn.disabled=false;} return; }
-
-  // Notificar al paciente por email
-  var nombreMed = (M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido;
-  var fechaHum  = new Date(fecha+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
-  var sedeName  = '';
-  if(locId && window.locationsMedico) {
-    var loc = window.locationsMedico.find(function(l){ return String(l.id)===String(locId); });
-    if(loc) sedeName = loc.nombre;
+function filtrarPacientesNuevo(q) {
+  var folders = document.getElementById('pacFoldersSection');
+  var letra   = document.getElementById('pacLetraSection');
+  var search  = document.getElementById('pacSearchSection');
+  var recent  = document.getElementById('pacRecientesSection');
+  var qa      = document.getElementById('pacQuickActions');
+  if (!q || !q.trim()) {
+    if (folders) folders.style.display = 'block';
+    if (search)  search.style.display  = 'none';
+    if (recent)  recent.style.display  = _allPacientes.length && !_pacLetraActiva ? 'block' : 'none';
+    if (letra && _pacLetraActiva) letra.style.display = 'block';
+    if (qa)      qa.style.display      = _allPacientes.length ? 'block' : 'none';
+    return;
   }
-  var mensaje = 'Hola '+pacNombre+', tu cita de '+(tipo||'consulta').toLowerCase()+' con '+nombreMed
-    +' está confirmada para el '+fechaHum+' a las '+hora
-    +(sedeName?' en '+sedeName:'')
-    +'. Modalidad: '+(modal==='virtual'?'Virtual 💻':'Presencial 🏥')
-    +'. Ante cualquier duda no dudes en contactarnos.';
-
-  if(pacEmail) {
-    var emailPayload = {
-      to_email:          pacEmail,
-      doctor_name:       nombreMed,
-      patient_name:      pacNombre,
-      appointment_date:  fechaHum,
-      appointment_time:  hora,
-      location_name:     sedeName||'Consultorio médico',
-      appointment_mode:  modal==='virtual'?'💻 Virtual':'🏥 Presencial',
-      public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M.slug||'')
-    };
-    console.error('EMAIL SEND HIT #2 — confirmarNuevaCita');
-    emailjs.send('service_63xln0n','template_e8t8qkq', emailPayload)
-      .then(function(){ mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail); })
-      .catch(function(e){ console.error('[emailjs] error:', e); mostrarToast('Email no enviado: '+((e&&e.text)||JSON.stringify(e)), 'error'); });
-  }
-
-  cerrarNuevaCita();
-  if(!pacEmail) mostrarToast('Cita creada ✓ — Sin email registrado para este paciente');
-  // Refrescar calendario si está abierto
-  if(M && AppState.currentPanel==='calendario') cargarCitasCal(M.id);
+  var ql = q.toLowerCase();
+  var resultados = _allPacientes.filter(function(p){
+    return (p.nombre||'').toLowerCase().includes(ql)
+      || (p.email||'').toLowerCase().includes(ql)
+      || (p.telefono||'').toLowerCase().includes(ql)
+      || (p.cedula||'').toLowerCase().includes(ql);
+  });
+  if (folders) folders.style.display = 'none';
+  if (letra)   letra.style.display   = 'none';
+  if (recent)  recent.style.display  = 'none';
+  if (qa)      qa.style.display      = 'none';
+  if (search)  search.style.display  = 'block';
+  var title = document.getElementById('pacSearchTitle');
+  var grid  = document.getElementById('pacSearchGrid');
+  var empty = document.getElementById('pacSearchEmpty');
+  if (title) title.textContent = resultados.length ? resultados.length+' resultado'+(resultados.length!==1?'s':'') : 'Sin resultados';
+  if (grid)  { grid.innerHTML=''; resultados.forEach(function(p){ grid.appendChild(pacBuildCard(p)); }); }
+  if (empty) empty.style.display = resultados.length ? 'none' : 'block';
 }
+
+function filtrarPacientes(){ filtrarPacientesNuevo((document.getElementById('buscarPaciente')||{}).value||''); }
+
+function pacVerTodos() {
+  _pacLetraActiva = null;
+  var search = document.getElementById('buscarPaciente');
+  if (search) { search.value=''; filtrarPacientesNuevo(''); }
+  var section = document.getElementById('pacRecientesSection');
+  var rec = document.getElementById('pacRecientesSection');
+  var grid = document.getElementById('pacRecientesGrid');
+  if (grid) {
+    grid.innerHTML = '';
+    _allPacientes.forEach(function(p){ grid.appendChild(pacBuildCard(p)); });
+  }
+  if (rec) rec.style.display = 'block';
+  var title = document.getElementById('pacRecientesSection');
+  var sTitle = title && title.querySelector('.pac-section-title');
+  if (sTitle) sTitle.textContent = 'Todos los pacientes ('+_allPacientes.length+')';
+}
+
+function pacScrollFolders(dir) {
+  var track = document.getElementById('pacFolderTrack');
+  if (track) track.scrollBy({ left: dir * 300, behavior: 'smooth' });
+}
+
 
 function filtrarPacientes(){
   var txt=((document.getElementById('buscarPaciente')||{}).value||'').toLowerCase();
