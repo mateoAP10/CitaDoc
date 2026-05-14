@@ -6640,11 +6640,24 @@ function abrirModalUbicacion(loc) {
   }
 }
 
+function _ubGetLatLon() {
+  // Primero el marker (posición actual del pin en el mapa)
+  if (window._ubMarker) {
+    var p = window._ubMarker.getLatLng();
+    if (p && p.lat) return {lat: p.lat, lon: p.lng};
+  }
+  // Fallback: dataset del input (set por autocomplete)
+  var inp = document.getElementById('ub_direccion');
+  if (inp && inp.dataset.lat) {
+    return {lat: parseFloat(inp.dataset.lat), lon: parseFloat(inp.dataset.lon || inp.dataset.lng)};
+  }
+  return {lat: null, lon: null};
+}
+
 function _autoMapsUrl() {
+  var c = _ubGetLatLon();
+  if (c.lat && c.lon) return 'https://www.google.com/maps?q='+c.lat+','+c.lon;
   var dirEl = document.getElementById('ub_direccion');
-  var lat = dirEl && dirEl.dataset.lat;
-  var lon = dirEl && dirEl.dataset.lon;
-  if (lat && lon) return 'https://www.google.com/maps?q='+lat+','+lon;
   var dir = (dirEl && dirEl.value||'').trim();
   var ciu = ((document.getElementById('ub_ciudad')||{}).value||'').trim();
   var q = [dir, ciu].filter(Boolean).join(' ');
@@ -6660,7 +6673,9 @@ async function guardarUbicacion() {
     direccion:(document.getElementById('ub_direccion')||{}).value||null,
     telefono:(document.getElementById('ub_telefono')||{}).value||null,
     ciudad:(document.getElementById('ub_ciudad')||{}).value||null,
-    maps_url:_autoMapsUrl()
+    maps_url:_autoMapsUrl(),
+    lat:(function(){var c=_ubGetLatLon();return c.lat||null;})(),
+    lng:(function(){var c=_ubGetLatLon();return c.lon||null;})()
   }]);
   if (res.error) { mostrarToast('Error: '+res.error.message,'error'); return; }
   mostrarToast('Ubicación guardada \u2713');
@@ -6682,7 +6697,9 @@ async function editarUbicacion() {
     direccion: (document.getElementById('ub_direccion')||{}).value||null,
     telefono:  (document.getElementById('ub_telefono')||{}).value||null,
     ciudad:    (document.getElementById('ub_ciudad')||{}).value||null,
-    maps_url:  _autoMapsUrl()
+    maps_url:  _autoMapsUrl(),
+    lat: (function(){var c=_ubGetLatLon();return c.lat||null;})(),
+    lng: (function(){var c=_ubGetLatLon();return c.lon||null;})()
   }).eq('id', id);
   if (btn) { btn.disabled=false; btn.textContent='Guardar cambios'; }
   if (res.error) { logError('editarUbicacion', res.error); mostrarToast('Error: '+res.error.message,'error'); return; }
