@@ -7256,9 +7256,8 @@ async function guardarConsulta(pacienteId) {
   var btn=document.getElementById('btnGuardarConsulta');
   if(btn){btn.disabled=true;btn.textContent='Guardando...';}
   var v=function(id){return((document.getElementById(id)||{}).value||'').trim()||null;};
-  var res = await _sb.from('consultas').insert([{
-    medico_id: M.id,
-    paciente_id: pacienteId,
+  var consData = {
+    medico_id: M.id, paciente_id: pacienteId,
     motivo: motivo,
     enfermedad_actual: v('c_enfermedad'),
     examen_fisico: v('c_examen'),
@@ -7266,17 +7265,116 @@ async function guardarConsulta(pacienteId) {
     plan: v('c_plan'),
     imagenes: v('c_imagenes'),
     indicaciones: v('c_indicaciones'),
+    estudios: v('c_estudios'),
     presion_arterial: v('c_ta'),
     frecuencia_cardiaca: v('c_fc'),
     temperatura: v('c_temp'),
     peso: v('c_peso'),
     notas: v('c_notas')
-  }]);
+  };
+  var res = await _sb.from('consultas').insert([consData]).select().single();
   if(btn){btn.disabled=false;btn.textContent='Guardar consulta';}
   if(res.error){mostrarToast('Error: '+res.error.message,'error');console.error(res.error);return;}
-  mostrarToast('Consulta guardada');
-  cerrarModalConsulta();
-  abrirFicha(pacienteId);
+  // Guardar para generar docs
+  _lastConsulta = Object.assign({}, consData, res.data||{});
+  // Mostrar botones de documentos en footer
+  var footer = document.getElementById('mc_footer_btns');
+  if(footer) {
+    var pacInfo = _fichaPaciente || {};
+    footer.innerHTML = '<div style="display:flex;flex-direction:column;gap:.4rem;width:100%">'
+      +'<div style="font-size:.7rem;font-weight:700;color:#059669;text-align:center;margin-bottom:.1rem">✓ Consulta guardada — Genera los documentos</div>'
+      +'<div style="display:flex;gap:.4rem;flex-wrap:wrap">'
+        +(consData.plan?'<button onclick="mcVerDoc(\'receta\')" style="flex:1;padding:.48rem .6rem;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:9px;font-size:.78rem;font-weight:700;color:#1e40af;cursor:pointer;font-family:DM Sans,sans-serif">💊 Receta</button>':'')
+        +(consData.imagenes?'<button onclick="mcVerDoc(\'imagenes\')" style="flex:1;padding:.48rem .6rem;background:#fefce8;border:1.5px solid #fde68a;border-radius:9px;font-size:.78rem;font-weight:700;color:#92400e;cursor:pointer;font-family:DM Sans,sans-serif">🩻 Imágenes</button>':'')
+        +(consData.estudios?'<button onclick="mcVerDoc(\'laboratorio\')" style="flex:1;padding:.48rem .6rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:9px;font-size:.78rem;font-weight:700;color:#065f46;cursor:pointer;font-family:DM Sans,sans-serif">🔬 Laboratorios</button>':'')
+        +(pacInfo.email?'<button onclick="mcEnviarDocs()" style="flex:1;padding:.48rem .6rem;background:linear-gradient(135deg,#085f54,#0b7c6e);border:none;border-radius:9px;font-size:.78rem;font-weight:700;color:#fff;cursor:pointer;font-family:DM Sans,sans-serif">✉️ Enviar</button>':'')
+      +'</div>'
+      +'<button onclick="cerrarModalConsulta();abrirFicha('+JSON.stringify(pacienteId)+')" style="width:100%;padding:.42rem;background:none;border:1px solid #e5e7eb;border-radius:9px;font-size:.76rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif">Cerrar y ver ficha →</button>'
+    +'</div>';
+  }
+}
+
+var _lastConsulta = {};
+
+function mcVerDoc(tipo) {
+  var con = _lastConsulta;
+  var pac = _fichaPaciente || {};
+  var med = M || {};
+  var fecha = new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var nomMed = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
+  var esp = (med.especialidades||[])[0]||'Médico';
+  var sen = med.senescyt ? 'Reg. SENESCYT: '+med.senescyt : '';
+
+  var tituloDoc = tipo==='receta' ? '💊 Receta Médica' : tipo==='imagenes' ? '🩻 Orden de Imágenes' : '🔬 Orden de Laboratorio';
+  var contenido = tipo==='receta' ? (con.plan||'').split(' | ').filter(Boolean) :
+                  tipo==='imagenes' ? (con.imagenes||'').split(' | ').filter(Boolean) :
+                  (con.estudios||con.plan||'').split(' | ').filter(Boolean);
+
+  // Si es laboratorio, usar el campo estudios
+  if (tipo==='laboratorio') contenido = (con.estudios||'').split(' | ').filter(Boolean);
+
+  var itemsHtml = contenido.map(function(item,i){
+    return '<div style="display:flex;align-items:flex-start;gap:.6rem;padding:.7rem 0;border-bottom:1px solid #f0f0f0">'
+      +'<span style="width:24px;height:24px;border-radius:50%;background:#e0f5f2;color:#0b7c6e;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:.05rem">'+(i+1)+'</span>'
+      +'<span style="font-size:15px;color:#1a1a1a;line-height:1.4">'+item.trim()+'</span>'
+    +'</div>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
+    +'<title>'+tituloDoc+' — '+nomMed+'</title>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;background:#f5f4ef;padding:2rem}@media print{body{background:#fff;padding:0}.no-print{display:none!important}}.doc{background:#fff;max-width:700px;margin:0 auto;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}.doc-header{background:linear-gradient(145deg,#062e2b,#0b7c6e);padding:2rem 2.5rem;color:#fff}.doc-logo{font-size:1.1rem;font-weight:800;letter-spacing:.02em;opacity:.8;margin-bottom:.5rem}.doc-title{font-size:1.6rem;font-weight:700;margin-bottom:.2rem}.doc-sub{font-size:.85rem;opacity:.65}.doc-body{padding:2rem 2.5rem}.doc-info{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;padding:1rem 1.2rem;background:#f7f9f8;border-radius:12px;border:1px solid #e5e7eb}.doc-info-item label{font-size:.65rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.2rem}.doc-info-item span{font-size:.88rem;font-weight:600;color:#1a1a1a}.doc-items-title{font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:2px solid #0b7c6e}.doc-firma{margin-top:2.5rem;padding-top:1.5rem;border-top:1px dashed #d1d5db;text-align:center}.doc-firma-line{width:200px;border-top:2px solid #1a1a1a;margin:0 auto .5rem}.doc-firma-name{font-size:.88rem;font-weight:700;color:#1a1a1a}.doc-firma-sub{font-size:.75rem;color:#6b7280}.doc-footer{background:#f7f9f8;padding:1rem 2.5rem;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:#9ca3af}.btn-print{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;margin:1.5rem auto;display:block;font-family:inherit}</style>'
+    +'</head><body>'
+    +'<div class="no-print" style="text-align:center"><button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button></div>'
+    +'<div class="doc">'
+      +'<div class="doc-header"><div class="doc-logo">CitaDoc Health Network</div><div class="doc-title">'+tituloDoc+'</div><div class="doc-sub">Documento médico oficial · '+fecha+'</div></div>'
+      +'<div class="doc-body">'
+        +'<div class="doc-info">'
+          +'<div class="doc-info-item"><label>Médico</label><span>'+nomMed+'</span></div>'
+          +'<div class="doc-info-item"><label>Especialidad</label><span>'+esp+'</span></div>'
+          +'<div class="doc-info-item"><label>Paciente</label><span>'+(pac.nombre||'—')+'</span></div>'
+          +'<div class="doc-info-item"><label>Fecha</label><span>'+fecha+'</span></div>'
+          +(sen?'<div class="doc-info-item"><label>Registro</label><span>'+sen+'</span></div>':'')
+          +(con.diagnostico?'<div class="doc-info-item" style="grid-column:1/-1"><label>Diagnóstico</label><span>'+con.diagnostico+'</span></div>':'')
+        +'</div>'
+        +'<div class="doc-items-title">'+tituloDoc+'</div>'
+        +itemsHtml
+        +(con.indicaciones&&tipo==='receta'?'<div style="margin-top:1.2rem;padding:1rem;background:#f0fdf4;border-radius:10px;border-left:3px solid #0b7c6e"><div style="font-size:.65rem;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem">Indicaciones generales</div><div style="font-size:.85rem;color:#1a1a1a;line-height:1.6">'+con.indicaciones+'</div></div>':'')
+        +'<div class="doc-firma"><div style="margin-bottom:2rem"></div><div class="doc-firma-line"></div><div class="doc-firma-name">'+nomMed+'</div><div class="doc-firma-sub">'+esp+(sen?' · '+sen:'')+'</div></div>'
+      +'</div>'
+      +'<div class="doc-footer"><span>CitaDoc Health Network · citadoc.lat</span><span>'+fecha+'</span></div>'
+    +'</div>'
+    +'</body></html>';
+
+  var w = window.open('','_blank','width=780,height=900');
+  if(!w){mostrarToast('Activa las ventanas emergentes','error');return;}
+  w.document.write(html);
+  w.document.close();
+}
+
+function mcEnviarDocs() {
+  var pac = _fichaPaciente || {};
+  var con = _lastConsulta;
+  var med = M || {};
+  if(!pac.email){mostrarToast('El paciente no tiene email registrado','error');return;}
+  var nomMed = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
+  var fecha = new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
+  var items = [];
+  if(con.plan) items.push('💊 Medicamentos: '+con.plan.split(' | ').join(', '));
+  if(con.imagenes) items.push('🩻 Imágenes: '+con.imagenes.split(' | ').join(', '));
+  if(con.estudios) items.push('🔬 Laboratorios: '+con.estudios.split(' | ').filter(Boolean).join(', '));
+  if(con.indicaciones) items.push('📝 Indicaciones: '+con.indicaciones);
+  var mensaje = 'Estimado/a '+pac.nombre+',\n\nAdjunto encontrará las indicaciones médicas de su consulta del '+fecha+' con '+nomMed+':\n\n'+items.join('\n\n');
+  emailjs.send('service_63xln0n','template_e8t8qkq',{
+    to_email: pac.email,
+    doctor_name: nomMed,
+    patient_name: pac.nombre,
+    appointment_date: fecha,
+    appointment_time: '',
+    location_name: mensaje,
+    appointment_mode: 'Documento médico adjunto',
+    public_profile_url: 'https://citadoc.lat/citadoc-perfil.html?slug='+(med.slug||'')
+  }).then(function(){ mostrarToast('Documentos enviados a '+pac.email+' ✓'); })
+   .catch(function(e){ mostrarToast('Error al enviar: '+(e.text||'error'),'error'); });
 }
 
 // ══ RECETAS Y DETALLE CONSULTA ══
