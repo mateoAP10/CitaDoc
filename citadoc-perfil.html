@@ -1206,9 +1206,9 @@ function aplicarMedico(m, formacion, citas, locs) {
 
   // WhatsApp CTA en el hero
   var waHeroBtn = el('btnWAHero');
-  if (waHeroBtn && m.whatsapp_activo && m.whatsapp) {
+  if (waHeroBtn && m.whatsapp && m.mostrar_whatsapp !== false) {
     var waUrl0 = urlWA(m.whatsapp, m.pais, nombre);
-    if (waUrl0) { waHeroBtn.href = waUrl0; waHeroBtn.style.display = 'inline-flex'; }
+    if (waUrl0) { waHeroBtn.href = waUrl0; waHeroBtn.style.display = 'flex'; }
   }
 
   // Microcopy dinámico en botón Agendar
