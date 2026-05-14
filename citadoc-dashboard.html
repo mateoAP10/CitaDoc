@@ -5029,7 +5029,7 @@ function enviarIndicacionesPaciente() {
         appointment_mode:  indicaciones.value.trim(),
         public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M&&M.slug||'')
       };
-      console.log('EMAIL DEBUG HIT - indicaciones', tpl);
+      console.error('EMAIL SEND HIT #1 — indicaciones');
       emailjs.send('service_63xln0n', 'template_e8t8qkq', tpl)
         .then(function() { mostrarToast('Indicaciones enviadas a '+paciente.email); })
         .catch(function(e) { console.error('Email error:', e); alert('Error enviando email. Verifica EmailJS.'); });
@@ -6083,7 +6083,7 @@ async function confirmarNuevaCita(pacId, pacNombre, pacEmail, pacTel, pacCedula,
       appointment_mode:  modal==='virtual'?'💻 Virtual':'🏥 Presencial',
       public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M.slug||'')
     };
-    console.log('[EMAILJS SEND OBJECT]', emailPayload);
+    console.error('EMAIL SEND HIT #2 — confirmarNuevaCita');
     emailjs.send('service_63xln0n','template_e8t8qkq', emailPayload)
       .then(function(){ mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail); })
       .catch(function(e){ console.error('[emailjs] error:', e); mostrarToast('Email no enviado: '+((e&&e.text)||JSON.stringify(e)), 'error'); });
