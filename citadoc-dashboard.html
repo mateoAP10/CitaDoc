@@ -2347,9 +2347,16 @@ function buscarDireccionModal(query, inp, sug) {
           inp.value = label;
           var ciudadInp = document.getElementById('ub_ciudad');
           if (ciudadInp && ciudad) ciudadInp.value = ciudad;
-          inp.dataset.lat = place.lat;
-          inp.dataset.lon = place.lon;
+          var lat = parseFloat(place.lat);
+          var lon = parseFloat(place.lon);
+          inp.dataset.lat = lat;
+          inp.dataset.lon = lon;
           sug.style.display = 'none';
+          // Volar el mapa a la ubicación seleccionada
+          if (window._ubMap && window._ubMarker && !isNaN(lat) && !isNaN(lon)) {
+            window._ubMap.setView([lat, lon], 16);
+            window._ubMarker.setLatLng([lat, lon]);
+          }
         });
         sug.appendChild(div);
       });
@@ -6552,6 +6559,7 @@ function renderUbicaciones(locs) {
 }
 
 function cerrarModalUbicacion() {
+  if (window._ubMap) { window._ubMap.remove(); window._ubMap = null; window._ubMarker = null; }
   var m = document.getElementById('modalUbicacion');
   if (m) m.remove();
   document.body.style.overflow = '';
@@ -6564,7 +6572,7 @@ function abrirModalUbicacion(loc) {
   m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
   document.body.style.overflow = 'hidden';
   var inner=document.createElement('div'); inner.onclick=function(e){e.stopPropagation();};
-  inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)';
+  inner.style.cssText='background:#fff;border-radius:18px;padding:1.8rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)';
   var titulo = loc ? 'Editar ubicación' : 'Nueva ubicación';
   inner.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem">'
     +'<div style="font-size:1.1rem;font-weight:700;color:#0f1a18;font-family:Fraunces,serif">'+titulo+'</div>'
@@ -6577,6 +6585,8 @@ function abrirModalUbicacion(loc) {
     +'<input id="ub_direccion" placeholder="Busca tu clínica, hospital o dirección..." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'<div id="modalDirSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:200px;overflow-y:auto;margin-top:3px"></div>'
     +'</div>'
+    +'<div id="ub_mapa" style="height:200px;border-radius:12px;overflow:hidden;border:1.5px solid #e5e7eb"></div>'
+    +'<p style="font-size:.72rem;color:#9ca3af;margin-top:-.3rem">Selecciona una sugerencia o arrastra el marcador para ajustar.</p>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem">'
     +'<input id="ub_telefono" placeholder="Teléfono" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
     +'<input id="ub_ciudad" placeholder="Ciudad" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
@@ -6588,6 +6598,27 @@ function abrirModalUbicacion(loc) {
     +'</div>';
   m.appendChild(inner); document.body.appendChild(m);
   initModalDireccionInput();
+
+  // Coordenadas iniciales: loc existente o centro de Ecuador
+  var initLat = (loc && loc.lat) ? parseFloat(loc.lat) : -1.8312;
+  var initLng = (loc && loc.lng) ? parseFloat(loc.lng) : -78.1834;
+  var initZoom = (loc && loc.lat) ? 16 : 6;
+
+  setTimeout(function() {
+    var mapEl = document.getElementById('ub_mapa');
+    if (!mapEl || !window.L) return;
+    window._ubMap = L.map('ub_mapa').setView([initLat, initLng], initZoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(window._ubMap);
+    window._ubMarker = L.marker([initLat, initLng], {draggable: true}).addTo(window._ubMap);
+    window._ubMarker.on('dragend', function() {
+      var pos = window._ubMarker.getLatLng();
+      var inp = document.getElementById('ub_direccion');
+      if (inp) { inp.dataset.lat = pos.lat; inp.dataset.lng = pos.lng; }
+    });
+  }, 150);
+
   if (loc) {
     var f = function(fid, v) { var e=document.getElementById(fid); if(e&&v!=null) e.value=v; };
     f('ub_id',        loc.id||'');
