@@ -6843,8 +6843,9 @@ function fDiagBuscar(q) {
   var inp=document.getElementById('c_diag_search');
   if(!q||q.length<1){drop.style.display='none';return;}
   if(inp){var r=inp.getBoundingClientRect();drop.style.top=(r.bottom+4)+'px';drop.style.left=r.left+'px';drop.style.width=r.width+'px';}
-  var ql=q.toLowerCase();
-  var hits=CIE10.filter(function(d){return d.c.toLowerCase().includes(ql)||d.l.toLowerCase().includes(ql);}).slice(0,10);
+  var _n=function(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');};
+  var ql=_n(q);
+  var hits=CIE10.filter(function(d){return _n(d.c).includes(ql)||_n(d.l).includes(ql);}).slice(0,10);
   _fdiagIdx=-1;
   if(!hits.length){
     drop.innerHTML='<div onmousedown="fDiagAgregar(null,\''+q.replace(/'/g,"\\'")+'\');event.preventDefault()" style="padding:.55rem .9rem;font-size:.8rem;color:#374151;cursor:pointer;border-radius:8px;margin:3px" onmouseenter="this.style.background=\'#f0fdf4\'" onmouseleave="this.style.background=\'\'">✏️ Crear: <strong>'+q+'</strong></div>';
@@ -7117,9 +7118,10 @@ function mcRxBuscar(type, q) {
   if (!q || q.length < 1) { drop.style.display='none'; return; }
   var r = inp.getBoundingClientRect();
   drop.style.top=(r.bottom+4)+'px'; drop.style.left=r.left+'px'; drop.style.width=r.width+'px';
-  var ql = q.toLowerCase();
+  var _norm=function(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');};
+  var ql = _norm(q);
   var ds  = _mcRxDatasets[type] || [];
-  var hits = ds.filter(function(d){ return d.toLowerCase().includes(ql); }).slice(0, 12);
+  var hits = ds.filter(function(d){ return _norm(d).includes(ql); }).slice(0, 12);
   _mcRxState[type].idx = -1;
   var cl = _mcRxColors[type];
   if (!hits.length) {
