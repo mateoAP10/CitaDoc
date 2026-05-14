@@ -6971,7 +6971,18 @@ function abrirModalConsulta(pacienteId) {
 
         <!-- PASO 1: Consulta -->
         <div id="mc_step1" class="mc-step" style="padding:1.5rem 1.8rem;max-height:70vh;overflow-y:auto">
-          <div style="font-size:.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.4rem"><span>①</span> Datos clínicos</div>
+          <!-- VOICE BAR -->
+          <div id="mc_voice_bar" style="display:flex;align-items:center;gap:.65rem;padding:.75rem 1rem;background:linear-gradient(135deg,#f0fdf8,#e8f8f2);border:1.5px solid rgba(11,124,110,.18);border-radius:12px;margin-bottom:1rem">
+            <button id="mc_voice_btn" onclick="mcVoiceToggle()" style="display:flex;align-items:center;gap:.45rem;padding:.48rem 1rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s">
+              <span id="mc_voice_icon">🎤</span><span id="mc_voice_label">Dictar consulta</span>
+            </button>
+            <div id="mc_voice_status" style="flex:1;font-size:.78rem;color:var(--muted);font-style:italic">Presiona y habla — AI organiza la consulta automáticamente</div>
+            <div id="mc_voice_dot" style="display:none;width:10px;height:10px;border-radius:50%;background:#ef4444;animation:mcPulse 1s infinite"></div>
+          </div>
+          <div id="mc_voice_transcript" style="display:none;margin-bottom:.85rem;padding:.65rem .85rem;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.8rem;color:#374151;line-height:1.55;max-height:80px;overflow-y:auto;font-style:italic"></div>
+          <style>@keyframes mcPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}</style>
+
+          <div style="font-size:.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.4rem"><span>①</span> Datos clínicos <span style="font-size:.58rem;font-weight:400;color:#d1d5db;text-transform:none;letter-spacing:0">— o dicta arriba</span></div>
 
           <div class="mc-field" style="margin-bottom:.85rem">
             <label>📋 Motivo de consulta</label>
@@ -7086,7 +7097,7 @@ function abrirModalConsulta(pacienteId) {
     var el=document.getElementById('mc_pacNombre'); if(el) el.textContent=p.nombre;
   });
 
-  _fichadiags=[]; fDiagRender(); mcRxReset();
+  _fichadiags=[]; fDiagRender(); mcRxReset(); window._mcVoiceTranscript=null; mcVoiceReset();
   var ds=document.getElementById('c_diag_search'); if(ds) ds.value='';
 }
 
@@ -7136,6 +7147,176 @@ var _mcRxState = { med:{items:[],idx:-1}, img:{items:[],idx:-1}, lab:{items:[],i
 var _mcRxDatasets = { med:_mcMeds, img:_mcImgs, lab:_mcLabs };
 var _mcRxColors = { med:{bg:'#e0f0ff',border:'rgba(59,130,246,.2)',text:'#1e40af',icon:'💊'}, img:{bg:'#fef3c7',border:'rgba(251,191,36,.2)',text:'#92400e',icon:'🩻'}, lab:{bg:'#e0f5f2',border:'rgba(11,124,110,.2)',text:'#065f46',icon:'🔬'} };
 var _mcRxHiddenIds = { med:'c_plan', img:'c_imagenes', lab:'c_estudios' };
+
+// ── VOICE DICTATION ENGINE ──
+var _mcVoiceRec   = null;
+var _mcVoiceActive = false;
+var _mcVoiceText  = '';
+
+function mcVoiceToggle() {
+  if (_mcVoiceActive) { mcVoiceStop(); }
+  else { mcVoiceStart(); }
+}
+
+function mcVoiceStart() {
+  var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) {
+    mostrarToast('Tu navegador no soporta dictado. Usa Chrome.', 'error'); return;
+  }
+  _mcVoiceRec = new SpeechRec();
+  _mcVoiceRec.lang = 'es-EC';
+  _mcVoiceRec.continuous = true;
+  _mcVoiceRec.interimResults = true;
+  _mcVoiceText = '';
+  _mcVoiceActive = true;
+
+  var btn   = document.getElementById('mc_voice_btn');
+  var icon  = document.getElementById('mc_voice_icon');
+  var label = document.getElementById('mc_voice_label');
+  var dot   = document.getElementById('mc_voice_dot');
+  var status= document.getElementById('mc_voice_status');
+  var trans = document.getElementById('mc_voice_transcript');
+
+  if(btn)   btn.style.background='linear-gradient(135deg,#b91c1c,#ef4444)';
+  if(icon)  icon.textContent='⏹';
+  if(label) label.textContent='Detener';
+  if(dot)   dot.style.display='block';
+  if(status)status.textContent='Escuchando... habla claramente';
+  if(trans) { trans.style.display='block'; trans.textContent=''; }
+
+  _mcVoiceRec.onresult = function(e) {
+    var interim = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) { _mcVoiceText += e.results[i][0].transcript + ' '; }
+      else { interim = e.results[i][0].transcript; }
+    }
+    if(trans) trans.textContent = (_mcVoiceText + interim).trim() || '...';
+  };
+
+  _mcVoiceRec.onerror = function(e) {
+    if(status) status.textContent = 'Error: ' + e.error;
+    mcVoiceReset();
+  };
+
+  _mcVoiceRec.onend = function() {
+    if (_mcVoiceActive) mcVoiceReset();
+  };
+
+  _mcVoiceRec.start();
+}
+
+function mcVoiceStop() {
+  _mcVoiceActive = false;
+  if (_mcVoiceRec) { try { _mcVoiceRec.stop(); } catch(e){} }
+  var texto = _mcVoiceText.trim();
+  mcVoiceReset();
+  if (texto.length > 10) {
+    mcVoiceExtract(texto);
+  } else {
+    var status = document.getElementById('mc_voice_status');
+    if(status) status.textContent = 'Presiona y habla — AI organiza la consulta automáticamente';
+  }
+}
+
+function mcVoiceReset() {
+  _mcVoiceActive = false;
+  var btn   = document.getElementById('mc_voice_btn');
+  var icon  = document.getElementById('mc_voice_icon');
+  var label = document.getElementById('mc_voice_label');
+  var dot   = document.getElementById('mc_voice_dot');
+  if(btn)   btn.style.background='linear-gradient(135deg,#085f54,#0b7c6e)';
+  if(icon)  icon.textContent='🎤';
+  if(label) label.textContent='Dictar consulta';
+  if(dot)   dot.style.display='none';
+}
+
+async function mcVoiceExtract(texto) {
+  var status = document.getElementById('mc_voice_status');
+  var trans  = document.getElementById('mc_voice_transcript');
+  if(status) status.textContent='⏳ Organizando consulta con AI...';
+  if(trans)  { trans.style.color='#6b7280'; trans.textContent=texto; }
+
+  try {
+    var res = await fetch('https://qxoomcqaafogczrvsyhg.functions.supabase.co/medical-soap-extract', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text: texto })
+    });
+    var data = await res.json();
+    if (!data.ok || !data.soap) throw new Error(data.error || 'sin respuesta');
+    mcVoiceFillModal(data.soap, texto);
+  } catch(e) {
+    if(status) status.textContent='Error AI: ' + e.message + ' — campos disponibles para editar';
+    console.error('[voice]', e);
+  }
+}
+
+function mcVoiceFillModal(soap, rawText) {
+  var status = document.getElementById('mc_voice_status');
+  var trans  = document.getElementById('mc_voice_transcript');
+
+  // Guardar transcript para DB
+  window._mcVoiceTranscript = rawText;
+
+  // Subjective
+  var motivo = document.getElementById('c_motivo');
+  var enferm = document.getElementById('c_enfermedad');
+  if(motivo && soap.subjective) motivo.value = soap.subjective.chief_complaint || '';
+  if(enferm && soap.subjective) enferm.value = soap.subjective.history_present_illness || '';
+
+  // Objective
+  var examen = document.getElementById('c_examen');
+  if(examen && soap.objective) examen.value = soap.objective.physical_exam || '';
+  var vits = (soap.objective||{}).vitals||{};
+  var set = function(id,v){ var e=document.getElementById(id);if(e&&v)e.value=v; };
+  set('c_ta',vits.bp); set('c_fc',vits.hr); set('c_temp',vits.temp); set('c_peso',vits.wt);
+
+  // Assessment — diagnoses → CIE tags
+  if (soap.assessment && soap.assessment.diagnoses && soap.assessment.diagnoses.length) {
+    _cieDiags = soap.assessment.diagnoses.map(function(d){
+      return { code: d.cie10||null, label: d.label||d.cie10||'' };
+    });
+    cieRenderTags(); cieSync();
+  }
+
+  // Plan — medications
+  if (soap.plan && soap.plan.medications && soap.plan.medications.length) {
+    _mcRxState.med.items = soap.plan.medications.map(function(m){
+      var detail = [m.dose||'',m.route||'',m.frequency?'cada '+m.frequency:'',m.duration_days?(m.duration_days+' días'):''].filter(Boolean).join(' · ');
+      return m.drug + (detail ? ' — ' + detail : '');
+    });
+    mcRxRender('med'); mcRxSync('med');
+  }
+
+  // Plan — labs
+  if (soap.plan && soap.plan.labs && soap.plan.labs.length) {
+    _mcRxState.lab.items = soap.plan.labs.map(function(l){ return l.name; }).filter(Boolean);
+    mcRxRender('lab'); mcRxSync('lab');
+  }
+
+  // Plan — images
+  if (soap.plan && soap.plan.images && soap.plan.images.length) {
+    _mcRxState.img.items = soap.plan.images.map(function(i){ return i.name; }).filter(Boolean);
+    mcRxRender('img'); mcRxSync('img');
+  }
+
+  // Plan — instructions
+  var indic = document.getElementById('c_indicaciones');
+  if(indic && soap.plan && soap.plan.instructions) indic.value = soap.plan.instructions;
+
+  if(status) status.textContent = '✓ Consulta organizada — revisa y corrige si es necesario';
+  if(trans)  { trans.style.color='#059669'; }
+
+  // Auto-abrir vitales si hay datos
+  if (vits.bp || vits.hr || vits.temp || vits.wt) {
+    var wrap = document.getElementById('mc_vitales_wrap');
+    var arrow = document.getElementById('mc_vitales_arrow');
+    if(wrap && wrap.style.display==='none') { wrap.style.display='block'; if(arrow) arrow.textContent='▴'; }
+  }
+}
 
 function mcRxBuscar(type, q) {
   var drop = document.getElementById('mc_'+type+'_drop');
@@ -7401,7 +7582,7 @@ async function guardarConsulta(pacienteId) {
       instructions: v('c_indicaciones')||''
     },
     metadata: {
-      created_with: 'manual',
+      created_with: window._mcVoiceTranscript ? 'voice' : 'manual',
       location_id: (window.locationsMedico&&window.locationsMedico[0])?window.locationsMedico[0].id:null
     }
   };
@@ -7424,7 +7605,7 @@ async function guardarConsulta(pacienteId) {
     notas: v('c_notas'),
     soap_jsonb: soapJsonb,
     ai_raw_extraction: null,
-    voice_transcript: null
+    voice_transcript: window._mcVoiceTranscript || null
   };
   var res = await _sb.from('consultas').insert([consData]).select().single();
   if(btn){btn.disabled=false;btn.textContent='Guardar consulta';}
