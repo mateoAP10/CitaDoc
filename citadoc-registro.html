@@ -682,8 +682,20 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
         </div>
       </div>
       <div id="payment-form" style="display:none">
-        <div id="pp-button-registro" style="margin-bottom:.5rem"></div>
-        <div class="secure-note">🔒 Pago seguro con PayPhone</div>
+        <div style="text-align:center;margin-bottom:1rem">
+          <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--teal-lite),rgba(11,124,110,.08));display:flex;align-items:center;justify-content:center;margin:0 auto .55rem;font-size:1.15rem;box-shadow:0 2px 8px rgba(11,124,110,.1)">🔒</div>
+          <div style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em">Pago seguro</div>
+          <div style="font-size:.73rem;color:var(--muted);margin-top:.15rem">Procesado por PayPhone · cifrado SSL 256-bit</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:.35rem;flex-wrap:wrap;margin-bottom:.9rem">
+          <span style="display:inline-flex;align-items:center;gap:.2rem;padding:.22rem .5rem;background:rgba(11,124,110,.06);border:1px solid rgba(11,124,110,.12);border-radius:20px;font-size:.63rem;font-weight:600;color:var(--teal)">🔒 SSL</span>
+          <span style="display:inline-flex;align-items:center;gap:.2rem;padding:.22rem .5rem;background:rgba(11,124,110,.06);border:1px solid rgba(11,124,110,.12);border-radius:20px;font-size:.63rem;font-weight:600;color:var(--teal)">🛡 Pago cifrado</span>
+          <span style="display:inline-flex;align-items:center;gap:.2rem;padding:.22rem .5rem;background:rgba(11,124,110,.06);border:1px solid rgba(11,124,110,.12);border-radius:20px;font-size:.63rem;font-weight:600;color:var(--teal)">↩ Cancela cuando quieras</span>
+        </div>
+        <div style="background:linear-gradient(135deg,#f8fafc,#f0fdfa);border:1px solid rgba(11,124,110,.1);border-radius:14px;padding:1rem;margin-bottom:.6rem">
+          <div id="pp-button-registro"></div>
+        </div>
+        <div style="font-size:.7rem;color:var(--muted2);text-align:center;line-height:1.5">Tu acceso PRO se activa automáticamente al confirmar el pago</div>
       </div>
       <div id="free-note" style="background:var(--teal-lite);border-radius:12px;padding:1.2rem;font-size:.88rem;color:var(--teal);line-height:1.6">
         🎉 <strong>Sin costo.</strong> Tu perfil se activará de inmediato. Puedes actualizar al plan Destacado desde tu panel cuando quieras.
