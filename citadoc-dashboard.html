@@ -6953,7 +6953,12 @@ function abrirModalConsulta(pacienteId) {
           </div>
           <div class="mc-field" style="margin-bottom:.85rem">
             <label>🔍 Enfermedad actual</label>
-            <textarea id="c_enfermedad" rows="4" placeholder="Descripción del cuadro clínico, evolución, tiempo de inicio, características del dolor o síntoma principal..."></textarea>
+            <textarea id="c_enfermedad" rows="3" placeholder="Descripción del cuadro clínico, evolución, tiempo de inicio, características del dolor o síntoma principal..."></textarea>
+          </div>
+
+          <div class="mc-field" style="margin-bottom:.85rem">
+            <label>🩻 Examen físico</label>
+            <textarea id="c_examen" rows="3" placeholder="Hallazgos del examen físico: inspección, palpación, auscultación, signos relevantes..."></textarea>
           </div>
 
           <!-- CIE-10 -->
@@ -7116,6 +7121,7 @@ async function guardarConsulta(pacienteId) {
     paciente_id: pacienteId,
     motivo: motivo,
     enfermedad_actual: v('c_enfermedad'),
+    examen_fisico: v('c_examen'),
     diagnostico: v('c_diagnostico'),
     plan: v('c_plan'),
     indicaciones: v('c_indicaciones'),
