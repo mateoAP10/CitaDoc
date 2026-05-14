@@ -829,6 +829,7 @@ display:flex;
   <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -2821,6 +2822,7 @@ async function aplicarMedico(m) {
 
 // ══ INIT ══
 document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof emailjs !== 'undefined') emailjs.init('HwpQ3DPRMmtcVZVt1');
   // Fecha
   const now=new Date();
   const DS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -6044,29 +6046,40 @@ async function confirmarNuevaCita(pacId, pacNombre, pacEmail, pacTel, pacCedula,
   if(res.error){ mostrarToast('Error: '+res.error.message,'error'); if(btn){btn.textContent='Crear cita →';btn.disabled=false;} return; }
 
   // Notificar al paciente por email
-  if(pacEmail && typeof emailjs !== 'undefined') {
-    var nombreMed = (M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido;
-    var fechaHum  = new Date(fecha+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
-    var sedeName  = '';
-    if(locId && window.locationsMedico) {
-      var loc = window.locationsMedico.find(function(l){ return String(l.id)===String(locId); });
-      if(loc) sedeName = ' · '+loc.nombre;
-    }
+  var nombreMed = (M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido;
+  var fechaHum  = new Date(fecha+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
+  var sedeName  = '';
+  if(locId && window.locationsMedico) {
+    var loc = window.locationsMedico.find(function(l){ return String(l.id)===String(locId); });
+    if(loc) sedeName = loc.nombre;
+  }
+  var mensaje = 'Hola '+pacNombre+', tu cita de '+(tipo||'consulta').toLowerCase()+' con '+nombreMed
+    +' está confirmada para el '+fechaHum+' a las '+hora
+    +(sedeName?' en '+sedeName:'')
+    +'. Modalidad: '+(modal==='virtual'?'Virtual 💻':'Presencial 🏥')
+    +'. Ante cualquier duda no dudes en contactarnos.';
+
+  if(pacEmail) {
     emailjs.send('service_63xln0n','template_e8t8qkq',{
-      to_name:  pacNombre,
-      to_email: pacEmail,
-      mensaje:  'Tu cita de '+tipo.toLowerCase()+' con '+nombreMed+' está confirmada para el '+fechaHum+' a las '+hora+(sedeName?sedeName:'')+'. Modalidad: '+modal+'. Te esperamos.',
-      medico_nombre: nombreMed,
-      hora_cita:  hora,
-      fecha_cita: fechaHum,
+      to_name:         pacNombre,
+      to_email:        pacEmail,
+      mensaje:         mensaje,
+      medico_nombre:   nombreMed,
+      hora_cita:       hora,
+      fecha_cita:      fechaHum,
       paciente_nombre: pacNombre,
-      paciente_tel: pacTel||'',
-      motivo: tipo
-    }).catch(function(e){ console.warn('email:', e); });
+      paciente_tel:    pacTel||'',
+      motivo:          tipo||'Consulta'
+    }).then(function(){
+      mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail);
+    }).catch(function(e){
+      console.error('[emailjs] error:', e);
+      mostrarToast('Cita creada ✓ — (email no enviado: '+((e&&e.text)||'error')+')', 'error');
+    });
   }
 
   cerrarNuevaCita();
-  mostrarToast('Cita creada ✓ — '+pacNombre+' notificado');
+  if(!pacEmail) mostrarToast('Cita creada ✓ — Sin email registrado para este paciente');
   // Refrescar calendario si está abierto
   if(M && AppState.currentPanel==='calendario') cargarCitasCal(M.id);
 }
