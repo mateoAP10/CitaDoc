@@ -1136,7 +1136,7 @@ display:flex;
       <div id="ptab-ubicaciones" class="ptab-content" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
           <div style="font-size:.85rem;color:#6b7280">Agrega todos los consultorios donde atiendes</div>
-          <button onclick="abrirMapaModal()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar ubicación</button>
+          <button onclick="abrirModalUbicacion()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar ubicación</button>
         </div>
         <div id="ubicacionesList"></div>
       </div>
@@ -2326,32 +2326,21 @@ window._ubPlaces = [];
 
 function _ubSelectPlace(idx) {
   var place = window._ubPlaces[idx];
-  console.log('[maps] suggestion clicked', idx, place);
-  if (!place) { console.warn('[maps] no place at index', idx); return; }
-
+  if (!place) return;
   var addr   = place.address || {};
   var ciudad = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
   var label  = place.display_name.split(',').slice(0,3).join(',');
   var lat    = parseFloat(place.lat);
   var lon    = parseFloat(place.lon);
-
-  console.log('[maps] lat/lon', lat, lon, typeof lat, typeof lon);
-
   var inp = document.getElementById('ub_direccion');
   var sug = document.getElementById('modalDirSuggestions');
   if (inp) { inp.value = label; inp.dataset.lat = lat; inp.dataset.lon = lon; }
   var ciudadInp = document.getElementById('ub_ciudad');
   if (ciudadInp && ciudad) ciudadInp.value = ciudad;
   if (sug) sug.style.display = 'none';
-
-  console.log('[maps] map exists?', !!window._ubMap, 'marker exists?', !!window._ubMarker);
-
   if (window._ubMap && window._ubMarker && !isNaN(lat) && !isNaN(lon)) {
-    console.log('[maps] before setView');
     window._ubMap.setView([lat, lon], 16);
-    console.log('[maps] map moved');
     window._ubMarker.setLatLng([lat, lon]);
-    console.log('[maps] marker moved');
   }
 }
 
@@ -2373,8 +2362,8 @@ function buscarDireccionModal(query, inp, sug) {
         var div = document.createElement('div');
         div.style.cssText = 'padding:.6rem .85rem;font-size:.82rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;pointer-events:all;user-select:none';
         div.textContent = label;
-        div.onmouseenter = function(){ this.style.background='#dc2626'; this.style.color='#fff'; };
-        div.onmouseleave = function(){ this.style.background=''; this.style.color='#374151'; };
+        div.onmouseenter = function(){ this.style.background='#f0fdf4'; };
+        div.onmouseleave = function(){ this.style.background=''; };
         div.onclick = function(e){ e.stopPropagation(); _ubSelectPlace(idx); };
         sug.appendChild(div);
       });
