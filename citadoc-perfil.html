@@ -550,9 +550,9 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
     <div class="hero-v2">
       <div class="hero-photo-v2" id="profAvatar">👨‍⚕️</div>
       <div class="hero-info-v2">
+        <div class="hero-spec-v2" id="profSub"></div>
         <div class="profile-badges" id="profBadges"></div>
         <h1 class="hero-name-v2" id="profName">Cargando...</h1>
-        <div class="hero-spec-v2" id="profSub"></div>
         <div class="hero-trust-v2" id="heroTrust"></div>
         <div id="heroPricePill" class="hero-price-pill" style="display:none">
           <span class="pill-label">Precio consulta</span>
@@ -560,12 +560,12 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
           <span class="pill-currency">USD</span>
         </div>
         <div class="hero-ctas-v2">
-          <a class="btn-wa-hero" id="btnWAHero" href="#" target="_blank" rel="noopener" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Escribir por WhatsApp
-          </a>
           <a class="btn-book-hero" id="btnBookHero" href="#agendaSection" onclick="document.getElementById('agendaSection').scrollIntoView({behavior:'smooth'});return false;">
             📅 Agendar consulta
+          </a>
+          <a class="btn-wa-hero" id="btnWAHero" href="#" target="_blank" rel="noopener" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            💬 WhatsApp
           </a>
         </div>
         <p class="hero-bio-v2" id="profBioShort"></p>
@@ -1162,7 +1162,6 @@ function aplicarMedico(m, formacion, citas, locs) {
   if (badges) {
     var b = '';
     if (m.plan==='destacado') b += '<span class="badge badge-dest">⭐ Destacado</span>';
-    if (esp) b += '<span class="badge badge-esp">'+esp+'</span>';
     if (m.senescyt) b += '<span class="badge badge-reg">SENESCYT: '+m.senescyt+'</span>';
     badges.innerHTML = b;
   }
@@ -1207,8 +1206,11 @@ function aplicarMedico(m, formacion, citas, locs) {
   // WhatsApp CTA en el hero
   var waHeroBtn = el('btnWAHero');
   if (waHeroBtn && m.whatsapp && m.mostrar_whatsapp !== false) {
-    var waUrl0 = urlWA(m.whatsapp, m.pais, nombre);
-    if (waUrl0) { waHeroBtn.href = waUrl0; waHeroBtn.style.display = 'flex'; }
+    var waTel = m.whatsapp.replace(/[^0-9]/g,'');
+    if (waTel.charAt(0)==='0') waTel=waTel.slice(1);
+    if (!waTel.startsWith('593')) waTel='593'+waTel;
+    waHeroBtn.href = 'https://wa.me/'+waTel;
+    waHeroBtn.style.display = 'flex';
   }
 
   // Microcopy dinámico en botón Agendar
