@@ -912,7 +912,13 @@ function renderSedeSelector(locs) {
     wrap.style.display = 'block';
     var label = document.createElement('div');
     label.className = 'sede-info-label';
-    label.innerHTML = '📍 <strong>' + (locs[0].nombre || 'Consultorio') + '</strong> · ' + (locs[0].direccion ? locs[0].direccion.split(',').slice(0,2).join(',') : '');
+    var _d1 = ['lun','mar','mie','jue','vie','sab','dom'];
+    var _dl = {lun:'Lun',mar:'Mar',mie:'Mié',jue:'Jue',vie:'Vie',sab:'Sáb',dom:'Dom'};
+    var _b1 = (window._sedeBlocks||[]).filter(function(b){ return String(b.location_id)===String(locs[0].id); });
+    var _ds = _d1.filter(function(d){ return _b1.some(function(b){ return b.day===d; }); }).map(function(d){ return _dl[d]; }).join(' · ');
+    label.innerHTML = '📍 <strong>' + (locs[0].nombre || 'Consultorio') + '</strong>'
+      + (locs[0].direccion ? ' · ' + locs[0].direccion.split(',').slice(0,2).join(',') : '')
+      + (_ds ? ' <span style="color:var(--teal);font-weight:700">· '+_ds+'</span>' : '');
     wrap.appendChild(label);
     // Recargar disponibilidad filtrada por la única sede
     cargarDisponibilidadPorSede(_medico, [], _sb, selectedLocationId)
@@ -944,6 +950,23 @@ function renderSedeSelector(locs) {
     addr.className = 'sede-addr';
     addr.textContent = loc.direccion ? loc.direccion.split(',').slice(0,2).join(',') : '';
     card.appendChild(addr);
+
+    // Días activos de esta sede
+    var dayOrder = ['lun','mar','mie','jue','vie','sab','dom'];
+    var dayLabel = {lun:'Lun',mar:'Mar',mie:'Mié',jue:'Jue',vie:'Vie',sab:'Sáb',dom:'Dom'};
+    var blocks = (window._sedeBlocks||[]).filter(function(b){ return String(b.location_id)===String(loc.id); });
+    var dias = dayOrder.filter(function(d){ return blocks.some(function(b){ return b.day===d; }); });
+    if (dias.length) {
+      var diasEl = document.createElement('div');
+      diasEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.45rem';
+      dias.forEach(function(d) {
+        var tag = document.createElement('span');
+        tag.style.cssText = 'font-size:.68rem;font-weight:700;color:var(--teal);background:var(--teal-lite);border-radius:6px;padding:.15rem .45rem';
+        tag.textContent = dayLabel[d];
+        diasEl.appendChild(tag);
+      });
+      card.appendChild(diasEl);
+    }
 
     var chip = document.createElement('span');
     chip.className = 'sede-chip';
@@ -1450,7 +1473,9 @@ function cargarPerfil() {
       var en60 = new Date(); en60.setDate(en60.getDate()+60);
       var p2 = _sb.from('citas').select('fecha,hora').eq('medico_id',m.id).gte('fecha',hoy).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada');
       var p3 = _sb.from('doctor_locations').select('id,nombre,direccion,telefono,ciudad,lat,lng,maps_url').eq('medico_id', m.id).order('created_at');
-      Promise.all([p1, p2, p3]).then(function(results) {
+      var p4 = _sb.from('doctor_schedule_blocks').select('location_id,day').eq('medico_id', m.id).eq('is_active', true);
+      Promise.all([p1, p2, p3, p4]).then(function(results) {
+        window._sedeBlocks = results[3].data || [];
         aplicarMedico(m, results[0].data||[], results[1].data||[], results[2].data||[]);
       });
     });
