@@ -688,6 +688,7 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
       <div id="free-note" style="background:var(--teal-lite);border-radius:12px;padding:1.2rem;font-size:.88rem;color:var(--teal);line-height:1.6">
         🎉 <strong>Sin costo.</strong> Tu perfil se activará de inmediato. Puedes actualizar al plan Destacado desde tu panel cuando quieras.
       </div>
+      <p id="error-activar" style="display:none;color:#dc2626;font-size:.83rem;margin-top:.8rem;padding:.6rem .9rem;background:#fef2f2;border-radius:9px"></p>
       <div class="form-nav">
         <button class="btn-back" onclick="goStep(2)">← Atrás</button>
         <button class="btn-next" onclick="activarCuenta()" id="btn-activar">Activar mi perfil gratis →</button>
@@ -942,11 +943,18 @@ async function activarCuenta(){
   const desde   =document.getElementById('f-desde')?.value||'09:00';
   const hasta   =document.getElementById('f-hasta')?.value||'17:00';
 
-  if(!nombre||!apellido||!email||!pass){alert('Completa nombre, apellido, email y contraseña.');return;}
-  if(pass!==pass2){alert('Las contraseñas no coinciden.');return;}
-  if(pass.length<8){alert('La contraseña debe tener mínimo 8 caracteres.');return;}
-
   const btn=document.getElementById('btn-activar');
+
+  function showErrActivar(msg){
+    var e=document.getElementById('error-activar');
+    if(e){e.textContent=msg;e.style.display='block';}
+    btn.textContent='Activar mi perfil →';btn.disabled=false;
+  }
+
+  if(!nombre||!apellido||!email||!pass){showErrActivar('Completa nombre, apellido, email y contraseña.');return;}
+  if(pass!==pass2){showErrActivar('Las contraseñas no coinciden.');return;}
+  if(pass.length<8){showErrActivar('La contraseña debe tener mínimo 8 caracteres.');return;}
+
   btn.textContent='Creando cuenta...';btn.disabled=true;
 
   try{
@@ -955,35 +963,31 @@ async function activarCuenta(){
       email,password:pass,options:{data:{nombre,apellido,titulo}}
     });
     if(authError){
-      alert(authError.message.includes('already registered')?'Este correo ya está registrado. Inicia sesión.':'Error: '+authError.message);
-      btn.textContent='Activar mi perfil →';btn.disabled=false;return;
+      var msg=authError.message.toLowerCase().includes('already registered')
+        ?'Este correo ya está registrado. Inicia sesión.'
+        :'No se pudo crear la cuenta. Intenta de nuevo.';
+      showErrActivar(msg);return;
     }
-    const userId = authData?.user?.id;
-
-if (!userId) {
-  alert('No se pudo crear el usuario correctamente.');
-  btn.textContent='Activar mi perfil →';
-  btn.disabled=false;
-  return;
-}
+    const userId=authData?.user?.id;
+    if(!userId){showErrActivar('No se pudo crear el usuario. Intenta de nuevo.');return;}
 
     // 2. Slug
-    function toSlug(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().replace(/\s+/g,'-');}
+    function toSlug(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().replace(/\s+/g,'-');}
     const slug=toSlug(titulo.replace('.','').replace(/\s+/g,' ')+' '+nombre+' '+apellido);
 
     // 3. Días
     const diasMap={'Lun':'lun','Mar':'mar','Mié':'mie','Jue':'jue','Vie':'vie','Sáb':'sab','Dom':'dom'};
     const diasSel=Array.from(document.querySelectorAll('.day-chip.selected')).map(el=>diasMap[el.textContent]||el.textContent.toLowerCase());
-    const dias=diasSel.length>0?diasSel:['lun','mar','mie','jue','vie']; // default Lun-Vie
+    const dias=diasSel.length>0?diasSel:['lun','mar','mie','jue','vie'];
 
     // 4. País y ciudad
     const paisVal=regPais?.getValue()||'ecuador';
     const ciudadLabel=regCiudad?.getLabel()||'';
 
-    // 5. Insertar médico via RPC (SECURITY DEFINER — bypasea RLS pre-confirmación)
-    var pagoPrevio = localStorage.getItem('citadoc_pago_pro') === 'true';
-    var planFinal = selectedPlan==='featured' || pagoPrevio ? 'pro' : 'gratuito';
-    const{data:medicoData,error:medicoError}=await _supabase.rpc('register_medico',{
+    // 5. Insertar médico via RPC (SECURITY DEFINER — bypasea RLS pre-confirmación de email)
+    var pagoPrevio=localStorage.getItem('citadoc_pago_pro')==='true';
+    var planFinal=selectedPlan==='featured'||pagoPrevio?'pro':'gratuito';
+    const{error:medicoError}=await _supabase.rpc('register_medico',{
       p_user_id:userId, p_email:email, p_nombre:nombre, p_apellido:apellido,
       p_titulo:titulo, p_cedula:cedula||'', p_senescyt:senescyt||'', p_slug:slug,
       p_bio:bio||'', p_precio:precio,
@@ -998,75 +1002,26 @@ if (!userId) {
         ? new Date(Date.now()+30*24*60*60*1000).toISOString()
         : null,
     });
+    if(medicoError){console.error(medicoError);showErrActivar('Error al guardar perfil. Intenta de nuevo.');return;}
 
-    if(medicoError){
-      console.error(medicoError);
-      alert('Error al guardar perfil: '+medicoError.message);
-      btn.textContent='Activar mi perfil →';btn.disabled=false;return;
-    }
-// Registro exitoso
-localStorage.removeItem('citadoc_pago_pro');
-
-document.querySelector('.registro-card').innerHTML = `
-  <div class="check-email-state">
-
-    <div class="check-icon">
-      ✉️
-    </div>
-
-    <h2>Check your email</h2>
-
-    <p>
-      We’ve sent a confirmation link to:
-    </p>
-
-    <div class="email-highlight">
-      ${email}
-    </div>
-
-    <p class="subtext">
-      Please confirm your account before accessing your CitaDoc dashboard.
-    </p>
-
-    <div class="check-actions">
-
-      <a
-        href="https://mail.google.com"
-        target="_blank"
-        class="primary-btn"
-      >
-        Open Gmail
-      </a>
-
-      <a
-        href="index.html"
-        class="secondary-btn"
-      >
-        Back to Login
-      </a>
-
-    </div>
-
-  </div>
-`;
-
-btn.textContent='Activar mi perfil →';
-btn.disabled=false;
-
-return;
-    // 6. URL y sessionStorage
-    const url='citadoc.lat/medico/'+slug;
-    document.getElementById('success-url').textContent=url;
-    sessionStorage.setItem('citadoc_user',JSON.stringify({...medicoData,nombre,apellido,titulo,email,slug,ciudad:ciudadLabel,especialidades:Array.from(selectedSpecs)}));
-
-
-    // 8. Paso 5
-    goStep(5);
+    // 6. Éxito — reemplazar form con pantalla "Check your email"
+    localStorage.removeItem('citadoc_pago_pro');
+    document.querySelector('.form-side').innerHTML=`
+      <div class="check-email-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:3rem 1.5rem;text-align:center">
+        <div class="check-icon">✉️</div>
+        <h2>Check your email</h2>
+        <p>We've sent a confirmation link to:</p>
+        <div class="email-highlight">${email}</div>
+        <p class="subtext">Please confirm your account before accessing your CitaDoc dashboard.</p>
+        <div class="check-actions">
+          <a href="https://mail.google.com" target="_blank" class="primary-btn">Open Gmail</a>
+          <a href="index.html" class="secondary-btn">Back to Login</a>
+        </div>
+      </div>`;
 
   }catch(err){
     console.error(err);
-    alert('Error inesperado. Intenta de nuevo.');
-    btn.textContent='Activar mi perfil →';btn.disabled=false;
+    showErrActivar('Ocurrió un error inesperado. Intenta de nuevo.');
   }
 }
 
