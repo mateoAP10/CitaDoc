@@ -7016,6 +7016,7 @@ function abrirModalConsulta(pacienteId) {
               <input id="mc_med_search" type="text" autocomplete="off" placeholder="Buscar medicamento, dosis..." style="padding-left:2.1rem!important" oninput="mcRxBuscar('med',this.value)" onfocus="mcRxBuscar('med',this.value)" onblur="setTimeout(function(){mcRxCerrar('med')},200)" onkeydown="mcRxKeyNav(event,'med')">
               <div id="mc_med_drop" style="display:none;position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:200px;overflow-y:auto"></div>
             </div>
+            <div id="mc_posologia_wrap" style="display:none"></div>
             <div id="mc_med_tags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem"></div>
             <input type="hidden" id="c_plan">
           </div>
@@ -7158,13 +7159,89 @@ function mcRxKeyNav(e, type) {
   rows.forEach(function(r,i){ r.style.background = i===st.idx?'#e0f5f2':''; });
 }
 
+var _mcMedPending = null; // medicamento esperando configuración
+
 function mcRxAgregar(type, label) {
   mcRxCerrar(type);
   var inp = document.getElementById('mc_'+type+'_search'); if(inp) inp.value='';
   var st = _mcRxState[type];
+  if (type === 'med') {
+    // Mostrar mini-form de posología
+    _mcMedPending = label;
+    mcMostrarPosologia(label);
+    return;
+  }
   if (st.items.indexOf(label) > -1) return;
   st.items.push(label);
   mcRxRender(type); mcRxSync(type);
+}
+
+function mcMostrarPosologia(label) {
+  var cont = document.getElementById('mc_posologia_wrap');
+  if (!cont) return;
+  var _sel = { forma:'', freq:'', dias:'' };
+
+  function btn(val, label, group) {
+    return '<button type="button" onclick="mcPosBtn(this,\''+group+'\',\''+val+'\')" '
+      +'style="padding:.3rem .65rem;border-radius:20px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;font-size:.72rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s" '
+      +'onmouseenter="this.style.borderColor=\'#0b7c6e\'" onmouseleave="if(!this.classList.contains(\'sel\'))this.style.borderColor=\'#e5e7eb\'">'+label+'</button>';
+  }
+
+  cont.innerHTML = '<div style="background:#f0fdf8;border:1.5px solid rgba(11,124,110,.2);border-radius:12px;padding:.85rem 1rem;margin-top:.5rem">'
+    +'<div style="font-size:.72rem;font-weight:700;color:#065f46;margin-bottom:.6rem">💊 '+label+'</div>'
+    +'<div style="margin-bottom:.55rem"><div style="font-size:.62rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Forma</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:.3rem" id="mc_g_forma">'
+    +btn('1 comprimido','1 comprimido','forma')+btn('2 comprimidos','2 comprimidos','forma')+btn('1 cápsula','1 cápsula','forma')+btn('1 ampolla','1 ampolla','forma')+btn('1 supositorio','1 supositorio','forma')+btn('10 gotas','10 gotas','forma')+btn('5ml','5ml jarabe','forma')+'</div></div>'
+    +'<div style="margin-bottom:.55rem"><div style="font-size:.62rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Cada</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:.3rem" id="mc_g_freq">'
+    +btn('4h','4 horas','freq')+btn('6h','6 horas','freq')+btn('8h','8 horas','freq')+btn('12h','12 horas','freq')+btn('24h','24 horas','freq')+btn('sos','Solo si hay dolor','freq')+'</div></div>'
+    +'<div style="margin-bottom:.7rem"><div style="font-size:.62rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem">Por</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:.3rem" id="mc_g_dias">'
+    +btn('3 días','3 días','dias')+btn('5 días','5 días','dias')+btn('7 días','7 días','dias')+btn('10 días','10 días','dias')+btn('14 días','14 días','dias')+btn('1 mes','1 mes','dias')+btn('continuo','Continuo','dias')+'</div></div>'
+    +'<div style="display:flex;gap:.4rem">'
+    +'<button onclick="mcConfirmarMed()" id="mc_confirm_med" style="flex:1;padding:.48rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;opacity:.4" disabled>Agregar →</button>'
+    +'<button onclick="mcCancelarMed()" style="padding:.48rem .85rem;background:none;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.78rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif">Cancelar</button>'
+    +'</div>'
+  +'</div>';
+  cont.style.display = 'block';
+}
+
+function mcPosBtn(el, group, val) {
+  // Toggle selección en el grupo
+  var container = document.getElementById('mc_g_'+group);
+  if (!container) return;
+  container.querySelectorAll('button').forEach(function(b){
+    b.classList.remove('sel');
+    b.style.background='#fff'; b.style.borderColor='#e5e7eb'; b.style.color='#374151';
+  });
+  el.classList.add('sel');
+  el.style.background='#0b7c6e'; el.style.borderColor='#0b7c6e'; el.style.color='#fff';
+  el.dataset.val = val;
+  // Habilitar botón si todos seleccionados
+  var f=document.querySelector('#mc_g_forma .sel');
+  var fr=document.querySelector('#mc_g_freq .sel');
+  var d=document.querySelector('#mc_g_dias .sel');
+  var btn=document.getElementById('mc_confirm_med');
+  if(btn){btn.disabled=!(f&&fr&&d);btn.style.opacity=(f&&fr&&d)?'1':'0.4';}
+}
+
+function mcConfirmarMed() {
+  var f  = document.querySelector('#mc_g_forma .sel');
+  var fr = document.querySelector('#mc_g_freq .sel');
+  var d  = document.querySelector('#mc_g_dias .sel');
+  if(!f||!fr||!d) return;
+  var label = _mcMedPending;
+  var detalle = f.dataset.val+' · cada '+fr.dataset.val+' · por '+d.dataset.val;
+  var completo = label+' — '+detalle;
+  var st = _mcRxState['med'];
+  if (st.items.indexOf(completo) === -1) { st.items.push(completo); mcRxRender('med'); mcRxSync('med'); }
+  mcCancelarMed();
+}
+
+function mcCancelarMed() {
+  _mcMedPending = null;
+  var cont = document.getElementById('mc_posologia_wrap');
+  if(cont){cont.innerHTML='';cont.style.display='none';}
 }
 
 function mcRxRemover(type, idx) {
