@@ -934,6 +934,13 @@ var _sb = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 );
 
+// Detectar confirmación de email y login — redirigir al dashboard
+_sb.auth.onAuthStateChange(function(event, session) {
+  if (event === 'SIGNED_IN' && session && session.user.email_confirmed_at) {
+    window.location.href = 'citadoc-dashboard.html';
+  }
+});
+
 // ── ESTADO ──
 var ALL_DOCTORS = [];
 var filtered = [];
