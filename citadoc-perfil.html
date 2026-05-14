@@ -1208,15 +1208,14 @@ function aplicarMedico(m, formacion, citas, locs) {
 
   // WhatsApp CTA en el hero
   var waHeroBtn = el('btnWAHero');
-  if (waHeroBtn) {
-    if (m.whatsapp) {
-      var waTel = m.whatsapp.replace(/[^0-9]/g,'');
-      if (waTel.charAt(0)==='0') waTel=waTel.slice(1);
-      if (!waTel.startsWith('593')) waTel='593'+waTel;
-      waHeroBtn.href = 'https://wa.me/'+waTel;
-    } else {
-      waHeroBtn.style.display = 'none';
-    }
+  if (waHeroBtn && m.whatsapp) {
+    var waTel = m.whatsapp.replace(/[^0-9]/g,'');
+    if (waTel.charAt(0)==='0') waTel=waTel.slice(1);
+    if (!waTel.startsWith('593')) waTel='593'+waTel;
+    waHeroBtn.href = 'https://wa.me/'+waTel;
+    waHeroBtn.setAttribute('style','display:flex!important');
+  } else if (waHeroBtn && !m.whatsapp) {
+    waHeroBtn.setAttribute('style','display:none');
   }
 
   // Microcopy dinámico en botón Agendar
@@ -1618,18 +1617,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // Cargar
   cargarPerfil();
 
-  // Safety: forzar WA hero después de que todo cargue
-  setTimeout(function() {
-    var wab = document.getElementById('btnWAHero');
-    if (!wab) return;
-    if (_medico && _medico.whatsapp) {
-      var t = _medico.whatsapp.replace(/[^0-9]/g,'');
-      if (t.charAt(0)==='0') t=t.slice(1);
-      if (!t.startsWith('593')) t='593'+t;
-      wab.href = 'https://wa.me/'+t;
-      wab.style.setProperty('display','flex','important');
-    }
-  }, 600);
+  // Safety: forzar WA hero — reintenta hasta que _medico cargue
+  (function retryWA(n) {
+    setTimeout(function() {
+      var wab = document.getElementById('btnWAHero');
+      if (!wab) return;
+      if (_medico && _medico.whatsapp) {
+        var t = _medico.whatsapp.replace(/[^0-9]/g,'');
+        if (t.charAt(0)==='0') t=t.slice(1);
+        if (!t.startsWith('593')) t='593'+t;
+        wab.href = 'https://wa.me/'+t;
+        wab.setAttribute('style','display:flex!important');
+      } else if (n > 0) {
+        retryWA(n - 1);
+      }
+    }, 400);
+  })(10);
   initAuth(_sb, showLoggedIn, showLoggedOut);
 });
 </script>
