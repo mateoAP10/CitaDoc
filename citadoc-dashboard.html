@@ -6788,6 +6788,17 @@ function renderFicha(p, consultas, proximaCita) {
         hdr.querySelector('span:last-child').textContent = open ? '▴' : '▾';
       });
 
+      // Botón documentos (si hay plan/imágenes/labs)
+      if (con.plan || con.imagenes || con.estudios) {
+        var docsBtn = document.createElement('button');
+        docsBtn.style.cssText = 'width:100%;margin-top:.5rem;padding:.4rem;background:none;border:1px solid rgba(11,124,110,.18);border-radius:8px;font-size:.72rem;color:var(--teal);cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem';
+        docsBtn.innerHTML = '📄 Documentos de esta consulta';
+        docsBtn.onmouseenter=function(){this.style.background='var(--teal-lite)';};
+        docsBtn.onmouseleave=function(){this.style.background='none';};
+        (function(co,pa){ docsBtn.addEventListener('click',function(e){e.stopPropagation();mcDocsConsulta(co,pa);}); })(con, p);
+        item.appendChild(docsBtn);
+      }
+
       item.appendChild(hdr);
       item.appendChild(body);
       main.appendChild(item);
@@ -7351,30 +7362,84 @@ function mcVerDoc(tipo) {
   w.document.close();
 }
 
-function mcEnviarDocs() {
-  var pac = _fichaPaciente || {};
-  var con = _lastConsulta;
+function mcEnviarDocs(conOverride, pacOverride) {
+  var pac = pacOverride || _fichaPaciente || {};
+  var con = conOverride || _lastConsulta;
   var med = M || {};
   if(!pac.email){mostrarToast('El paciente no tiene email registrado','error');return;}
   var nomMed = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
+  var esp = (med.especialidades||[])[0]||'Médico';
+  var sen = med.senescyt ? 'Reg. SENESCYT: '+med.senescyt : '';
   var fecha = new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
-  var items = [];
-  if(con.plan) items.push('💊 Medicamentos: '+con.plan.split(' | ').join(', '));
-  if(con.imagenes) items.push('🩻 Imágenes: '+con.imagenes.split(' | ').join(', '));
-  if(con.estudios) items.push('🔬 Laboratorios: '+con.estudios.split(' | ').filter(Boolean).join(', '));
-  if(con.indicaciones) items.push('📝 Indicaciones: '+con.indicaciones);
-  var mensaje = 'Estimado/a '+pac.nombre+',\n\nAdjunto encontrará las indicaciones médicas de su consulta del '+fecha+' con '+nomMed+':\n\n'+items.join('\n\n');
+
+  function listaHTML(items, icono, color) {
+    if(!items||!items.length) return '';
+    return '<div style="margin:16px 0;padding:16px;background:'+color+';border-radius:12px">'
+      +'<div style="font-size:13px;font-weight:700;margin-bottom:10px">'+icono+'</div>'
+      +items.map(function(it,i){return '<div style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:14px;color:#1a1a1a">'+(i+1)+'. '+it.trim()+'</div>';}).join('')
+    +'</div>';
+  }
+
+  var meds   = (con.plan||'').split('|').map(function(s){return s.trim();}).filter(Boolean);
+  var imgs   = (con.imagenes||'').split('|').map(function(s){return s.trim();}).filter(Boolean);
+  var labs   = (con.estudios||'').split('|').map(function(s){return s.trim();}).filter(Boolean);
+  var indic  = (con.indicaciones||'').trim();
+  var diag   = (con.diagnostico||'').trim();
+
+  var body = '<div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:600px;margin:0 auto">'
+    +'<div style="background:linear-gradient(135deg,#062e2b,#0b7c6e);padding:28px 32px;border-radius:16px 16px 0 0;color:#fff">'
+      +'<div style="font-size:11px;opacity:.6;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">CitaDoc Health Network</div>'
+      +'<div style="font-size:22px;font-weight:700;margin-bottom:4px">Indicaciones médicas</div>'
+      +'<div style="font-size:13px;opacity:.7">'+fecha+'</div>'
+    +'</div>'
+    +'<div style="background:#fff;padding:28px 32px">'
+      +'<p style="font-size:15px;color:#374151;margin-bottom:20px">Hola <strong>'+pac.nombre+'</strong>, adjuntamos las indicaciones de su consulta con <strong>'+nomMed+'</strong>.</p>'
+      +(diag?'<div style="margin:16px 0;padding:14px 16px;background:#f0fdf4;border-left:4px solid #0b7c6e;border-radius:0 10px 10px 0"><div style="font-size:11px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Diagnóstico</div><div style="font-size:14px;color:#1a1a1a">'+diag+'</div></div>':'')
+      +listaHTML(meds,'💊 Medicamentos','#eff6ff')
+      +listaHTML(imgs,'🩻 Estudios de imagen','#fefce8')
+      +listaHTML(labs,'🔬 Laboratorios','#f0fdf4')
+      +(indic?'<div style="margin:16px 0;padding:14px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0"><div style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📝 Indicaciones generales</div><div style="font-size:14px;color:#374151;line-height:1.6">'+indic+'</div></div>':'')
+      +'<div style="margin-top:28px;padding-top:20px;border-top:1px dashed #e5e7eb;text-align:center">'
+        +'<div style="font-size:14px;font-weight:700;color:#1a1a1a">'+nomMed+'</div>'
+        +'<div style="font-size:12px;color:#6b7280">'+esp+(sen?' · '+sen:'')+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="background:#f8fafc;padding:14px 32px;border-radius:0 0 16px 16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center">CitaDoc Health Network · citadoc.lat</div>'
+  +'</div>';
+
+  var btn = event && event.target;
+  if(btn){var orig=btn.textContent;btn.textContent='Enviando...';btn.disabled=true;
+    setTimeout(function(){btn.textContent=orig;btn.disabled=false;},4000);}
+
   emailjs.send('service_63xln0n','template_e8t8qkq',{
-    to_email: pac.email,
-    doctor_name: nomMed,
-    patient_name: pac.nombre,
-    appointment_date: fecha,
-    appointment_time: '',
-    location_name: mensaje,
-    appointment_mode: 'Documento médico adjunto',
-    public_profile_url: 'https://citadoc.lat/citadoc-perfil.html?slug='+(med.slug||'')
-  }).then(function(){ mostrarToast('Documentos enviados a '+pac.email+' ✓'); })
-   .catch(function(e){ mostrarToast('Error al enviar: '+(e.text||'error'),'error'); });
+    to_email:          pac.email,
+    doctor_name:       nomMed,
+    patient_name:      pac.nombre,
+    appointment_date:  fecha,
+    appointment_time:  diag||'Indicaciones adjuntas',
+    location_name:     body,
+    appointment_mode:  '📋 Documento médico — ver detalle abajo',
+    public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(med.slug||'')
+  }).then(function(){ mostrarToast('✓ Enviado a '+pac.email); })
+   .catch(function(e){ mostrarToast('Error: '+((e&&e.text)||'no enviado'),'error'); });
+}
+
+// Generar docs desde ficha (consultas pasadas)
+function mcDocsConsulta(con, pac) {
+  _lastConsulta = con;
+  var ex=document.getElementById('mcDocsPanel'); if(ex) ex.remove();
+  var panel=document.createElement('div');
+  panel.id='mcDocsPanel';
+  panel.style.cssText='position:fixed;bottom:1.5rem;right:1.5rem;background:#fff;border:1.5px solid rgba(11,124,110,.2);border-radius:16px;padding:1rem 1.2rem;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:9999;min-width:220px;animation:proModalIn .2s cubic-bezier(.16,1,.3,1)';
+  panel.innerHTML='<div style="font-size:.7rem;font-weight:700;color:#0b7c6e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Documentos</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.4rem">'
+      +(con.plan?'<button onclick="mcVerDoc(\'receta\')" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:9px;font-size:.8rem;font-weight:600;color:#1e40af;cursor:pointer;font-family:DM Sans,sans-serif">💊 Ver receta médica</button>':'')
+      +(con.imagenes?'<button onclick="mcVerDoc(\'imagenes\')" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:#fefce8;border:1.5px solid #fde68a;border-radius:9px;font-size:.8rem;font-weight:600;color:#92400e;cursor:pointer;font-family:DM Sans,sans-serif">🩻 Ver orden imágenes</button>':'')
+      +(con.estudios?'<button onclick="mcVerDoc(\'laboratorio\')" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:9px;font-size:.8rem;font-weight:600;color:#065f46;cursor:pointer;font-family:DM Sans,sans-serif">🔬 Ver orden laboratorio</button>':'')
+      +((pac&&pac.email)&&(con.plan||con.imagenes||con.estudios)?'<button onclick="mcEnviarDocs(null,'+JSON.stringify(pac).replace(/"/g,"'")+');this.parentNode.parentNode.parentNode.remove()" style="display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem .8rem;background:linear-gradient(135deg,#085f54,#0b7c6e);border:none;border-radius:9px;font-size:.8rem;font-weight:700;color:#fff;cursor:pointer;font-family:DM Sans,sans-serif;margin-top:.2rem">✉️ Enviar al paciente</button>':'')
+    +'</div>'
+    +'<button onclick="this.parentNode.remove()" style="position:absolute;top:.5rem;right:.6rem;background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.85rem">✕</button>';
+  document.body.appendChild(panel);
 }
 
 // ══ RECETAS Y DETALLE CONSULTA ══
