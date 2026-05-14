@@ -2794,7 +2794,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     await aplicarMedico(medico);
-window.medicoGlobal = medico;
+    window.medicoGlobal = medico;
+    verificarRetornoPago();
     // Sidebar trigger — hover en tablet
     var sidebarTriggerEl = document.getElementById('sidebarTrigger');
     var sidebarEl = document.getElementById('sidebar');
@@ -3843,9 +3844,7 @@ async function guardarTelefonoDesdeModal() {
 
   // Retomar el checkout
   if (window._telPendingPlan) {
-    setTimeout(function(){
-      initPayPhone(window._telPendingPlan, window._telPendingContainer);
-    }, 400);
+    setTimeout(function(){ iniciarPagoRedirect(window._telPendingPlan); }, 400);
   }
 }
 
@@ -4068,8 +4067,103 @@ function cerrarProWebModal() {
   document.body.style.overflow = '';
 }
 
-// ── PAYPHONE CHECKOUT INTERSTITIAL ──
+// ── PAYPHONE REDIRECT CHECKOUT (Option B) ──
+async function iniciarPagoRedirect(planType) {
+  if (!M) return;
+  planType = planType || 'pro';
+  var isWeb = planType === 'pro_web';
+
+  var tel = validarTelefonoAntesDePago(planType, null);
+  if (!tel) return; // abrió modal de teléfono, esperando
+
+  var transactionId = 'citadoc-' + planType + '-' + M.id.slice(0,8) + '-' + Date.now();
+  var amount = isWeb ? 15000 : 1999;
+  var returnUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + transactionId;
+  var cancelUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1';
+
+  // Mostrar loading
+  cerrarProModal(); cerrarProWebModal();
+  mostrarToast('Preparando pago seguro...', 'info');
+
+  try {
+    var res = await fetch('https://pay.payphonetodoesposible.com/api/button/Prepare', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + PAYPHONE_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount:              amount,
+        amountWithoutTax:    amount,
+        currency:            'USD',
+        clientTransactionId: transactionId,
+        storeId:             PAYPHONE_STOREID,
+        reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' — ' + M.id,
+        lang:                'es',
+        email:               M.email || '',
+        phoneNumber:         tel,
+        responseUrl:         returnUrl,
+        cancellationUrl:     cancelUrl
+      })
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    if (!data.paymentUrl) throw new Error('No paymentUrl in response');
+
+    // Guardar en localStorage para verificar al retorno
+    localStorage.setItem('citadoc_pp_tx', JSON.stringify({
+      id: transactionId, plan: planType, medicoId: M.id, ts: Date.now()
+    }));
+
+    window.location.href = data.paymentUrl;
+
+  } catch(e) {
+    console.error('PayPhone Prepare error:', e);
+    mostrarToast('Error al iniciar pago. Intenta de nuevo.', 'error');
+  }
+}
+
+// Verificar retorno de PayPhone al cargar el dashboard
+async function verificarRetornoPago() {
+  var params = new URLSearchParams(window.location.search);
+  if (!params.get('pp_return')) return;
+
+  // Limpiar URL inmediatamente
+  history.replaceState({}, '', window.location.pathname);
+
+  var txRaw = localStorage.getItem('citadoc_pp_tx');
+  if (!txRaw) { mostrarToast('No se encontró transacción pendiente.', 'error'); return; }
+  var tx = JSON.parse(txRaw);
+  localStorage.removeItem('citadoc_pp_tx');
+
+  mostrarToast('Verificando tu pago...', 'info');
+
+  try {
+    var res = await fetch(
+      'https://pay.payphonetodoesposible.com/api/button/V2/Confirm?clientTransactionId=' + encodeURIComponent(tx.id),
+      { headers: { 'Authorization': 'Bearer ' + PAYPHONE_TOKEN } }
+    );
+    var data = await res.json();
+
+    if (data.transactionStatus === 'Approved') {
+      if (tx.plan === 'pro_web') await activarProWebLocal();
+      else await activarProLocal();
+    } else {
+      mostrarToast('Pago no completado. Estado: ' + (data.transactionStatus || 'desconocido'), 'error');
+    }
+  } catch(e) {
+    console.error('PayPhone Confirm error:', e);
+    mostrarToast('Error verificando pago. Contacta a soporte.', 'error');
+  }
+}
+
+// ── PAYPHONE CHECKOUT INTERSTITIAL (legacy — redirect reemplaza embed) ──
 function mostrarPayCheckout(planType) {
+  iniciarPagoRedirect(planType);
+}
+
+function mostrarPayCheckout_UNUSED(planType) {
   var isWeb = planType === 'pro_web';
   // Ocultar modal origen
   var srcModal = document.getElementById(isWeb ? 'proWebModal' : 'proModal');
