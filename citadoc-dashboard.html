@@ -6898,132 +6898,210 @@ function fDiagCerrar() { var d=document.getElementById('c_diag_drop');if(d)d.sty
 // Modal nueva consulta
 function abrirModalConsulta(pacienteId) {
   var ex=document.getElementById('modalConsulta'); if(ex) ex.remove();
-  var m=document.createElement('div');
-  m.id='modalConsulta';
-  m.onclick=function(e){if(e.target===m)cerrarModalConsulta();};
-  m.style.cssText='display:flex;position:fixed;inset:0;z-index:9999;background:rgba(15,26,24,.55);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem';
+  _fichaId = pacienteId || _fichaId;
 
-  var inner=document.createElement('div');
-  inner.onclick=function(e){e.stopPropagation();};
-  inner.style.cssText='background:#fff;border-radius:20px;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.2)';
-
-  // Header
-  var hdr=document.createElement('div');
-  hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:1.5rem 1.8rem 1rem;border-bottom:1px solid #f3f4f6;position:sticky;top:0;background:#fff;border-radius:20px 20px 0 0;z-index:1';
-  var htitle=document.createElement('div');
-  htitle.style.fontSize='1.15rem'; htitle.style.fontWeight='700'; htitle.style.color='#0f1a18'; htitle.style.fontFamily='Fraunces,serif';
-  htitle.textContent='Nueva consulta';
-  var hclose=document.createElement('button');
-  hclose.style.cssText='background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af;width:32px;height:32px;border-radius:50%';
-  hclose.innerHTML='&#x2715;'; hclose.onclick=cerrarModalConsulta;
-  hdr.appendChild(htitle); hdr.appendChild(hclose);
-
-  // Body
-  var body=document.createElement('div');
-  body.style.cssText='padding:1.3rem 1.8rem;display:flex;flex-direction:column;gap:1rem';
-
-  function campo(labelText, inputId, placeholder, tipo, rows) {
-    var wrap=document.createElement('div');
-    var lbl=document.createElement('label');
-    lbl.style.cssText='font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem';
-    lbl.textContent=labelText;
-    var el;
-    if (tipo==='textarea') {
-      el=document.createElement('textarea'); el.rows=rows||2;
-      el.style.resize='vertical';
-    } else {
-      el=document.createElement('input'); el.type=tipo||'text';
-    }
-    el.id=inputId; el.placeholder=placeholder;
-    el.style.cssText='width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:inherit;transition:border-color .15s';
-    el.onfocus=function(){this.style.borderColor='#0b7c6e';};
-    el.onblur=function(){this.style.borderColor='#e5e7eb';};
-    wrap.appendChild(lbl); wrap.appendChild(el);
-    return wrap;
+  // ── CSS animaciones ──
+  if (!document.getElementById('mcStyles')) {
+    var st = document.createElement('style');
+    st.id = 'mcStyles';
+    st.textContent = `
+      @keyframes mcSlideIn { from{opacity:0;transform:translateX(32px)} to{opacity:1;transform:translateX(0)} }
+      @keyframes mcSlideOut { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(-32px)} }
+      .mc-step { animation: mcSlideIn .32s cubic-bezier(.16,1,.3,1) both }
+      .mc-step-exit { animation: mcSlideOut .22s cubic-bezier(.4,0,1,1) both }
+      .mc-field label { font-size:.7rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:.3rem;margin-bottom:.35rem }
+      .mc-field textarea,.mc-field input[type=text] { width:100%;padding:.65rem .85rem;border:1.5px solid #e5e7eb;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.87rem;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;line-height:1.55;color:#0f1a18;background:#fff }
+      .mc-field textarea:focus,.mc-field input[type=text]:focus { border-color:#0b7c6e;box-shadow:0 0 0 3px rgba(11,124,110,.1);outline:none }
+    `;
+    document.head.appendChild(st);
   }
 
-  // Sección signos vitales
-  function seccion(titulo) {
-    var s=document.createElement('div');
-    s.style.cssText='font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;padding-top:.3rem;border-top:1px solid #f3f4f6;margin-top:.2rem';
-    s.textContent=titulo; return s;
-  }
+  var ov = document.createElement('div');
+  ov.id = 'modalConsulta';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-start;justify-content:center;background:rgba(15,26,24,.55);backdrop-filter:blur(12px);padding:1rem;overflow-y:auto';
+  ov.onclick = function(e){ if(e.target===ov) cerrarModalConsulta(); };
 
-  body.appendChild(campo('Motivo de consulta *','c_motivo','Ej: Dolor abdominal persistente'));
-  body.appendChild(campo('Enfermedad actual','c_enfermedad','Descripción del cuadro clínico...','textarea',2));
-  // Diagnóstico CIE-10
-  (function() {
-    var wrap=document.createElement('div');
-    var lbl=document.createElement('label');
-    lbl.style.cssText='font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem';
-    lbl.textContent='Diagnóstico CIE-10';
-    var row=document.createElement('div'); row.style.position='relative';
-    var icon=document.createElement('span');
-    icon.style.cssText='position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:.85rem;pointer-events:none';
-    icon.textContent='🔍';
-    var inp=document.createElement('input');
-    inp.id='c_diag_search'; inp.type='text'; inp.autocomplete='off';
-    inp.placeholder='Buscar por nombre o código — ej: diabetes, M17, gastritis...';
-    inp.style.cssText='width:100%;padding:.6rem .85rem .6rem 2.1rem;border:1.5px solid #0b7c6e;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:inherit;transition:border-color .15s;box-shadow:0 0 0 3px rgba(11,124,110,.08)';
-    inp.onfocus=function(){fDiagBuscar(this.value);};
-    inp.oninput=function(){fDiagBuscar(this.value);};
-    inp.onblur=function(){setTimeout(fDiagCerrar,200);};
-    inp.onkeydown=function(e){fDiagKeyNav(e);};
-    var drop=document.createElement('div');
-    drop.id='c_diag_drop';
-    drop.style.cssText='display:none;position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:240px;overflow-y:auto;width:400px';
-    var tags=document.createElement('div');
-    tags.id='c_diag_tags'; tags.style.cssText='display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem';
-    var hidden=document.createElement('input'); hidden.type='hidden'; hidden.id='c_diagnostico';
-    row.appendChild(icon); row.appendChild(inp); row.appendChild(drop);
-    wrap.appendChild(lbl); wrap.appendChild(row); wrap.appendChild(tags); wrap.appendChild(hidden);
-    body.appendChild(wrap);
-  })();
-  _fichadiags=[]; fDiagRender();
-  body.appendChild(campo('Plan / Tratamiento','c_plan','Ej: Omeprazol 20mg cada 12h por 7 días...','textarea',2));
-  body.appendChild(campo('Indicaciones al paciente','c_indicaciones','Reposo, dieta blanda, hidratación...','textarea',2));
+  ov.innerHTML = `
+    <div id="mcCard" style="background:#f7f4ef;border-radius:22px;width:100%;max-width:600px;margin:auto;box-shadow:0 32px 80px rgba(15,26,24,.24);overflow:hidden;animation:proModalIn .25s cubic-bezier(.16,1,.3,1)">
 
-  // Signos vitales en grid
-  body.appendChild(seccion('Signos vitales'));
-  var vitalesGrid=document.createElement('div');
-  vitalesGrid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem';
-  [['c_ta','Presión arterial','120/80'],['c_fc','Freq. cardíaca','72 bpm'],['c_temp','Temperatura','36.5°C'],['c_peso','Peso','70 kg']].forEach(function(v){
-    var w=document.createElement('div');
-    var lbl=document.createElement('label');
-    lbl.style.cssText='font-size:.68rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:.25rem';
-    lbl.textContent=v[1];
-    var inp=document.createElement('input');
-    inp.id=v[0]; inp.type='text'; inp.placeholder=v[2];
-    inp.style.cssText='width:100%;padding:.5rem .6rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.82rem;box-sizing:border-box;transition:border-color .15s';
-    inp.onfocus=function(){this.style.borderColor='#0b7c6e';};
-    inp.onblur=function(){this.style.borderColor='#e5e7eb';};
-    w.appendChild(lbl); w.appendChild(inp);
-    vitalesGrid.appendChild(w);
+      <!-- HEADER -->
+      <div style="background:linear-gradient(145deg,#062e2b,#0b7c6e);padding:1.3rem 1.8rem;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem">Nueva consulta</div>
+          <div style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#fff;letter-spacing:-.02em" id="mc_pacNombre">Cargando...</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.7rem">
+          <!-- Step dots -->
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <div id="mc_dot1" style="width:8px;height:8px;border-radius:50%;background:#fff;transition:all .3s"></div>
+            <div id="mc_dot2" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .3s"></div>
+          </div>
+          <button onclick="cerrarModalConsulta()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
+      </div>
+
+      <!-- STEPS CONTAINER -->
+      <div id="mc_stepsWrap" style="position:relative">
+
+        <!-- PASO 1: Consulta -->
+        <div id="mc_step1" class="mc-step" style="padding:1.5rem 1.8rem;max-height:70vh;overflow-y:auto">
+          <div style="font-size:.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.4rem"><span>①</span> Datos clínicos</div>
+
+          <div class="mc-field" style="margin-bottom:.85rem">
+            <label>📋 Motivo de consulta</label>
+            <input type="text" id="c_motivo" placeholder="¿Por qué viene el paciente hoy?">
+          </div>
+          <div class="mc-field" style="margin-bottom:.85rem">
+            <label>🔍 Enfermedad actual</label>
+            <textarea id="c_enfermedad" rows="4" placeholder="Descripción del cuadro clínico, evolución, tiempo de inicio, características del dolor o síntoma principal..."></textarea>
+          </div>
+
+          <!-- CIE-10 -->
+          <div class="mc-field" style="margin-bottom:.85rem">
+            <label>🩺 Diagnóstico CIE-10</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:.8rem;pointer-events:none">🔍</span>
+              <input id="c_diag_search" type="text" autocomplete="off" placeholder="Buscar código o diagnóstico..." style="padding-left:2.1rem!important" oninput="fDiagBuscar(this.value)" onfocus="fDiagBuscar(this.value)" onblur="setTimeout(fDiagCerrar,200)" onkeydown="fDiagKeyNav(event)">
+              <div id="c_diag_drop" style="display:none;position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:220px;overflow-y:auto"></div>
+            </div>
+            <div id="c_diag_tags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem"></div>
+            <input type="hidden" id="c_diagnostico">
+          </div>
+
+          <!-- Vitales colapsables -->
+          <div style="margin-bottom:.85rem">
+            <button type="button" onclick="mcToggleVitales(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;background:#fff;border:1.5px solid #e5e7eb;border-radius:11px;font-family:DM Sans,sans-serif;font-size:.79rem;font-weight:600;color:#374151;cursor:pointer;transition:all .15s" onmouseenter="this.style.borderColor='#0b7c6e'" onmouseleave="this.style.borderColor='#e5e7eb'">
+              <span>🫀 Signos vitales <span style="font-weight:400;color:#9ca3af;font-size:.72rem">(opcional)</span></span><span id="mc_vitales_arrow">▾</span>
+            </button>
+            <div id="mc_vitales_wrap" style="display:none;margin-top:.5rem">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                ${[['c_ta','Presión arterial','120/80 mmHg'],['c_fc','Freq. cardíaca','72 bpm'],['c_temp','Temperatura','36.5°C'],['c_peso','Peso','70 kg']].map(v=>`
+                <div><div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:.22rem">${v[1]}</div>
+                <input id="${v[0]}" type="text" placeholder="${v[2]}" style="width:100%;padding:.45rem .65rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.82rem;font-family:DM Sans,sans-serif;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>`).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="mc-field" style="margin-bottom:0">
+            <label>🔒 Notas privadas</label>
+            <textarea id="c_notas" rows="2" placeholder="Notas internas (no visibles al paciente)..."></textarea>
+          </div>
+        </div>
+
+        <!-- PASO 2: Indicaciones (oculto inicialmente) -->
+        <div id="mc_step2" style="display:none;padding:1.5rem 1.8rem;max-height:70vh;overflow-y:auto">
+          <div style="font-size:.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.4rem"><span>②</span> Indicaciones al paciente</div>
+
+          <div class="mc-field" style="margin-bottom:.85rem">
+            <label>💊 Plan / Tratamiento</label>
+            <textarea id="c_plan" rows="4" placeholder="Medicamentos, dosis, duración, vía de administración..."></textarea>
+          </div>
+          <div class="mc-field" style="margin-bottom:.85rem">
+            <label>📝 Indicaciones generales</label>
+            <textarea id="c_indicaciones" rows="4" placeholder="Reposo, dieta, actividad física, cuidados en casa, señales de alarma..."></textarea>
+          </div>
+          <div class="mc-field" style="margin-bottom:0">
+            <label>🔬 Estudios solicitados</label>
+            <textarea id="c_estudios" rows="2" placeholder="Laboratorios, imágenes, interconsultas..."></textarea>
+          </div>
+        </div>
+
+      </div><!-- /stepsWrap -->
+
+      <!-- FOOTER -->
+      <div style="padding:.9rem 1.8rem;border-top:1px solid rgba(0,0,0,.08);background:#fff;display:flex;align-items:center;justify-content:space-between;gap:.7rem">
+        <div id="mc_footer_left">
+          <div style="font-size:.7rem;color:#9ca3af;display:flex;align-items:center;gap:.3rem"><span>🔒</span>Datos privados y seguros</div>
+        </div>
+        <div style="display:flex;gap:.5rem" id="mc_footer_btns">
+          <button onclick="cerrarModalConsulta()" style="padding:.58rem 1.1rem;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.86rem;font-weight:600;cursor:pointer">Cancelar</button>
+          <button onclick="mcIrPaso2()" style="padding:.58rem 1.4rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,124,110,.25)">Indicaciones →</button>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(ov);
+
+  // Cargar nombre paciente
+  _sb.from('pacientes').select('nombre,email,telefono,fecha_nacimiento').eq('id', _fichaId).single().then(function(r){
+    if(!r.data) return;
+    var p=r.data;
+    var edad=p.fecha_nacimiento?Math.floor((new Date()-new Date(p.fecha_nacimiento+'T12:00:00'))/(365.25*24*3600*1000)):null;
+    var el=document.getElementById('mc_pacNombre'); if(el) el.textContent=p.nombre;
   });
-  body.appendChild(vitalesGrid);
 
-  // Notas privadas
-  body.appendChild(seccion('Solo para el médico'));
-  body.appendChild(campo('Notas privadas','c_notas','Observaciones internas...','textarea',2));
-
-  // Footer
-  var footer=document.createElement('div');
-  footer.style.cssText='display:flex;gap:.8rem;padding:1rem 1.8rem 1.5rem;border-top:1px solid #f3f4f6;position:sticky;bottom:0;background:#fff;border-radius:0 0 20px 20px';
-  var btnCancel=document.createElement('button');
-  btnCancel.style.cssText='flex:1;padding:.7rem;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer';
-  btnCancel.textContent='Cancelar'; btnCancel.onclick=cerrarModalConsulta;
-  var btnSave=document.createElement('button');
-  btnSave.id='btnGuardarConsulta';
-  btnSave.style.cssText='flex:2;padding:.7rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer';
-  btnSave.textContent='Guardar consulta';
-  (function(pid){ btnSave.onclick=function(){ guardarConsulta(pid); }; })(pacienteId);
-  footer.appendChild(btnCancel); footer.appendChild(btnSave);
-
-  inner.appendChild(hdr); inner.appendChild(body); inner.appendChild(footer);
-  m.appendChild(inner);
-  document.body.appendChild(m);
+  _fichadiags=[]; fDiagRender();
+  var ds=document.getElementById('c_diag_search'); if(ds) ds.value='';
 }
 
+function mcIrPaso2() {
+  var s1=document.getElementById('mc_step1');
+  var s2=document.getElementById('mc_step2');
+  var d1=document.getElementById('mc_dot1');
+  var d2=document.getElementById('mc_dot2');
+  var footer=document.getElementById('mc_footer_btns');
+  if(!s1||!s2) return;
+
+  // Validar motivo
+  var mot=(document.getElementById('c_motivo')||{}).value||'';
+  if(!mot.trim()){
+    var inp=document.getElementById('c_motivo');
+    if(inp){inp.style.borderColor='#ef4444';inp.focus();setTimeout(function(){inp.style.borderColor='#e5e7eb';},2000);}
+    return;
+  }
+
+  // Slide out paso 1, slide in paso 2
+  s1.classList.add('mc-step-exit');
+  setTimeout(function(){
+    s1.style.display='none';
+    s1.classList.remove('mc-step-exit');
+    s2.style.display='block';
+    s2.classList.add('mc-step');
+    setTimeout(function(){ s2.classList.remove('mc-step'); },350);
+    if(d1) d1.style.background='rgba(255,255,255,.35)';
+    if(d2) d2.style.background='#fff';
+    if(footer) footer.innerHTML=`
+      <button onclick="mcVolverPaso1()" style="padding:.58rem 1.1rem;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.86rem;font-weight:600;cursor:pointer">← Volver</button>
+      <button id="btnGuardarConsulta" onclick="guardarConsulta(_fichaId)" style="padding:.58rem 1.4rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,124,110,.25)">Guardar consulta ✓</button>
+    `;
+  }, 220);
+}
+
+function mcVolverPaso1() {
+  var s1=document.getElementById('mc_step1');
+  var s2=document.getElementById('mc_step2');
+  var d1=document.getElementById('mc_dot1');
+  var d2=document.getElementById('mc_dot2');
+  var footer=document.getElementById('mc_footer_btns');
+  if(!s1||!s2) return;
+
+  s2.classList.add('mc-step-exit');
+  setTimeout(function(){
+    s2.style.display='none';
+    s2.classList.remove('mc-step-exit');
+    s1.style.display='block';
+    s1.classList.add('mc-step');
+    setTimeout(function(){ s1.classList.remove('mc-step'); },350);
+    if(d1) d1.style.background='#fff';
+    if(d2) d2.style.background='rgba(255,255,255,.3)';
+    if(footer) footer.innerHTML=`
+      <button onclick="cerrarModalConsulta()" style="padding:.58rem 1.1rem;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.86rem;font-weight:600;cursor:pointer">Cancelar</button>
+      <button onclick="mcIrPaso2()" style="padding:.58rem 1.4rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(11,124,110,.25)">Indicaciones →</button>
+    `;
+  }, 220);
+}
+
+function mcToggleVitales(btn) {
+  var wrap=document.getElementById('mc_vitales_wrap');
+  var arrow=document.getElementById('mc_vitales_arrow');
+  if(!wrap) return;
+  var open=wrap.style.display==='block';
+  wrap.style.display=open?'none':'block';
+  if(arrow) arrow.textContent=open?'▾':'▴';
+  if(btn) { btn.style.borderColor=open?'':'#0b7c6e'; btn.style.color=open?'':'#0b7c6e'; }
+}
 function cerrarModalConsulta(){var m=document.getElementById('modalConsulta');if(m)m.remove();}
 
 async function guardarConsulta(pacienteId) {
