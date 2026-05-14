@@ -1064,37 +1064,48 @@ function confirmarCita() {
         });
       });
   });
-  var tpl = {
-    medico_nombre: nombreMedico,
-    medico_especialidad: (_medico.especialidades||[])[0]||'',
-    hora_cita: selectedSlot,
-    fecha_cita: fechaLabel,
-    paciente_nombre: nombre,
-    paciente_tel: tel,
-    motivo: motivo||'No especificado'
-  };
-  if (email) {
-    var tp = JSON.parse(JSON.stringify(tpl));
-    tp.to_name=nombre; tp.to_email=email;
-    tp.mensaje='Tu cita con '+nombreMedico+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.';
-    emailjs.send('service_63xln0n','template_e8t8qkq',tp).catch(function(e){console.warn(e);});
+  var sedeName = '';
+  if (selectedLocationId && _locationsMedico.length) {
+    var _sl = _locationsMedico.find(function(l){ return String(l.id)===String(selectedLocationId); });
+    if(_sl) sedeName = _sl.nombre;
   }
+  var perfilUrl = 'https://citadoc.lat/citadoc-perfil.html?slug='+(_medico.slug||'');
+
+  // Email al paciente
+  if (email) {
+    emailjs.send('service_63xln0n','template_e8t8qkq',{
+      to_email:          email,
+      doctor_name:       nombreMedico,
+      patient_name:      nombre,
+      appointment_date:  fechaLabel,
+      appointment_time:  selectedSlot,
+      location_name:     sedeName||'Consultorio médico',
+      appointment_mode:  '🏥 Presencial',
+      public_profile_url:perfilUrl
+    }).catch(function(e){console.warn(e);});
+  }
+
+  // Email al médico
   if (_medico.email) {
-    var tm = JSON.parse(JSON.stringify(tpl));
-    tm.to_name = nombreMedico; tm.to_email = _medico.email;
     var waPacNum = tel ? limpiarNumeroWA(tel, _medico.pais||'ecuador') : null;
-    tm.mensaje = '🩺 Nueva cita agendada en CitaDoc'
-      + '\n\nPaciente: '  + nombre
-      + '\nTeléfono: '   + tel
-      + (email ? '\nEmail: ' + email : '')
-      + '\nFecha: '      + fechaLabel + ' a las ' + selectedSlot
-      + '\nMotivo: '     + (motivo||'No especificado')
-      + (_selectedInsurance ? '\n🛡 Seguro: ' + _selectedInsurance : '')
-      + '\n\n👉 Ver cita en tu dashboard:'
-      + '\nhttps://citadoc.lat/citadoc-dashboard.html'
-      + (waPacNum ? '\n\n💬 Contactar paciente por WhatsApp:'
-        + '\nhttps://wa.me/' + waPacNum : '');
-    emailjs.send('service_63xln0n','template_e8t8qkq',tm).catch(function(e){console.warn(e);});
+    var notaMedico = '🩺 Nueva cita agendada'
+      + '\nPaciente: '+nombre+' · '+tel
+      + (email?'\nEmail: '+email:'')
+      + '\nFecha: '+fechaLabel+' a las '+selectedSlot
+      + (sedeName?'\nSede: '+sedeName:'')
+      + '\nMotivo: '+(motivo||'No especificado')
+      + (_selectedInsurance?'\n🛡 Seguro: '+_selectedInsurance:'')
+      + (waPacNum?'\nWA: https://wa.me/'+waPacNum:'');
+    emailjs.send('service_63xln0n','template_e8t8qkq',{
+      to_email:          _medico.email,
+      doctor_name:       nombreMedico,
+      patient_name:      nombre,
+      appointment_date:  fechaLabel,
+      appointment_time:  selectedSlot,
+      location_name:     notaMedico,
+      appointment_mode:  '📋 Ver dashboard: https://citadoc.lat/citadoc-dashboard.html',
+      public_profile_url:perfilUrl
+    }).catch(function(e){console.warn(e);});
   }
   el('step2').style.display = 'none';
   el('bookingSuccess').style.display = 'block';
