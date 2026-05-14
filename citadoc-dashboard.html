@@ -1120,7 +1120,7 @@ display:flex;
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">NOMBRE</label><input id="inf-nombre" placeholder="Mateo" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">APELLIDO</label><input id="inf-apellido" placeholder="Alarcon" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TÍTULO</label><input id="inf-titulo" placeholder="Dr." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
-          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">ESPECIALIDAD</label><input id="inf-especialidad" placeholder="Traumatología y Ortopedia" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">ESPECIALIDAD</label><div style="position:relative"><input id="inf-especialidad" placeholder="Traumatología y Ortopedia" autocomplete="off" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" oninput="infEspFilter(this.value)" onfocus="infEspFilter(this.value)" onblur="setTimeout(infEspClose,180)" onkeydown="if(event.key==='Escape')infEspClose()"><div id="inf-esp-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);max-height:200px;overflow-y:auto;z-index:999"></div></div></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SUBESPECIALIDAD</label><input id="inf-subespecialidad" placeholder="Cirugía de hombro" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">AÑOS EXPERIENCIA</label><input id="inf-anos" type="number" placeholder="8" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TELÉFONO</label><input id="inf-telefono" placeholder="+593 99 000 0000" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
@@ -6411,6 +6411,28 @@ function cargarFormPerfil(m) {
       av.textContent = ((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase()||'MA';
     }
   }
+}
+
+// ── ESPECIALIDAD AUTOCOMPLETE ──
+var _SPECS=['Alergia e Inmunología','Anatomía Patológica','Anestesiología','Cardiología','Cirugía Bucal','Cirugía Cardiovascular','Cirugía General','Cirugía Maxilofacial','Cirugía Pediátrica','Cirugía Plástica y Reconstructiva','Cirugía Torácica','Cirugía Vascular','Dermatología','Endodoncia','Endocrinología','Gastroenterología','Genética Médica','Geriatría','Ginecología y Obstetricia','Hematología','Implantología Oral','Infectología','Laboratorio Clínico','Medicina Bucal','Medicina de Emergencias','Medicina del Deporte','Medicina del Dolor','Medicina del Trabajo','Medicina Familiar y Comunitaria','Medicina Física y Rehabilitación','Medicina Intensiva','Medicina Interna','Medicina Legal y Forense','Medicina Nuclear','Medicina Paliativa','Medicina Preventiva','Medicina Tropical','Nefrología','Neumonología','Neurocirugía','Neurología','Nutrición Clínica','Oclusión y Disfunción Temporomandibular','Odontología Estética','Odontología General','Odontología Preventiva y Comunitaria','Odontología Restauradora','Odontopediatría','Odontogeriatría','Oftalmología','Oncología','Ortodoncia y Ortopedia Maxilar','Otorrinolaringología','Patología Bucal','Pediatría','Periodoncia','Prótesis Dental','Psiquiatría','Radiología e Imágenes','Radiología Oral y Maxilofacial','Rehabilitación Oral','Reumatología','Traumatología y Ortopedia','Urología'];
+function infEspFilter(q){
+  var drop=document.getElementById('inf-esp-drop');
+  if(!drop)return;
+  var list=q.length<1?_SPECS.slice(0,10):_SPECS.filter(function(s){return s.toLowerCase().includes(q.toLowerCase());}).slice(0,10);
+  if(!list.length){drop.style.display='none';return;}
+  drop.innerHTML=list.map(function(s){
+    return '<div onmousedown="infEspSelect(\''+s.replace(/'/g,"\\'")+'\')" style="padding:.5rem .85rem;cursor:pointer;font-size:.85rem;color:#0f1a18;border-radius:8px;margin:2px 4px" onmouseenter="this.style.background=\'#e0f5f2\'" onmouseleave="this.style.background=\'\'">'+s+'</div>';
+  }).join('');
+  drop.style.display='block';
+}
+function infEspSelect(v){
+  var inp=document.getElementById('inf-especialidad');
+  if(inp){inp.value=v;inp.style.borderColor='#0b7c6e';setTimeout(function(){inp.style.borderColor='#e5e7eb';},1200);}
+  infEspClose();
+}
+function infEspClose(){
+  var drop=document.getElementById('inf-esp-drop');
+  if(drop)drop.style.display='none';
 }
 
 async function guardarPerfil(btnArg) {
