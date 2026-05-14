@@ -421,8 +421,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .hero-photo-v2{width:140px;min-height:170px;border-radius:20px;background:var(--glass-bg);border:2px solid var(--glass-border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;z-index:1;align-self:flex-start;box-shadow:0 12px 32px rgba(0,0,0,.2),inset 0 1px 2px rgba(255,255,255,.15);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .hero-photo-v2::after{content:'';position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(255,255,255,.1);pointer-events:none}
 .hero-photo-v2 img{width:100%;height:100%;object-fit:cover}
-.hero-info-v2{flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:flex-start;gap:.35rem}
-.hero-name-v2{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1.05;letter-spacing:-.04em;text-shadow:0 2px 20px rgba(0,0,0,.25),0 0 40px rgba(14,157,140,.15)}
+.hero-info-v2{flex:1;min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;justify-content:flex-start;gap:.35rem;align-items:flex-start}
+.hero-name-v2{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1.05;letter-spacing:-.04em;text-shadow:0 2px 20px rgba(0,0,0,.25),0 0 40px rgba(14,157,140,.15);text-align:left}
 .hero-spec-v2{font-size:.9rem;color:rgba(255,255,255,.7);display:flex;flex-wrap:wrap;align-items:center;gap:.3rem}
 .hero-spec-sep{color:rgba(255,255,255,.3);margin:0 .15rem;font-weight:500}
 .hero-trust-v2{display:flex;flex-wrap:wrap;gap:.35rem}
@@ -1617,6 +1617,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Cargar
   cargarPerfil();
+
+  // Safety: forzar WA hero después de que todo cargue
+  setTimeout(function() {
+    var wab = document.getElementById('btnWAHero');
+    if (!wab) return;
+    if (_medico && _medico.whatsapp) {
+      var t = _medico.whatsapp.replace(/[^0-9]/g,'');
+      if (t.charAt(0)==='0') t=t.slice(1);
+      if (!t.startsWith('593')) t='593'+t;
+      wab.href = 'https://wa.me/'+t;
+      wab.style.setProperty('display','flex','important');
+    }
+  }, 600);
   initAuth(_sb, showLoggedIn, showLoggedOut);
 });
 </script>
