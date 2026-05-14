@@ -6264,6 +6264,67 @@ function editarResumenClinico(pacienteId) {
   mostrarToast('Editar resumen - próximamente');
 }
 
+// ── DIAGNÓSTICO CIE FICHA ──
+var _fichadiags = [];
+var _fdiagIdx = -1;
+
+function fDiagBuscar(q) {
+  var drop=document.getElementById('c_diag_drop'); if(!drop) return;
+  var inp=document.getElementById('c_diag_search');
+  if(!q||q.length<1){drop.style.display='none';return;}
+  if(inp){var r=inp.getBoundingClientRect();drop.style.top=(r.bottom+4)+'px';drop.style.left=r.left+'px';drop.style.width=r.width+'px';}
+  var ql=q.toLowerCase();
+  var hits=CIE10.filter(function(d){return d.c.toLowerCase().includes(ql)||d.l.toLowerCase().includes(ql);}).slice(0,10);
+  _fdiagIdx=-1;
+  if(!hits.length){
+    drop.innerHTML='<div onmousedown="fDiagAgregar(null,\''+q.replace(/'/g,"\\'")+'\');event.preventDefault()" style="padding:.55rem .9rem;font-size:.8rem;color:#374151;cursor:pointer;border-radius:8px;margin:3px" onmouseenter="this.style.background=\'#f0fdf4\'" onmouseleave="this.style.background=\'\'">✏️ Crear: <strong>'+q+'</strong></div>';
+    drop.style.display='block'; return;
+  }
+  drop.innerHTML=hits.map(function(d,i){
+    return '<div class="fdiag-row" data-i="'+i+'" onmousedown="fDiagAgregar(\''+d.c+'\',\''+d.l.replace(/'/g,"\\'")+'\');event.preventDefault()" style="padding:.5rem .9rem;font-size:.82rem;cursor:pointer;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:.6rem" onmouseenter="this.style.background=\'#f0fdf4\'" onmouseleave="this.style.background=\'\'">'
+      +'<span style="font-size:.68rem;font-weight:700;color:#0b7c6e;background:#e0f5f2;padding:.15rem .5rem;border-radius:5px;flex-shrink:0">'+d.c+'</span>'
+      +'<span>'+d.l+'</span></div>';
+  }).join('');
+  drop.style.display='block';
+}
+
+function fDiagKeyNav(e) {
+  var drop=document.getElementById('c_diag_drop'); if(!drop||drop.style.display==='none') return;
+  var rows=drop.querySelectorAll('.fdiag-row'); if(!rows.length) return;
+  if(e.key==='ArrowDown'){e.preventDefault();_fdiagIdx=Math.min(_fdiagIdx+1,rows.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();_fdiagIdx=Math.max(_fdiagIdx-1,0);}
+  else if(e.key==='Enter'&&_fdiagIdx>=0){e.preventDefault();rows[_fdiagIdx].dispatchEvent(new MouseEvent('mousedown'));return;}
+  else if(e.key==='Escape'){fDiagCerrar();return;}
+  rows.forEach(function(r,i){r.style.background=i===_fdiagIdx?'#e0f5f2':'';});
+}
+
+function fDiagAgregar(code,label) {
+  fDiagCerrar();
+  var inp=document.getElementById('c_diag_search'); if(inp) inp.value='';
+  if(_fichadiags.some(function(d){return d.code===code&&d.label===label;})) return;
+  _fichadiags.push({code:code||null,label:label});
+  fDiagRender(); fDiagSync();
+}
+
+function fDiagRemover(idx) { _fichadiags.splice(idx,1); fDiagRender(); fDiagSync(); }
+
+function fDiagRender() {
+  var cont=document.getElementById('c_diag_tags'); if(!cont) return;
+  cont.innerHTML=_fichadiags.map(function(d,i){
+    return '<span style="display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .75rem;background:#e0f5f2;border:1.5px solid rgba(11,124,110,.2);border-radius:20px;font-size:.76rem;font-weight:600;color:#065f46">'
+      +(d.code?'<span style="font-size:.65rem;background:#fff;padding:.1rem .4rem;border-radius:5px;color:#0b7c6e;font-weight:700">'+d.code+'</span>':'')+d.label
+      +'<button type="button" onclick="fDiagRemover('+i+')" style="background:none;border:none;color:#0b7c6e;cursor:pointer;font-size:.85rem;padding:0;line-height:1">×</button>'
+    +'</span>';
+  }).join('');
+}
+
+function fDiagSync() {
+  var h=document.getElementById('c_diagnostico'); if(!h) return;
+  h.value=_fichadiags.map(function(d){return(d.code?d.code+' — ':'')+d.label;}).join('; ');
+}
+
+function fDiagCerrar() { var d=document.getElementById('c_diag_drop');if(d)d.style.display='none'; }
+
 // Modal nueva consulta
 function abrirModalConsulta(pacienteId) {
   var ex=document.getElementById('modalConsulta'); if(ex) ex.remove();
@@ -6320,7 +6381,35 @@ function abrirModalConsulta(pacienteId) {
 
   body.appendChild(campo('Motivo de consulta *','c_motivo','Ej: Dolor abdominal persistente'));
   body.appendChild(campo('Enfermedad actual','c_enfermedad','Descripción del cuadro clínico...','textarea',2));
-  body.appendChild(campo('Diagnóstico','c_diagnostico','Ej: Gastritis aguda'));
+  // Diagnóstico CIE-10
+  (function() {
+    var wrap=document.createElement('div');
+    var lbl=document.createElement('label');
+    lbl.style.cssText='font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.3rem';
+    lbl.textContent='Diagnóstico CIE-10';
+    var row=document.createElement('div'); row.style.position='relative';
+    var icon=document.createElement('span');
+    icon.style.cssText='position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:.85rem;pointer-events:none';
+    icon.textContent='🔍';
+    var inp=document.createElement('input');
+    inp.id='c_diag_search'; inp.type='text'; inp.autocomplete='off';
+    inp.placeholder='Buscar por nombre o código — ej: diabetes, M17, gastritis...';
+    inp.style.cssText='width:100%;padding:.6rem .85rem .6rem 2.1rem;border:1.5px solid #0b7c6e;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:inherit;transition:border-color .15s;box-shadow:0 0 0 3px rgba(11,124,110,.08)';
+    inp.onfocus=function(){fDiagBuscar(this.value);};
+    inp.oninput=function(){fDiagBuscar(this.value);};
+    inp.onblur=function(){setTimeout(fDiagCerrar,200);};
+    inp.onkeydown=function(e){fDiagKeyNav(e);};
+    var drop=document.createElement('div');
+    drop.id='c_diag_drop';
+    drop.style.cssText='display:none;position:fixed;background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:99999;max-height:240px;overflow-y:auto;width:400px';
+    var tags=document.createElement('div');
+    tags.id='c_diag_tags'; tags.style.cssText='display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem';
+    var hidden=document.createElement('input'); hidden.type='hidden'; hidden.id='c_diagnostico';
+    row.appendChild(icon); row.appendChild(inp); row.appendChild(drop);
+    wrap.appendChild(lbl); wrap.appendChild(row); wrap.appendChild(tags); wrap.appendChild(hidden);
+    body.appendChild(wrap);
+  })();
+  _fichadiags=[]; fDiagRender();
   body.appendChild(campo('Plan / Tratamiento','c_plan','Ej: Omeprazol 20mg cada 12h por 7 días...','textarea',2));
   body.appendChild(campo('Indicaciones al paciente','c_indicaciones','Reposo, dieta blanda, hidratación...','textarea',2));
 
