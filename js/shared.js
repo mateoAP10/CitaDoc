@@ -177,6 +177,13 @@ function cargarDisponibilidadPorSede(medico, citas, sbClient, locationId) {
 }
 
 
+// ── API PÚBLICA — fuente de verdad única para toda la plataforma ──
+// Uso: getAvailableSlots(medico, locationId, sbClient)
+// Retorna Promise<{ '2026-05-20': ['09:00','09:30',...], ... }>
+function getAvailableSlots(medico, locationId, sbClient) {
+  return cargarDisponibilidadPorSede(medico, [], sbClient, locationId || null);
+}
+
 // ── DISPONIBILIDAD BÁSICA (fallback sin bloqueos) ──
 function generarDisponibilidad(medico, citas) {
   var hoy = new Date(); hoy.setHours(0, 0, 0, 0);

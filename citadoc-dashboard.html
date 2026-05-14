@@ -5968,20 +5968,21 @@ function abrirNuevaCita(pac) {
       + '<button onclick="cerrarNuevaCita()" style="width:32px;height:32px;border-radius:50%;background:#f3f4f6;border:none;font-size:.9rem;cursor:pointer;color:#6b7280;display:flex;align-items:center;justify-content:center">✕</button>'
     + '</div>'
 
-    // Fecha + Hora
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.85rem">'
-      + '<div><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Fecha</label>'
-        + '<input type="date" id="nc_fecha" value="'+hoy+'" min="'+hoy+'" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:DM Sans,sans-serif;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
-      + '</div>'
-      + '<div><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Hora</label>'
-        + '<input type="time" id="nc_hora" value="09:00" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:DM Sans,sans-serif;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
-      + '</div>'
+    // Sede (primero — filtra disponibilidad)
+    + (locs.length ? '<div style="margin-bottom:.85rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Sede</label>'
+      + '<select id="nc_sede" onchange="ncCargarDisp()" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:DM Sans,sans-serif;box-sizing:border-box;appearance:none;background:#fff" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
+      + sedeOpts + '</select></div>' : '')
+
+    // Fecha — solo días disponibles para esa sede
+    + '<div style="margin-bottom:.85rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Fecha</label>'
+      + '<input type="date" id="nc_fecha" value="'+hoy+'" min="'+hoy+'" onchange="ncCargarSlots()" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:DM Sans,sans-serif;box-sizing:border-box" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
     + '</div>'
 
-    // Sede
-    + (locs.length ? '<div style="margin-bottom:.85rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.4rem">Sede</label>'
-      + '<select id="nc_sede" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:DM Sans,sans-serif;box-sizing:border-box;appearance:none;background:#fff url(\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b7280%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>\') no-repeat right .75rem center/16px" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'
-      + sedeOpts + '</select></div>' : '')
+    // Slots — horarios disponibles para fecha+sede seleccionadas
+    + '<div style="margin-bottom:.85rem" id="nc_slots_wrap"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem">Hora disponible</label>'
+      + '<div id="nc_slots" style="display:flex;flex-wrap:wrap;gap:.4rem"><div style="font-size:.8rem;color:#9ca3af">Selecciona una sede y fecha primero.</div></div>'
+      + '<input type="hidden" id="nc_hora">'
+    + '</div>'
 
     // Tipo de cita
     + '<div style="margin-bottom:.85rem"><label style="font-size:.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:.5rem">Tipo</label>'
@@ -6004,6 +6005,64 @@ function abrirNuevaCita(pac) {
   + '</div>';
 
   document.body.appendChild(ov);
+  setTimeout(ncCargarDisp, 120);
+}
+
+// ── NUEVA CITA — scheduling engine (usa getAvailableSlots de shared.js) ──
+var _ncDisp = {}; // {dateStr: [slots]}
+
+function ncCargarDisp() {
+  var sedeSel = document.getElementById('nc_sede');
+  var locId   = sedeSel ? sedeSel.value || null : null;
+  _ncDisp = {};
+  ncActualizarSlots([]);
+  if (!M) return;
+  getAvailableSlots(M, locId, _sb).then(function(disp) {
+    _ncDisp = disp || {};
+    // Actualizar slots para la fecha actual
+    ncCargarSlots();
+    // Destacar visualmente fecha actual si disponible
+    var fEl = document.getElementById('nc_fecha');
+    if (fEl && _ncDisp[fEl.value]) fEl.style.borderColor = '#0b7c6e';
+  });
+}
+
+function ncCargarSlots() {
+  var fEl = document.getElementById('nc_fecha');
+  if (!fEl) return;
+  var fecha = fEl.value;
+  var slots = _ncDisp[fecha] || [];
+  // Si la fecha no tiene slots pero hay disponibilidad, buscar el siguiente día disponible
+  if (!slots.length && Object.keys(_ncDisp).length) {
+    fEl.style.borderColor = '#f59e0b'; // naranja = día sin slots
+  } else if (slots.length) {
+    fEl.style.borderColor = '#0b7c6e'; // verde = día disponible
+  }
+  ncActualizarSlots(slots);
+}
+
+function ncActualizarSlots(slots) {
+  var cont = document.getElementById('nc_slots');
+  var horaInp = document.getElementById('nc_hora');
+  if (!cont) return;
+  if (horaInp) horaInp.value = '';
+  if (!slots.length) {
+    cont.innerHTML = '<div style="font-size:.8rem;color:#f59e0b;font-weight:600">'
+      + (Object.keys(_ncDisp).length ? '⚠️ Este día no hay horarios para esta sede.' : 'Selecciona una sede y fecha.')
+      + '</div>';
+    return;
+  }
+  cont.innerHTML = slots.map(function(s) {
+    return '<button type="button" onclick="ncSelSlot(this,\''+s+'\')" style="padding:.38rem .75rem;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s">'+s+'</button>';
+  }).join('');
+}
+
+function ncSelSlot(btn, slot) {
+  document.querySelectorAll('#nc_slots button').forEach(function(b) {
+    b.style.background='#fff'; b.style.color='#374151'; b.style.borderColor='#e5e7eb';
+  });
+  btn.style.background='#0b7c6e'; btn.style.color='#fff'; btn.style.borderColor='#0b7c6e';
+  var h = document.getElementById('nc_hora'); if(h) h.value = slot;
 }
 
 function ncSelTipo(btn) {
