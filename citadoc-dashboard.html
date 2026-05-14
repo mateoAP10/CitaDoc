@@ -3422,10 +3422,10 @@ async function webAiGenerar() {
 async function activarSitioWeb() {
   if (!M||!M.id||!M.web_config_draft) { mostrarToast('Genera un sitio primero','error'); return; }
 
-  // Si aún no tiene PRO+WEB pagado, iniciar checkout primero
+  // Si aún no tiene PRO+WEB pagado, ir directo al checkout unificado
   if (!esProWeb()) {
     cerrarAiWebModal();
-    mostrarProWebModal();
+    iniciarPagoRedirect('pro_web');
     return;
   }
 
