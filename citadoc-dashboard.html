@@ -6019,11 +6019,15 @@ function ncCargarDisp() {
   if (!M) return;
   getAvailableSlots(M, locId, _sb).then(function(disp) {
     _ncDisp = disp || {};
-    // Actualizar slots para la fecha actual
-    ncCargarSlots();
-    // Destacar visualmente fecha actual si disponible
+    // Auto-avanzar al primer día disponible si la fecha actual no tiene slots
     var fEl = document.getElementById('nc_fecha');
-    if (fEl && _ncDisp[fEl.value]) fEl.style.borderColor = '#0b7c6e';
+    if (fEl) {
+      var fechas = Object.keys(_ncDisp).sort();
+      if (fechas.length && !_ncDisp[fEl.value]) {
+        fEl.value = fechas[0];
+      }
+    }
+    ncCargarSlots();
   });
 }
 
@@ -6031,30 +6035,29 @@ function ncCargarSlots() {
   var fEl = document.getElementById('nc_fecha');
   if (!fEl) return;
   var fecha = fEl.value;
-  var slots = _ncDisp[fecha] || [];
-  // Si la fecha no tiene slots pero hay disponibilidad, buscar el siguiente día disponible
-  if (!slots.length && Object.keys(_ncDisp).length) {
-    fEl.style.borderColor = '#f59e0b'; // naranja = día sin slots
-  } else if (slots.length) {
-    fEl.style.borderColor = '#0b7c6e'; // verde = día disponible
-  }
-  ncActualizarSlots(slots);
+  var slots = (_ncDisp && _ncDisp[fecha]) ? _ncDisp[fecha] : [];
+  ncActualizarSlots(slots, fecha);
 }
 
-function ncActualizarSlots(slots) {
+function ncActualizarSlots(slots, fecha) {
   var cont = document.getElementById('nc_slots');
   var horaInp = document.getElementById('nc_hora');
   if (!cont) return;
   if (horaInp) horaInp.value = '';
-  if (!slots.length) {
-    cont.innerHTML = '<div style="font-size:.8rem;color:#f59e0b;font-weight:600">'
-      + (Object.keys(_ncDisp).length ? '⚠️ Este día no hay horarios para esta sede.' : 'Selecciona una sede y fecha.')
-      + '</div>';
-    return;
+
+  if (slots && slots.length) {
+    // Slots del engine: botones clickeables
+    cont.innerHTML = slots.map(function(s) {
+      return '<button type="button" onclick="ncSelSlot(this,\''+s+'\')" style="padding:.4rem .8rem;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s">'+s+'</button>';
+    }).join('');
+  } else {
+    // Sin slots configurados: mostrar input libre con advertencia
+    var hayOtrosDias = _ncDisp && Object.keys(_ncDisp).length > 0;
+    cont.innerHTML = (hayOtrosDias
+      ? '<div style="font-size:.76rem;color:#f59e0b;font-weight:600;margin-bottom:.4rem">⚠️ Sin horario configurado para este día.</div>'
+      : '<div style="font-size:.76rem;color:#9ca3af;margin-bottom:.4rem">Sin horarios configurados para esta sede.</div>')
+      + '<input type="time" id="nc_hora_libre" value="09:00" style="padding:.55rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;font-family:DM Sans,sans-serif" onchange="document.getElementById(\'nc_hora\').value=this.value">';
   }
-  cont.innerHTML = slots.map(function(s) {
-    return '<button type="button" onclick="ncSelSlot(this,\''+s+'\')" style="padding:.38rem .75rem;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s">'+s+'</button>';
-  }).join('');
 }
 
 function ncSelSlot(btn, slot) {
