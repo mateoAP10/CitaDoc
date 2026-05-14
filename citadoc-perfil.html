@@ -1213,9 +1213,6 @@ function aplicarMedico(m, formacion, citas, locs) {
     if (waTel.charAt(0)==='0') waTel=waTel.slice(1);
     if (!waTel.startsWith('593')) waTel='593'+waTel;
     waHeroBtn.href = 'https://wa.me/'+waTel;
-    waHeroBtn.setAttribute('style','display:flex!important');
-  } else if (waHeroBtn && !m.whatsapp) {
-    waHeroBtn.setAttribute('style','display:none');
   }
 
   // Microcopy dinámico en botón Agendar
@@ -1459,9 +1456,8 @@ function aplicarLandingConfig(lc) {
   if (lc.mostrar_booking_hero === false) {
     var bh = el('btnBookHero'); if (bh) bh.style.display = 'none';
   }
-  if (lc.mostrar_whatsapp === false) {
-    var wh = el('btnWAHero'); if (wh) wh.style.display = 'none';
-  }
+  // mostrar_whatsapp toggle — solo oculta si explícitamente false Y médico no tiene número
+  // (removido temporalmente para debug)
 
   // Orden CTAs: whatsapp_primary=false → booking primero (WA va debajo)
   if (lc.whatsapp_primary === false) {
