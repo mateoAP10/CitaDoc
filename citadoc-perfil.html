@@ -738,6 +738,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 function el(id){ return document.getElementById(id); }
 function setText(id,v){ var e=el(id); if(e) e.textContent=v; }
 function setVal(id,v){ var e=el(id); if(e) e.value=v; }
+function limpiarNumeroWA(n,p){if(!n)return null;var d=n.replace(/[^0-9]/g,'');if(d.charAt(0)==='0')d=d.slice(1);var c=({'ecuador':'593','colombia':'57','peru':'51','mexico':'52'}[(p||'ecuador').toLowerCase()]||'593');return d.startsWith(c)?d:c+d;}
+function urlWA(n,p,nombre){var num=limpiarNumeroWA(n,p);if(!num)return null;return 'https://wa.me/'+num+'?text='+encodeURIComponent('Hola '+nombre+', vi su perfil en CitaDoc y quisiera agendar una cita.');}
 
 // ── CONFIG ──
 // emailjs.init movido a DOMContentLoaded — emailjs se carga con defer
