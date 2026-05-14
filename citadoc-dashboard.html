@@ -4114,14 +4114,14 @@ async function iniciarPagoRedirect(planType) {
     try { data = JSON.parse(rawText); } catch(pe) { console.error('[payphone] JSON parse error', pe); }
     console.log('[payphone] full prepare response', data);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    if (!data.paymentUrl) throw new Error('No paymentUrl in response');
+    var redirectUrl = data.payWithCard || data.payWithPayPhone || data.paymentUrl;
+    if (!redirectUrl) throw new Error('No redirect URL in response');
 
-    // Guardar en localStorage para verificar al retorno
     localStorage.setItem('citadoc_pp_tx', JSON.stringify({
       id: transactionId, plan: planType, medicoId: M.id, ts: Date.now()
     }));
 
-    window.location.href = data.paymentUrl;
+    window.location.href = redirectUrl;
 
   } catch(e) {
     console.error('PayPhone Prepare error:', e);
