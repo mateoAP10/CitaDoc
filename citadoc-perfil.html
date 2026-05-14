@@ -584,9 +584,15 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
         <h3>Presentación</h3>
         <p class="bio-text" id="profBio">Cargando información del médico...</p>
       </div>
-      <div class="card" id="segurosCard" style="display:none">
-        <h3>Seguros que acepta</h3>
-        <div class="seg-grid" id="profSeguros"></div>
+      <div id="segurosCard" style="display:none;background:linear-gradient(135deg,#f0fdf8,#e8f8f2);border:1px solid rgba(11,124,110,.12);border-radius:20px;padding:1.4rem 1.6rem;margin-bottom:1.2rem">
+        <div style="display:flex;align-items:center;gap:.55rem;margin-bottom:1rem">
+          <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--teal-lite),rgba(11,124,110,.12));display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0">🛡</div>
+          <div>
+            <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em">Seguros aceptados</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.05rem">Este médico trabaja con estas aseguradoras</div>
+          </div>
+        </div>
+        <div id="profSeguros" style="display:flex;flex-wrap:wrap;gap:.45rem"></div>
       </div>
     </div>
     <!-- Tab: Formación -->
@@ -1238,10 +1244,10 @@ function aplicarMedico(m, formacion, citas, locs) {
     if (segEl) {
       segEl.innerHTML = '';
       m.seguros.forEach(function(s) {
-        var span = document.createElement('span');
-        span.className = 'seg-chip';
-        span.textContent = s;
-        segEl.appendChild(span);
+        var chip = document.createElement('span');
+        chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .85rem;background:#fff;border:1.5px solid rgba(11,124,110,.18);border-radius:50px;font-size:.76rem;font-weight:600;color:var(--teal-dark);box-shadow:0 1px 4px rgba(11,124,110,.08)';
+        chip.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' + s;
+        segEl.appendChild(chip);
       });
       el('segurosCard').style.display = 'block';
     }

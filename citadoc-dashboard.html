@@ -1153,6 +1153,7 @@ display:flex;
         <button class="ptab" onclick="showPerfilTab('redes',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Redes & Landing</button>
         <button class="ptab" onclick="showPerfilTab('formacion',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Formación</button>
         <button class="ptab" onclick="showPerfilTab('logros',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Logros</button>
+        <button class="ptab" onclick="showPerfilTab('seguros',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Seguros</button>
         <button class="ptab" onclick="showPerfilTab('visibilidad',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Visibilidad</button>
       </div>
 
@@ -1260,6 +1261,16 @@ display:flex;
           <button onclick="abrirModalLogro()" style="padding:.5rem 1rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer">+ Agregar logro</button>
         </div>
         <div id="logrosList"></div>
+      </div>
+
+      <!-- TAB: SEGUROS -->
+      <div id="ptab-seguros" class="ptab-content" style="display:none">
+        <div style="font-size:.82rem;color:#6b7280;margin-bottom:.9rem">Selecciona los seguros médicos que aceptas. Aparecerán en tu perfil público.</div>
+        <input id="segurosSearch" type="text" placeholder="Buscar seguro..." autocomplete="off"
+          style="width:100%;padding:.6rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;margin-bottom:.85rem;font-family:'DM Sans',sans-serif"
+          oninput="renderSeguros(this.value)" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'">
+        <div id="segurosGrid" class="seguros-grid"></div>
+        <button onclick="guardarSeguros(this)" style="margin-top:1.1rem;padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar seguros</button>
       </div>
 
       <!-- TAB: VISIBILIDAD -->
@@ -1761,7 +1772,19 @@ var currentDay = 'lun';
 var calYear = new Date().getFullYear();
 var calMonth = new Date().getMonth();
 var EVENTS = {};
-var SEGUROS_LIST = ['IESS','Salud S.A.','Equivida','Panamericana','BMI','Seguros Sucre','Produbanco'];
+var SEGUROS_POR_PAIS = {
+  ecuador:    ['IESS','Salud S.A.','Equivida','Panamericana','BMI','Seguros Sucre','Colonial','AIG','Mapfre','Chubb','Latina Seguros','Sweaden','QBE','Produbanco Seguros','Medicinaprepagas'],
+  colombia:   ['SURA','Colmédica','Compensar','Nueva EPS','Sanitas','Famisanar','Coomeva','Medimás','Aliansalud','Savia Salud','Comfama','Cruz Blanca'],
+  peru:       ['EsSalud','La Positiva','Pacífico Salud','Mapfre','Rímac','Oncosalud','SIS','FISSAL','Interseguro','VIDA CÁMARA'],
+  mexico:     ['IMSS','ISSSTE','GNP','AXA','MetLife','Allianz','Bupa México','Médica Sur','Mapfre México','Monterrey AETNA'],
+  chile:      ['Fonasa','Isapre Colmena','Banmédica','Cruz Blanca','Consalud','Isapre Esencial','MásVida','Vida Tres'],
+  argentina:  ['OSDE','Swiss Medical','Galeno','Medicus','Omint','Sancor Salud','PAMI','IOMA','Medifé','Accord Salud'],
+  venezuela:  ['Seguros Caracas','La Previsora','Mapfre Venezuela','Horizonte','Mercantil Seguros'],
+  panama:     ['SASA','ASSA Compañía de Seguros','Blue Cross Blue Shield','Humana','Cigna'],
+  costarica:  ['CCSS','INS','MAPFRE Costa Rica','Caser','Sagicor'],
+  otros:      ['Cigna','Humana','Aetna','United Healthcare','Bupa International','Allianz Care']
+};
+var SEGUROS_LIST = SEGUROS_POR_PAIS.ecuador;
 var activeSeguros = new Set();
 var formData = [];
 var logrosData = [];
@@ -2425,11 +2448,29 @@ function showTab(tab,el){
 }
 
 // ══ SEGUROS ══
-function renderSeguros(){
+function initSegurosList() {
+  var pais = (M && M.pais) ? M.pais.toLowerCase() : 'ecuador';
+  var lista = SEGUROS_POR_PAIS[pais] || SEGUROS_POR_PAIS.ecuador;
+  // Incluir seguros activos del médico que no están en la lista del país
+  (M && M.seguros || []).forEach(function(s){ if(!lista.includes(s)) lista = lista.concat([s]); });
+  SEGUROS_LIST = lista;
+}
+function renderSeguros(q){
   const g=_el('segurosGrid'); if(!g) return;
-  g.innerHTML=SEGUROS_LIST.map(s=>`<div class="seg-chip ${activeSeguros.has(s)?'on':''}" onclick="toggleSeg(this,'${s}')"><div class="seg-dot"></div>${s}</div>`).join('');
+  var q2=(q||'').toLowerCase();
+  var lista=q2?SEGUROS_LIST.filter(s=>s.toLowerCase().includes(q2)):SEGUROS_LIST;
+  g.innerHTML=lista.map(s=>`<div class="seg-chip ${activeSeguros.has(s)?'on':''}" onclick="toggleSeg(this,'${s.replace(/'/g,"\\'")}')"><div class="seg-dot" style="background:${activeSeguros.has(s)?'var(--teal)':'var(--border)'}"></div>${s}</div>`).join('');
 }
 function toggleSeg(el,s){ activeSeguros.has(s)?(activeSeguros.delete(s),el.classList.remove('on')):(activeSeguros.add(s),el.classList.add('on')); el.querySelector('.seg-dot').style.background=activeSeguros.has(s)?'var(--teal)':'var(--border)'; }
+async function guardarSeguros(btn){
+  if(!M||!M.id) return;
+  if(btn){btn.textContent='Guardando...';btn.disabled=true;}
+  var res=await _sb.from('medicos').update({seguros:Array.from(activeSeguros)}).eq('id',M.id);
+  if(btn){btn.textContent='Guardar seguros';btn.disabled=false;}
+  if(res.error){mostrarToast('Error: '+res.error.message,'error');return;}
+  M.seguros=Array.from(activeSeguros);
+  mostrarToast('Seguros guardados ✓');
+}
 
 // ══ CONTACTO ══
 function toggleWaInput(chk){
@@ -2739,9 +2780,10 @@ async function aplicarMedico(m) {
   setVal('inf-telefono',     m.telefono||m.whatsapp||'');
   const bio=_el('bioTextarea'); if(bio)bio.value=m.bio||'';
 
-  // Seguros
+  // Seguros — lista por país del médico
   activeSeguros.clear();
   (m.seguros||[]).forEach(s=>activeSeguros.add(s));
+  initSegurosList();
   renderSeguros();
 
   // Toggles
