@@ -165,7 +165,10 @@ function cargarDisponibilidadPorSede(medico, citas, sbClient, locationId) {
         hcFiltrado[diaKey] = Object.assign({}, dia, {bloques: bloquesSede});
       }
     });
-    var medicoFiltrado = Object.assign({}, medico, {horarios_config: hcFiltrado});
+    var medicoFiltrado = Object.assign({}, medico, {
+      horarios_config: hcFiltrado,
+      dias_atencion: Object.keys(hcFiltrado)
+    });
     return cargarDisponibilidadConBloqueos(medicoFiltrado, citas, sbClient);
   }
 
