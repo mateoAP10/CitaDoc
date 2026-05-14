@@ -682,32 +682,27 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
         </div>
       </div>
       <div id="payment-form" style="display:none">
-        <div style="border-radius:18px;overflow:hidden;border:1px solid rgba(11,124,110,.12);box-shadow:0 8px 32px rgba(15,26,24,.1);margin-bottom:.6rem">
-          <div style="background:linear-gradient(145deg,var(--teal-dark) 0%,#062e2b 100%);padding:1.3rem 1.5rem;text-align:center;position:relative">
-            <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(14,157,140,.25) 0%,transparent 65%);pointer-events:none"></div>
-            <div style="width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin:0 auto .6rem;font-size:1.2rem;position:relative;z-index:1">🔒</div>
-            <div style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#fff;letter-spacing:-.015em;position:relative;z-index:1">Activa CitaDoc PRO</div>
-            <div style="font-size:.71rem;color:rgba(255,255,255,.5);margin-top:.2rem;position:relative;z-index:1">Cancela cuando quieras · sin permanencia</div>
-            <div style="display:flex;align-items:flex-start;justify-content:center;gap:.2rem;margin-top:.8rem;position:relative;z-index:1">
-              <span style="font-size:.8rem;color:rgba(255,255,255,.55);font-weight:600;margin-top:.3rem">$</span>
-              <span style="font-family:Fraunces,serif;font-size:2.2rem;font-weight:700;color:#fff;line-height:1;letter-spacing:-.03em">9.99</span>
-              <span style="font-size:.72rem;color:rgba(255,255,255,.4);font-weight:500;align-self:flex-end;margin-bottom:.2rem">/mes</span>
+        <div style="background:#fff;border-radius:18px;border:1px solid rgba(11,124,110,.1);box-shadow:0 4px 24px rgba(15,26,24,.08);overflow:hidden;margin-bottom:.6rem">
+          <div style="padding:1.5rem 1.5rem 1rem;text-align:center">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--teal-lite),rgba(14,157,140,.15));border:2px solid rgba(11,124,110,.15);display:flex;align-items:center;justify-content:center;margin:0 auto .7rem;font-size:1.3rem;box-shadow:0 4px 14px rgba(11,124,110,.12)">🔒</div>
+            <div style="font-family:Fraunces,serif;font-size:1.25rem;font-weight:700;color:var(--ink);letter-spacing:-.02em">Pago seguro</div>
+            <div style="font-size:.76rem;color:var(--muted);margin-top:.28rem;line-height:1.5">Tu acceso PRO se activará automáticamente<br>tras confirmar el pago.</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:.3rem;flex-wrap:wrap;margin-top:.85rem;padding:.65rem .8rem;background:linear-gradient(135deg,#f8fffe,#f0fdf8);border-radius:10px;border:1px solid rgba(11,124,110,.08)">
+              <span style="display:flex;align-items:center;gap:.2rem;font-size:.65rem;font-weight:600;color:var(--teal)">🔒 SSL 256-bit</span>
+              <span style="color:rgba(11,124,110,.2);font-size:.7rem">·</span>
+              <span style="display:flex;align-items:center;gap:.2rem;font-size:.65rem;font-weight:600;color:var(--teal)">🛡 Pago cifrado</span>
+              <span style="color:rgba(11,124,110,.2);font-size:.7rem">·</span>
+              <span style="font-size:.65rem;font-weight:600;color:var(--teal)">↩ Cancela cuando quieras</span>
             </div>
           </div>
-          <div style="background:#fff;padding:1.3rem 1.4rem">
-            <div style="display:flex;align-items:center;justify-content:center;gap:.45rem;flex-wrap:wrap;margin-bottom:1rem">
-              <span style="display:flex;align-items:center;gap:.25rem;font-size:.67rem;font-weight:600;color:var(--muted2)">🔒 SSL 256-bit</span>
-              <span style="color:var(--border)">·</span>
-              <span style="display:flex;align-items:center;gap:.25rem;font-size:.67rem;font-weight:600;color:var(--muted2)">🛡 Pago cifrado</span>
-              <span style="color:var(--border)">·</span>
-              <span style="font-size:.67rem;font-weight:600;color:var(--muted2)">↩ Sin permanencia</span>
+          <div style="padding:.8rem 1.4rem 1.4rem">
+            <div id="pp-button-registro" style="width:100%"></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(11,124,110,.08)">
+              <div style="text-align:center"><div style="font-size:1rem;margin-bottom:.2rem">⚡</div><div style="font-size:.62rem;font-weight:700;color:var(--ink2);line-height:1.3">Acceso inmediato</div><div style="font-size:.58rem;color:var(--muted2);margin-top:.08rem">Al instante</div></div>
+              <div style="text-align:center"><div style="font-size:1rem;margin-bottom:.2rem">🛡</div><div style="font-size:.62rem;font-weight:700;color:var(--ink2);line-height:1.3">Pago 100% seguro</div><div style="font-size:.58rem;color:var(--muted2);margin-top:.08rem">Con cifrado avanzado</div></div>
+              <div style="text-align:center"><div style="font-size:1rem;margin-bottom:.2rem">↩</div><div style="font-size:.62rem;font-weight:700;color:var(--ink2);line-height:1.3">Sin compromisos</div><div style="font-size:.58rem;color:var(--muted2);margin-top:.08rem">Cancela cuando quieras</div></div>
             </div>
-            <div style="background:#fafcfb;border:1.5px solid rgba(11,124,110,.1);border-radius:13px;padding:1rem;min-height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:.8rem">
-              <div id="pp-button-registro" style="width:100%"></div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:center;gap:.35rem;font-size:.67rem;color:var(--muted2)">
-              🔒 Procesado por PayPhone · Tu acceso se activa al instante
-            </div>
+            <div style="font-size:.6rem;color:var(--muted2);text-align:center;margin-top:.75rem;line-height:1.5">Al continuar, aceptas nuestros <a href="#" style="color:var(--teal);text-decoration:none">Términos</a> y <a href="#" style="color:var(--teal);text-decoration:none">Política de Privacidad</a></div>
           </div>
         </div>
       </div>

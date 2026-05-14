@@ -784,24 +784,27 @@ display:flex;
 .pay-micro{font-size:.72rem;color:var(--mu);text-align:center;margin-top:.4rem;line-height:1.5}
 
 /* ── CHECKOUT PREMIUM ── */
-.pay-checkout-wrap{display:flex;flex-direction:column;gap:0;border-radius:18px;overflow:hidden;border:1px solid rgba(11,124,110,.12);box-shadow:0 8px 32px rgba(15,26,24,.1)}
-.pay-checkout-head{background:linear-gradient(145deg,var(--teal-dark) 0%,#062e2b 100%);padding:1.4rem 1.6rem;text-align:center;position:relative}
-.pay-checkout-head::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(14,157,140,.25) 0%,transparent 65%);pointer-events:none}
-.pay-checkout-lock{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;margin:0 auto .7rem;font-size:1.3rem;backdrop-filter:blur(4px);position:relative;z-index:1}
-.pay-checkout-title{font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:#fff;letter-spacing:-.015em;line-height:1.1;position:relative;z-index:1}
-.pay-checkout-sub{font-size:.72rem;color:rgba(255,255,255,.55);margin-top:.25rem;position:relative;z-index:1}
-.pay-checkout-amount{display:flex;align-items:flex-start;justify-content:center;gap:.2rem;margin-top:.9rem;position:relative;z-index:1}
-.pay-checkout-amount-num{font-family:Fraunces,serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1;letter-spacing:-.03em}
-.pay-checkout-amount-cur{font-size:.85rem;color:rgba(255,255,255,.6);font-weight:600;margin-top:.35rem}
-.pay-checkout-amount-period{font-size:.75rem;color:rgba(255,255,255,.45);font-weight:500;align-self:flex-end;margin-bottom:.2rem}
-.pay-checkout-body{background:#fff;padding:1.4rem 1.5rem}
-.pay-checkout-trust{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:1.1rem;flex-wrap:wrap}
-.pay-checkout-trust-item{display:flex;align-items:center;gap:.28rem;font-size:.67rem;font-weight:600;color:var(--muted2)}
-.pay-checkout-trust-item svg{opacity:.55}
-.pay-checkout-widget{background:#fafcfb;border:1.5px solid rgba(11,124,110,.1);border-radius:14px;padding:1rem;min-height:60px;display:flex;align-items:center;justify-content:center;margin-bottom:.9rem}
-.pay-checkout-footer{display:flex;align-items:center;justify-content:center;gap:.4rem;font-size:.67rem;color:var(--muted2)}
-.pay-checkout-back{background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;display:flex;align-items:center;gap:.3rem;margin-bottom:.9rem;opacity:.7;transition:opacity .2s}
+.pay-checkout-wrap{background:#fff;border-radius:18px;border:1px solid rgba(11,124,110,.1);box-shadow:0 4px 24px rgba(15,26,24,.08);overflow:hidden}
+.pay-checkout-head{padding:1.6rem 1.5rem 1rem;text-align:center}
+.pay-checkout-lock{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--teal-lite),rgba(14,157,140,.15));border:2px solid rgba(11,124,110,.15);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;font-size:1.35rem;box-shadow:0 4px 14px rgba(11,124,110,.12)}
+.pay-checkout-title{font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:var(--ink);letter-spacing:-.02em;line-height:1.1}
+.pay-checkout-sub{font-size:.78rem;color:var(--muted);margin-top:.3rem;line-height:1.5}
+.pay-checkout-badges{display:flex;align-items:center;justify-content:center;gap:.3rem;flex-wrap:wrap;margin-top:.85rem;padding:.7rem .8rem;background:linear-gradient(135deg,#f8fffe,#f0fdf8);border-radius:10px;border:1px solid rgba(11,124,110,.08)}
+.pay-checkout-badge{display:flex;align-items:center;gap:.22rem;font-size:.65rem;font-weight:600;color:var(--teal)}
+.pay-checkout-sep{color:rgba(11,124,110,.2);font-size:.7rem}
+.pay-checkout-body{padding:.9rem 1.5rem 1.4rem}
+.pay-checkout-widget{margin-bottom:1rem}
+.pay-checkout-trust-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(11,124,110,.08)}
+.pay-checkout-trust-col{text-align:center}
+.pay-checkout-trust-icon{font-size:1.1rem;margin-bottom:.25rem}
+.pay-checkout-trust-label{font-size:.62rem;font-weight:700;color:var(--ink2);line-height:1.3}
+.pay-checkout-trust-desc{font-size:.58rem;color:var(--muted2);line-height:1.4;margin-top:.1rem}
+.pay-checkout-legal{font-size:.6rem;color:var(--muted2);text-align:center;margin-top:.8rem;line-height:1.5}
+.pay-checkout-legal a{color:var(--teal);text-decoration:none}
+.pay-checkout-back{background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;display:flex;align-items:center;gap:.3rem;margin-bottom:.8rem;opacity:.7;transition:opacity .2s}
 .pay-checkout-back:hover{opacity:1}
+/* PayPhone button override — make it feel CitaDoc */
+#pp-button payphone-button-box,#pp-button-web payphone-button-box{--pp-primary:var(--teal);--pp-btn-radius:14px}
 </style>
   <!-- PayPhone SDK -->
   <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
@@ -6198,30 +6201,39 @@ function enviarRecetaWhatsApp() {
       <div class="pay-checkout-wrap">
         <div class="pay-checkout-head">
           <div class="pay-checkout-lock">🔒</div>
-          <div class="pay-checkout-title">Activa CitaDoc PRO</div>
-          <div class="pay-checkout-sub">Pago único mensual · cancela cuando quieras</div>
-          <div class="pay-checkout-amount">
-            <span class="pay-checkout-amount-cur">$</span>
-            <span class="pay-checkout-amount-num">19.99</span>
-            <span class="pay-checkout-amount-period">/mes</span>
+          <div class="pay-checkout-title">Pago seguro</div>
+          <div class="pay-checkout-sub">Tu acceso PRO se activará automáticamente<br>tras confirmar el pago.</div>
+          <div class="pay-checkout-badges">
+            <span class="pay-checkout-badge">🔒 SSL 256-bit</span>
+            <span class="pay-checkout-sep">·</span>
+            <span class="pay-checkout-badge">🛡 Pago cifrado</span>
+            <span class="pay-checkout-sep">·</span>
+            <span class="pay-checkout-badge">↩ Cancela cuando quieras</span>
           </div>
         </div>
         <div class="pay-checkout-body">
-          <div class="pay-checkout-trust">
-            <span class="pay-checkout-trust-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>SSL 256-bit</span>
-            <span style="color:var(--border)">·</span>
-            <span class="pay-checkout-trust-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Pago cifrado</span>
-            <span style="color:var(--border)">·</span>
-            <span class="pay-checkout-trust-item">↩ Sin permanencia</span>
-          </div>
           <div class="pay-checkout-widget">
             <div id="pp-button" style="width:100%"></div>
+            <button id="btnProModalUpgrade" onclick="initPayPhone()" style="display:none;width:100%;padding:1rem;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(11,124,110,.28);letter-spacing:.01em;margin-top:.5rem">🔒 Activar PRO ahora</button>
           </div>
-          <button id="btnProModalUpgrade" onclick="initPayPhone()" style="display:none;width:100%;padding:.95rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(11,124,110,.28);letter-spacing:.01em">Activar PRO →</button>
-          <div class="pay-checkout-footer">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-            Procesado por PayPhone · Tu acceso se activa al instante
+          <div class="pay-checkout-trust-row">
+            <div class="pay-checkout-trust-col">
+              <div class="pay-checkout-trust-icon">⚡</div>
+              <div class="pay-checkout-trust-label">Acceso inmediato</div>
+              <div class="pay-checkout-trust-desc">Activamos tu cuenta PRO al instante</div>
+            </div>
+            <div class="pay-checkout-trust-col">
+              <div class="pay-checkout-trust-icon">🛡</div>
+              <div class="pay-checkout-trust-label">Pago 100% seguro</div>
+              <div class="pay-checkout-trust-desc">Procesado por PayPhone con cifrado avanzado</div>
+            </div>
+            <div class="pay-checkout-trust-col">
+              <div class="pay-checkout-trust-icon">↩</div>
+              <div class="pay-checkout-trust-label">Sin compromisos</div>
+              <div class="pay-checkout-trust-desc">Cancela desde tu panel cuando quieras</div>
+            </div>
           </div>
+          <div class="pay-checkout-legal">Al continuar, aceptas nuestros <a href="#">Términos y Condiciones</a> y <a href="#">Política de Privacidad</a></div>
         </div>
       </div>
     </div>
@@ -6291,29 +6303,38 @@ function enviarRecetaWhatsApp() {
       <div class="pay-checkout-wrap">
         <div class="pay-checkout-head">
           <div class="pay-checkout-lock">🔒</div>
-          <div class="pay-checkout-title">Activa tu sitio médico premium</div>
-          <div class="pay-checkout-sub">Setup único + primer mes incluido</div>
-          <div class="pay-checkout-amount">
-            <span class="pay-checkout-amount-cur">$</span>
-            <span class="pay-checkout-amount-num">150</span>
-            <span class="pay-checkout-amount-period">setup</span>
+          <div class="pay-checkout-title">Pago seguro</div>
+          <div class="pay-checkout-sub">Tu sitio médico se publicará automáticamente<br>tras confirmar el pago.</div>
+          <div class="pay-checkout-badges">
+            <span class="pay-checkout-badge">🔒 SSL 256-bit</span>
+            <span class="pay-checkout-sep">·</span>
+            <span class="pay-checkout-badge">🛡 Pago cifrado</span>
+            <span class="pay-checkout-sep">·</span>
+            <span class="pay-checkout-badge">↩ Cancela cuando quieras</span>
           </div>
         </div>
         <div class="pay-checkout-body">
-          <div class="pay-checkout-trust">
-            <span class="pay-checkout-trust-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>SSL 256-bit</span>
-            <span style="color:var(--border)">·</span>
-            <span class="pay-checkout-trust-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Pago cifrado</span>
-            <span style="color:var(--border)">·</span>
-            <span class="pay-checkout-trust-item">↩ Sin permanencia</span>
-          </div>
           <div class="pay-checkout-widget">
             <div id="pp-button-web" style="width:100%"></div>
           </div>
-          <div class="pay-checkout-footer">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-            Luego $29.99/mes · procesado por PayPhone · tu sitio se publica al instante
+          <div class="pay-checkout-trust-row">
+            <div class="pay-checkout-trust-col">
+              <div class="pay-checkout-trust-icon">🌐</div>
+              <div class="pay-checkout-trust-label">Sitio publicado</div>
+              <div class="pay-checkout-trust-desc">Tu web médica se activa al instante</div>
+            </div>
+            <div class="pay-checkout-trust-col">
+              <div class="pay-checkout-trust-icon">🛡</div>
+              <div class="pay-checkout-trust-label">Pago 100% seguro</div>
+              <div class="pay-checkout-trust-desc">Cifrado avanzado con PayPhone</div>
+            </div>
+            <div class="pay-checkout-trust-col">
+              <div class="pay-checkout-trust-icon">↩</div>
+              <div class="pay-checkout-trust-label">Sin compromisos</div>
+              <div class="pay-checkout-trust-desc">Cancela desde tu panel cuando quieras</div>
+            </div>
           </div>
+          <div class="pay-checkout-legal">Al continuar, aceptas nuestros <a href="#">Términos y Condiciones</a> y <a href="#">Política de Privacidad</a></div>
         </div>
       </div>
     </div>
