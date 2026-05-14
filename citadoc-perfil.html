@@ -1614,6 +1614,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   })();
 
+  // DEBUG: watch btnWAHero removal
+  (function() {
+    var obs = new MutationObserver(function(muts) {
+      muts.forEach(function(m) {
+        m.removedNodes.forEach(function(n) {
+          if (n.id === 'btnWAHero' || (n.querySelector && n.querySelector('#btnWAHero'))) {
+            console.error('[WA-REMOVED] node removed:', n, 'by parent:', m.target, new Error().stack);
+          }
+        });
+      });
+    });
+    obs.observe(document.body, {childList: true, subtree: true});
+  })();
+
   // Cargar
   cargarPerfil();
 
