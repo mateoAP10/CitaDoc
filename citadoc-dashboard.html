@@ -6728,7 +6728,9 @@ function renderFicha(p, consultas, proximaCita) {
     main.appendChild(emp);
   } else {
     consultas.forEach(function(con, idx) {
-      var fecha = con.created_at ? new Date(con.created_at).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}) : '';
+      var _d = con.created_at ? new Date(con.created_at) : null;
+      var fecha = _d ? _d.toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}) : '';
+      var fechaLarga = _d ? _d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
       var pend = (con.estado||'atendida')==='pendiente';
       var dotColor = pend ? '#f59e0b' : 'var(--teal)';
       var diags = (con.diagnostico||'').split('\n').filter(Boolean).slice(0,2);
@@ -6749,7 +6751,7 @@ function renderFicha(p, consultas, proximaCita) {
                 : '<span style="padding:.12rem .45rem;background:var(--cream);border-radius:20px;font-size:.68rem;color:var(--ink2)">'+d.slice(0,30)+'</span>';
             }).join('') : '')
           +'</div>'
-          +'<div style="font-size:.7rem;color:var(--muted);margin-top:.1rem">'+fecha+'</div>'
+          +'<div style="font-size:.7rem;color:var(--muted);margin-top:.1rem">'+fechaLarga+'</div>'
         +'</div>'
         +'<span style="font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;background:'+(pend?'#fef3c7':'#d1fae5')+';color:'+(pend?'#b45309':'#065f46')+';white-space:nowrap;flex-shrink:0">'+(pend?'Pendiente':'Atendida')+'</span>'
         +'<span style="font-size:.8rem;color:var(--muted2);flex-shrink:0">▾</span>';
@@ -6770,8 +6772,17 @@ function renderFicha(p, consultas, proximaCita) {
         ['Notas', con.notas]
       ].filter(function(s){ return s[1] && s[1].trim(); });
 
+      // Fecha prominente al inicio del cuerpo expandido
+      if (fechaLarga) {
+        var fechaEl = document.createElement('div');
+        fechaEl.style.cssText = 'display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;background:var(--teal-lite);border-radius:9px;margin-bottom:.7rem';
+        fechaEl.innerHTML = '<span style="font-size:.95rem">📅</span>'
+          +'<span style="font-family:Fraunces,serif;font-size:.95rem;font-weight:700;color:var(--teal-dark)">'+fechaLarga+'</span>';
+        body.appendChild(fechaEl);
+      }
+
       if (!sections.length) {
-        body.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);font-style:italic">Consulta sin detalles registrados.</div>';
+        body.innerHTML += '<div style="font-size:.82rem;color:var(--muted2);font-style:italic">Consulta sin detalles adicionales.</div>';
       } else {
         sections.forEach(function(s) {
           var sec = document.createElement('div');
