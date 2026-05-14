@@ -2338,12 +2338,12 @@ function buscarDireccionModal(query, inp, sug) {
         var ciudad = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
         var label = place.display_name.split(',').slice(0,3).join(',');
         var div = document.createElement('div');
-        div.style.cssText = 'padding:.5rem .85rem;font-size:.82rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6';
+        div.style.cssText = 'padding:.55rem .85rem;font-size:.82rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6;pointer-events:all;user-select:none;transition:background .1s';
         div.textContent = label;
         div.addEventListener('mouseenter', function(){ div.style.background='#f0fdf4'; });
         div.addEventListener('mouseleave', function(){ div.style.background=''; });
-        div.addEventListener('mousedown', function(e) {
-          e.preventDefault();
+        function seleccionar(e) {
+          if(e) e.preventDefault();
           inp.value = label;
           var ciudadInp = document.getElementById('ub_ciudad');
           if (ciudadInp && ciudad) ciudadInp.value = ciudad;
@@ -2352,12 +2352,13 @@ function buscarDireccionModal(query, inp, sug) {
           inp.dataset.lat = lat;
           inp.dataset.lon = lon;
           sug.style.display = 'none';
-          // Volar el mapa a la ubicación seleccionada
           if (window._ubMap && window._ubMarker && !isNaN(lat) && !isNaN(lon)) {
             window._ubMap.setView([lat, lon], 16);
             window._ubMarker.setLatLng([lat, lon]);
           }
-        });
+        }
+        div.addEventListener('mousedown', seleccionar);
+        div.addEventListener('touchstart', seleccionar, {passive:false});
         sug.appendChild(div);
       });
     })
@@ -6581,9 +6582,9 @@ function abrirModalUbicacion(loc) {
     +'<div style="display:flex;flex-direction:column;gap:.8rem">'
     +'<input type="hidden" id="ub_id">'
     +'<input id="ub_nombre" placeholder="Nombre del consultorio" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
-    +'<div style="position:relative">'
-    +'<input id="ub_direccion" placeholder="Busca tu clínica, hospital o dirección..." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
-    +'<div id="modalDirSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:200px;overflow-y:auto;margin-top:3px"></div>'
+    +'<div style="position:relative;z-index:10001">'
+    +'<input id="ub_direccion" placeholder="Busca tu clínica, hospital o dirección..." autocomplete="off" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.88rem;box-sizing:border-box">'
+    +'<div id="modalDirSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e5e7eb;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:10002;max-height:220px;overflow-y:auto;margin-top:4px;pointer-events:all"></div>'
     +'</div>'
     +'<div id="ub_mapa" style="height:200px;border-radius:12px;overflow:hidden;border:1.5px solid #e5e7eb"></div>'
     +'<p style="font-size:.72rem;color:#9ca3af;margin-top:-.3rem">Selecciona una sugerencia o arrastra el marcador para ajustar.</p>'
