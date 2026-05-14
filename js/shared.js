@@ -178,10 +178,24 @@ function cargarDisponibilidadPorSede(medico, citas, sbClient, locationId) {
 
 
 // ── API PÚBLICA — fuente de verdad única para toda la plataforma ──
-// Uso: getAvailableSlots(medico, locationId, sbClient)
-// Retorna Promise<{ '2026-05-20': ['09:00','09:30',...], ... }>
+// Fetches REAL booked citas first, then filters slots globally (all sedes).
+// A booked slot at any location blocks that time across ALL sedes.
+// DB constraint unique_slot_cita enforces this at DB level too.
 function getAvailableSlots(medico, locationId, sbClient) {
-  return cargarDisponibilidadPorSede(medico, [], sbClient, locationId || null);
+  var hoy = new Date().toISOString().split('T')[0];
+  var en60 = new Date(); en60.setDate(en60.getDate() + 60);
+  var fecha60 = en60.toISOString().split('T')[0];
+  return sbClient
+    .from('citas')
+    .select('fecha,hora')
+    .eq('medico_id', medico.id)
+    .gte('fecha', hoy)
+    .lte('fecha', fecha60)
+    .in('estado', ['confirmada', 'pendiente'])
+    .then(function(res) {
+      var citas = res.data || [];
+      return cargarDisponibilidadPorSede(medico, citas, sbClient, locationId || null);
+    });
 }
 
 // ── DISPONIBILIDAD BÁSICA (fallback sin bloqueos) ──
