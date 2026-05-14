@@ -7179,11 +7179,12 @@ function renderVisibilidad() {
   cont.appendChild(sep);
   var lc=M.landing_config||{};
   [
-    {key:'show_formacion',  label:'Mostrar sección Formación'},
-    {key:'show_logros',     label:'Mostrar sección Logros'},
-    {key:'show_seguros',    label:'Mostrar seguros aceptados'},
-    {key:'show_ubicaciones',label:'Mostrar consultorio y ubicaciones'},
-    {key:'show_precio',     label:'Mostrar precio de consulta'}
+    {key:'show_formacion',       label:'Mostrar sección Formación'},
+    {key:'show_logros',          label:'Mostrar sección Logros'},
+    {key:'show_seguros',         label:'Mostrar seguros aceptados'},
+    {key:'show_ubicaciones',     label:'Mostrar consultorio y ubicaciones'},
+    {key:'show_precio',          label:'Mostrar precio de consulta'},
+    {key:'mostrar_booking_hero', label:'Mostrar botón "Agendar consulta" en hero'}
   ].forEach(function(sw){ makeSwitch(sw.key, sw.label, lc[sw.key]!==false); });
 }
 
@@ -7195,7 +7196,7 @@ async function guardarVisibilidad() {
   });
   // Secciones del perfil p\u00fablico \u2192 landing_config JSONB
   var lc=Object.assign({},M.landing_config||{});
-  ['show_formacion','show_logros','show_seguros','show_ubicaciones','show_precio'].forEach(function(k){
+  ['show_formacion','show_logros','show_seguros','show_ubicaciones','show_precio','mostrar_booking_hero'].forEach(function(k){
     var el=document.getElementById('sw_'+k); if(el) lc[k]=el.checked;
   });
   upd.landing_config=lc;

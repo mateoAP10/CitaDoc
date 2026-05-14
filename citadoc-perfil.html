@@ -427,14 +427,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .hero-trust-v2{display:flex;flex-wrap:wrap;gap:.35rem}
 .trust-chip{font-size:.7rem;font-weight:600;padding:.28rem .8rem;border-radius:50px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.14);letter-spacing:.02em;white-space:nowrap;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:all .2s ease}
 .trust-chip:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25)}
-.hero-ctas-v2{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.35rem}
+.hero-ctas-v2{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;width:100%;max-width:320px}
 .hero-price-pill{display:inline-flex;align-items:center;gap:.55rem;background:rgba(245,158,11,.15);border:1.5px solid rgba(245,158,11,.35);border-radius:50px;padding:.45rem 1.1rem;margin-top:.4rem;backdrop-filter:blur(8px)}
 .hero-price-pill .pill-label{font-size:.72rem;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 .hero-price-pill .pill-amount{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;color:#fbbf24;letter-spacing:-.02em;line-height:1}
 .hero-price-pill .pill-currency{font-size:.72rem;color:rgba(255,255,255,.55);font-weight:600;align-self:flex-end;padding-bottom:.12rem}
-.btn-wa-hero{display:inline-flex;align-items:center;gap:.45rem;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;padding:.72rem 1.3rem;border-radius:12px;font-size:.88rem;font-weight:700;text-decoration:none;transition:all .2s cubic-bezier(.16,1,.3,1);border:none;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(37,211,102,.25)}
-.btn-wa-hero:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,211,102,.32)}
-.btn-book-hero{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.1);color:#fff;padding:.72rem 1.3rem;border-radius:12px;font-size:.88rem;font-weight:600;text-decoration:none;border:1.5px solid rgba(255,255,255,.22);transition:all .2s cubic-bezier(.16,1,.3,1);cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.btn-wa-hero{display:flex;align-items:center;justify-content:center;gap:.5rem;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;padding:.82rem 1.4rem;border-radius:13px;font-size:.92rem;font-weight:700;text-decoration:none;transition:all .2s cubic-bezier(.16,1,.3,1);border:none;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(37,211,102,.3)}
+.btn-wa-hero:hover{transform:translateY(-1px);box-shadow:0 7px 22px rgba(37,211,102,.38)}
+.btn-book-hero{display:flex;align-items:center;justify-content:center;gap:.4rem;background:rgba(255,255,255,.1);color:#fff;padding:.78rem 1.4rem;border-radius:13px;font-size:.88rem;font-weight:600;text-decoration:none;border:1.5px solid rgba(255,255,255,.22);transition:all .2s cubic-bezier(.16,1,.3,1);cursor:pointer;width:100%;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .btn-book-hero:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.32);transform:translateY(-1px)}
 .hero-bio-v2{font-size:.84rem;color:rgba(255,255,255,.55);line-height:1.65;margin-top:.15rem;max-width:520px}
 @media(max-width:768px){
@@ -1448,7 +1448,12 @@ function aplicarLandingConfig(lc) {
   if (lc.show_ubicaciones === false) { var u = el('ubicacionesSection'); if (u) u.style.display = 'none'; }
   if (lc.show_precio      === false) { var p = el('bookPrice');         if (p) p.style.display = 'none'; }
 
-  // Orden CTAs en hero: si whatsapp_primary=false, booking va primero
+  // Ocultar botón de agendar si el médico lo desactivó
+  if (lc.mostrar_booking_hero === false) {
+    var bh = el('btnBookHero'); if (bh) bh.style.display = 'none';
+  }
+
+  // Orden CTAs: whatsapp_primary=false → booking primero (WA va debajo)
   if (lc.whatsapp_primary === false) {
     var heroCtas = document.querySelector('.hero-ctas-v2');
     var bookHero = el('btnBookHero');
