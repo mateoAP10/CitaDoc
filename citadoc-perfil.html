@@ -1209,7 +1209,7 @@ function aplicarMedico(m, formacion, citas, locs) {
   // WhatsApp CTA en el hero
   var waHeroBtn = el('btnWAHero');
   if (waHeroBtn) {
-    if (m.whatsapp && m.mostrar_whatsapp !== false) {
+    if (m.whatsapp) {
       var waTel = m.whatsapp.replace(/[^0-9]/g,'');
       if (waTel.charAt(0)==='0') waTel=waTel.slice(1);
       if (!waTel.startsWith('593')) waTel='593'+waTel;
@@ -1456,9 +1456,12 @@ function aplicarLandingConfig(lc) {
   if (lc.show_ubicaciones === false) { var u = el('ubicacionesSection'); if (u) u.style.display = 'none'; }
   if (lc.show_precio      === false) { var p = el('bookPrice');         if (p) p.style.display = 'none'; }
 
-  // Ocultar botón de agendar si el médico lo desactivó
+  // Ocultar botones hero según configuración del médico
   if (lc.mostrar_booking_hero === false) {
     var bh = el('btnBookHero'); if (bh) bh.style.display = 'none';
+  }
+  if (lc.mostrar_whatsapp === false) {
+    var wh = el('btnWAHero'); if (wh) wh.style.display = 'none';
   }
 
   // Orden CTAs: whatsapp_primary=false → booking primero (WA va debajo)
