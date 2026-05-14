@@ -6279,6 +6279,8 @@ function mostrarToast(msg, tipo) {
 
 // ══ FICHA PACIENTE ══
 var _fichaId = null;
+var _fichaPaciente = null;
+function abrirNuevaCitaFicha() { if(_fichaPaciente) abrirNuevaCita(_fichaPaciente); }
 
 function abrirFicha(pacienteId) {
   _fichaId = pacienteId;
@@ -6297,6 +6299,7 @@ function abrirFicha(pacienteId) {
 }
 
 function renderFicha(p, consultas) {
+  _fichaPaciente = p;
   var cont = document.getElementById('fichaContent');
   if (!cont) return;
   cont.innerHTML = '';
@@ -6317,7 +6320,7 @@ function renderFicha(p, consultas) {
   back.innerHTML = '← Pacientes';
   back.onmouseenter=function(){this.style.background='var(--cream)';};
   back.onmouseleave=function(){this.style.background='none';};
-  back.onclick=function(){ showPanel('pacientes', document.querySelector('[onclick*='pacientes']')); };
+  back.onclick=function(){ showPanel('pacientes', document.querySelector('[onclick*="pacientes"]')); };
   cont.appendChild(back);
 
   // ── Hero header ──
@@ -6338,7 +6341,7 @@ function renderFicha(p, consultas) {
       +'<div style="display:flex;gap:.5rem;flex-shrink:0">'
         +(p.telefono?'<a href="https://wa.me/'+p.telefono.replace(/[^0-9]/g,'')+'" target="_blank" style="width:36px;height:36px;border-radius:10px;background:rgba(37,211,102,.18);border:1px solid rgba(37,211,102,.35);display:flex;align-items:center;justify-content:center;color:#4ade80;text-decoration:none;font-size:.95rem">💬</a>':'')
         +'<button onclick="abrirModalConsulta(''+p.id+'')" style="padding:.5rem 1rem;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);border-radius:10px;color:#fff;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:600;cursor:pointer">+ Consulta</button>'
-        +'<button onclick="abrirNuevaCita({id:''+p.id+'',nombre:''+p.nombre.replace(/'/g,"\'")+'',email:''+((p.email||'')).replace(/'/g,"\'")+'',telefono:''+((p.telefono||'')).replace(/'/g,"\'")+'',titulo:''})" style="padding:.5rem 1rem;background:var(--teal);border:none;border-radius:10px;color:#fff;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">+ Cita</button>'
+        +'<button onclick="abrirNuevaCitaFicha()" style="padding:.5rem 1rem;background:var(--teal);border:none;border-radius:10px;color:#fff;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer">+ Cita</button>'
       +'</div>'
     +'</div>';
   cont.appendChild(hero);
