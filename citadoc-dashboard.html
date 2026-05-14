@@ -2324,41 +2324,40 @@ function initModalDireccionInput() {
 function buscarDireccionModal(query, inp, sug) {
   sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Buscando...</div>';
   sug.style.display = 'block';
-  fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q='+encodeURIComponent(query)+'&limit=5&accept-language=es', {
-    headers: {'User-Agent': 'CitaDoc/1.0'}
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data) {
-    sug.innerHTML = '';
-    if (!data || !data.length) {
-      sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Sin resultados. Intenta con más detalle.</div>';
-      return;
-    }
-    data.forEach(function(place) {
-      var addr = place.address || {};
-      var ciudad = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
-      var label = place.display_name.split(',').slice(0,3).join(',');
-      var div = document.createElement('div');
-      div.style.cssText = 'padding:.5rem .85rem;font-size:.82rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6';
-      div.textContent = label;
-      div.addEventListener('mouseenter', function(){ div.style.background='#f0fdf4'; });
-      div.addEventListener('mouseleave', function(){ div.style.background=''; });
-      div.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        inp.value = label;
-        var ciudadInp = document.getElementById('ub_ciudad');
-        if (ciudadInp && ciudad) ciudadInp.value = ciudad;
-        // Guardar lat/lon para maps_url preciso
-        inp.dataset.lat = place.lat;
-        inp.dataset.lon = place.lon;
-        sug.style.display = 'none';
+  var url = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&accept-language=es&q=' + encodeURIComponent(query);
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      sug.innerHTML = '';
+      if (!data || !data.length) {
+        sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Sin resultados. Intenta con más detalle.</div>';
+        return;
+      }
+      data.forEach(function(place) {
+        var addr = place.address || {};
+        var ciudad = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+        var label = place.display_name.split(',').slice(0,3).join(',');
+        var div = document.createElement('div');
+        div.style.cssText = 'padding:.5rem .85rem;font-size:.82rem;color:#374151;cursor:pointer;border-bottom:1px solid #f3f4f6';
+        div.textContent = label;
+        div.addEventListener('mouseenter', function(){ div.style.background='#f0fdf4'; });
+        div.addEventListener('mouseleave', function(){ div.style.background=''; });
+        div.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          inp.value = label;
+          var ciudadInp = document.getElementById('ub_ciudad');
+          if (ciudadInp && ciudad) ciudadInp.value = ciudad;
+          inp.dataset.lat = place.lat;
+          inp.dataset.lon = place.lon;
+          sug.style.display = 'none';
+        });
+        sug.appendChild(div);
       });
-      sug.appendChild(div);
+    })
+    .catch(function(err) {
+      console.error('[sede-autocomplete] fetch error:', err);
+      sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Error buscando. Intenta de nuevo.</div>';
     });
-  })
-  .catch(function() {
-    sug.innerHTML = '<div style="padding:.5rem .85rem;font-size:.82rem;color:#9ca3af">Error buscando. Intenta de nuevo.</div>';
-  });
 }
 
 // ══ PERFIL TABS ══
