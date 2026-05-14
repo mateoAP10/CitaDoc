@@ -6613,11 +6613,13 @@ function abrirFicha(pacienteId) {
   showPanel('ficha', null);
   var cont = document.getElementById('fichaContent');
   if (cont) uiLoading('fichaContent', 'Cargando ficha del paciente...');
-  var hoy = new Date().toISOString().split('T')[0];
+  var _now = new Date();
+  var hoy  = _now.toLocaleDateString('en-CA');
+  var horaActual = _now.toTimeString().slice(0,5);
   Promise.all([
     _sb.from('pacientes').select('*').eq('id', pacienteId).single(),
     _sb.from('consultas').select('*').eq('paciente_id', pacienteId).order('created_at', {ascending:false}),
-    _sb.from('citas').select('fecha,hora,location_id,estado').eq('paciente_id', pacienteId).gte('fecha', hoy).neq('estado','cancelada').order('fecha').order('hora').limit(1)
+    _sb.from('citas').select('fecha,hora,location_id,estado').eq('paciente_id', pacienteId).gt('fecha', hoy).neq('estado','cancelada').order('fecha').order('hora').limit(1)
   ]).then(function(res) {
     if (res[0].error || !res[0].data) { uiError('fichaContent', 'No se pudo cargar la ficha', function(){ abrirFicha(_fichaId); }); return; }
     if (res[1].error) { logError('abrirFicha:consultas', res[1].error); }
