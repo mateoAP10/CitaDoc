@@ -2730,6 +2730,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const {data:{session}} = await _sb.auth.getSession();
     if(!session){ window.location.href='index.html'; return; }
+    if(!session.user.email_confirmed_at){ window.location.href='index.html'; return; }
 
     const {data:medico,error} = await _sb.from('medicos').select('*').eq('user_id',session.user.id).single();
     if(error||!medico){

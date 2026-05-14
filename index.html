@@ -1576,8 +1576,12 @@ function doLogin() {
   var errEl = el('loginError');
   if (!email||!pass) { errEl.textContent='Ingresa email y contraseña.'; errEl.style.display='block'; return; }
   _sb.auth.signInWithPassword({email:email, password:pass}).then(function(res) {
-    if (res.error) { errEl.textContent='Credenciales incorrectas.'; errEl.style.display='block'; }
-    else window.location.href = 'citadoc-dashboard.html';
+    if (res.error) {
+      var msg = /not confirmed/i.test(res.error.message)
+        ? 'Confirma tu email antes de ingresar. Revisa tu bandeja de entrada.'
+        : 'Credenciales incorrectas.';
+      errEl.textContent=msg; errEl.style.display='block';
+    } else window.location.href = 'citadoc-dashboard.html';
   });
 }
 
