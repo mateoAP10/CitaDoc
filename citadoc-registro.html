@@ -98,6 +98,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)}
 .field input::placeholder,.field textarea::placeholder{color:var(--muted2)}
 
+/* PASSWORD TOGGLE & STRENGTH */
+.pass-wrap{position:relative}
+.pass-wrap input{width:100%;box-sizing:border-box;padding-right:2.8rem}
+.pass-toggle{position:absolute;right:.85rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;color:var(--muted2);display:flex;align-items:center;transition:color .2s}
+.pass-toggle:hover{color:var(--teal)}
+.pass-strength{margin-top:.45rem;display:flex;flex-direction:column;gap:.3rem}
+.strength-track{height:3px;background:var(--border);border-radius:99px;overflow:hidden}
+.strength-fill{height:100%;width:0;border-radius:99px;transition:width .35s cubic-bezier(.16,1,.3,1),background .35s}
+.strength-meta{display:flex;justify-content:flex-end}
+.strength-label{font-size:.7rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted2);transition:color .3s}
+
 /* SEARCHABLE SELECT */
 .ss-wrap{position:relative}
 .ss-input-row{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;padding:.55rem .9rem;border:1.5px solid var(--border);border-radius:12px;background:var(--white);cursor:text;min-height:48px;transition:border-color .2s,box-shadow .2s}
@@ -536,8 +547,28 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-i
         <div class="field"><label>Correo electrónico</label><input type="email" placeholder="dr.juan@email.com" id="f-email"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Contraseña</label><input type="password" placeholder="Mínimo 8 caracteres" id="f-pass"></div>
-        <div class="field"><label>Confirmar contraseña</label><input type="password" placeholder="Repite tu contraseña" id="f-pass2"></div>
+        <div class="field">
+          <label>Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" placeholder="Mínimo 8 caracteres" id="f-pass">
+            <button type="button" class="pass-toggle" onclick="togglePass('f-pass',this)" aria-label="Mostrar contraseña">
+              <svg id="eye-pass" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pass-strength" id="pass-strength" style="display:none">
+            <div class="strength-track"><div class="strength-fill" id="strength-fill"></div></div>
+            <div class="strength-meta"><span class="strength-label" id="strength-label"></span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirmar contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" placeholder="Repite tu contraseña" id="f-pass2">
+            <button type="button" class="pass-toggle" onclick="togglePass('f-pass2',this)" aria-label="Mostrar contraseña">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="field-row">
         <div class="field"><label>Cédula / RUC</label><input type="text" placeholder="Ej: 1712345678" id="f-cedula"></div>
@@ -707,6 +738,35 @@ function updatePaymentStep() {
   document.getElementById('free-note').style.display    = f ? 'none' : 'block';
   document.getElementById('btn-activar').textContent    = f ? 'Empezar 30 días gratis →' : 'Activar mi perfil gratis →';
 }
+
+// ══ PASSWORD UX ══
+function togglePass(id, btn) {
+  var inp = document.getElementById(id);
+  var showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  btn.querySelector('svg').style.opacity = showing ? '1' : '.45';
+}
+
+(function(){
+  var inp = document.getElementById('f-pass');
+  var bar = document.getElementById('strength-fill');
+  var lbl = document.getElementById('strength-label');
+  var wrap = document.getElementById('pass-strength');
+  if(!inp) return;
+  inp.addEventListener('input', function(){
+    var v = inp.value;
+    if(!v){ wrap.style.display='none'; return; }
+    wrap.style.display='flex';
+    var strong = v.length>=12 && /[A-Z]/.test(v) && /[^a-zA-Z0-9]/.test(v);
+    var good   = v.length>=8 && /[a-zA-Z]/.test(v) && /[0-9]/.test(v);
+    var w, color, text;
+    if(strong){      w='100%'; color='#0b7c6e'; text='Strong'; }
+    else if(good){   w='66%';  color='#f59e0b'; text='Good';   }
+    else{            w='33%';  color='#ef4444'; text='Weak';   }
+    bar.style.width=w; bar.style.background=color;
+    lbl.textContent=text; lbl.style.color=color;
+  });
+})();
 
 // ══ ESPECIALIDADES ══
 const SPECS = ['Alergia e Inmunología','Anatomía Patológica','Anestesiología','Cardiología','Cirugía Bucal','Cirugía Cardiovascular','Cirugía General','Cirugía Maxilofacial','Cirugía Pediátrica','Cirugía Plástica y Reconstructiva','Cirugía Torácica','Cirugía Vascular','Dermatología','Endodoncia','Endocrinología','Gastroenterología','Genética Médica','Geriatría','Ginecología y Obstetricia','Hematología','Implantología Oral','Infectología','Laboratorio Clínico','Medicina Bucal','Medicina de Emergencias','Medicina del Deporte','Medicina del Dolor','Medicina del Trabajo','Medicina Familiar y Comunitaria','Medicina Física y Rehabilitación','Medicina Intensiva','Medicina Interna','Medicina Legal y Forense','Medicina Nuclear','Medicina Paliativa','Medicina Preventiva','Medicina Tropical','Nefrología','Neumonología','Neurocirugía','Neurología','Nutrición Clínica','Oclusión y Disfunción Temporomandibular','Odontología Estética','Odontología General','Odontología Preventiva y Comunitaria','Odontología Restauradora','Odontopediatría','Odontogeriatría','Oftalmología','Oncología','Ortodoncia y Ortopedia Maxilar','Otorrinolaringología','Patología Bucal','Pediatría','Periodoncia','Prótesis Dental','Psiquiatría','Radiología e Imágenes','Radiología Oral y Maxilofacial','Rehabilitación Oral','Reumatología','Traumatología y Ortopedia','Urología'];
