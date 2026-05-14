@@ -175,29 +175,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);d
 .mobile-cal-nav:active{transform:scale(.92)}
 .mobile-cal-title{font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
 /* ── MOBILE AGENDA MODE ── */
-.mobile-cal-days{display:flex;flex-direction:column;gap:.35rem}
-/* Days with events — compact card */
-.mobile-day-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:.7rem .9rem;transition:border-color .2s}
-.mobile-day-card.today{border-color:var(--teal);background:linear-gradient(135deg,#f0fdf8,#fff)}
-.mobile-day-card.has-events{border-color:rgba(11,124,110,.18)}
-/* Empty future days — single collapsed row */
-.mobile-day-empty-row{display:flex;align-items:center;gap:.6rem;padding:.4rem .9rem;border-radius:10px;background:transparent}
-.mobile-day-empty-row.today{background:var(--teal-lite);border-radius:10px}
-/* Header row */
-.mobile-day-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.45rem}
-.mobile-day-label{font-size:.7rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;min-width:28px}
-.mobile-day-num{font-size:.85rem;font-weight:800;color:var(--ink)}
-.mobile-day-name{font-size:.7rem;color:var(--muted2);font-weight:600}
-.mobile-day-badge{font-size:.62rem;font-weight:700;padding:.15rem .45rem;border-radius:50px;background:var(--teal-lite);color:var(--teal);margin-left:auto}
-/* Event chips — horizontal pill */
-.mobile-event{display:flex;align-items:center;gap:.5rem;padding:.38rem .6rem;background:var(--cream);border-radius:8px;margin-bottom:.28rem;font-size:.8rem}
+.mobile-cal-days{display:flex;flex-direction:column;gap:.3rem}
+.mobile-day-card{background:var(--white);border:1.5px solid rgba(11,124,110,.12);border-radius:14px;padding:.65rem .9rem;transition:border-color .2s}
+.mobile-day-card.today{border-color:var(--teal);background:linear-gradient(135deg,#f0fdf8,#fff);box-shadow:0 0 0 2px rgba(11,124,110,.08)}
+.mobile-day-empty-row{display:flex;align-items:center;gap:.55rem;padding:.32rem .9rem;border-radius:8px}
+.mobile-day-empty-row.today{background:var(--teal-lite)}
+.mobile-day-header{display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem}
+.mobile-day-label{font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;min-width:26px}
+.mobile-day-num{font-size:.84rem;font-weight:800;color:var(--ink)}
+.mobile-day-name{font-size:.68rem;color:var(--muted2);font-weight:500}
+.mobile-day-badge{font-size:.6rem;font-weight:700;padding:.12rem .4rem;border-radius:50px;background:var(--teal-lite);color:var(--teal);margin-left:auto}
+/* 2-line event row */
+.mobile-event{display:flex;align-items:flex-start;gap:.5rem;padding:.4rem .55rem;background:var(--cream);border-radius:8px;margin-bottom:.25rem;cursor:pointer;transition:background .15s}
+.mobile-event:hover{background:var(--teal-lite)}
 .mobile-event:last-child{margin-bottom:0}
-.mobile-event-time{font-weight:700;color:var(--teal);font-size:.74rem;min-width:34px;flex-shrink:0}
-.mobile-event-name{font-weight:500;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mobile-event-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-left:auto}
+.mobile-event-time{font-weight:700;color:var(--teal);font-size:.76rem;min-width:34px;flex-shrink:0;padding-top:.05rem}
+.mobile-event-body{flex:1;min-width:0}
+.mobile-event-name{font-weight:600;color:var(--ink);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mobile-event-motivo{font-size:.69rem;color:var(--muted);margin-top:.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mobile-event-meta{display:flex;align-items:center;gap:.3rem;flex-shrink:0}
+.mobile-event-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.mobile-event-dot.virtual{background:#6366f1}
 .mobile-event-dot.pending{background:var(--gold)}
-.mobile-sede-tag{font-size:.62rem;color:var(--teal-dark);background:var(--teal-lite);padding:.1rem .4rem;border-radius:6px;font-weight:600;flex-shrink:0}
-.mobile-empty-label{font-size:.72rem;color:var(--muted2);font-style:italic}
+.mobile-sede-tag{font-size:.58rem;color:var(--teal-dark);background:var(--teal-lite);padding:.08rem .35rem;border-radius:5px;font-weight:700}
+.mobile-empty-label{font-size:.7rem;color:var(--muted2);font-style:italic}
 
 .days-tabs{display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap}
 .day-tab{padding:.4rem .85rem;border-radius:8px;border:1.5px solid var(--border);font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;background:var(--white);transition:all .2s}
@@ -1928,18 +1929,15 @@ function renderMobileCal() {
     var evs = EVENTS[d] || [];
     var date = new Date(calYear, calMonth, d);
     var isToday = date.getTime() === todayDate.getTime();
-    var isPast = date < todayDate;
+    var isPast  = date < todayDate;
     var daysAhead = Math.round((date - todayDate) / 86400000);
 
-    // Skip past days without events
     if (isPast && !evs.length) continue;
-    // Skip empty future days beyond next 7
     if (!isToday && !evs.length && daysAhead > 7) continue;
 
     rendered++;
 
     if (!evs.length) {
-      // Empty upcoming day — single collapsed row
       var row = document.createElement('div');
       row.className = 'mobile-day-empty-row' + (isToday ? ' today' : '');
       row.innerHTML = '<span class="mobile-day-label">'+diaN[date.getDay()]+'</span>'
@@ -1949,9 +1947,8 @@ function renderMobileCal() {
       continue;
     }
 
-    // Day with events — compact card
     var card = document.createElement('div');
-    card.className = 'mobile-day-card has-events' + (isToday ? ' today' : '');
+    card.className = 'mobile-day-card' + (isToday ? ' today' : '');
 
     var hdr = document.createElement('div');
     hdr.className = 'mobile-day-header';
@@ -1961,22 +1958,26 @@ function renderMobileCal() {
       +'<span class="mobile-day-badge">'+evs.length+(evs.length===1?' cita':' citas')+'</span>';
     card.appendChild(hdr);
 
-    var sorted = evs.slice().sort(function(a,b){ return a.text.localeCompare(b.text); });
+    var sorted = evs.slice().sort(function(a,b){ return a.hora.localeCompare(b.hora); });
     sorted.forEach(function(e) {
-      var parts = e.text.split(' ');
-      var hora = parts[0];
-      var nombre = parts.slice(1).join(' ');
       var loc = e.location_id
         ? (window.locationsMedico||[]).find(function(l){ return String(l.id)===String(e.location_id); })
         : null;
+      var isVirtual = e.modalidad === 'virtual';
+
       var chip = document.createElement('div');
       chip.className = 'mobile-event';
-      chip.style.cursor = 'pointer';
-      chip.innerHTML = '<span class="mobile-event-time">'+hora+'</span>'
-        +'<span class="mobile-event-name">'+nombre+'</span>'
-        +(loc?'<span class="mobile-sede-tag">'+loc.nombre.split(' ')[0]+'</span>':'')
-        +'<span class="mobile-event-dot'+(e.estado==='pendiente'?' pending':'')+'"></span>'
-        +'<span style="font-size:.65rem;color:var(--muted2);margin-left:.3rem">✏️</span>';
+      chip.innerHTML =
+        '<span class="mobile-event-time">'+e.hora+'</span>'
+        +'<div class="mobile-event-body">'
+          +'<div class="mobile-event-name">'+e.paciente_nombre+'</div>'
+          +(e.motivo ? '<div class="mobile-event-motivo">'+e.motivo+'</div>' : '')
+        +'</div>'
+        +'<div class="mobile-event-meta">'
+          +(loc ? '<span class="mobile-sede-tag">'+loc.nombre.split(' ')[0]+'</span>' : '')
+          +'<span class="mobile-event-dot'+(e.estado==='pendiente'?' pending':(isVirtual?' virtual':''))+'"></span>'
+        +'</div>';
+
       (function(ev){ chip.onclick = function(){ abrirReschedule(ev); }; })(e);
       card.appendChild(chip);
     });
@@ -1985,14 +1986,14 @@ function renderMobileCal() {
   }
 
   if (!rendered) {
-    container.innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--muted2)">'
-      +'<div style="font-size:2rem;margin-bottom:.6rem">📅</div>'
-      +'<div style="font-family:Fraunces,serif;font-size:1rem;font-weight:600;color:var(--ink)">Sin citas este mes</div>'
+    container.innerHTML = '<div style="text-align:center;padding:2.5rem 1rem;color:var(--muted2)">'
+      +'<div style="font-size:1.8rem;margin-bottom:.5rem">📅</div>'
+      +'<div style="font-family:Fraunces,serif;font-size:.95rem;font-weight:600;color:var(--ink)">Sin citas este mes</div>'
       +'</div>';
   }
 }
-function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} AppState.cal.month=calMonth; AppState.cal.year=calYear; renderCal(); }
-function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} AppState.cal.month=calMonth; AppState.cal.year=calYear; renderCal(); }
+function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} AppState.cal.month=calMonth; AppState.cal.year=calYear; EVENTS={}; renderCal(); if(M) cargarCitasCal(M.id); }
+function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} AppState.cal.month=calMonth; AppState.cal.year=calYear; EVENTS={}; renderCal(); if(M) cargarCitasCal(M.id); }
 
 // ── RESCHEDULE DESDE CALENDARIO ──
 var _rsDisp = {};
@@ -2760,7 +2761,7 @@ async function cargarStats(medicoId){
 async function cargarCitasCal(medicoId){
   const ini=new Date(calYear,calMonth,1).toISOString().split('T')[0];
   const fin=new Date(calYear,calMonth+1,0).toISOString().split('T')[0];
-  const {data,error:eCal}=await _sb.from('citas').select('id,fecha,hora,paciente_nombre,paciente_email,paciente_tel,estado,location_id').eq('medico_id',medicoId).gte('fecha',ini).lte('fecha',fin).neq('estado','cancelada');
+  const {data,error:eCal}=await _sb.from('citas').select('id,fecha,hora,paciente_nombre,paciente_email,paciente_tel,motivo,tipo,modalidad,estado,location_id').eq('medico_id',medicoId).gte('fecha',ini).lte('fecha',fin).neq('estado','cancelada');
   if(eCal){ logError('cargarCitasCal', eCal); return; }
   EVENTS={};
   AppState.cal.events = EVENTS;
@@ -2771,6 +2772,7 @@ async function cargarCitasCal(medicoId){
       id:c.id, text:c.hora+' '+c.paciente_nombre.split(' ')[0],
       paciente_nombre:c.paciente_nombre, paciente_email:c.paciente_email||'',
       paciente_tel:c.paciente_tel||'', fecha:c.fecha, hora:c.hora,
+      motivo:c.motivo||c.tipo||'', modalidad:c.modalidad||'presencial',
       estado:c.estado, location_id:c.location_id
     });
   });
