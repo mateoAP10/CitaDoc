@@ -6073,7 +6073,7 @@ async function confirmarNuevaCita(pacId, pacNombre, pacEmail, pacTel, pacCedula,
     +'. Ante cualquier duda no dudes en contactarnos.';
 
   if(pacEmail) {
-    emailjs.send('service_63xln0n','template_e8t8qkq',{
+    var _epayload = {
       to_name:         pacNombre,
       to_email:        pacEmail,
       mensaje:         mensaje,
@@ -6083,7 +6083,9 @@ async function confirmarNuevaCita(pacId, pacNombre, pacEmail, pacTel, pacCedula,
       paciente_nombre: pacNombre,
       paciente_tel:    pacTel||'',
       motivo:          tipo||'Consulta'
-    }).then(function(){
+    };
+    console.log('[EMAIL PAYLOAD]', _epayload);
+    emailjs.send('service_63xln0n','template_e8t8qkq', _epayload).then(function(){
       mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail);
     }).catch(function(e){
       console.error('[emailjs] error:', e);
