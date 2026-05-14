@@ -2033,14 +2033,21 @@ function abrirReschedule(cita) {
   document.body.appendChild(ov);
 
   // Cargar disponibilidad filtrada por la misma sede de la cita
-  getAvailableSlots(M, cita.location_id||null, _sb).then(function(disp) {
+  // Refresh M desde DB para tener horarios_config actualizado
+  _sb.from('medicos').select('*').eq('id', M.id).single().then(function(r) {
+    var medico = (r.data) ? r.data : M;
+    return getAvailableSlots(medico, cita.location_id||null, _sb);
+  }).then(function(disp) {
     _rsDisp = disp || {};
     var fEl = document.getElementById('rs_fecha');
     if (fEl) {
-      var fechas = Object.keys(_rsDisp).sort().filter(function(f){ return f > hoy || f === hoy; });
-      if (fechas.length && !_rsDisp[fEl.value]) fEl.value = fechas[0];
+      var fechas = Object.keys(_rsDisp).sort().filter(function(f){ return f >= hoy; });
+      if (fechas.length && !(_rsDisp[fEl.value]&&_rsDisp[fEl.value].length)) fEl.value = fechas[0];
     }
     rsCargarSlots();
+  }).catch(function(err) {
+    console.error('[reschedule] engine error:', err);
+    rsMostrarFallback();
   });
 }
 
@@ -2050,14 +2057,23 @@ function rsCargarSlots() {
   var horaInp = document.getElementById('rs_hora');
   if (!fEl || !cont) return;
   if (horaInp) horaInp.value = '';
-  var slots = (_rsDisp[fEl.value] || []).filter(function(s){ return !(_rsCita && fEl.value === _rsCita.fecha && s === _rsCita.hora); });
+  var daySlots = _rsDisp[fEl.value] || [];
+  var slots = daySlots.filter(function(s){ return !(_rsCita && fEl.value === _rsCita.fecha && s === _rsCita.hora); });
   if (!slots.length) {
-    cont.innerHTML = '<div style="font-size:.78rem;color:#f59e0b;font-weight:600">Sin horarios disponibles este día.</div>';
+    // Fallback a time input si no hay slots del engine
+    rsMostrarFallback();
     return;
   }
   cont.innerHTML = slots.map(function(s) {
     return '<button type="button" onclick="rsSelSlot(this,\''+s+'\')" style="padding:.4rem .8rem;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;color:#374151;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s">'+s+'</button>';
   }).join('');
+}
+
+function rsMostrarFallback() {
+  var cont = document.getElementById('rs_slots'); if(!cont) return;
+  cont.innerHTML = '<input type="time" id="rs_hora_libre" value="09:00" style="padding:.55rem .85rem;border:1.5px solid #0b7c6e;border-radius:9px;font-size:.88rem;font-family:DM Sans,sans-serif;width:100%;box-sizing:border-box" onchange="document.getElementById(\'rs_hora\').value=this.value;document.getElementById(\'rs_hora\').dispatchEvent(new Event(\'change\'))">';
+  // Auto-set initial value
+  var h = document.getElementById('rs_hora'); if(h) h.value='09:00';
 }
 
 function rsSelSlot(btn, slot) {
