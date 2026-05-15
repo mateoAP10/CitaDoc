@@ -729,6 +729,22 @@ IDENTIDAD VISUAL:
   IMPORTANTE: un traumatólogo con fellowship y máster usa SIEMPRE "clinic" — sus credenciales elevan el copy, no el DNA
 - El color que elegís tiñe botones, nav, headlines. Elegí el correcto.
 
+SISTEMA DE LAYOUTS — elige UNO basándote en lo que ves y en la personalidad del médico:
+- "clinic-editorial" → split 52/48 limpio, luxury médico. Para: traumatología, ortopedia, cirugía, fisioterapia premium
+- "surgical-authority" → foto fullscreen, texto sobre imagen, CTA minimal. Para: cirujanos con mucha presencia, dermato, oncología
+- "performance-sports" → oscuro, bold, kinético. Para: medicina deportiva pura, alto rendimiento
+- "academic-prestige" → grid modular, credenciales al frente, naval. Para: académicos, docentes, investigadores con trayectoria
+- "pediatric-warm" → foto en card redondeado, airy, cálido. Para: pediatría, medicina familiar, psicología, nutrición
+- "future-minimal" → tipografía enorme, whitespace masivo, foto secundaria. Para: médicos con marca personal fuerte, tech, innovadores
+
+VISUAL DNA (solo colores — separado del layout):
+- clinic → navy institucional (traumato, ortopedia, rehabilit)
+- sports → negro + verde eléctrico (medicina deportiva pura)
+- luxury → crema + dorado (estética, plástica, derma cosmética)
+- authority → azul oscuro (neuro, cardio, oncología)
+- warm → naranja cálido (pediatría, psico, familiar)
+- modern → cian + negro tech (medicina preventiva, tech)
+
 JSON a devolver (SOLO JSON, sin texto antes ni después):
 {
   "headline": "...",
@@ -741,6 +757,7 @@ JSON a devolver (SOLO JSON, sin texto antes ni después):
   "patient_experience": "Cómo se siente el paciente. Sensorial.",
   "tone": "confianza-clinica|cercania-humana|elegancia-premium|innovacion-medica",
   "visual_dna": "clinic|sports|luxury|authority|warm|modern",
+  "layout_id": "clinic-editorial|surgical-authority|performance-sports|academic-prestige|pediatric-warm|future-minimal",
   "primary_color": "#hexcolor exacto del logo o foto",
   "services": [{"t":"nombre específico","d":"descripción 1 línea con resultado","i":"emoji"}],
   "cta_primary": "Agendar cita",
