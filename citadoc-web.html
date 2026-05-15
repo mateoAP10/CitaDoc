@@ -715,7 +715,19 @@ button,a{-webkit-tap-highlight-color:transparent}
   .ben-card:active{transform:scale(.97)}
   .testi-card:hover{transform:none;box-shadow:none}
   /* DNA mobile overrides */
-  body.dna-sports .hero-left,body.dna-modern .hero-left{padding:100px 6% 70px}
+  body.dna-sports .hero-left{padding:100px 6% 70px}
+  body.dna-modern .hero-left{padding:100px 6% 70px}
+  /* Authority mobile: photo reduces to 40vh on small screens */
+  body.dna-authority .hero-right{min-height:40vh}
+  body.dna-authority .hero-left{padding:50px 6% 60px}
+  /* Warm mobile: go back to stacked */
+  body.dna-warm .hero{grid-template-columns:1fr;display:flex;flex-direction:column}
+  body.dna-warm .hero-left{order:2;padding:50px 6% 60px}
+  body.dna-warm .hero-right{order:1;min-height:50vh}
+  /* Modern mobile: stack */
+  body.dna-modern .hero{grid-template-columns:1fr;display:flex;flex-direction:column}
+  body.dna-modern .hero-left{order:2;padding:50px 6% 60px}
+  body.dna-modern .hero-right{order:1;min-height:50vh}
   body.dna-luxury .hero-right{height:50vh}
 }
 
@@ -793,9 +805,9 @@ body.dna-luxury .srv-bg{background:#f5f0e8}
 body.dna-luxury .srv-card{background:#faf8f4;border-color:rgba(184,151,90,.15);border-radius:0;box-shadow:none}
 body.dna-luxury .testi-bg{background:#f5f0e8}
 
-/* ── DNA: AUTHORITY
+/* ── DNA: AUTHORITY — Institutional Editorial
    Neurocirugía · Cardiología · Cirugía general · Oncología
-   Confianza · Institución · Precisión ── */
+   Layout: FOTO ARRIBA (50vh) → TEXTO ABAJO — rompe el split, genera ritmo editorial ── */
 body.dna-authority{
   --gd:#0f172a;--gm:#1e3a8a;--ga:#1d4ed8;--gg:#3b82f6;
   --gp:rgba(59,130,246,.1);--gpl:rgba(59,130,246,.08);--gb:rgba(59,130,246,.2);
@@ -803,19 +815,27 @@ body.dna-authority{
   --bg:#fff;--s:#f8fafc;--bo:#e2e8f0;--p:#1d4ed8;--pd:#1e3a8a;
   background:#fff;color:#0f172a
 }
-body.dna-authority .h-h1{font-size:clamp(2.8rem,5.2vw,6rem);font-weight:900;letter-spacing:-.05em;line-height:.92}
+/* Structural change: stacked — photo on top, text below */
+body.dna-authority .hero{display:flex;flex-direction:column;min-height:100vh;grid-template-columns:none}
+body.dna-authority .hero-left{order:2;background:#fff;padding:70px 8% 80px;z-index:1}
+body.dna-authority .hero-left::after{display:none}
+body.dna-authority .hero-right{order:1;min-height:52vh;flex-shrink:0;position:relative}
+body.dna-authority .hero-right-ov{background:linear-gradient(180deg,rgba(15,23,42,.08) 0%,rgba(15,23,42,.15) 60%,rgba(255,255,255,.98) 100%)}
+/* Typography: massive, institutional */
+body.dna-authority .h-h1{font-size:clamp(3.2rem,6vw,7rem);font-weight:900;letter-spacing:-.06em;line-height:.88;max-width:700px}
 body.dna-authority .h-h1 strong{color:var(--gm);display:block}
-body.dna-authority .h-h1 em{color:var(--gg);font-style:normal;font-weight:400}
-body.dna-authority .h-pill{background:rgba(29,78,216,.08);border-color:rgba(29,78,216,.2);color:#1d4ed8}
+body.dna-authority .h-h1 em{color:var(--gg);font-style:normal;font-weight:400;font-size:.65em}
+body.dna-authority .h-sub{color:var(--mu);font-size:1.1rem;max-width:520px}
+body.dna-authority .h-pill{background:rgba(29,78,216,.08);border-color:rgba(29,78,216,.2);color:#1d4ed8;text-transform:uppercase;letter-spacing:.12em}
 body.dna-authority .h-pill-dot{background:#1d4ed8}
-body.dna-authority .btn-main{background:#1e3a8a;border-radius:6px}
+body.dna-authority .btn-main{background:#1e3a8a;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;font-size:.88rem}
 body.dna-authority .btn-main:hover{background:#1d4ed8}
-body.dna-authority .hero-right{background:var(--gd)}
 body.dna-authority .nav.scrolled .nav-cta{background:#1e3a8a}
+body.dna-authority .srv-bg{background:#f8fafc}
 
-/* ── DNA: WARM
+/* ── DNA: WARM — Human Asymmetrical
    Pediatría · Medicina familiar · Psicología · Ginecología
-   Calidez · Cuidado · Humano ── */
+   Layout: texto 38% / foto 62% — foto dominante, doctor como protagonista humano ── */
 body.dna-warm{
   --gd:#431407;--gm:#7c2d12;--ga:#c2410c;--gg:#ea580c;
   --gp:rgba(234,88,12,.1);--gpl:rgba(234,88,12,.07);--gb:rgba(234,88,12,.18);
@@ -823,14 +843,22 @@ body.dna-warm{
   --bg:#fffbf5;--s:#fff7ed;--bo:#fed7aa;--p:#c2410c;--pd:#7c2d12;
   background:#fffbf5;color:#1c0a00
 }
-body.dna-warm .h-h1{font-size:clamp(2.4rem,4.2vw,5rem);font-weight:700;letter-spacing:-.025em;line-height:.98}
+/* Structural change: asymmetric proportions — photo much larger */
+body.dna-warm .hero{grid-template-columns:38% 62%}
+body.dna-warm .hero-left{background:#fffbf5;padding:80px 6% 80px 7%}
+body.dna-warm .hero-right{min-height:100vh}
+body.dna-warm .hero-right-ov{background:linear-gradient(270deg,transparent 40%,rgba(255,251,245,.08) 100%)}
+/* Typography: warm, human scale */
+body.dna-warm .h-h1{font-size:clamp(1.9rem,3.5vw,3.8rem);font-weight:700;letter-spacing:-.02em;line-height:1.05}
 body.dna-warm .h-h1 strong{color:var(--gm);display:block}
 body.dna-warm .h-h1 em{color:var(--gg);font-style:italic}
+body.dna-warm .h-sub{font-size:.92rem;line-height:1.75;max-width:320px}
 body.dna-warm .h-pill{background:rgba(234,88,12,.08);border-color:rgba(234,88,12,.2);color:#c2410c}
 body.dna-warm .h-pill-dot{background:#ea580c}
-body.dna-warm .btn-main{background:var(--gm);border-radius:50px;padding:.85rem 2rem}
+body.dna-warm .btn-main{background:var(--gm);border-radius:50px;padding:.8rem 1.8rem;font-size:.88rem}
 body.dna-warm .btn-main:hover{background:var(--ga)}
-body.dna-warm .hero-right{background:var(--gd)}
+body.dna-warm .btn-ghost{border-color:rgba(194,65,12,.3)}
+body.dna-warm .hero-right-card{background:rgba(255,251,245,.12);border-color:rgba(255,255,255,.2)}
 body.dna-warm .nav.scrolled{background:rgba(255,251,245,.97)}
 body.dna-warm .nav.scrolled .nav-brand-name{color:var(--ink)}
 body.dna-warm .nav.scrolled .nav-links a{color:var(--ink2)}
@@ -848,14 +876,29 @@ body.dna-modern{
   --bg:#020817;--s:#0f172a;--bo:rgba(255,255,255,.1);--p:#0ea5e9;--pd:#0369a1;
   background:#020817;color:#fff
 }
-body.dna-modern .hero{grid-template-columns:1fr;position:relative;min-height:100vh}
-body.dna-modern .hero-left{background:transparent;z-index:2;position:relative;padding:140px 8% 100px}
-body.dna-modern .hero-left::after{display:none}
-body.dna-modern .hero-right{position:absolute;inset:0}
-body.dna-modern .hero-right-ov{background:linear-gradient(135deg,rgba(2,8,23,.85) 30%,rgba(2,8,23,.35) 100%)}
-body.dna-modern .h-h1{font-size:clamp(2.8rem,5.8vw,6.8rem);font-weight:700;letter-spacing:-.05em;line-height:.92}
+/* Modern layout: split preserved but photo pushed RIGHT with diagonal overlay
+   Diferencia clave vs Sports: texto en la MITAD IZQUIERDA con línea de corte diagonal */
+body.dna-modern .hero{grid-template-columns:55% 45%;position:relative;min-height:100vh;background:#020817}
+body.dna-modern .hero-left{background:transparent;z-index:3;position:relative;padding:140px 6% 100px 8%;display:flex;flex-direction:column;justify-content:center}
+body.dna-modern .hero-left::after{
+  content:'';position:absolute;top:0;right:-60px;bottom:0;width:120px;
+  background:linear-gradient(90deg,#020817,transparent);z-index:2;pointer-events:none
+}
+body.dna-modern .hero-right{position:relative;overflow:hidden;min-height:100vh}
+/* Diagonal clip on the photo panel */
+body.dna-modern .hero-right::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:80px;
+  background:linear-gradient(90deg,#020817,transparent);z-index:2;pointer-events:none
+}
+body.dna-modern .hero-right-ov{background:linear-gradient(180deg,rgba(2,8,23,.3) 0%,rgba(2,8,23,.2) 100%)}
+/* Horizontal rule — geométrico, tech */
+body.dna-modern .hero-left::before{
+  content:'';position:absolute;bottom:100px;left:8%;right:6%;height:1px;
+  background:linear-gradient(90deg,rgba(14,165,233,.4),transparent);pointer-events:none
+}
+body.dna-modern .h-h1{font-size:clamp(2.6rem,5vw,6rem);font-weight:700;letter-spacing:-.06em;line-height:.88}
 body.dna-modern .h-h1 strong{color:#fff;display:block}
-body.dna-modern .h-h1 em{color:#0ea5e9;font-style:normal;font-weight:300}
+body.dna-modern .h-h1 em{color:#0ea5e9;font-style:normal;font-weight:300;display:block}
 body.dna-modern .h-sub{color:rgba(255,255,255,.55);font-size:1.02rem}
 body.dna-modern .h-pill{background:rgba(14,165,233,.1);border-color:rgba(14,165,233,.3);color:#0ea5e9}
 body.dna-modern .h-pill-dot{background:#0ea5e9}
