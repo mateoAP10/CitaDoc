@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const LIMITS: Record<string, { per_min: number; per_hour: number }> = {
   voice_extraction:   { per_min: 10, per_hour: 60 },
   summary_generation: { per_min: 3,  per_hour: 20 },
+  growth_content:     { per_min: 3,  per_hour: 15 },
   default:            { per_min: 20, per_hour: 100 }
 }
 

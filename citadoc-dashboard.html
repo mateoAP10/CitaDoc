@@ -617,6 +617,14 @@ display:flex;
 .ficha-doc-icon{width:28px;height:28px;border-radius:7px;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
 @media(max-width:900px){.ficha-layout{grid-template-columns:1fr}.ficha-stats{grid-template-columns:repeat(2,1fr)}.ficha-ante-grid{grid-template-columns:1fr}}
 
+/* ── AI GROWTH STUDIO ── */
+.growth-tone-btn{padding:.45rem 1rem;border-radius:50px;border:1.5px solid var(--border);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;color:var(--muted);background:var(--white);cursor:pointer;transition:all .2s}
+.growth-tone-btn.active{background:var(--teal-lite);border-color:rgba(11,124,110,.35);color:var(--teal-dark)}
+.growth-content-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;position:relative}
+.growth-content-card p{font-size:.84rem;color:var(--ink2);line-height:1.6;white-space:pre-wrap;margin:0}
+.growth-copy-btn{position:absolute;top:.6rem;right:.6rem;background:var(--cream);border:1px solid var(--border);border-radius:7px;padding:.25rem .6rem;font-size:.7rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.growth-copy-btn:hover{background:var(--teal-lite);color:var(--teal);border-color:rgba(11,124,110,.25)}
+.growth-caption-num{font-size:.6rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem}
 /* ── FICHA MOBILE ── */
 .ficha-fab{display:none}
 @media(max-width:768px){
@@ -993,6 +1001,8 @@ display:flex;
     <!-- estadisticas oculto en fase 1 -->
     <div class="nav-section-label" style="margin-top:.4rem">Clínica</div>
     <div class="nav-item" onclick="showPanel('pacientes',this)"><span class="nav-icon">👥</span>Pacientes<span id="navPacientesPro" style="display:none;margin-left:auto;font-size:.58rem;font-weight:700;padding:.12rem .45rem;border-radius:50px;background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)">PRO</span></div>
+    <div class="nav-section-label" style="margin-top:.4rem">Marketing</div>
+    <div class="nav-item" onclick="showPanel('growth',this)"><span class="nav-icon">✨</span>AI Growth Studio<span style="margin-left:auto;font-size:.56rem;font-weight:700;padding:.1rem .4rem;border-radius:50px;background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)">AI</span></div>
     <div class="nav-section-label" style="margin-top:.4rem">Configuración</div>
     <div class="nav-item" onclick="showPanel('horarios',this)"><span class="nav-icon">🕐</span>Horarios</div>
     <div class="nav-item" onclick="showPanel('perfil',this)"><span class="nav-icon">👤</span>Mi perfil</div>
@@ -1842,6 +1852,76 @@ display:flex;
   <!-- PANEL FICHA PACIENTE -->
   <div class="panel" id="panel-ficha">
     <div id="fichaContent"></div>
+  </div>
+
+  <!-- ── AI GROWTH STUDIO ── -->
+  <div class="panel" id="panel-growth">
+    <!-- Header -->
+    <div style="margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem">
+        <span style="font-size:1.3rem">✨</span>
+        <h2 style="font-family:Fraunces,serif;font-size:1.4rem;font-weight:700;color:var(--ink);letter-spacing:-.02em">AI Growth Studio</h2>
+      </div>
+      <p style="font-size:.84rem;color:var(--muted);line-height:1.5">Genera contenido premium para tus redes. Aprueba antes de publicar.</p>
+    </div>
+
+    <!-- Doctor preview -->
+    <div id="growthDoctorCard" style="background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.85rem">
+      <div id="growthAvatar" style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--teal),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;color:#fff;flex-shrink:0">—</div>
+      <div>
+        <div id="growthDoctorName" style="font-weight:700;font-size:.92rem;color:var(--ink)">Cargando perfil...</div>
+        <div id="growthDoctorMeta" style="font-size:.76rem;color:var(--muted);margin-top:.15rem"></div>
+      </div>
+    </div>
+
+    <!-- Tone selector -->
+    <div style="margin-bottom:1.2rem">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.55rem">Tono del contenido</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="growth-tone-btn active" data-tone="profesional" onclick="setGrowthTone('profesional',this)">Profesional</button>
+        <button class="growth-tone-btn" data-tone="cercano" onclick="setGrowthTone('cercano',this)">Cercano</button>
+        <button class="growth-tone-btn" data-tone="moderno" onclick="setGrowthTone('moderno',this)">Moderno</button>
+      </div>
+    </div>
+
+    <!-- Generate button -->
+    <button id="growthGenerateBtn" onclick="generarGrowthContent()" style="width:100%;padding:.8rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.01em;margin-bottom:1.5rem">
+      ✨ Generar contenido
+    </button>
+
+    <!-- Results -->
+    <div id="growthResults" style="display:none">
+
+      <!-- Instagram captions -->
+      <div style="margin-bottom:1.5rem">
+        <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem">
+          <span>📸 Instagram — 5 captions</span>
+        </div>
+        <div id="growthCaptions"></div>
+      </div>
+
+      <!-- Reel hook -->
+      <div style="margin-bottom:1.5rem">
+        <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem">🎬 Reel hook</div>
+        <div id="growthReelHook" class="growth-content-card"></div>
+      </div>
+
+      <!-- Email -->
+      <div style="margin-bottom:1.5rem">
+        <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem">📧 Email outbound</div>
+        <div id="growthEmailSubject" class="growth-content-card" style="margin-bottom:.5rem"></div>
+        <div id="growthEmailBody" class="growth-content-card"></div>
+      </div>
+
+      <!-- CTA -->
+      <div style="margin-bottom:2rem">
+        <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem">🎯 CTA principal</div>
+        <div id="growthCTA" class="growth-content-card"></div>
+      </div>
+
+      <!-- Regenerar -->
+      <button onclick="generarGrowthContent()" style="width:100%;padding:.65rem;background:none;border:1.5px solid var(--border);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s">↻ Regenerar todo</button>
+    </div>
   </div>
 
 </main>
@@ -7068,6 +7148,133 @@ function renderFicha(p, consultas, proximaCita) {
     cont.appendChild(layout);
   }
 }
+// ── AI GROWTH STUDIO ──
+var _growthTone = 'profesional';
+
+function setGrowthTone(tone, btn) {
+  _growthTone = tone;
+  document.querySelectorAll('.growth-tone-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+}
+
+function growthInitDoctorCard() {
+  if (!M) return;
+  var ini = (M.nombre||'D').split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase()||'?';
+  var el = document.getElementById('growthAvatar');
+  if (el) el.textContent = ini;
+  var nm = document.getElementById('growthDoctorName');
+  if (nm) nm.textContent = 'Dr. ' + (M.nombre||'');
+  var mt = document.getElementById('growthDoctorMeta');
+  if (mt) mt.textContent = [(M.especialidades||[])[0], M.ciudad].filter(Boolean).join(' · ');
+}
+
+function growthMakeCard(text, label) {
+  var wrap = document.createElement('div');
+  wrap.className = 'growth-content-card';
+  wrap.style.marginBottom = '.5rem';
+  if (label) {
+    var lbl = document.createElement('div');
+    lbl.className = 'growth-caption-num';
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+  }
+  var p = document.createElement('p');
+  p.textContent = text;
+  var btn = document.createElement('button');
+  btn.className = 'growth-copy-btn';
+  btn.textContent = 'Copiar';
+  btn.onclick = function() {
+    navigator.clipboard.writeText(text).then(function() {
+      btn.textContent = '✓ Copiado';
+      setTimeout(function(){ btn.textContent = 'Copiar'; }, 2000);
+    });
+  };
+  wrap.appendChild(p);
+  wrap.appendChild(btn);
+  return wrap;
+}
+
+async function generarGrowthContent() {
+  if (!M) { mostrarToast('Perfil no cargado', 'error'); return; }
+  var btn = document.getElementById('growthGenerateBtn');
+  var results = document.getElementById('growthResults');
+  if (btn) { btn.textContent = '✨ Generando...'; btn.disabled = true; btn.style.opacity = '.7'; }
+  if (results) results.style.display = 'none';
+
+  try {
+    var res = await fetch('https://qxoomcqaafogczrvsyhg.functions.supabase.co/generate-growth-content', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        specialty:   (M.especialidades||[])[0] || 'Medicina General',
+        doctor_name: M.nombre || '',
+        city:        M.ciudad || '',
+        bio:         M.bio || M.descripcion || '',
+        tone:        _growthTone
+      })
+    });
+    var data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'error desconocido');
+
+    var c = data.content;
+
+    // Captions
+    var capEl = document.getElementById('growthCaptions');
+    if (capEl) {
+      capEl.innerHTML = '';
+      (c.captions||[]).forEach(function(cap, i) {
+        capEl.appendChild(growthMakeCard(cap, 'Caption ' + (i+1)));
+      });
+    }
+
+    // Reel hook
+    var hookEl = document.getElementById('growthReelHook');
+    if (hookEl) {
+      hookEl.innerHTML = '';
+      hookEl.appendChild(growthMakeCard(c.reel_hook||'', null));
+    }
+
+    // Email
+    var subjEl = document.getElementById('growthEmailSubject');
+    if (subjEl) {
+      subjEl.innerHTML = '';
+      subjEl.appendChild(growthMakeCard('Asunto: ' + (c.email_subject||''), null));
+    }
+    var bodyEl = document.getElementById('growthEmailBody');
+    if (bodyEl) {
+      bodyEl.innerHTML = '';
+      bodyEl.appendChild(growthMakeCard(c.email_body||'', null));
+    }
+
+    // CTA
+    var ctaEl = document.getElementById('growthCTA');
+    if (ctaEl) {
+      ctaEl.innerHTML = '';
+      ctaEl.appendChild(growthMakeCard(c.cta||'', null));
+    }
+
+    if (results) results.style.display = 'block';
+
+  } catch(e) {
+    mostrarToast('Error generando contenido: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.textContent = '✨ Generar contenido'; btn.disabled = false; btn.style.opacity = '1'; }
+  }
+}
+
+// Init growth panel when shown
+var _origShowPanelGrowth = typeof showPanel === 'function' ? showPanel : null;
+(function() {
+  var _sp = showPanel;
+  showPanel = function(id, el) {
+    _sp(id, el);
+    if (id === 'growth') growthInitDoctorCard();
+  };
+})();
+
 async function generarAISummary(pacienteId, forceRegen) {
   var btn = document.getElementById('fichaAIBtn');
   var box = document.getElementById('fichaAISummary');
