@@ -372,6 +372,16 @@ const SPECIALTY_CONTENT: Record<string, Record<string, unknown>> = {
   }
 }
 
+function assignPrimaryColor(esp: string): string {
+  const e = esp.toLowerCase()
+  if (['deport','rendimiento','atletism'].some(k => e.includes(k))) return '#16a34a'
+  if (['traumato','ortoped','rehabilit','kinesi','fisio'].some(k => e.includes(k))) return '#1a2e44'
+  if (['plástic','estet','dermat','cosmét','nutrici'].some(k => e.includes(k))) return '#92400e'
+  if (['neuro','cardio','oncolog'].some(k => e.includes(k))) return '#1e3a8a'
+  if (['pediatr','familiar','psicolog','ginecol'].some(k => e.includes(k))) return '#9a3412'
+  return '#1a2e44'
+}
+
 function assignDNAFallback(esp: string): string {
   const e = esp.toLowerCase()
   if (['deport','rendimiento','atletism','performanc'].some(k => e.includes(k))) return 'sports'
@@ -382,7 +392,7 @@ function assignDNAFallback(esp: string): string {
   return 'clinic' // default premium clínico
 }
 
-function buildMockConfig(medico: Record<string, unknown>): Record<string, unknown> {
+function buildMockConfig(medico: Record<string, unknown>, logoColors?: string[]): Record<string, unknown> {
   const nombre = `${medico.titulo || 'Dr.'} ${medico.nombre || ''} ${medico.apellido || ''}`.trim()
   const espRaw = (medico.especialidades as string[] || [])[0] || 'Especialista médico'
   const esp = espRaw.toLowerCase()
@@ -545,7 +555,7 @@ function buildMockConfig(medico: Record<string, unknown>): Record<string, unknow
     cta_final: null,
     seo_title: `${nombre} — ${espRaw}${ciudad ? ' en ' + ciudad : ''}`,
     seo_description: `${nombre}, especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}${anos ? ' con ' + anos + ' años de experiencia' : ''}. Atención médica personalizada y de excelencia.`,
-    primary_color: '#0b7c6e',
+    primary_color: (logoColors && logoColors.length > 0) ? logoColors[0] : assignPrimaryColor(espRaw),
     // Backwards compatibility
     cta_primary_text: 'Agendar cita',
     seo_desc: `${nombre}, especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}${anos ? ' con ' + anos + ' años de experiencia' : ''}. Atención médica personalizada y de excelencia.`,
@@ -618,7 +628,7 @@ serve(async (req) => {
     console.log('[KIMI DIAGNOSTIC] KIMI_API_KEY present?', !!Deno.env.get('KIMI_API_KEY'))
 
     if (use_mock === true) {
-      config = buildMockConfig(medico)
+      config = buildMockConfig(medico, logo_colors || [])
       source = 'mock-specialty'
     } else {
       const apiKey = Deno.env.get('KIMI_API_KEY')

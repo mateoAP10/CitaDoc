@@ -1700,9 +1700,8 @@ display:flex;
           </div>
 
           <div style="display:flex;gap:.55rem;justify-content:center;flex-wrap:wrap">
-            <button onclick="aiModalState('form')" style="padding:.6rem 1.1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.6);cursor:pointer">↻ Regenerar</button>
-            <button onclick="cerrarAiWebModal();refreshWebPreview(true);" style="padding:.6rem 1.1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.6);cursor:pointer">Ver preview ↙</button>
-            <button onclick="activarSitioWeb()" style="padding:.6rem 1.2rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(124,58,237,.38)">⚡ Publicar mi sitio</button>
+            <button onclick="aiModalState('form')" style="padding:.6rem 1.1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.6);cursor:pointer">↻ Generar otra versión</button>
+            <button onclick="activarSitioWeb()" style="padding:.7rem 1.6rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(11,124,110,.35)">⚡ Publicar este sitio — $150</button>
           </div>
         </div>
 
@@ -1712,8 +1711,8 @@ display:flex;
           <div style="font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:.3rem">Tu sitio está listo</div>
           <div style="font-size:.82rem;color:rgba(255,255,255,.38);margin-bottom:1.6rem;line-height:1.6">Draft generado con tu identidad médica real.<br>El preview se actualizó en el panel.</div>
           <div style="display:flex;gap:.65rem;justify-content:center;flex-wrap:wrap">
-            <button onclick="cerrarAiWebModal();refreshWebPreview(true);" style="padding:.65rem 1.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">Ver preview ↙</button>
-            <button onclick="activarSitioWeb()" id="aiActivarBtnModal" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(124,58,237,.38)">⚡ Activar por $150</button>
+            <button onclick="aiModalState('form')" style="padding:.65rem 1.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">↻ Generar otra versión</button>
+            <button onclick="activarSitioWeb()" id="aiActivarBtnModal" style="padding:.7rem 1.8rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 8px 28px rgba(11,124,110,.35)">⚡ Publicar este sitio — $150</button>
           </div>
         </div>
       </div>
@@ -3612,7 +3611,8 @@ function abrirAiReveal() {
   var frame = document.getElementById('aiRevealFrame');
   var urlBar = document.getElementById('aiRevealUrlBar');
   if (frame && M && M.slug) {
-    var url = 'citadoc-web.html?slug=' + encodeURIComponent(M.slug) + '&preview=draft&_cb=' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    // preview=clean: muestra el sitio sin banners ni watermarks — exactamente lo que verá el paciente
+    var url = 'citadoc-web.html?slug=' + encodeURIComponent(M.slug) + '&preview=clean&_cb=' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
     frame.src = url;
     if (urlBar) urlBar.textContent = 'citadoc.com/' + (M.slug || 'dr-...');
 

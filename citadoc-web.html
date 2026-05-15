@@ -1324,8 +1324,12 @@ function renderWeb(m,locs,wc,isPreview){
   applyDNA(dna);
 
   if(wc.primary_color){
-    document.documentElement.style.setProperty('--ga',wc.primary_color);
-    document.documentElement.style.setProperty('--p',wc.primary_color);
+    var pc = wc.primary_color;
+    document.documentElement.style.setProperty('--ga', pc);
+    document.documentElement.style.setProperty('--gm', pc);
+    document.documentElement.style.setProperty('--p',  pc);
+    // Variante más brillante para hover/accent
+    document.documentElement.style.setProperty('--gg', pc);
   }
   var nombre=(_M.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   var esp=(m.especialidades||[])[0]||'';
@@ -1580,8 +1584,8 @@ function renderWeb(m,locs,wc,isPreview){
   }catch(e){}
 
   // ── PREVIEW LOCK: draft mode visuals ──
-  if(isPreview){
-    // Top banner
+  if(isPreview && !previewClean){
+    // Top banner — solo en modo draft, no en modo clean
     var banner=document.createElement('div');
     banner.id='wPreviewBanner';
     banner.innerHTML='<span style="font-size:.9rem">🔒</span> <strong>Vista previa</strong> — Tu sitio médico aún no está publicado';
@@ -1908,7 +1912,9 @@ function mnavActive(item){
   }
   var p=new URLSearchParams(window.location.search);
   var tplO=p.get('tpl')||null;
-  var previewDraft=p.get('preview')==='draft';
+  var previewMode=p.get('preview');
+  var previewDraft = previewMode === 'draft' || previewMode === 'clean';
+  var previewClean = previewMode === 'clean'; // sin banners, sin watermark — lo que verá el paciente
   window._isPreviewDraft=previewDraft;
   var isSubdomain = hostname !== 'citadoc.lat' && hostname !== 'www.citadoc.lat' && hostname.endsWith('.citadoc.lat');
 
