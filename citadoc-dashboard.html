@@ -6851,10 +6851,80 @@ function renderFicha(p, consultas, proximaCita) {
   });
   sidebar.appendChild(docsCard);
 
+  // ── AI SUMMARY CARD ──
+  var aiCard = document.createElement('div');
+  aiCard.className = 'ficha-sidebar-card';
+  aiCard.id = 'fichaAICard';
+  var minCons = consultas.length;
+  if (minCons < 3) {
+    aiCard.innerHTML = '<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
+      +'<div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-bottom:.65rem">Disponible con 3+ consultas.<br>Actualmente: <strong>'+minCons+'</strong> consulta'+(minCons!==1?'s':'')+'.</div>'
+      +'<div style="font-size:.65rem;color:var(--muted2)">El análisis longitudinal aparecerá aquí.</div>';
+  } else {
+    aiCard.innerHTML = '<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
+      +'<div id="fichaAISummary" style="display:none"></div>'
+      +'<button id="fichaAIBtn" onclick="generarAISummary(\''+p.id+'\')" '
+        +'style="width:100%;padding:.55rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;margin-top:.1rem">'
+        +'🧠 Generar resumen clínico'
+      +'</button>'
+      +'<div style="font-size:.62rem;color:var(--muted2);text-align:center;margin-top:.4rem">'+minCons+' consultas · Powered by Kimi</div>';
+  }
+  sidebar.appendChild(aiCard);
+
   layout.appendChild(main);
   layout.appendChild(sidebar);
   cont.appendChild(layout);
 }
+async function generarAISummary(pacienteId, forceRegen) {
+  var btn = document.getElementById('fichaAIBtn');
+  var box = document.getElementById('fichaAISummary');
+  if(btn){btn.textContent='🧠 Analizando historial...';btn.disabled=true;btn.style.opacity='.6';}
+
+  try {
+    var res = await fetch('https://qxoomcqaafogczrvsyhg.functions.supabase.co/patient-summary', {
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs',
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({patient_id:pacienteId, force_regen:!!forceRegen})
+    });
+    var data = await res.json();
+
+    if (!data.ok) {
+      if(data.error==='insufficient_data'){
+        mostrarToast('Se necesitan 3+ consultas para generar resumen','error');
+      } else {
+        mostrarToast('Error: '+data.error,'error');
+      }
+      if(btn){btn.textContent='🧠 Generar resumen clínico';btn.disabled=false;btn.style.opacity='1';}
+      return;
+    }
+
+    var s = data.summary;
+    if(box) {
+      box.style.display='block';
+      box.innerHTML = '<div style="font-size:.75rem;color:var(--ink2);line-height:1.6;margin-bottom:.7rem">'+s.resumen+'</div>'
+        +(s.condiciones_activas&&s.condiciones_activas.length?
+          '<div style="margin-bottom:.5rem"><div style="font-size:.6rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">Condiciones</div>'
+          +s.condiciones_activas.map(function(x){return '<span style="display:inline-block;margin:.15rem .2rem .15rem 0;padding:.15rem .55rem;background:var(--teal-lite);border-radius:20px;font-size:.68rem;color:var(--teal-dark);font-weight:600">'+x+'</span>';}).join('')+'</div>':''  )
+        +(s.alertas&&s.alertas.length?
+          '<div style="margin-bottom:.5rem"><div style="font-size:.6rem;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">⚠ Alertas</div>'
+          +s.alertas.map(function(x){return '<div style="font-size:.72rem;color:#92400e;padding:.2rem 0;border-bottom:1px solid #fef3c7">'+x+'</div>';}).join('')+'</div>':''  )
+        +(s.recomendacion?
+          '<div style="padding:.55rem .7rem;background:#f0fdf4;border-left:3px solid var(--teal);border-radius:0 8px 8px 0;font-size:.73rem;color:var(--teal-dark);line-height:1.5;margin-bottom:.5rem">'+s.recomendacion+'</div>':''  )
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:.4rem">'
+          +'<span style="font-size:.6rem;color:var(--muted2)">'+(data.from_cache?'📦 En caché':'✨ Generado ahora')+' · '+s.consultations_count+' consultas</span>'
+          +'<button onclick="generarAISummary(\''+pacienteId+'\',true)" style="font-size:.6rem;color:var(--teal);background:none;border:none;cursor:pointer;font-family:DM Sans,sans-serif">↻ Regenerar</button>'
+        +'</div>';
+    }
+    if(btn){btn.style.display='none';}
+  } catch(e) {
+    mostrarToast('Error de red: '+e.message,'error');
+    if(btn){btn.textContent='🧠 Generar resumen clínico';btn.disabled=false;btn.style.opacity='1';}
+  }
+}
+
 function editarResumenClinico(pacienteId) {
   mostrarToast('Editar resumen - próximamente');
 }
