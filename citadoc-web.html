@@ -721,7 +721,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 
 <!-- NAV -->
 <nav class="nav" id="wNav">
-  <div class="nav-brand">
+  <div class="nav-brand" id="wNavBrand">
     <span class="nav-brand-name" id="wNavName">·</span>
     <span class="nav-brand-esp" id="wNavEsp"></span>
   </div>
@@ -1071,8 +1071,22 @@ function renderWeb(m,locs,wc,isPreview){
   document.title=wc.seo_title||(nombre+(esp?' — '+esp:'')+(ciudad?' en '+ciudad:''));
   var md=el('pageDesc');if(md)md.setAttribute('content',(wc.seo_description||wc.seo_desc||m.bio||nombre+' '+esp).slice(0,155));
 
-  setText('wNavName',nombre);
-  if(esp)setText('wNavEsp',esp);
+  // Logo: if doctor has logo_url, show image in nav instead of text
+  var navBrand = el('wNavBrand');
+  if (navBrand && m.logo_url) {
+    navBrand.innerHTML = '<img src="'+m.logo_url+'" alt="'+nombre+'" style="height:36px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1);transition:filter .35s" id="wNavLogoImg">'
+      +'<span style="font-size:.62rem;color:rgba(255,255,255,.5);font-weight:400;margin-top:1px;transition:color .35s" id="wNavEspLogo">'+esp+'</span>';
+    // Scrolled: remove invert
+    var origScroll = window.onscroll;
+    window.addEventListener('scroll', function() {
+      var nav = document.querySelector('.nav');
+      var img = el('wNavLogoImg');
+      if (img) img.style.filter = nav&&nav.classList.contains('scrolled') ? 'none' : 'brightness(0) invert(1)';
+    });
+  } else {
+    setText('wNavName',nombre);
+    if(esp)setText('wNavEsp',esp);
+  }
   var nc=el('navCta');if(nc)nc.textContent=wc.cta_primary||wc.cta_primary_text||'Agendar cita';
   setText('wFooterBrand',nombre+(esp?' · '+esp:''));
 
@@ -1611,8 +1625,16 @@ function mnavActive(item){
 
 /* ── INIT ── */
 (function(){
+  // Subdomain detection: drmateo.citadoc.lat → slug = "drmateo"
+  var hostname = window.location.hostname;
+  var slug = '';
+  if (hostname !== 'citadoc.lat' && hostname !== 'www.citadoc.lat' && hostname.endsWith('.citadoc.lat')) {
+    slug = hostname.split('.citadoc.lat')[0];
+  } else {
+    var p = new URLSearchParams(window.location.search);
+    slug = p.get('slug') || '';
+  }
   var p=new URLSearchParams(window.location.search);
-  var slug=p.get('slug')||'';
   var tplO=p.get('tpl')||null;
   var previewDraft=p.get('preview')==='draft';
   window._isPreviewDraft=previewDraft;
