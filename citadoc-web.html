@@ -717,6 +717,9 @@ button,a{-webkit-tap-highlight-color:transparent}
   /* DNA mobile overrides */
   body.dna-sports .hero-left{padding:100px 6% 70px}
   body.dna-modern .hero-left{padding:100px 6% 70px}
+  body.dna-clinic .hero{grid-template-columns:1fr;display:flex;flex-direction:column}
+  body.dna-clinic .hero-left{order:2;padding:50px 6% 60px}
+  body.dna-clinic .hero-right{order:1;min-height:55vh}
   /* Authority mobile: photo reduces to 40vh on small screens */
   body.dna-authority .hero-right{min-height:40vh}
   body.dna-authority .hero-left{padding:50px 6% 60px}
@@ -804,6 +807,33 @@ body.dna-luxury .nav.scrolled .nav-cta{background:var(--gm)}
 body.dna-luxury .srv-bg{background:#f5f0e8}
 body.dna-luxury .srv-card{background:#faf8f4;border-color:rgba(184,151,90,.15);border-radius:0;box-shadow:none}
 body.dna-luxury .testi-bg{background:#f5f0e8}
+
+/* ── DNA: CLINIC — Premium Medical Split
+   Traumatología · Ortopedia · Rehabilitación · Fisioterapia clínica
+   Layout: split 52/48 natural — texto izquierda, foto derecha, fondo blanco, navy institucional premium ── */
+body.dna-clinic{
+  --gd:#0d1b2a;--gm:#1a2e44;--ga:#1e3a5f;--gg:#2563a8;
+  --gp:rgba(30,58,95,.1);--gpl:rgba(30,58,95,.07);--gb:rgba(30,58,95,.18);
+  --ink:#0d1b2a;--ink2:#1e2d3d;--mu:#4a5568;--su:#718096;
+  --bg:#fff;--s:#f7f9fc;--bo:#e2e8f0;--p:#1e3a5f;--pd:#0d1b2a;
+  background:#fff;color:#0d1b2a
+}
+/* Split layout: no override — base template ya tiene 52%/48% que es exactamente el look correcto */
+body.dna-clinic .hero-right-ov{background:linear-gradient(270deg,transparent 55%,rgba(255,255,255,.05) 100%)}
+body.dna-clinic .h-h1{font-size:clamp(2.5rem,3.8vw,4.2rem);font-weight:700;letter-spacing:-.035em;line-height:1.02}
+body.dna-clinic .h-h1 strong{color:var(--gm);display:block}
+body.dna-clinic .h-h1 em{color:var(--gg);font-style:italic;font-weight:300}
+body.dna-clinic .h-sub{color:var(--mu);font-size:.98rem;max-width:420px}
+body.dna-clinic .h-pill{background:rgba(30,58,95,.08);border-color:rgba(30,58,95,.22);color:var(--gm);letter-spacing:.08em}
+body.dna-clinic .h-pill-dot{background:var(--gg)}
+body.dna-clinic .btn-main{background:var(--gm);border-radius:10px}
+body.dna-clinic .btn-main:hover{background:var(--ga);transform:translateY(-2px);box-shadow:0 8px 24px rgba(30,58,95,.3)}
+body.dna-clinic .h-trust-icon{background:rgba(30,58,95,.08);color:var(--gm)}
+body.dna-clinic .nav.scrolled .nav-cta{background:var(--gm)}
+body.dna-clinic .nav.scrolled .nav-brand-name{color:var(--ink)}
+body.dna-clinic .srv-bg{background:#f7f9fc}
+body.dna-clinic .srv-card{border-color:rgba(30,58,95,.1)}
+body.dna-clinic .testi-bg{background:#f7f9fc}
 
 /* ── DNA: AUTHORITY — Institutional Editorial
    Neurocirugía · Cardiología · Cirugía general · Oncología
@@ -1255,7 +1285,8 @@ function servsForEsp(wc,esp){
 }
 
 var DNA_MAP = {
-  sports:    ['traumato','deport','fisio','ortoped','rehabilit','kinesi','musculo'],
+  sports:    ['deport','rendimiento','atletism','performanc'],
+  clinic:    ['traumato','ortoped','rehabilit','kinesi','musculo','fisio'],
   luxury:    ['plástic','plastic','estet','dermat','cosmét','nutrici','capilar'],
   authority: ['neuro','cardio','cirug','oncolog','hematol','hepato','gastro'],
   warm:      ['pediatr','familiar','psicolog','psiquiat','ginecol','obstetr','geriatr'],
@@ -1267,18 +1298,17 @@ function assignDNA(esp) {
   for (var dna in DNA_MAP) {
     if (DNA_MAP[dna].some(function(k){ return e.indexOf(k) !== -1; })) return dna;
   }
-  return 'authority'; // default
+  return 'clinic'; // default — la mayoría de médicos son clínicos premium
 }
 
 function applyDNA(dna) {
-  var valid = ['sports','luxury','authority','warm','modern'];
-  var d = valid.indexOf(dna) !== -1 ? dna : 'authority';
-  document.body.classList.remove('dna-sports','dna-luxury','dna-authority','dna-warm','dna-modern');
+  var valid = ['sports','clinic','luxury','authority','warm','modern'];
+  var d = valid.indexOf(dna) !== -1 ? dna : 'clinic';
+  document.body.classList.remove('dna-sports','dna-clinic','dna-luxury','dna-authority','dna-warm','dna-modern');
   document.body.classList.add('dna-' + d);
-  // Update theme-color meta for mobile browser bar
   var mt = document.querySelector('meta[name="theme-color"]');
-  var themeColors = {sports:'#000',luxury:'#faf8f4',authority:'#fff',warm:'#fffbf5',modern:'#020817'};
-  if (mt) mt.content = themeColors[d] || '#0d2318';
+  var themeColors = {sports:'#000',clinic:'#fff',luxury:'#faf8f4',authority:'#fff',warm:'#fffbf5',modern:'#020817'};
+  if (mt) mt.content = themeColors[d] || '#fff';
 }
 
 function renderWeb(m,locs,wc,isPreview){

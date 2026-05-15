@@ -142,60 +142,62 @@ async function callKimiAPI(messages: KimiMessage[]): Promise<Record<string, unkn
 
 // ── PROMPT BUILDER ──
 function buildSystemPrompt(): string {
-  return `Eres el director creativo de CitaDoc — la plataforma de identidad digital médica premium de LATAM.
+  return `Eres el director de identidad digital de CitaDoc — plataforma de identidad médica premium de LATAM.
 
-Tu trabajo: crear sitios web médicos que se sientan como marcas reales, no templates.
+Tu trabajo: crear la identidad web de un médico real. No un template. Una marca.
 
-REFERENCIAS DE CALIDAD (el nivel que debes alcanzar):
-- SportTherapy: negro + verde eléctrico, tipografía enorme bold, foto de atleta dominante, energía Nike
-- Dra. Karen Auhag (Periodoncia): foto personal dominante, headline emocional, paleta derivada de su logo, voz auténtica
+PRINCIPIO FUNDAMENTAL — JERARQUÍA DE IDENTIDAD:
+1. LOGO del médico (60%) — dicta paleta, tipografía mood, elegancia vs energía. El logo ES la identidad. Manda sobre todo.
+2. TONO del copy (25%) — cómo habla, qué transmite. Autoridad clínica o cercanía humana.
+3. ESPECIALIDAD (15%) — influencia secundaria. Dos traumatólogos pueden verse completamente distintos.
 
-LIBERTAD ARTÍSTICA — puedes y DEBES:
-- Crear headlines que detengan el scroll. Provocadores, cinematográficos, memorables.
-- Usar metáforas poderosas del cuerpo: ingeniería humana, precisión quirúrgica, restauración del movimiento.
-- Hacer al médico protagonista de una historia de vocación, no de un catálogo de servicios.
-- Derivar el mood visual DEL LOGO del médico: si tiene logo oscuro y geométrico → sports/modern; si es dorado y serif → luxury; si es cálido y redondeado → warm.
-- Usar verbos de acción: recupera, transforma, domina, restaura, conquista, libera.
-- Romper el lenguaje clínico genérico con frases que generen deseo y confianza simultáneamente.
+COPY: AUTORIDAD MÉDICA — NO trailer de Marvel
+- Headline orientado al paciente. Transmite el resultado que van a obtener.
+- Ejemplo correcto: "Recupera tu movimiento. Vive sin límites." — limpio, beneficio claro, sin drama.
+- Ejemplo INCORRECTO: "DERRIBADO EL DESAFÍO, SE LEVANTA CON EL DR..." — slogan motivacional genérico.
+- Verbos de resultado: recupera, restaura, libera, recuperas, retomas. No: conquista, domina, vence.
+- El médico es autoridad confiable, no héroe de acción.
 
 PROHIBIDO ABSOLUTAMENTE:
-- "su salud es nuestra prioridad" / "atención de calidad" / "profesional comprometido" / "experiencia y dedicación"
-- Adjetivos vacíos: excelente, óptimo, integral, robusto, destacado, comprometido
-- Headlines genéricos que podrían ser de cualquier médico
+- "su salud es nuestra prioridad" / "atención de calidad" / "profesional comprometido"
+- Adjetivos vacíos: excelente, óptimo, integral, robusto, destacado
+- Headlines que parecen slogan de zapatillas o película de superhéroes
+- Dramatismo innecesario para especialidades clínicas/quirúrgicas
 
-INSTRUCCIÓN CRÍTICA SOBRE EL LOGO:
-Si recibes colores del logo del médico en el prompt, ÚSALOS para:
-1. Confirmar o ajustar el visual_dna (el logo manda sobre la especialidad)
-2. El primary_color debe ser el color dominante del logo (o su variación más premium)
-3. El mood del sitio debe resonar con la estética del logo
+SOBRE EL LOGO — INSTRUCCIÓN CRÍTICA:
+Si recibes logo_url o logo_colors, analiza la estética: ¿serif o sans? ¿oscuro o claro? ¿geométrico o orgánico?
+El visual_dna DEBE derivarse del logo, no de la especialidad.
+El primary_color DEBE ser el color dominante del logo (o su variación premium).
+Un logo navy-serif → clinic o authority. Un logo negro-geométrico → sports solo si es medicina deportiva pura.
 
 Devuelve SOLO JSON válido. Sin markdown. Sin texto fuera del JSON.
 
 {
-  "headline": "máx 80 chars — cinematográfico, con nombre del doctor o su especialidad como protagonista",
-  "subheadline": "1-2 oraciones de valor real, sin clichés",
-  "about_text": "2-3 párrafos. Historia de vocación. Momento específico que lo cambió. Por qué ESTE médico, no cualquiera.",
-  "philosophy": "1 frase poderosa tipo manifesto. Debe quedar grabada.",
-  "doctor_story": "1 párrafo íntimo. El origen. El porqué profundo.",
-  "differentiators": ["4-5 ventajas MUY concretas, técnicas o humanas, nunca genéricas"],
-  "treatment_approach": "1 párrafo. Metodología real. Herramientas específicas de la especialidad.",
-  "patient_experience": "1 párrafo sensorial. Cómo se SIENTE el paciente, no qué recibe.",
+  "headline": "máx 80 chars — orientado al paciente, transmite resultado, autoridad sin drama",
+  "subheadline": "1-2 oraciones de valor real, específicas de esta especialidad, sin clichés",
+  "about_text": "2-3 párrafos. Historia de vocación. Por qué ESTE médico. Formación, enfoque, diferencia real.",
+  "philosophy": "1 frase de 10-15 palabras. Manifesto de práctica. Queda grabada.",
+  "doctor_story": "1 párrafo. El origen. El momento que lo formó. Auténtico, no corporativo.",
+  "differentiators": ["4-5 ventajas MUY concretas, técnicas o humanas, específicas de su práctica"],
+  "treatment_approach": "1 párrafo. Metodología real. Herramientas y procesos específicos de la especialidad.",
+  "patient_experience": "1 párrafo. Cómo se siente el paciente desde que llega hasta que se va. Sensorial.",
   "tone": "cercania-humana | elegancia-premium | confianza-clinica | innovacion-tecnica",
-  "visual_dna": "sports | luxury | authority | warm | modern",
-  "primary_color": "#hexcolor — derivado del logo si existe, o del DNA visual",
-  "services": [{"t":"nombre","d":"descripción impactante 1 línea","i":"emoji"}],
+  "visual_dna": "sports | clinic | luxury | authority | warm | modern",
+  "primary_color": "#hexcolor — derivado del logo si existe, o del DNA visual elegido",
+  "services": [{"t":"nombre","d":"descripción de resultado en 1 línea","i":"emoji"}],
   "cta_primary": "2-3 palabras de acción",
-  "cta_final": "frase emotiva que cierra el sitio (max 60 chars)",
-  "seo_title": "title SEO optimizado",
-  "seo_description": "meta description 150-160 chars"
+  "cta_final": "frase que cierra con autoridad y calidez (max 60 chars)",
+  "seo_title": "title SEO optimizado con nombre + especialidad + ciudad",
+  "seo_description": "meta description 150-160 chars con propuesta de valor real"
 }
 
-visual_dna — elige UNO. Si hay colores del logo, deja que el logo mande:
-- sports: traumatología · fisio · deportiva · ortopedia · rehabilitación → negro + verde eléctrico, tipografía brutal, energía atlética
-- luxury: plástica · estética · derma cosmética · nutrición → crema + oro, editorial, silencio de lujo
-- authority: neuro · cardio · cirugía · oncología → azul oscuro + blanco, confianza institucional
-- warm: pediatría · familiar · psico · ginecología → naranja cálido + crema, humano y cercano
-- modern: interna · preventiva · general · endocrino → negro-azul + cyan, futuro médico`
+visual_dna — elige UNO basándote en el logo primero, especialidad después:
+- sports: medicina DEPORTIVA pura · rendimiento · atletas de alto rendimiento → negro + verde eléctrico, tipografía brutal. SOLO si el médico atiende deportistas/performance. NO para ortopedia clínica.
+- clinic: traumatología · ortopedia · rehabilitación · fisioterapia clínica · cirugía articular → blanco + navy institucional, split limpio, tipografía serif elegante, autoridad médica premium
+- luxury: plástica · estética · dermatología cosmética · nutrición premium → crema + oro, editorial, silencio de lujo
+- authority: neurocirugía · cardiología · oncología · cirugía compleja → azul oscuro + blanco, confianza institucional maciza
+- warm: pediatría · medicina familiar · psicología · ginecología → naranja cálido + crema, humano y cercano
+- modern: medicina interna · preventiva · general · endocrinología → azul-negro + cyan, futuro médico`
 }
 
 function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, perception: string, logoColors?: string[]): string {
@@ -204,6 +206,8 @@ function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, pe
   const ciudad = (medico.ciudad as string) || ''
   const anos = (medico.anos_experiencia as string) || ''
   const bio = (medico.bio as string) || ''
+  const logoUrl = (medico.logo_url as string) || ''
+  const fotoUrl = (medico.foto_url as string) || ''
 
   const parts: string[] = []
   parts.push(`MÉDICO: ${nombre}`)
@@ -211,18 +215,27 @@ function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, pe
   if (ciudad) parts.push(`CIUDAD: ${ciudad}`)
   if (anos) parts.push(`EXPERIENCIA: ${anos} años`)
   if (bio) parts.push(`BIO: ${bio}`)
-  parts.push(`TONO DESEADO: ${perception || 'cercania-humana'}`)
+  parts.push(`TONO DESEADO: ${perception || 'confianza-clinica'}`)
 
+  // Logo — identidad visual principal (60% del DNA)
+  if (logoUrl) {
+    parts.push(`LOGO URL: ${logoUrl}`)
+    parts.push(`INSTRUCCIÓN LOGO: Analiza la estética del logo (serif/sans, oscuro/claro, geométrico/orgánico) y deriva el visual_dna y primary_color desde ahí. El logo manda sobre la especialidad.`)
+  }
+  if (fotoUrl) {
+    parts.push(`FOTO DEL MÉDICO: ${fotoUrl}`)
+  }
   if (logoColors && logoColors.length > 0) {
-    parts.push(`COLORES DEL LOGO DEL MÉDICO: ${logoColors.join(', ')} — IMPORTANTE: usa estos colores para definir el visual_dna y el primary_color. El logo es la identidad, deja que mande.`)
-  } else {
-    parts.push(`(Sin logo subido — asigna visual_dna y primary_color basándote en la especialidad)`)
+    parts.push(`COLORES EXTRAÍDOS DEL LOGO: ${logoColors.join(', ')} — usa el color dominante como primary_color y confirma el visual_dna desde esta paleta.`)
+  }
+  if (!logoUrl && !fotoUrl && (!logoColors || logoColors.length === 0)) {
+    parts.push(`(Sin identidad visual subida — asigna visual_dna basándote en especialidad, defaultea a 'clinic' para especialidades clínicas)`)
   }
 
-  if (userPrompt) parts.push(`BRIEF ADICIONAL: ${userPrompt}`)
+  if (userPrompt) parts.push(`BRIEF DEL MÉDICO: ${userPrompt}`)
 
   return parts.join('\n')
-    + `\n\nCrea la identidad web de este médico. Headline cinematográfico. Differentiators técnicos específicos de ${esp}. Que se sienta como UNA MARCA REAL, no un template.`
+    + `\n\nGenera la identidad web de este médico. Headline orientado al paciente (resultado claro, sin drama). Differentiators técnicos específicos de ${esp}. Copy de autoridad médica premium. DNA visual derivado del logo.`
 }
 
 // ── MOCK FALLBACK (testing sin API key) ──
@@ -331,11 +344,12 @@ const SPECIALTY_CONTENT: Record<string, Record<string, unknown>> = {
 
 function assignDNAFallback(esp: string): string {
   const e = esp.toLowerCase()
-  if (['traumato','deport','fisio','ortoped','rehabilit'].some(k => e.includes(k))) return 'sports'
+  if (['deport','rendimiento','atletism','performanc'].some(k => e.includes(k))) return 'sports'
+  if (['traumato','ortoped','rehabilit','kinesi','musculo','fisio'].some(k => e.includes(k))) return 'clinic'
   if (['plástic','plastic','estet','dermat','cosmét','nutrici'].some(k => e.includes(k))) return 'luxury'
   if (['neuro','cardio','cirug','oncolog','hematol'].some(k => e.includes(k))) return 'authority'
   if (['pediatr','familiar','psicolog','psiquiat','ginecol','obstetr'].some(k => e.includes(k))) return 'warm'
-  return 'modern'
+  return 'clinic' // default premium clínico
 }
 
 function buildMockConfig(medico: Record<string, unknown>): Record<string, unknown> {
@@ -392,7 +406,7 @@ function buildMockConfig(medico: Record<string, unknown>): Record<string, unknow
     differentiators: diffs.slice(0, 5),
     treatment_approach: spec.treatment_approach,
     patient_experience: spec.patient_experience,
-    tone: 'cercania-humana',
+    tone: 'confianza-clinica',
     visual_dna: assignDNAFallback(espRaw),
     benefits: null,
     faq: null,
