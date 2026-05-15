@@ -5,7 +5,7 @@
       "has": [
         {
           "type": "host",
-          "value": "(?<subdomain>[^.]+)\\.citadoc\\.lat"
+          "value": ".+\\.citadoc\\.lat"
         }
       ],
       "destination": "/citadoc-web.html"
