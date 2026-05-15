@@ -4838,9 +4838,10 @@ async function iniciarPagoRedirect(planType) {
   var tel = validarTelefonoAntesDePago(planType, null);
   if (!tel) return; // abrió modal de teléfono, esperando
 
-  var transactionId = 'citadoc-' + planType + '-' + M.id.slice(0,8) + '-' + Date.now();
+  // clientTransactionId debe contener el UUID completo para que el webhook lo extraiga
+  var transactionId = 'cd-' + planType + '-' + M.id + '-' + Date.now();
   var amount = isWeb ? 15000 : 1999;
-  var returnUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + transactionId;
+  var returnUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(transactionId);
   var cancelUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1';
 
   // Mostrar loading
@@ -4860,7 +4861,7 @@ async function iniciarPagoRedirect(planType) {
         currency:            'USD',
         clientTransactionId: transactionId,
         storeId:             PAYPHONE_STOREID,
-        reference:           'CitaDoc Health Network — ' + (isWeb ? 'PRO+WEB' : 'PRO'),
+        reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
         lang:                'es',
         email:               M.email || '',
         phoneNumber:         tel,
@@ -4892,18 +4893,43 @@ async function iniciarPagoRedirect(planType) {
 }
 
 // Verificar retorno de PayPhone al cargar el dashboard
+var _ppReturnProcessing = false;
 async function verificarRetornoPago() {
+  if (_ppReturnProcessing) return;
   var params = new URLSearchParams(window.location.search);
   if (!params.get('pp_return')) return;
+  _ppReturnProcessing = true;
 
   // Limpiar URL inmediatamente
   history.replaceState({}, '', window.location.pathname);
 
   var txRaw = localStorage.getItem('citadoc_pp_tx');
-  if (!txRaw) { mostrarToast('No se encontró transacción pendiente.', 'error'); return; }
-  var tx = JSON.parse(txRaw);
-  localStorage.removeItem('citadoc_pp_tx');
+  if (!txRaw) {
+    mostrarToast('No se encontró transacción. Si pagaste, contacta soporte.', 'error');
+    _ppReturnProcessing = false;
+    return;
+  }
 
+  var tx;
+  try { tx = JSON.parse(txRaw); } catch(_) { localStorage.removeItem('citadoc_pp_tx'); _ppReturnProcessing = false; return; }
+
+  // TTL: ignorar transacciones de más de 2 horas
+  if (tx.ts && (Date.now() - tx.ts) > 7200000) {
+    localStorage.removeItem('citadoc_pp_tx');
+    mostrarToast('Transacción expirada. Si pagaste, contacta soporte.', 'error');
+    _ppReturnProcessing = false;
+    return;
+  }
+
+  // Guard: si ya está activo el plan correcto, solo mostrar confirmación
+  if (M && tx.plan === 'pro_web' && M.plan === 'pro_web' && M.plan_activo) {
+    localStorage.removeItem('citadoc_pp_tx');
+    mostrarActivacionProWeb(M.slug||'');
+    _ppReturnProcessing = false;
+    return;
+  }
+
+  localStorage.removeItem('citadoc_pp_tx');
   mostrarToast('Verificando tu pago...', 'info');
 
   try {
@@ -4911,17 +4937,25 @@ async function verificarRetornoPago() {
       'https://pay.payphonetodoesposible.com/api/button/V2/Confirm?clientTransactionId=' + encodeURIComponent(tx.id),
       { headers: { 'Authorization': 'Bearer ' + PAYPHONE_TOKEN } }
     );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
 
     if (data.transactionStatus === 'Approved') {
       if (tx.plan === 'pro_web') await activarProWebLocal();
       else await activarProLocal();
     } else {
-      mostrarToast('Pago no completado. Estado: ' + (data.transactionStatus || 'desconocido'), 'error');
+      var estado = data.transactionStatus || 'desconocido';
+      if (estado === 'Pending') {
+        mostrarToast('Pago en proceso. Recibirás confirmación en minutos.', 'info');
+      } else {
+        mostrarToast('Pago no completado (' + estado + '). Intenta de nuevo.', 'error');
+      }
     }
   } catch(e) {
     console.error('PayPhone Confirm error:', e);
-    mostrarToast('Error verificando pago. Contacta a soporte.', 'error');
+    mostrarToast('Error verificando pago. Si se cobró, contacta soporte.', 'error');
+  } finally {
+    _ppReturnProcessing = false;
   }
 }
 
