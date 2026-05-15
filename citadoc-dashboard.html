@@ -4065,10 +4065,13 @@ async function webAiGenerar() {
 async function activarSitioWeb() {
   if (!M||!M.id||!M.web_config_draft) { mostrarToast('Genera un sitio primero','error'); return; }
 
-  // Si aún no tiene PRO+WEB pagado, mostrar modal con preview + botón de pago
+  // Sin PRO+WEB: cerrar modales e ir directo a PayPhone
   if (!esProWeb()) {
     cerrarAiWebModal();
-    mostrarProWebModal();
+    var ro = document.getElementById('aiRevealOverlay');
+    if (ro) { ro.style.display = 'none'; }
+    document.body.style.overflow = '';
+    iniciarPagoRedirect('pro_web');
     return;
   }
 
