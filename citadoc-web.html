@@ -714,7 +714,163 @@ button,a{-webkit-tap-highlight-color:transparent}
   .ben-card:hover{transform:none;box-shadow:none}
   .ben-card:active{transform:scale(.97)}
   .testi-card:hover{transform:none;box-shadow:none}
+  /* DNA mobile overrides */
+  body.dna-sports .hero-left,body.dna-modern .hero-left{padding:100px 6% 70px}
+  body.dna-luxury .hero-right{height:50vh}
 }
+
+/* ══════════════════════════════════════════════
+   VISUAL DNA SYSTEM — 5 archetipos creativos
+   La IA asigna según especialidad médica
+   ══════════════════════════════════════════════ */
+
+/* ── DNA: SPORTS
+   Traumatología · Deportiva · Fisio · Ortopedia
+   Cinematic · Dark · Performance · Nike-like ── */
+body.dna-sports{
+  --gd:#000;--gm:#0a0a0a;--ga:#15803d;--gg:#22c55e;
+  --gp:rgba(34,197,94,.1);--gpl:rgba(34,197,94,.08);--gb:rgba(34,197,94,.2);
+  --ink:#fff;--ink2:#e5e7eb;--mu:rgba(255,255,255,.55);--su:rgba(255,255,255,.3);
+  --bg:#0a0a0a;--s:#111827;--bo:rgba(255,255,255,.1);--p:#22c55e;--pd:#15803d;
+  background:#0a0a0a;color:#fff
+}
+body.dna-sports .hero{grid-template-columns:1fr;position:relative;min-height:100vh}
+body.dna-sports .hero-left{background:transparent;z-index:2;position:relative;padding:140px 8% 100px}
+body.dna-sports .hero-left::after{display:none}
+body.dna-sports .hero-right{position:absolute;inset:0}
+body.dna-sports .hero-right-ov{background:linear-gradient(180deg,rgba(0,0,0,.2) 0%,rgba(0,0,0,.72) 100%)}
+body.dna-sports .h-h1{font-size:clamp(3.5rem,7vw,8.5rem);font-weight:900;text-transform:uppercase;letter-spacing:-.06em;line-height:.88}
+body.dna-sports .h-h1 strong{color:#fff;display:block}
+body.dna-sports .h-h1 em{color:#22c55e;font-style:normal;font-weight:900}
+body.dna-sports .h-sub{color:rgba(255,255,255,.6);max-width:500px;font-size:1.05rem}
+body.dna-sports .h-pill{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#22c55e}
+body.dna-sports .h-pill-dot{background:#22c55e}
+body.dna-sports .btn-main{background:#22c55e;color:#000;font-weight:900;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+body.dna-sports .btn-main:hover{background:#16a34a;color:#000}
+body.dna-sports .h-trust-icon{background:rgba(34,197,94,.1);color:#22c55e}
+body.dna-sports .nav.scrolled{background:rgba(0,0,0,.95)}
+body.dna-sports .nav.scrolled .nav-brand-name{color:#fff}
+body.dna-sports .nav.scrolled .nav-links a{color:rgba(255,255,255,.7)}
+body.dna-sports .nav.scrolled .nav-cta{background:#22c55e;color:#000}
+body.dna-sports .srv-bg{background:#111827}
+body.dna-sports .srv-card{background:#1a1a1a;border-color:rgba(34,197,94,.15)}
+body.dna-sports .srv-icon{background:rgba(34,197,94,.1)}
+body.dna-sports .sec{background:#0a0a0a}
+body.dna-sports .testi-bg{background:#111}
+body.dna-sports .testi-card{background:#1a1a1a;border-color:rgba(255,255,255,.08)}
+
+/* ── DNA: LUXURY
+   Cirugía plástica · Estética · Dermatología cosmética
+   Minimal · Editorial · Silencio de lujo ── */
+body.dna-luxury{
+  --gd:#1a0f06;--gm:#2c1a08;--ga:#6b4c1e;--gg:#b8975a;
+  --gp:rgba(184,151,90,.1);--gpl:rgba(184,151,90,.07);--gb:rgba(184,151,90,.18);
+  --ink:#1a0f06;--ink2:#3d2b0d;--mu:#8a7458;--su:#c4b08a;
+  --bg:#faf8f4;--s:#f5f0e8;--bo:#e8ddd0;--p:#6b4c1e;--pd:#2c1a08;
+  background:#faf8f4;color:#1a0f06
+}
+body.dna-luxury .hero{grid-template-columns:1fr;min-height:auto;display:flex;flex-direction:column}
+body.dna-luxury .hero-left{background:#faf8f4;text-align:center;align-items:center;padding:160px 12% 70px;order:1}
+body.dna-luxury .hero-left::after{display:none}
+body.dna-luxury .hero-right{height:65vh;order:2;grid-column:1}
+body.dna-luxury .h-h1{font-size:clamp(2.4rem,4.8vw,5.8rem);font-weight:300;letter-spacing:-.01em;line-height:1.1}
+body.dna-luxury .h-h1 strong{color:var(--gd);font-weight:600;display:block}
+body.dna-luxury .h-h1 em{color:#b8975a;font-style:italic;font-weight:300}
+body.dna-luxury .h-sub{color:var(--mu);text-align:center;margin:0 auto 2.2rem;font-weight:300;font-size:1rem}
+body.dna-luxury .h-pill{background:rgba(184,151,90,.08);border-color:rgba(184,151,90,.2);color:#6b4c1e;letter-spacing:.14em;font-size:.62rem}
+body.dna-luxury .h-pill-dot{background:#b8975a}
+body.dna-luxury .h-actions{justify-content:center}
+body.dna-luxury .h-trust{justify-content:center}
+body.dna-luxury .btn-main{background:var(--gm);color:#faf8f4;border-radius:2px;letter-spacing:.08em;font-size:.85rem;font-weight:500;text-transform:uppercase;padding:.9rem 2.2rem}
+body.dna-luxury .btn-main:hover{background:#b8975a;color:#fff}
+body.dna-luxury .h-trust-icon{background:rgba(184,151,90,.1)}
+body.dna-luxury .nav-brand-name{color:#fff}
+body.dna-luxury .nav.scrolled{background:rgba(250,248,244,.97)}
+body.dna-luxury .nav.scrolled .nav-brand-name{color:var(--ink)}
+body.dna-luxury .nav.scrolled .nav-links a{color:var(--ink2)}
+body.dna-luxury .nav.scrolled .nav-cta{background:var(--gm)}
+body.dna-luxury .srv-bg{background:#f5f0e8}
+body.dna-luxury .srv-card{background:#faf8f4;border-color:rgba(184,151,90,.15);border-radius:0;box-shadow:none}
+body.dna-luxury .testi-bg{background:#f5f0e8}
+
+/* ── DNA: AUTHORITY
+   Neurocirugía · Cardiología · Cirugía general · Oncología
+   Confianza · Institución · Precisión ── */
+body.dna-authority{
+  --gd:#0f172a;--gm:#1e3a8a;--ga:#1d4ed8;--gg:#3b82f6;
+  --gp:rgba(59,130,246,.1);--gpl:rgba(59,130,246,.08);--gb:rgba(59,130,246,.2);
+  --ink:#0f172a;--ink2:#1e293b;--mu:#475569;--su:#94a3b8;
+  --bg:#fff;--s:#f8fafc;--bo:#e2e8f0;--p:#1d4ed8;--pd:#1e3a8a;
+  background:#fff;color:#0f172a
+}
+body.dna-authority .h-h1{font-size:clamp(2.8rem,5.2vw,6rem);font-weight:900;letter-spacing:-.05em;line-height:.92}
+body.dna-authority .h-h1 strong{color:var(--gm);display:block}
+body.dna-authority .h-h1 em{color:var(--gg);font-style:normal;font-weight:400}
+body.dna-authority .h-pill{background:rgba(29,78,216,.08);border-color:rgba(29,78,216,.2);color:#1d4ed8}
+body.dna-authority .h-pill-dot{background:#1d4ed8}
+body.dna-authority .btn-main{background:#1e3a8a;border-radius:6px}
+body.dna-authority .btn-main:hover{background:#1d4ed8}
+body.dna-authority .hero-right{background:var(--gd)}
+body.dna-authority .nav.scrolled .nav-cta{background:#1e3a8a}
+
+/* ── DNA: WARM
+   Pediatría · Medicina familiar · Psicología · Ginecología
+   Calidez · Cuidado · Humano ── */
+body.dna-warm{
+  --gd:#431407;--gm:#7c2d12;--ga:#c2410c;--gg:#ea580c;
+  --gp:rgba(234,88,12,.1);--gpl:rgba(234,88,12,.07);--gb:rgba(234,88,12,.18);
+  --ink:#1c0a00;--ink2:#3b1506;--mu:#92400e;--su:#d97706;
+  --bg:#fffbf5;--s:#fff7ed;--bo:#fed7aa;--p:#c2410c;--pd:#7c2d12;
+  background:#fffbf5;color:#1c0a00
+}
+body.dna-warm .h-h1{font-size:clamp(2.4rem,4.2vw,5rem);font-weight:700;letter-spacing:-.025em;line-height:.98}
+body.dna-warm .h-h1 strong{color:var(--gm);display:block}
+body.dna-warm .h-h1 em{color:var(--gg);font-style:italic}
+body.dna-warm .h-pill{background:rgba(234,88,12,.08);border-color:rgba(234,88,12,.2);color:#c2410c}
+body.dna-warm .h-pill-dot{background:#ea580c}
+body.dna-warm .btn-main{background:var(--gm);border-radius:50px;padding:.85rem 2rem}
+body.dna-warm .btn-main:hover{background:var(--ga)}
+body.dna-warm .hero-right{background:var(--gd)}
+body.dna-warm .nav.scrolled{background:rgba(255,251,245,.97)}
+body.dna-warm .nav.scrolled .nav-brand-name{color:var(--ink)}
+body.dna-warm .nav.scrolled .nav-links a{color:var(--ink2)}
+body.dna-warm .nav.scrolled .nav-cta{background:var(--gm)}
+body.dna-warm .srv-bg{background:#fff7ed}
+body.dna-warm .testi-bg{background:#fff7ed}
+
+/* ── DNA: MODERN
+   Medicina interna · Preventiva · General · Endocrino
+   Futuro · AI · Tecnología médica ── */
+body.dna-modern{
+  --gd:#020817;--gm:#0c1a2e;--ga:#0369a1;--gg:#0ea5e9;
+  --gp:rgba(14,165,233,.1);--gpl:rgba(14,165,233,.08);--gb:rgba(14,165,233,.2);
+  --ink:#fff;--ink2:#cbd5e1;--mu:rgba(255,255,255,.5);--su:rgba(255,255,255,.3);
+  --bg:#020817;--s:#0f172a;--bo:rgba(255,255,255,.1);--p:#0ea5e9;--pd:#0369a1;
+  background:#020817;color:#fff
+}
+body.dna-modern .hero{grid-template-columns:1fr;position:relative;min-height:100vh}
+body.dna-modern .hero-left{background:transparent;z-index:2;position:relative;padding:140px 8% 100px}
+body.dna-modern .hero-left::after{display:none}
+body.dna-modern .hero-right{position:absolute;inset:0}
+body.dna-modern .hero-right-ov{background:linear-gradient(135deg,rgba(2,8,23,.85) 30%,rgba(2,8,23,.35) 100%)}
+body.dna-modern .h-h1{font-size:clamp(2.8rem,5.8vw,6.8rem);font-weight:700;letter-spacing:-.05em;line-height:.92}
+body.dna-modern .h-h1 strong{color:#fff;display:block}
+body.dna-modern .h-h1 em{color:#0ea5e9;font-style:normal;font-weight:300}
+body.dna-modern .h-sub{color:rgba(255,255,255,.55);font-size:1.02rem}
+body.dna-modern .h-pill{background:rgba(14,165,233,.1);border-color:rgba(14,165,233,.3);color:#0ea5e9}
+body.dna-modern .h-pill-dot{background:#0ea5e9}
+body.dna-modern .btn-main{background:linear-gradient(135deg,#0369a1,#0ea5e9);border-radius:8px}
+body.dna-modern .h-trust-icon{background:rgba(14,165,233,.1)}
+body.dna-modern .nav.scrolled{background:rgba(2,8,23,.97)}
+body.dna-modern .nav.scrolled .nav-brand-name{color:#fff}
+body.dna-modern .nav.scrolled .nav-links a{color:rgba(255,255,255,.65)}
+body.dna-modern .nav.scrolled .nav-cta{background:linear-gradient(135deg,#0369a1,#0ea5e9)}
+body.dna-modern .srv-bg{background:#0f172a}
+body.dna-modern .srv-card{background:#0c1a2e;border-color:rgba(14,165,233,.15)}
+body.dna-modern .srv-icon{background:rgba(14,165,233,.1)}
+body.dna-modern .sec{background:#020817}
+body.dna-modern .testi-bg{background:#0f172a}
+body.dna-modern .testi-card{background:#0c1a2e;border-color:rgba(255,255,255,.07)}
 </style>
 </head>
 <body>
@@ -1055,10 +1211,43 @@ function servsForEsp(wc,esp){
   return DEFAULT_SERVS[k||'default'];
 }
 
+var DNA_MAP = {
+  sports:    ['traumato','deport','fisio','ortoped','rehabilit','kinesi','musculo'],
+  luxury:    ['plástic','plastic','estet','dermat','cosmét','nutrici','capilar'],
+  authority: ['neuro','cardio','cirug','oncolog','hematol','hepato','gastro'],
+  warm:      ['pediatr','familiar','psicolog','psiquiat','ginecol','obstetr','geriatr'],
+  modern:    ['intern','prevent','general','endocrin','diabet','renal','pulmon']
+};
+
+function assignDNA(esp) {
+  var e = (esp||'').toLowerCase();
+  for (var dna in DNA_MAP) {
+    if (DNA_MAP[dna].some(function(k){ return e.indexOf(k) !== -1; })) return dna;
+  }
+  return 'authority'; // default
+}
+
+function applyDNA(dna) {
+  var valid = ['sports','luxury','authority','warm','modern'];
+  var d = valid.indexOf(dna) !== -1 ? dna : 'authority';
+  document.body.classList.remove('dna-sports','dna-luxury','dna-authority','dna-warm','dna-modern');
+  document.body.classList.add('dna-' + d);
+  // Update theme-color meta for mobile browser bar
+  var mt = document.querySelector('meta[name="theme-color"]');
+  var themeColors = {sports:'#000',luxury:'#faf8f4',authority:'#fff',warm:'#fffbf5',modern:'#020817'};
+  if (mt) mt.content = themeColors[d] || '#0d2318';
+}
+
 function renderWeb(m,locs,wc,isPreview){
   wc=wc||{};
   _M.locs = locs || [];
   window._isPreviewDraft = !!isPreview;
+
+  // Apply visual DNA — from config or auto-assigned by specialty
+  var esp0 = (m.especialidades||[])[0]||'';
+  var dna = (wc && wc.visual_dna) ? wc.visual_dna : assignDNA(esp0);
+  applyDNA(dna);
+
   if(wc.primary_color){
     document.documentElement.style.setProperty('--ga',wc.primary_color);
     document.documentElement.style.setProperty('--p',wc.primary_color);

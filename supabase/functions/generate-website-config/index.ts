@@ -161,12 +161,20 @@ JSON requerido:
   "treatment_approach": "1 párrafo. Metodología específica. Herramientas o técnicas.",
   "patient_experience": "1 párrafo. Sensaciones del paciente, no características.",
   "tone": "cercania-humana | elegancia-premium | confianza-clinica | innovacion-tecnica",
+  "visual_dna": "sports | luxury | authority | warm | modern",
   "services": [{"t":"nombre","d":"descripción","i":"emoji"}],
   "cta_primary": "2-3 palabras",
   "cta_final": "1 frase emotiva para la sección CTA final (max 60 chars)",
   "seo_title": "title optimizado",
   "seo_description": "meta description, 150-160 chars"
-}`
+}
+
+visual_dna — elige UNO según la especialidad:
+- sports: traumatología, fisioterapia, medicina deportiva, ortopedia, rehabilitación
+- luxury: cirugía plástica, estética, dermatología cosmética, nutrición estética
+- authority: neurocirugía, cardiología, cirugía general, oncología, hepatología
+- warm: pediatría, medicina familiar, psicología, ginecología, geriatría
+- modern: medicina interna, preventiva, medicina general, endocrinología, diabetología`
 }
 
 function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, perception: string): string {
@@ -292,6 +300,15 @@ const SPECIALTY_CONTENT: Record<string, Record<string, unknown>> = {
   }
 }
 
+function assignDNAFallback(esp: string): string {
+  const e = esp.toLowerCase()
+  if (['traumato','deport','fisio','ortoped','rehabilit'].some(k => e.includes(k))) return 'sports'
+  if (['plástic','plastic','estet','dermat','cosmét','nutrici'].some(k => e.includes(k))) return 'luxury'
+  if (['neuro','cardio','cirug','oncolog','hematol'].some(k => e.includes(k))) return 'authority'
+  if (['pediatr','familiar','psicolog','psiquiat','ginecol','obstetr'].some(k => e.includes(k))) return 'warm'
+  return 'modern'
+}
+
 function buildMockConfig(medico: Record<string, unknown>): Record<string, unknown> {
   const nombre = `${medico.titulo || 'Dr.'} ${medico.nombre || ''} ${medico.apellido || ''}`.trim()
   const espRaw = (medico.especialidades as string[] || [])[0] || 'Especialista médico'
@@ -347,6 +364,7 @@ function buildMockConfig(medico: Record<string, unknown>): Record<string, unknow
     treatment_approach: spec.treatment_approach,
     patient_experience: spec.patient_experience,
     tone: 'cercania-humana',
+    visual_dna: assignDNAFallback(espRaw),
     benefits: null,
     faq: null,
     services,
