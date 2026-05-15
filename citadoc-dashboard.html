@@ -1790,6 +1790,26 @@ display:flex;
       </div>
     </div>
 
+    <!-- ANALYTICS WIDGET -->
+    <div id="webAnalyticsWrap" style="display:none;margin-top:1.5rem">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Tu presencia este mes</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:.7rem">
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
+          <div style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:var(--ink)" id="waStatViews">—</div>
+          <div style="font-size:.62rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem">👀 Visitas</div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
+          <div style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:#25d366" id="waStatWa">—</div>
+          <div style="font-size:.62rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem">💬 WhatsApp</div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.85rem;text-align:center">
+          <div style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;color:var(--teal)" id="waStatBook">—</div>
+          <div style="font-size:.62rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem">📅 Reservas</div>
+        </div>
+      </div>
+      <div id="waLastVisit" style="font-size:.74rem;color:var(--muted);text-align:right"></div>
+    </div>
+
   </div><!-- /panel-sitio -->
 
   <!-- PANEL PACIENTES -->
@@ -2182,7 +2202,7 @@ function showPanel(id, el) {
     showPerfilTab('info', document.querySelector('#panel-perfil .ptab.active') || document.querySelector('#panel-perfil .ptab'));
     if (M && typeof cargarFormPerfil === 'function') cargarFormPerfil(M);
   }
-  if (id==='sitio' && M) cargarMiSitio(M);
+  if (id==='sitio' && M) { cargarMiSitio(M); if (esProWeb()) cargarAnalyticsSitio(); }
 }
 
 // Wrapper seguro para cualquier render
@@ -4751,6 +4771,52 @@ async function renderStoryVariants(slug, modal) {
 
 async function generarIdentityCard(slug) {
   abrirStoryModal(slug);
+}
+
+async function cargarAnalyticsSitio() {
+  if (!M || !M.id) return;
+  var wrap = document.getElementById('webAnalyticsWrap');
+  if (!wrap) return;
+
+  var since = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+  try {
+    var r = await _sb.from('web_analytics')
+      .select('event_type, created_at')
+      .eq('doctor_id', M.id)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false });
+
+    if (r.error || !r.data) return;
+    var rows = r.data;
+
+    var views = 0, wa = 0, book = 0, lastVisit = null;
+    rows.forEach(function(row) {
+      if (row.event_type === 'page_view')      { views++; if (!lastVisit) lastVisit = row.created_at; }
+      if (row.event_type === 'whatsapp_click') wa++;
+      if (row.event_type === 'booking_click')  book++;
+    });
+
+    setText('waStatViews', views || '0');
+    setText('waStatWa',    wa    || '0');
+    setText('waStatBook',  book  || '0');
+
+    var lastEl = document.getElementById('waLastVisit');
+    if (lastEl) {
+      if (lastVisit) {
+        var diff = Math.round((Date.now() - new Date(lastVisit)) / 60000);
+        var label = diff < 60 ? 'hace ' + diff + ' min'
+          : diff < 1440 ? 'hace ' + Math.round(diff/60) + 'h'
+          : 'hace ' + Math.round(diff/1440) + ' días';
+        lastEl.textContent = 'Última visita: ' + label;
+      } else {
+        lastEl.textContent = 'Sin visitas registradas aún';
+      }
+    }
+
+    wrap.style.display = 'block';
+  } catch(e) {
+    console.error('[analytics]', e);
+  }
 }
 
 async function refreshMedico() {

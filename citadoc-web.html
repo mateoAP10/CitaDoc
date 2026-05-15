@@ -1850,6 +1850,11 @@ function mnavActive(item){
         mr.content = 'noindex, nofollow';
       }
 
+      // Track page_view — only on live subdomain, not previews
+      if (isSubdomain && !previewDraft && _M.web_status === 'active') {
+        wkTrack(_M.id, slug, 'page_view');
+      }
+
       // Use draft config if requested and available
       var wc = (previewDraft && _M.web_config_draft) ? _M.web_config_draft : (_M.web_config||null);
       if(tplO&&wc) wc=Object.assign({},wc,{template:tplO});
@@ -1875,6 +1880,49 @@ function renderComingSoon(m) {
     +'</div>';
 }
 })();
+
+// ── WEB ANALYTICS TRACKING ──
+var _WK_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co/rest/v1/web_analytics';
+var _WK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
+
+function wkTrack(doctorId, slug, eventType) {
+  if (!doctorId || !slug) return;
+  // Fire and forget — never block UI
+  try {
+    fetch(_WK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': _WK_KEY,
+        'Authorization': 'Bearer ' + _WK_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        doctor_id: doctorId,
+        slug: slug,
+        event_type: eventType,
+        referrer: (document.referrer || '').slice(0, 500) || null,
+        device: /mobile|android|iphone|ipad/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+      })
+    }).catch(function(){});
+  } catch(_) {}
+}
+
+// Track WhatsApp clicks — hook after renderWeb completes
+document.addEventListener('click', function(e) {
+  var t = e.target.closest('a[href*="wa.me"],button[onclick*="wa.me"],[id*="wBtnWa"],.btn-ghost');
+  if (t && _M && _M.id) {
+    var href = t.href || t.getAttribute('onclick') || '';
+    if (href.indexOf('wa.me') !== -1) {
+      wkTrack(_M.id, _M.slug||'', 'whatsapp_click');
+    }
+  }
+  // Track booking clicks
+  var btn = e.target.closest('[id*="wBtnBook"],button[onclick*="agendar"],button[onclick*="booking"],.btn-main');
+  if (btn && _M && _M.id) {
+    wkTrack(_M.id, _M.slug||'', 'booking_click');
+  }
+});
 </script>
 </body>
 </html>
