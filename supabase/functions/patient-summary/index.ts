@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -40,6 +41,11 @@ serve(async (req) => {
 
   try {
     const { patient_id, medico_id, force_regen } = await req.json()
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const rl = await checkRateLimit('summary_generation', medico_id || null, ip)
+    if (!rl.allowed) {
+      return Response.json({ ok: false, error: rl.reason, retry_after: 60 }, { headers: cors, status: 429 })
+    }
     if (!patient_id) return Response.json({ ok: false, error: 'patient_id required' }, { headers: cors, status: 400 })
 
     const supabase = createClient(

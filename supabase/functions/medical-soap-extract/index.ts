@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -69,6 +70,11 @@ serve(async (req) => {
 
   try {
     const { text, medico_id, patient_id, consultation_id } = await req.json()
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const rl = await checkRateLimit('voice_extraction', medico_id || null, ip)
+    if (!rl.allowed) {
+      return Response.json({ ok: false, error: rl.reason, retry_after: 60 }, { headers: cors, status: 429 })
+    }
     if (!text) return Response.json({ ok: false, error: 'text required' }, { headers: cors, status: 400 })
 
     const apiKey = Deno.env.get('KIMI_API_KEY')
@@ -117,7 +123,6 @@ serve(async (req) => {
     // Log usage (best effort, non-blocking)
     const inputTokens  = usage.prompt_tokens || 0
     const outputTokens = usage.completion_tokens || 0
-    const costUsd      = (inputTokens * 0.000012) + (outputTokens * 0.000012) // moonshot-v1-8k pricing
 
     try {
       const supabase = createClient(
@@ -125,17 +130,17 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
       )
       await supabase.from('ai_usage_logs').insert({
-        doctor_id:        medico_id || null,
-        patient_id:       patient_id || null,
-        consultation_id:  consultation_id || null,
-        feature:          'voice_extraction',
-        model:            KIMI_MODEL,
-        input_tokens:     inputTokens,
-        output_tokens:    outputTokens,
-        audio_seconds:    Math.round(text.split(' ').length / 2.5), // rough estimate
-        estimated_cost_usd: costUsd,
-        latency_ms:       latency,
-        success:          true
+        doctor_id:       medico_id || null,
+        patient_id:      patient_id || null,
+        consultation_id: consultation_id || null,
+        feature:         'voice_extraction',
+        model:           KIMI_MODEL,
+        input_tokens:    inputTokens,
+        output_tokens:   outputTokens,
+        audio_seconds:   Math.round(text.split(' ').length / 2.5),
+        pricing_version: '2026-05',
+        latency_ms:      latency,
+        success:         true
       })
     } catch (_) { /* non-blocking */ }
 
@@ -144,7 +149,7 @@ serve(async (req) => {
       soap,
       model: KIMI_MODEL,
       latency_ms: latency,
-      usage: { input_tokens: inputTokens, output_tokens: outputTokens, estimated_cost_usd: costUsd }
+      usage: { input_tokens: inputTokens, output_tokens: outputTokens }
     }, { headers: cors })
 
   } catch (e) {
