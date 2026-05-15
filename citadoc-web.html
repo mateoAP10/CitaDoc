@@ -946,197 +946,325 @@ body.dna-modern .testi-bg{background:#0f172a}
 body.dna-modern .testi-card{background:#0c1a2e;border-color:rgba(255,255,255,.07)}
 
 /* ══════════════════════════════════════════════════════════
-   LAYOUT SYSTEM — 6 sistemas editoriales independientes
-   El DNA controla colores. El layout controla COMPOSICIÓN.
-   Se combinan: DNA(color) × layout(estructura) = identidad.
+   LAYOUT SYSTEM v3 — 6 sistemas editoriales reales
+   Ejecutados desde los referencias y código exacto del brief.
+   DNA = paleta. Layout = composición + estructura.
    ══════════════════════════════════════════════════════════ */
 
-/* ── 1. CLINIC EDITORIAL ──────────────────────────────────
-   Split 52/48 limpio. Lujo médico. El estándar de excelencia.
-   (comportamiento base del renderer — no requiere override) */
+/* ─────────────────────────────────────────────────────────
+   1. CLINIC EDITORIAL — renderMAP.png
+   Split 52/48. Luxury médico. Serif. Foto retocada.
+   ───────────────────────────────────────────────────────── */
+body[data-layout="clinic-editorial"] .hero-right-img{
+  filter:contrast(1.06) brightness(1.03) saturate(1.08);
+  object-position:center 12%
+}
+body[data-layout="clinic-editorial"] .h-h1{
+  font-size:clamp(2.6rem,4vw,4.6rem);font-weight:700;
+  letter-spacing:-.04em;line-height:.98
+}
+body[data-layout="clinic-editorial"] .h-h1 em{
+  font-style:italic;font-weight:300;display:block;color:var(--gg)
+}
+body[data-layout="clinic-editorial"] .h-sub{font-size:1rem;line-height:1.75;max-width:420px}
+body[data-layout="clinic-editorial"] .btn-main{border-radius:12px;height:52px;padding:0 1.8rem;font-size:.92rem}
+body[data-layout="clinic-editorial"] .btn-ghost{border-radius:12px;height:52px;padding:0 1.6rem}
+body[data-layout="clinic-editorial"] .h-trust-icon{border-radius:10px}
+/* Mobile clinic-editorial */
+body[data-layout="clinic-editorial"] .hero{grid-template-columns:52% 48%}
 
-/* ── 2. SURGICAL AUTHORITY ────────────────────────────────
-   Foto fullscreen. Gradiente izquierda→derecha. Texto sobre foto.
-   La composición exacta del render de referencia. */
+/* ─────────────────────────────────────────────────────────
+   2. SURGICAL AUTHORITY — dark magazine
+   Foto fullscreen. Gradiente left→right. Logo en hero.
+   ───────────────────────────────────────────────────────── */
 body[data-layout="surgical-authority"] .hero{
   display:block;position:relative;min-height:100svh;
   background:#08192D;overflow:hidden
 }
-/* Gradiente doble: cubre el fondo y da profundidad */
 body[data-layout="surgical-authority"] .hero::before{
   content:'';position:absolute;inset:0;
   background:
-    linear-gradient(90deg,rgba(8,25,45,.96) 0%,rgba(8,25,45,.75) 38%,rgba(8,25,45,.25) 60%,transparent 78%),
-    linear-gradient(0deg,rgba(8,25,45,.55) 0%,transparent 40%);
+    linear-gradient(90deg,rgba(8,25,45,.97) 0%,rgba(8,25,45,.8) 35%,rgba(8,25,45,.3) 58%,transparent 76%),
+    linear-gradient(0deg,rgba(8,25,45,.65) 0%,transparent 50%);
   z-index:2;pointer-events:none
 }
-/* Foto: derecha, llena altura, centrada en la persona */
-body[data-layout="surgical-authority"] .hero-right{
-  position:absolute;right:0;top:0;bottom:0;width:72%;z-index:1
-}
+body[data-layout="surgical-authority"] .hero-right{position:absolute;right:0;top:0;bottom:0;width:72%;z-index:1}
 body[data-layout="surgical-authority"] .hero-right-img{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  object-fit:cover;object-position:center top;
-  opacity:1;animation:none
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 8%;
+  filter:contrast(1.1) brightness(0.92) saturate(1.08);opacity:1;animation:none
 }
-body[data-layout="surgical-authority"] .hero-right-ov{
-  background:linear-gradient(270deg,transparent 50%,rgba(8,25,45,.3) 100%)
-}
-/* Contenido: izquierda, ancho máximo, sobre gradiente */
+body[data-layout="surgical-authority"] .hero-right-ov{display:none}
+body[data-layout="surgical-authority"] .hero-right-card{display:none}
 body[data-layout="surgical-authority"] .hero-left{
   position:relative;z-index:3;background:transparent;
-  max-width:520px;padding:120px 0 140px 8%;
-  min-height:100svh;display:flex;flex-direction:column;
-  justify-content:center;align-items:flex-start
+  max-width:540px;padding:120px 0 140px 8%;
+  min-height:100svh;display:flex;flex-direction:column;justify-content:center
 }
 body[data-layout="surgical-authority"] .hero-left::after{display:none}
-/* Logo en hero (se inyecta por JS) */
-#wHeroLogo{display:none;margin-bottom:2rem}
+#wHeroLogo{display:none;margin-bottom:1.8rem}
 body[data-layout="surgical-authority"] #wHeroLogo{display:block}
-/* Badge especialidad */
 body[data-layout="surgical-authority"] .h-pill{
   background:rgba(147,197,253,.12);border-color:rgba(147,197,253,.28);
-  color:#93c5fd;letter-spacing:.2em;font-size:.58rem;text-transform:uppercase;
-  border-radius:3px
+  color:#93c5fd;letter-spacing:.22em;font-size:.57rem;text-transform:uppercase;border-radius:3px
 }
 body[data-layout="surgical-authority"] .h-pill-dot{background:#93c5fd}
-/* Headline: serif, grande, blanco, tight */
 body[data-layout="surgical-authority"] .h-h1{
-  font-family:var(--D);font-size:clamp(2.8rem,5vw,5.8rem);
-  font-weight:700;color:#fff;letter-spacing:-.05em;
-  line-height:.9;margin-top:1.4rem;max-width:480px
+  font-family:var(--D);color:#fff;
+  font-size:clamp(2.8rem,5vw,6rem);font-weight:700;
+  letter-spacing:-.055em;line-height:.88;margin-top:1.4rem;max-width:500px
 }
 body[data-layout="surgical-authority"] .h-h1 strong{color:#fff;display:block}
-body[data-layout="surgical-authority"] .h-h1 em{color:rgba(147,197,253,.9);font-style:italic;font-weight:300}
-/* Subheadline */
-body[data-layout="surgical-authority"] .h-sub{
-  color:rgba(255,255,255,.68);max-width:400px;
-  font-size:1rem;line-height:1.65;margin-top:1.2rem
-}
-/* CTAs */
-body[data-layout="surgical-authority"] .h-actions{margin-top:2rem;flex-direction:column;gap:.7rem}
-body[data-layout="surgical-authority"] .btn-main{
-  background:var(--gm);border-radius:14px;height:56px;
-  font-size:.92rem;padding:.85rem 1.8rem;letter-spacing:.01em;width:100%
-}
-body[data-layout="surgical-authority"] .btn-ghost{
-  border-color:rgba(255,255,255,.28);color:#fff;
-  background:rgba(255,255,255,.08);border-radius:14px;
-  height:56px;width:100%;justify-content:center
-}
-body[data-layout="surgical-authority"] .btn-ghost:hover{background:rgba(255,255,255,.15)}
-/* Trust pills */
-body[data-layout="surgical-authority"] .h-trust{margin-top:1.8rem}
-body[data-layout="surgical-authority"] .h-trust-icon{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
-body[data-layout="surgical-authority"] .h-trust-pill{color:rgba(255,255,255,.55)}
-/* Nav */
+body[data-layout="surgical-authority"] .h-h1 em{color:rgba(147,197,253,.85);font-style:italic;font-weight:300}
+body[data-layout="surgical-authority"] .h-sub{color:rgba(255,255,255,.65);max-width:400px;font-size:1rem;line-height:1.68;margin-top:1.2rem}
+body[data-layout="surgical-authority"] .h-actions{margin-top:2rem;flex-direction:column;gap:.65rem;width:100%;max-width:320px}
+body[data-layout="surgical-authority"] .btn-main{background:var(--gm);border-radius:14px;height:56px;font-size:.9rem;padding:0 1.6rem;width:100%;justify-content:center}
+body[data-layout="surgical-authority"] .btn-ghost{border-color:rgba(255,255,255,.25);color:#fff;background:rgba(255,255,255,.07);border-radius:14px;height:56px;width:100%;justify-content:center}
+body[data-layout="surgical-authority"] .btn-ghost:hover{background:rgba(255,255,255,.14)}
+body[data-layout="surgical-authority"] .h-trust{margin-top:1.8rem;gap:1rem}
+body[data-layout="surgical-authority"] .h-trust-icon{background:rgba(255,255,255,.1);color:rgba(255,255,255,.45)}
+body[data-layout="surgical-authority"] .h-trust-pill{color:rgba(255,255,255,.5)}
 body[data-layout="surgical-authority"] .nav-brand-name{color:#fff}
-body[data-layout="surgical-authority"] .nav-brand-esp{color:rgba(255,255,255,.45)}
-body[data-layout="surgical-authority"] .nav-links a{color:rgba(255,255,255,.65)}
-body[data-layout="surgical-authority"] .nav.scrolled{background:rgba(8,25,45,.95);backdrop-filter:blur(20px)}
+body[data-layout="surgical-authority"] .nav-brand-esp{color:rgba(255,255,255,.4)}
+body[data-layout="surgical-authority"] .nav-links a{color:rgba(255,255,255,.6)}
+body[data-layout="surgical-authority"] .nav.scrolled{background:rgba(8,25,45,.96);backdrop-filter:blur(20px)}
 body[data-layout="surgical-authority"] .nav.scrolled .nav-brand-name,
 body[data-layout="surgical-authority"] .nav.scrolled .nav-links a{color:rgba(255,255,255,.9)}
-body[data-layout="surgical-authority"] .nav.scrolled .nav-cta{background:var(--gm)}
-/* Barra sticky siempre visible en surgical-authority */
 body[data-layout="surgical-authority"] .mobile-bottom-nav{
-  display:flex!important;
-  background:rgba(255,255,255,.96);backdrop-filter:blur(24px);
-  border-top:1px solid rgba(0,0,0,.08);
-  box-shadow:0 -4px 20px rgba(0,0,0,.12)
-}
-body[data-layout="surgical-authority"] .mobile-bottom-nav .mnav-cta{background:var(--gm)}
-/* Mobile: ajuste */
-@media(max-width:767px){
-  body[data-layout="surgical-authority"] .hero-right{width:100%;opacity:.6}
-  body[data-layout="surgical-authority"] .hero-left{max-width:100%;padding:100px 6% 120px}
-  body[data-layout="surgical-authority"] .h-h1{font-size:clamp(2.4rem,9vw,3.8rem)}
+  display:flex!important;background:rgba(255,255,255,.97);
+  border-top:1px solid rgba(0,0,0,.08);box-shadow:0 -4px 24px rgba(0,0,0,.14)
 }
 
-/* ── 3. PERFORMANCE SPORTS ────────────────────────────────
-   Bold. Oscuro. Kinético. Para médicos de alto rendimiento.
-   (idéntico a DNA sports en estructura — ambos se aplican) */
+/* ─────────────────────────────────────────────────────────
+   3. PERFORMANCE CLINIC — pro-mas-web.png (SportTherapy)
+   Fondo BLANCO. Azul fuerte. Foto full-body bottom-aligned.
+   Energía + recuperación. Headline brutal bold.
+   ───────────────────────────────────────────────────────── */
+body[data-layout="performance-clinic"]{
+  background:#fff;
+  --ga:#0E3B99;--gm:#0B2D55;--gg:#2563eb;--gd:#061a40;
+  --bg:#fff;--s:#EEF3FF;--ink:#0d1b2a;--ink2:#1e3a5f;--mu:#4b5563;
+  --bo:#dbeafe;--gpl:#EEF3FF;--gb:rgba(14,59,153,.18)
+}
+body[data-layout="performance-clinic"] .hero{
+  grid-template-columns:50% 50%;background:#fff;min-height:100vh
+}
+body[data-layout="performance-clinic"] .hero-left{
+  background:#fff;padding:120px 5% 80px 8%;
+  display:flex;flex-direction:column;justify-content:center
+}
+body[data-layout="performance-clinic"] .hero-left::after{display:none}
+body[data-layout="performance-clinic"] .hero-right{
+  background:#fff;display:flex;align-items:flex-end;
+  justify-content:center;overflow:hidden;position:relative
+}
+/* Foto: full-body, bottom-aligned, object-contain */
+body[data-layout="performance-clinic"] .hero-right-img{
+  position:absolute!important;bottom:0!important;top:auto!important;
+  left:50%!important;transform:translateX(-50%)!important;
+  width:auto!important;height:92%!important;
+  object-fit:contain!important;object-position:bottom center!important;
+  filter:contrast(1.1) brightness(1.02) saturate(1.12);animation:none
+}
+body[data-layout="performance-clinic"] .hero-right-ov{display:none}
+body[data-layout="performance-clinic"] .hero-right-card{display:none}
+body[data-layout="performance-clinic"] .h-pill{
+  background:rgba(14,59,153,.08);border-color:rgba(14,59,153,.2);
+  color:#0E3B99;letter-spacing:.25em;font-size:.58rem;text-transform:uppercase
+}
+body[data-layout="performance-clinic"] .h-pill-dot{background:#0E3B99}
+body[data-layout="performance-clinic"] .h-h1{
+  font-size:clamp(3rem,6.5vw,8rem);font-weight:900;
+  color:#0d1b2a;letter-spacing:-.07em;line-height:.88;margin-top:1.2rem
+}
+body[data-layout="performance-clinic"] .h-h1 strong{color:#0E3B99;display:block}
+body[data-layout="performance-clinic"] .h-h1 em{font-style:normal;font-weight:900;color:#0E3B99}
+body[data-layout="performance-clinic"] .h-sub{
+  color:#4b5563;font-size:1.1rem;line-height:1.72;max-width:460px;font-weight:400
+}
+body[data-layout="performance-clinic"] .h-actions{margin-top:2.2rem;gap:1rem}
+body[data-layout="performance-clinic"] .btn-main{
+  background:#0E3B99;border-radius:50px;height:56px;
+  padding:0 2.2rem;font-size:.92rem;font-weight:700
+}
+body[data-layout="performance-clinic"] .btn-main:hover{background:#0B2D55}
+body[data-layout="performance-clinic"] .btn-ghost{
+  border-color:#0E3B99;color:#0E3B99;border-radius:50px;
+  height:56px;padding:0 2rem;background:transparent
+}
+body[data-layout="performance-clinic"] .btn-ghost:hover{background:rgba(14,59,153,.06)}
+body[data-layout="performance-clinic"] .h-trust-icon{background:#EEF3FF;color:#0E3B99}
+body[data-layout="performance-clinic"] .h-trust-pill{color:#374151}
+body[data-layout="performance-clinic"] .nav-brand-name{color:#0d1b2a}
+body[data-layout="performance-clinic"] .nav.scrolled{background:rgba(255,255,255,.97)}
+body[data-layout="performance-clinic"] .nav.scrolled .nav-brand-name{color:#0d1b2a}
+body[data-layout="performance-clinic"] .nav.scrolled .nav-links a{color:#374151}
+body[data-layout="performance-clinic"] .nav.scrolled .nav-cta{background:#0E3B99}
+body[data-layout="performance-clinic"] .srv-bg{background:#EEF3FF}
+body[data-layout="performance-clinic"] .srv-card{background:#fff;border-color:rgba(14,59,153,.1)}
+body[data-layout="performance-clinic"] .srv-icon{background:#EEF3FF}
 
-/* ── 4. FUTURE MINIMAL ────────────────────────────────────
-   Tipografía primero. Espacio blanco. Foto secundaria.
-   La identidad vive en las palabras, no en la imagen. */
-body[data-layout="future-minimal"] .hero{grid-template-columns:60% 40%}
-body[data-layout="future-minimal"] .hero-left{
-  padding:130px 5% 80px 8%;justify-content:center;background:#fff
-}
-body[data-layout="future-minimal"] .hero-right{max-height:90vh;margin:auto 0}
-body[data-layout="future-minimal"] .hero-right-ov{
-  background:linear-gradient(270deg,transparent 40%,rgba(255,255,255,.06) 100%)
-}
-body[data-layout="future-minimal"] .h-h1{
-  font-family:var(--D);font-size:clamp(3.2rem,5.5vw,6.8rem);
-  font-weight:300;letter-spacing:-.04em;line-height:.9;max-width:600px
-}
-body[data-layout="future-minimal"] .h-h1 strong{font-weight:800;color:var(--ga);display:inline}
-body[data-layout="future-minimal"] .h-sub{font-size:.9rem;color:var(--mu);max-width:340px;font-weight:300;letter-spacing:.02em}
-body[data-layout="future-minimal"] .h-pill{opacity:.6;font-size:.58rem;letter-spacing:.16em}
-body[data-layout="future-minimal"] .btn-main{
-  border-radius:2px;background:var(--ink);
-  letter-spacing:.1em;font-size:.82rem;text-transform:uppercase;
-  padding:.85rem 2rem
-}
-body[data-layout="future-minimal"] .btn-main:hover{background:var(--ga)}
-body[data-layout="future-minimal"] .btn-ghost{border-radius:2px}
-
-/* ── 5. ACADEMIC PRESTIGE ─────────────────────────────────
-   Grid modular. Credenciales arriba. Navy institucional.
-   Para médicos cuya trayectoria académica es el diferencial. */
+/* ─────────────────────────────────────────────────────────
+   4. ACADEMIC PRESTIGE — grid institucional
+   Credenciales al frente. Foto formal. Línea separadora.
+   ───────────────────────────────────────────────────────── */
 body[data-layout="academic-prestige"] .hero{grid-template-columns:54% 46%}
-body[data-layout="academic-prestige"] .hero-left{
-  padding:110px 5% 80px 7%;
-  border-right:1px solid var(--bo)
+body[data-layout="academic-prestige"] .hero-left{padding:110px 5% 90px 7%;border-right:1px solid rgba(0,0,0,.07)}
+body[data-layout="academic-prestige"] .hero-right-img{
+  filter:contrast(1.04) brightness(1.04) saturate(0.92);object-position:center 10%
 }
 body[data-layout="academic-prestige"] .h-pill{
-  border-radius:3px;text-transform:uppercase;
-  letter-spacing:.16em;font-size:.58rem;margin-bottom:2rem
+  border-radius:3px;text-transform:uppercase;letter-spacing:.18em;font-size:.57rem;margin-bottom:2rem
 }
 body[data-layout="academic-prestige"] .h-h1{
-  font-size:clamp(2rem,3.2vw,3.5rem);font-weight:700;
-  letter-spacing:-.025em;border-top:2px solid var(--ga);
-  padding-top:1.4rem;margin-top:.4rem;line-height:1.05
+  font-size:clamp(2rem,3.2vw,3.8rem);font-weight:700;letter-spacing:-.03em;line-height:1.06;
+  border-top:2px solid var(--ga);padding-top:1.4rem;margin-top:.5rem
 }
+body[data-layout="academic-prestige"] .h-h1 em{font-style:italic;font-weight:300;color:var(--gg)}
 body[data-layout="academic-prestige"] .h-sub{
-  font-size:.88rem;line-height:1.9;border-left:3px solid var(--gpl);
-  padding-left:1rem;margin-top:1.2rem;color:var(--ink2)
+  font-size:.88rem;line-height:1.95;margin-top:1.2rem;
+  border-left:3px solid var(--gpl);padding-left:1rem;color:var(--ink2);font-style:italic;max-width:420px
 }
-body[data-layout="academic-prestige"] .h-actions{margin-top:2rem}
-body[data-layout="academic-prestige"] .btn-main{border-radius:4px;letter-spacing:.06em}
+body[data-layout="academic-prestige"] .h-actions{margin-top:2.2rem}
+body[data-layout="academic-prestige"] .btn-main{border-radius:4px;letter-spacing:.06em;font-size:.88rem}
+body[data-layout="academic-prestige"] .btn-ghost{border-radius:4px}
 
-/* ── 6. PEDIATRIC WARM ────────────────────────────────────
-   Airy. Rounded. Fotografía humana en card redondeado.
-   Cercanía sobre autoridad. */
-body[data-layout="pediatric-warm"] .hero{grid-template-columns:46% 54%}
-body[data-layout="pediatric-warm"] .hero-right{
-  margin:50px 50px 50px 0;border-radius:36px;overflow:hidden
+/* ─────────────────────────────────────────────────────────
+   5. SOFT CLINIC LUXURY — pro-mas-web2.png (periodoncia)
+   Fondo crema-lavanda. Serif elegante. Foto full-body.
+   Calma + confianza + cuidado. CTAs redondeados suaves.
+   ───────────────────────────────────────────────────────── */
+body[data-layout="soft-clinic-luxury"]{
+  background:#FAF8FC;
+  --ga:#A78BC7;--gm:#7C5FA5;--gg:#B59AD5;--gd:#2B2430;
+  --bg:#FAF8FC;--s:#EDE7F6;--ink:#2B2430;--ink2:#4a3d54;--mu:#7c6d8a;
+  --bo:#e9e0f0;--gpl:rgba(167,139,199,.1);--gb:rgba(167,139,199,.2)
 }
-body[data-layout="pediatric-warm"] .hero-right-ov{
-  background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.35) 100%)
+body[data-layout="soft-clinic-luxury"] .hero{
+  grid-template-columns:50% 50%;background:#FAF8FC;min-height:100vh
 }
-body[data-layout="pediatric-warm"] .h-h1{
-  font-size:clamp(1.9rem,3.2vw,3.4rem);font-weight:700;
-  letter-spacing:-.02em;line-height:1.1
+body[data-layout="soft-clinic-luxury"] .hero-left{
+  background:#FAF8FC;padding:120px 5% 80px 8%;
+  display:flex;flex-direction:column;justify-content:center
 }
-body[data-layout="pediatric-warm"] .h-sub{font-size:.9rem;line-height:1.8;max-width:360px}
-body[data-layout="pediatric-warm"] .btn-main{border-radius:50px;padding:.85rem 1.8rem}
-body[data-layout="pediatric-warm"] .btn-ghost{border-radius:50px}
+body[data-layout="soft-clinic-luxury"] .hero-left::after{display:none}
+body[data-layout="soft-clinic-luxury"] .hero-right{
+  background:#FAF8FC;display:flex;align-items:flex-end;
+  justify-content:center;overflow:hidden;position:relative
+}
+/* Foto: full-body, bottom-aligned, object-contain — igual que performance-clinic */
+body[data-layout="soft-clinic-luxury"] .hero-right-img{
+  position:absolute!important;bottom:0!important;top:auto!important;
+  left:50%!important;transform:translateX(-50%)!important;
+  width:auto!important;height:92%!important;
+  object-fit:contain!important;object-position:bottom center!important;
+  filter:contrast(1.0) brightness(1.06) saturate(0.9);animation:none
+}
+body[data-layout="soft-clinic-luxury"] .hero-right-ov{display:none}
+body[data-layout="soft-clinic-luxury"] .hero-right-card{display:none}
+body[data-layout="soft-clinic-luxury"] .h-pill{
+  background:rgba(167,139,199,.1);border-color:rgba(167,139,199,.25);
+  color:#A78BC7;letter-spacing:.22em;font-size:.57rem;text-transform:uppercase;border-radius:50px
+}
+body[data-layout="soft-clinic-luxury"] .h-pill-dot{background:#A78BC7}
+body[data-layout="soft-clinic-luxury"] .h-h1{
+  font-family:var(--D);font-size:clamp(2rem,3.8vw,4.6rem);
+  font-weight:700;color:#2B2430;letter-spacing:-.025em;line-height:1.04;margin-top:1.2rem
+}
+body[data-layout="soft-clinic-luxury"] .h-h1 em{
+  font-style:italic;font-weight:300;color:#B59AD5;display:block
+}
+body[data-layout="soft-clinic-luxury"] .h-sub{
+  color:#7c6d8a;font-size:1rem;line-height:1.82;max-width:400px;font-weight:400
+}
+body[data-layout="soft-clinic-luxury"] .h-actions{margin-top:2.2rem;gap:.8rem}
+body[data-layout="soft-clinic-luxury"] .btn-main{
+  background:#A78BC7;border-radius:50px;height:56px;
+  padding:0 2.2rem;font-size:.9rem;font-weight:700
+}
+body[data-layout="soft-clinic-luxury"] .btn-main:hover{background:#7C5FA5}
+body[data-layout="soft-clinic-luxury"] .btn-ghost{
+  border-color:#A78BC7;color:#7C5FA5;border-radius:50px;
+  height:56px;padding:0 2rem
+}
+body[data-layout="soft-clinic-luxury"] .h-trust-icon{background:rgba(167,139,199,.1);color:#A78BC7;border-radius:50%}
+body[data-layout="soft-clinic-luxury"] .h-trust-pill{color:#7c6d8a}
+body[data-layout="soft-clinic-luxury"] .nav-brand-name{color:#2B2430}
+body[data-layout="soft-clinic-luxury"] .nav.scrolled{background:rgba(250,248,252,.97)}
+body[data-layout="soft-clinic-luxury"] .nav.scrolled .nav-brand-name{color:#2B2430}
+body[data-layout="soft-clinic-luxury"] .nav.scrolled .nav-links a{color:#4a3d54}
+body[data-layout="soft-clinic-luxury"] .nav.scrolled .nav-cta{background:#A78BC7}
+body[data-layout="soft-clinic-luxury"] .srv-bg{background:#EDE7F6}
+body[data-layout="soft-clinic-luxury"] .srv-card{background:#fff;border-color:rgba(167,139,199,.15)}
+body[data-layout="soft-clinic-luxury"] .srv-icon{background:rgba(167,139,199,.1)}
 
-/* ── MOBILE overrides para todos los layouts ────────────── */
+/* ─────────────────────────────────────────────────────────
+   6. FUTURE MINIMAL — tipografía primero, whitespace masivo
+   Un solo CTA. Foto como acento. Editorial puro.
+   ───────────────────────────────────────────────────────── */
+body[data-layout="future-minimal"] .hero{grid-template-columns:62% 38%}
+body[data-layout="future-minimal"] .hero-left{
+  padding:140px 5% 100px 9%;justify-content:center;background:#fff
+}
+body[data-layout="future-minimal"] .hero-right{overflow:hidden}
+body[data-layout="future-minimal"] .hero-right-img{
+  filter:contrast(1.08) brightness(0.96) saturate(0.88) grayscale(0.12);object-position:center 8%
+}
+body[data-layout="future-minimal"] .hero-right-ov{background:linear-gradient(270deg,transparent 35%,rgba(255,255,255,.08) 100%)}
+body[data-layout="future-minimal"] .h-pill{display:none}
+body[data-layout="future-minimal"] .h-h1{
+  font-family:var(--D);font-size:clamp(3.2rem,6vw,7.5rem);
+  font-weight:300;letter-spacing:-.04em;line-height:.88;max-width:640px;color:var(--ink)
+}
+body[data-layout="future-minimal"] .h-h1 strong{font-weight:800;color:var(--ga);display:inline}
+body[data-layout="future-minimal"] .h-h1 em{font-weight:300;font-style:italic;display:block;font-size:.6em;color:var(--mu);letter-spacing:.02em}
+body[data-layout="future-minimal"] .h-sub{font-size:.88rem;color:var(--mu);max-width:340px;font-weight:300;letter-spacing:.02em;line-height:1.85;margin-top:2rem}
+body[data-layout="future-minimal"] .h-actions{margin-top:2.8rem;gap:1rem}
+body[data-layout="future-minimal"] .btn-main{border-radius:2px;background:var(--ink);height:auto;letter-spacing:.1em;font-size:.8rem;text-transform:uppercase;padding:1.1rem 2.6rem}
+body[data-layout="future-minimal"] .btn-main:hover{background:var(--ga)}
+body[data-layout="future-minimal"] .btn-ghost{border-radius:2px;height:auto;padding:1rem 2rem;border-color:var(--bo)}
+body[data-layout="future-minimal"] .h-trust{margin-top:2.8rem;gap:2rem}
+body[data-layout="future-minimal"] .h-trust-icon{width:38px;height:38px;border-radius:4px;background:transparent;border:1.5px solid var(--bo)}
+
+/* ── MOBILE — todos los layouts ────────────────────────── */
 @media(max-width:767px){
-  body[data-layout="surgical-authority"] .hero{min-height:100vh}
-  body[data-layout="surgical-authority"] .hero-left{padding:60px 6% 60px}
-  body[data-layout="surgical-authority"] .h-h1{font-size:clamp(2rem,8vw,3.2rem)}
-  body[data-layout="future-minimal"] .hero{grid-template-columns:1fr;display:flex;flex-direction:column}
-  body[data-layout="future-minimal"] .hero-left{order:2;padding:2rem 5%}
-  body[data-layout="future-minimal"] .hero-right{order:1;min-height:55vw;max-height:280px}
-  body[data-layout="future-minimal"] .h-h1{font-size:clamp(2.4rem,9vw,3.8rem)}
-  body[data-layout="academic-prestige"] .hero-left{border-right:none}
-  body[data-layout="pediatric-warm"] .hero-right{margin:24px 24px 0;border-radius:24px}
+  /* 1 clinic-editorial */
+  body[data-layout="clinic-editorial"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
+  body[data-layout="clinic-editorial"] .hero-left{order:2!important;padding:1.8rem 5% 2.5rem!important}
+  body[data-layout="clinic-editorial"] .hero-right{order:-1!important;width:100%!important;height:88vw!important;min-height:220px!important;max-height:360px!important;border-radius:0!important;margin:0!important}
+  body[data-layout="clinic-editorial"] .hero-right-img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-position:center 8%!important;object-fit:cover!important;transform:none!important}
+  body[data-layout="clinic-editorial"] .h-h1{font-size:clamp(2rem,8vw,3.2rem)}
+  /* 2 surgical-authority */
+  body[data-layout="surgical-authority"] .hero-right{width:100%;opacity:.55}
+  body[data-layout="surgical-authority"] .hero-left{max-width:100%;padding:100px 6% 130px;min-height:100svh}
+  body[data-layout="surgical-authority"] .h-h1{font-size:clamp(2.4rem,9vw,3.8rem)}
+  body[data-layout="surgical-authority"] .h-actions{max-width:100%}
+  /* 3 performance-clinic */
+  body[data-layout="performance-clinic"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
+  body[data-layout="performance-clinic"] .hero-left{order:2!important;padding:1.8rem 5% 2.5rem!important}
+  body[data-layout="performance-clinic"] .hero-right{order:-1!important;width:100%!important;height:72vw!important;max-height:340px!important;background:#fff!important}
+  body[data-layout="performance-clinic"] .hero-right-img{left:50%!important;transform:translateX(-50%)!important;height:100%!important;width:auto!important;bottom:0!important;top:0!important}
+  body[data-layout="performance-clinic"] .h-h1{font-size:clamp(2.4rem,9vw,3.8rem)}
+  /* 4 academic-prestige */
+  body[data-layout="academic-prestige"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
+  body[data-layout="academic-prestige"] .hero-left{order:2!important;border-right:none;padding:1.8rem 5% 2.5rem!important}
+  body[data-layout="academic-prestige"] .hero-right{order:-1!important;width:100%!important;height:72vw!important;max-height:340px!important;margin:0!important;border-radius:0!important}
+  body[data-layout="academic-prestige"] .hero-right-img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important}
+  body[data-layout="academic-prestige"] .h-h1{font-size:clamp(1.8rem,7vw,2.8rem)}
+  /* 5 soft-clinic-luxury */
+  body[data-layout="soft-clinic-luxury"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important;background:#FAF8FC!important}
+  body[data-layout="soft-clinic-luxury"] .hero-left{order:2!important;padding:1.8rem 5% 2.5rem!important;background:#FAF8FC!important}
+  body[data-layout="soft-clinic-luxury"] .hero-right{order:-1!important;width:100%!important;height:72vw!important;max-height:340px!important;background:#FAF8FC!important}
+  body[data-layout="soft-clinic-luxury"] .hero-right-img{left:50%!important;transform:translateX(-50%)!important;height:100%!important;width:auto!important;bottom:0!important;top:0!important}
+  body[data-layout="soft-clinic-luxury"] .h-h1{font-size:clamp(1.9rem,7.5vw,2.8rem)}
+  /* 6 future-minimal */
+  body[data-layout="future-minimal"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
+  body[data-layout="future-minimal"] .hero-left{order:2!important;padding:2rem 5%!important}
+  body[data-layout="future-minimal"] .hero-right{order:-1!important;height:60vw!important;max-height:280px!important;width:100%!important}
+  body[data-layout="future-minimal"] .h-h1{font-size:clamp(2.6rem,10vw,4rem)}
+  body[data-layout="future-minimal"] .btn-main{padding:.88rem 1.8rem}
 }
+
 </style>
 </head>
 <body>
@@ -1517,8 +1645,12 @@ function renderWeb(m,locs,wc,isPreview){
 
   // Apply layout system — estructura compositiva independiente del color
   var LAYOUT_DNA_MAP = {
-    'clinic':'clinic-editorial','sports':'performance-sports','luxury':'clinic-editorial',
-    'authority':'surgical-authority','warm':'pediatric-warm','modern':'future-minimal'
+    'clinic':    'clinic-editorial',
+    'sports':    'performance-clinic',
+    'luxury':    'surgical-authority',
+    'authority': 'academic-prestige',
+    'warm':      'soft-clinic-luxury',
+    'modern':    'future-minimal'
   };
   var layoutId = (wc && wc.layout_id) || LAYOUT_DNA_MAP[dna] || 'clinic-editorial';
   document.body.setAttribute('data-layout', layoutId);

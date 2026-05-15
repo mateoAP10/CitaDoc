@@ -729,13 +729,37 @@ IDENTIDAD VISUAL:
   IMPORTANTE: un traumatólogo con fellowship y máster usa SIEMPRE "clinic" — sus credenciales elevan el copy, no el DNA
 - El color que elegís tiñe botones, nav, headlines. Elegí el correcto.
 
-SISTEMA DE LAYOUTS — elige UNO basándote en lo que ves y en la personalidad del médico:
-- "clinic-editorial" → split 52/48 limpio, luxury médico. Para: traumatología, ortopedia, cirugía, fisioterapia premium
-- "surgical-authority" → foto fullscreen, texto sobre imagen, CTA minimal. Para: cirujanos con mucha presencia, dermato, oncología
-- "performance-sports" → oscuro, bold, kinético. Para: medicina deportiva pura, alto rendimiento
-- "academic-prestige" → grid modular, credenciales al frente, naval. Para: académicos, docentes, investigadores con trayectoria
-- "pediatric-warm" → foto en card redondeado, airy, cálido. Para: pediatría, medicina familiar, psicología, nutrición
-- "future-minimal" → tipografía enorme, whitespace masivo, foto secundaria. Para: médicos con marca personal fuerte, tech, innovadores
+SISTEMA DE LAYOUTS — 6 DNAs editoriales reales:
+
+"clinic-editorial"
+- fondo BLANCO · split 52/48 · serif premium · foto retocada
+- Para: traumatología, ortopedia, cirugía, clínicas premium
+- Ejemplo: renderMAP.png — el estándar de excelencia
+
+"surgical-authority"
+- fondo NEGRO (#08192D) · foto fullscreen · gradiente left→right · logo en hero
+- Para: cirujanos high-prestige, dermato estética, oncología, luxury medical
+- Headline enorme serif sobre la foto
+
+"performance-clinic"
+- fondo BLANCO · split 50/50 · azul fuerte (#0E3B99) · foto full-body bottom-aligned
+- Para: fisioterapia deportiva, rehabilitación, sports medicine, recovery
+- Headline brutal bold, energía positiva, CTAs azul redondeados
+
+"academic-prestige"
+- fondo BLANCO · split 54/46 · grid modular · línea separadora sobre headline
+- Para: médicos académicos, investigadores, especialistas con credenciales extensas
+- Foto desaturada, copy técnico, serif institucional
+
+"soft-clinic-luxury"
+- fondo CREMA-LAVANDA (#FAF8FC) · split 50/50 · lavanda (#A78BC7) · foto full-body bottom
+- Para: periodoncia, ginecología, pediatría, nutrición, cualquier especialidad femenina o de bienestar
+- Serif italic, CTAs redondeados suaves, calma + confianza + cuidado
+
+"future-minimal"
+- fondo BLANCO · split 62/38 · tipografía enorme light · whitespace masivo · sin pill badge
+- Para: médicos tech-forward, preventiva, innovadores, marca personal fuerte
+- Un solo CTA, foto como acento gráfico, editorial puro
 
 VISUAL DNA (solo colores — separado del layout):
 - clinic → navy institucional (traumato, ortopedia, rehabilit)
@@ -757,7 +781,7 @@ JSON a devolver (SOLO JSON, sin texto antes ni después):
   "patient_experience": "Cómo se siente el paciente. Sensorial.",
   "tone": "confianza-clinica|cercania-humana|elegancia-premium|innovacion-medica",
   "visual_dna": "clinic|sports|luxury|authority|warm|modern",
-  "layout_id": "clinic-editorial|surgical-authority|performance-sports|academic-prestige|pediatric-warm|future-minimal",
+  "layout_id": "clinic-editorial|surgical-authority|performance-clinic|academic-prestige|soft-clinic-luxury|future-minimal",
   "primary_color": "#hexcolor exacto del logo o foto",
   "services": [{"t":"nombre específico","d":"descripción 1 línea con resultado","i":"emoji"}],
   "cta_primary": "Agendar cita",
