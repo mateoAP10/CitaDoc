@@ -550,8 +550,8 @@ serve(async (req) => {
     }
 
     // Forzar anchors si Kimi los ignoró — la identidad visual no puede derivar entre regeneraciones
-    if (anchorDna && !logo_colors?.length) config.visual_dna = anchorDna
-    if (anchorColor && !logo_colors?.length) config.primary_color = anchorColor
+    if (anchor_dna && !logo_colors?.length) config.visual_dna = anchor_dna
+    if (anchor_color && !logo_colors?.length) config.primary_color = anchor_color
 
     // Normalize and validate
     const validationError = validateConfig(config)
