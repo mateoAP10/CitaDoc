@@ -3820,7 +3820,19 @@ async function webAiGenerar() {
   var apiPromise = (async function() {
     try {
       var result = null;
-      var payload = { medico_id: M.id, perception: _webPerception, prompt: prompt, logo_colors: _webLogoPalette || [] };
+      // Anclar identidad visual del draft anterior si existe y no se subió logo nuevo
+      var prevDraft = M.web_config_draft || {};
+      var logoColors = _webLogoPalette && _webLogoPalette.length
+        ? _webLogoPalette
+        : (prevDraft.primary_color ? [prevDraft.primary_color] : []);
+      var payload = {
+        medico_id: M.id,
+        perception: _webPerception,
+        prompt: prompt,
+        logo_colors: logoColors,
+        anchor_dna: (!_webLogoPalette && prevDraft.visual_dna) ? prevDraft.visual_dna : null,
+        anchor_color: (!_webLogoPalette && prevDraft.primary_color) ? prevDraft.primary_color : null
+      };
       console.log('[AI PIPELINE] ⏳ Starting Edge Function call. Payload:', JSON.stringify(payload));
 
       var invokeMethod = 'none';

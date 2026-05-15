@@ -203,7 +203,7 @@ visual_dna — elige UNO basándote en el logo primero, especialidad después:
 - modern: medicina interna · preventiva · general · endocrinología → azul-negro + cyan, futuro médico`
 }
 
-function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, perception: string, logoColors?: string[]): string {
+function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, perception: string, logoColors?: string[], anchorDna?: string, anchorColor?: string): string {
   const nombre = `${medico.titulo || 'Dr.'} ${medico.nombre || ''} ${medico.apellido || ''}`.trim()
   const esp = (medico.especialidades as string[] || [])[0] || ''
   const ciudad = (medico.ciudad as string) || ''
@@ -235,10 +235,21 @@ function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, pe
     parts.push(`(Sin identidad visual subida — asigna visual_dna basándote en especialidad, defaultea a 'clinic' para especialidades clínicas)`)
   }
 
+  // Anclar identidad visual establecida — si el médico ya tiene DNA y color definidos,
+  // SOLO varía el copy. La identidad visual no cambia entre regeneraciones.
+  if (anchorDna && anchorColor) {
+    parts.push(`\nIDENTIDAD VISUAL YA ESTABLECIDA — MANTENER FIJA:`)
+    parts.push(`visual_dna: "${anchorDna}" — NO cambiar, este es el estilo de marca del médico.`)
+    parts.push(`primary_color: "${anchorColor}" — NO cambiar, es el color de su identidad.`)
+    parts.push(`Tu trabajo en esta regeneración: crear NUEVO copy (headline, about, differentiators, servicios) más fresco y poderoso. La identidad visual ya está definida, el copy puede y debe mejorar.`)
+  } else if (anchorDna) {
+    parts.push(`visual_dna establecido previamente: "${anchorDna}" — mantenerlo a menos que el logo indique algo diferente.`)
+  }
+
   if (userPrompt) parts.push(`BRIEF DEL MÉDICO: ${userPrompt}`)
 
   return parts.join('\n')
-    + `\n\nGenera la identidad web de este médico. Headline orientado al paciente (resultado claro, sin drama). Differentiators técnicos específicos de ${esp}. Copy de autoridad médica premium. DNA visual derivado del logo.`
+    + `\n\nGenera identidad web para este médico. Headline orientado al paciente, resultado claro, sin drama. Differentiators técnicos específicos de ${esp}. Copy de autoridad médica premium. DNA visual ${anchorDna ? 'ya establecido: ' + anchorDna : 'derivado del logo o especialidad'}.`
 }
 
 // ── MOCK FALLBACK (testing sin API key) ──
@@ -455,7 +466,7 @@ serve(async (req) => {
   const handlerT0 = Date.now()
   try {
     const body = await req.json()
-    const { medico_id, prompt, perception, use_mock, logo_colors } = body
+    const { medico_id, prompt, perception, use_mock, logo_colors, anchor_dna, anchor_color } = body
 
     if (!medico_id) {
       return new Response(JSON.stringify({ error: 'medico_id is required' }), {
@@ -504,7 +515,7 @@ serve(async (req) => {
       try {
         const messages: KimiMessage[] = [
           { role: 'system', content: buildSystemPrompt() },
-          { role: 'user', content: buildUserPrompt(medico, prompt || '', perception || 'cercania-humana', logo_colors || []) }
+          { role: 'user', content: buildUserPrompt(medico, prompt || '', perception || 'confianza-clinica', logo_colors || [], anchor_dna, anchor_color) }
         ]
         config = await callKimiAPI(messages)
       } catch (e) {
@@ -521,6 +532,10 @@ serve(async (req) => {
         })
       }
     }
+
+    // Forzar anchors si Kimi los ignoró — la identidad visual no puede derivar entre regeneraciones
+    if (anchorDna && !logo_colors?.length) config.visual_dna = anchorDna
+    if (anchorColor && !logo_colors?.length) config.primary_color = anchorColor
 
     // Normalize and validate
     const validationError = validateConfig(config)
