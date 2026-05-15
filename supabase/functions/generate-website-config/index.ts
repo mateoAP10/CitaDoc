@@ -59,9 +59,8 @@ async function callKimiAPI(messages: KimiMessage[]): Promise<Record<string, unkn
   const payload = {
     model: KIMI_MODEL,
     messages,
-    temperature: 1,
+    temperature: 0.85,
     max_tokens: 2000
-    // Note: response_format removed — reasoning consumes tokens, keep output short
   }
 
   const logs: string[] = []
@@ -123,9 +122,26 @@ async function callKimiAPI(messages: KimiMessage[]): Promise<Record<string, unkn
   logs.push(`[KIMI DIAGNOSTIC] Content preview (first 500 chars): ${content.slice(0, 500)}`)
 
   // Parse JSON from response
+  // Sanitizar caracteres no-latinos que Kimi filtra a veces (chino, cirílico, árabe)
+  function sanitizeSpanish(obj: unknown): unknown {
+    if (typeof obj === 'string') {
+      return obj.replace(/[Ѐ-ӿ一-鿿぀-ゟ゠-ヿ؀-ۿ]/g, '')
+                .replace(/\s{2,}/g, ' ').trim()
+    }
+    if (Array.isArray(obj)) return obj.map(sanitizeSpanish)
+    if (obj && typeof obj === 'object') {
+      const out: Record<string, unknown> = {}
+      for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+        out[k] = sanitizeSpanish(v)
+      }
+      return out
+    }
+    return obj
+  }
+
   try {
     const parsed = JSON.parse(content)
-    return parsed
+    return sanitizeSpanish(parsed) as Record<string, unknown>
   } catch (_e) {
     // Try extracting JSON from markdown code block
     const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/)

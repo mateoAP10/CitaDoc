@@ -1478,166 +1478,137 @@ display:flex;
   <!-- PANEL MI SITIO WEB -->
   <div class="panel" id="panel-sitio">
 
-    <!-- ── ESTADO 1: SIN BORRADOR ── -->
-    <div id="webStateEmpty" style="display:none">
-      <div style="background:linear-gradient(145deg,#09060f,#0d0a1a);border-radius:22px;padding:2.4rem 2rem;text-align:center;border:1px solid rgba(167,139,250,.14);margin-bottom:1.5rem">
-        <div style="font-size:.6rem;font-weight:700;color:rgba(167,139,250,.55);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.9rem">CitaDoc AI · PRO+WEB</div>
-        <div style="font-family:Fraunces,serif;font-size:1.75rem;font-weight:700;color:#fff;line-height:1.1;margin-bottom:.55rem">Tu sitio médico,<br><em style="font-weight:300;font-style:italic;opacity:.7">listo en 2 minutos</em></div>
-        <div style="font-size:.85rem;color:rgba(255,255,255,.38);max-width:380px;margin:0 auto 2rem;line-height:1.7">La IA analiza tu foto y logo, y crea una presencia digital que se siente como tu marca — no un template genérico.</div>
-
-        <!-- Lo que genera -->
-        <div style="display:flex;justify-content:center;gap:1.4rem;margin-bottom:2rem;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:rgba(255,255,255,.45)"><span style="color:#34d399">✓</span>Dominio propio</div>
-          <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:rgba(255,255,255,.45)"><span style="color:#34d399">✓</span>SEO local</div>
-          <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:rgba(255,255,255,.45)"><span style="color:#34d399">✓</span>Vista móvil perfecta</div>
-          <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:rgba(255,255,255,.45)"><span style="color:#34d399">✓</span>Booking integrado</div>
-        </div>
-
-        <button onclick="abrirAiWebModal()" style="display:inline-flex;align-items:center;gap:.6rem;padding:1rem 2.2rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(124,58,237,.45);transition:transform .2s,box-shadow .2s;letter-spacing:.01em" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 18px 56px rgba(124,58,237,.6)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 12px 40px rgba(124,58,237,.45)'">
-          ✨ Generar mi sitio con AI
-        </button>
-        <div style="font-size:.7rem;color:rgba(255,255,255,.2);margin-top:1rem">Generación gratuita · Publicas cuando quieras por $150</div>
+    <!-- STATUS BAR — dinámica según estado -->
+    <div id="webStatusBar" style="display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:.6rem 1rem;margin-bottom:2rem;flex-wrap:wrap;gap:.6rem">
+      <div style="display:flex;align-items:center;gap:.65rem">
+        <span id="webStatusBadge" style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.28rem .75rem;border-radius:20px;background:#f0fdf8;color:var(--teal);border:1px solid rgba(11,124,110,.2)">BORRADOR</span>
+        <span style="font-family:monospace;font-size:.8rem;color:#374151;font-weight:600" id="webUrlText">—.citadoc.lat</span>
+      </div>
+      <div style="display:flex;gap:.45rem">
+        <a id="webUrlOpen" href="#" target="_blank" rel="noopener" style="padding:.38rem .9rem;background:var(--teal);color:#fff;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:700;text-decoration:none">↗ Ver sitio</a>
+        <button onclick="abrirAiWebModal()" style="padding:.38rem .9rem;background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.76rem;color:#374151;font-weight:600;cursor:pointer">↺ Actualizar</button>
       </div>
     </div>
 
-    <!-- ── ESTADO 2: BORRADOR LISTO ── -->
-    <div id="webStateDraft" style="display:none">
+    <!-- HERO -->
+    <div style="text-align:center;margin-bottom:1.8rem">
+      <h2 style="font-family:Fraunces,serif;font-size:1.6rem;font-weight:700;color:#0f1a18;margin:0 0 .4rem;letter-spacing:-.025em">Tu sitio web profesional en 3 simples pasos</h2>
+      <p style="font-size:.85rem;color:#9ca3af;margin:0">Obtén tu presencia digital profesional en minutos, no en meses</p>
+    </div>
 
-      <!-- Header del borrador -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.6rem">
-        <div>
-          <div style="font-size:.6rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.2rem">Borrador generado</div>
-          <h2 style="font-family:Fraunces,serif;font-size:1.25rem;font-weight:700;color:#0f1a18;margin:0;letter-spacing:-.02em">Así se ve tu sitio</h2>
-        </div>
-        <div style="display:flex;gap:.5rem">
-          <a id="aiVerSitioBtn" href="#" target="_blank" rel="noopener" style="display:none;padding:.42rem .85rem;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:#374151;font-weight:600;text-decoration:none">👁 Ver en vivo ↗</a>
-          <button onclick="abrirAiWebModal()" style="padding:.42rem .85rem;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:#374151;font-weight:600;cursor:pointer">↺ Regenerar</button>
-        </div>
+    <!-- 3 PASOS -->
+    <div style="display:grid;grid-template-columns:1fr 28px 1fr 28px 1fr;align-items:center;gap:.5rem;margin-bottom:2rem">
+
+      <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:1.2rem 1rem;position:relative">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.2);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:var(--teal);margin-bottom:.75rem">1</div>
+        <div style="font-size:.82rem;font-weight:700;color:#0f1a18;margin-bottom:.3rem;line-height:1.2">Quiero mi sitio<br>web gratis</div>
+        <div style="font-size:.72rem;color:#9ca3af;line-height:1.55">Cuéntanos sobre tu práctica y tu especialidad.</div>
+        <div style="position:absolute;bottom:1rem;right:1rem;font-size:1.1rem">🧑‍⚕️</div>
       </div>
 
-      <!-- Preview desktop -->
-      <div style="border-radius:14px;overflow:hidden;background:#e5e7eb;box-shadow:0 4px 24px rgba(0,0,0,.1);margin-bottom:1.2rem">
-        <div style="background:#f3f4f6;padding:.35rem .65rem;display:flex;align-items:center;gap:.35rem">
-          <div style="width:8px;height:8px;border-radius:50%;background:#fc5c5c"></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#fdbc40"></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#34c84a"></div>
-          <div style="flex:1;background:#fff;border-radius:4px;height:16px;margin:0 .45rem;display:flex;align-items:center;padding:0 .45rem"><span id="webPreviewUrl" style="font-size:.58rem;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">—.citadoc.lat</span></div>
-          <button onclick="refreshWebPreview()" style="padding:.1rem .35rem;background:none;border:none;cursor:pointer;font-size:.68rem;color:#9ca3af" title="Refrescar">↻</button>
-          <a id="webUrlOpen2" href="#" target="_blank" rel="noopener" style="padding:.1rem .35rem;background:none;border:none;font-size:.68rem;color:#9ca3af;text-decoration:none" title="Abrir">↗</a>
-        </div>
-        <div style="position:relative;overflow:hidden;height:480px;background:#fff">
-          <iframe id="webPreviewFrame" style="width:150%;height:720px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
-        </div>
+      <div style="text-align:center;color:#d1d5db;font-size:1rem">→</div>
+
+      <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:1.2rem 1rem;position:relative">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--teal-lite);border:1.5px solid rgba(11,124,110,.2);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:var(--teal);margin-bottom:.75rem">2</div>
+        <div style="font-size:.82rem;font-weight:700;color:#0f1a18;margin-bottom:.3rem;line-height:1.2">Ver cómo se vería<br>mi sitio gratis</div>
+        <div style="font-size:.72rem;color:#9ca3af;line-height:1.55">Te mostramos una vista previa personalizada al instante.</div>
+        <div style="position:absolute;bottom:1rem;right:1rem;font-size:1.1rem">👁</div>
       </div>
 
-      <!-- iPhone mockup -->
-      <div id="phoneMockupWrap" style="display:none;flex-direction:column;align-items:center;gap:1.1rem;margin-bottom:1.2rem">
-        <div style="font-size:.62rem;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase">Vista móvil</div>
+      <div style="text-align:center;color:#d1d5db;font-size:1rem">→</div>
+
+      <div style="background:linear-gradient(145deg,#f0fdf8,#e8faf5);border:1.5px solid rgba(11,124,110,.2);border-radius:16px;padding:1.2rem 1rem;position:relative">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;margin-bottom:.75rem">3</div>
+        <div style="font-size:.82rem;font-weight:700;color:#0f1a18;margin-bottom:.3rem;line-height:1.2">Quiero mi sitio web<br>generado con IA</div>
+        <div style="font-size:.72rem;color:#6b7280;line-height:1.55">Publicamos tu sitio profesional, listo para captar pacientes.</div>
+        <div style="position:absolute;bottom:1rem;right:1rem;font-size:1.1rem">🚀</div>
+      </div>
+    </div>
+
+    <!-- SPLIT: phone mockup + pitch -->
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:2rem;align-items:center;background:#f9fafb;border-radius:20px;padding:1.8rem;margin-bottom:1.5rem">
+
+      <!-- Phone mockup (único, sin duplicar) -->
+      <div id="phoneMockupWrap" style="display:flex;flex-direction:column;align-items:center;gap:.8rem;flex-shrink:0">
         <div style="position:relative">
           <div style="position:absolute;left:-2.5px;top:80px;width:3px;height:22px;background:#1c1c1e;border-radius:2px 0 0 2px"></div>
           <div style="position:absolute;left:-2.5px;top:114px;width:3px;height:46px;background:#1c1c1e;border-radius:2px 0 0 2px"></div>
           <div style="position:absolute;left:-2.5px;top:170px;width:3px;height:46px;background:#1c1c1e;border-radius:2px 0 0 2px"></div>
           <div style="position:absolute;right:-2.5px;top:114px;width:3px;height:68px;background:#1c1c1e;border-radius:0 2px 2px 0"></div>
-          <div style="width:248px;background:#0d0d0d;border-radius:46px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.13),0 28px 64px rgba(0,0,0,.42),0 6px 16px rgba(0,0,0,.18)">
-            <div style="height:44px;background:#0d0d0d;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 8px;position:relative">
-              <span style="font-size:10px;font-weight:700;color:#fff;letter-spacing:-.01em">9:41</span>
-              <div style="width:96px;height:26px;background:#0d0d0d;border-radius:13px;position:absolute;left:50%;transform:translateX(-50%);bottom:7px"></div>
-              <div style="display:flex;gap:4px;align-items:center">
-                <svg width="13" height="10" viewBox="0 0 13 10" fill="white" opacity=".85"><rect x="0" y="3" width="2" height="7" rx="1"/><rect x="3.5" y="2" width="2" height="8" rx="1"/><rect x="7" y="0.5" width="2" height="9.5" rx="1"/><rect x="10.5" y="0" width="2" height="10" rx="1"/></svg>
-                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="white" stroke-width="1.3" opacity=".85"><path d="M1 4C3.5 1.5 10.5 1.5 13 4"/><path d="M3 6.5C4.8 4.7 9.2 4.7 11 6.5"/><circle cx="7" cy="9.5" r="1.2" fill="white" stroke="none"/></svg>
-                <svg width="22" height="11" viewBox="0 0 22 11" fill="none" opacity=".85"><rect x=".5" y=".5" width="18" height="10" rx="2.5" stroke="white" stroke-opacity=".35"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="white"/><path d="M20 3.5v4c1.1-.5 1.1-3.5 0-4Z" fill="white" opacity=".4"/></svg>
+          <div style="width:200px;background:#0d0d0d;border-radius:38px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.13),0 20px 52px rgba(0,0,0,.35)">
+            <div style="height:36px;background:#0d0d0d;display:flex;align-items:flex-end;justify-content:space-between;padding:0 16px 7px;position:relative">
+              <span style="font-size:9px;font-weight:700;color:#fff">9:41</span>
+              <div style="width:78px;height:22px;background:#0d0d0d;border-radius:11px;position:absolute;left:50%;transform:translateX(-50%);bottom:6px"></div>
+              <div style="display:flex;gap:3px;align-items:center">
+                <svg width="11" height="9" viewBox="0 0 13 10" fill="white" opacity=".8"><rect x="0" y="3" width="2" height="7" rx="1"/><rect x="3.5" y="2" width="2" height="8" rx="1"/><rect x="7" y="0.5" width="2" height="9.5" rx="1"/><rect x="10.5" y="0" width="2" height="10" rx="1"/></svg>
+                <svg width="18" height="9" viewBox="0 0 22 11" fill="none" opacity=".8"><rect x=".5" y=".5" width="18" height="10" rx="2.5" stroke="white" stroke-opacity=".35"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="white"/><path d="M20 3.5v4c1.1-.5 1.1-3.5 0-4Z" fill="white" opacity=".4"/></svg>
               </div>
             </div>
             <div id="phoneMockupScreen" style="background:#fff;position:relative;overflow:hidden"></div>
             <div id="phoneMockupBottomBar" style="display:none;background:#fff;border-top:1px solid #f0f0f0"></div>
-            <div style="height:20px;background:#0d0d0d;display:flex;align-items:center;justify-content:center">
-              <div style="width:92px;height:4px;background:rgba(255,255,255,.25);border-radius:2px"></div>
+            <div style="height:16px;background:#0d0d0d;display:flex;align-items:center;justify-content:center">
+              <div style="width:72px;height:3px;background:rgba(255,255,255,.25);border-radius:2px"></div>
             </div>
           </div>
         </div>
-        <div style="font-size:.7rem;color:#9ca3af;text-align:center">Así ve tu paciente el sitio desde el celular</div>
       </div>
 
-      <!-- ★ CTA DE COMPRA — protagonista -->
-      <div style="background:linear-gradient(145deg,#f0fdf8,#e6faf3);border:2px solid rgba(11,124,110,.15);border-radius:20px;padding:1.8rem 1.6rem;text-align:center">
-        <div style="font-size:.62rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Publica este sitio</div>
-        <div style="font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#0f1a18;margin-bottom:.3rem;letter-spacing:-.02em">Tu presencia médica profesional, en vivo</div>
-        <div style="font-size:.83rem;color:#6b7280;margin-bottom:1.4rem;line-height:1.6">Dominio <strong id="webUrlText" style="color:#0f1a18;font-weight:700">—.citadoc.lat</strong> · Hosting · SSL · SEO local · Booking integrado</div>
-
-        <div style="display:flex;align-items:flex-end;justify-content:center;gap:.4rem;margin-bottom:.3rem">
-          <span style="font-family:Fraunces,serif;font-size:2.4rem;font-weight:700;color:var(--teal);line-height:1">$150</span>
-          <span style="font-size:.8rem;color:#9ca3af;margin-bottom:.5rem">setup único</span>
+      <!-- Pitch derecho -->
+      <div>
+        <div style="font-size:.62rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Vista previa en vivo</div>
+        <h3 style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:#0f1a18;margin:0 0 1.1rem;line-height:1.2;letter-spacing:-.02em">Mira cómo se vería<br>tu sitio web propio</h3>
+        <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.4rem">
+          <div style="display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#374151"><span style="width:20px;height:20px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--teal);font-weight:700;flex-shrink:0">✓</span>Vista previa 100% personalizada</div>
+          <div style="display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#374151"><span style="width:20px;height:20px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--teal);font-weight:700;flex-shrink:0">✓</span>Sin compromiso</div>
+          <div style="display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#374151"><span style="width:20px;height:20px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--teal);font-weight:700;flex-shrink:0">✓</span>En menos de 60 segundos</div>
         </div>
-        <div style="font-size:.75rem;color:#9ca3af;margin-bottom:1.4rem">🎉 <strong style="color:var(--teal)">Primer mes incluido</strong> · Luego $29.99/mes · Cancela cuando quieras</div>
-
-        <button id="aiActivarBtn" onclick="activarSitioWeb()" style="width:100%;padding:1rem 1.4rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 8px 28px rgba(11,124,110,.28);transition:transform .2s,box-shadow .2s;margin-bottom:.65rem;letter-spacing:.01em" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 14px 40px rgba(11,124,110,.4)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 8px 28px rgba(11,124,110,.28)'">
-          ⚡ Publicar mi sitio médico
+        <button id="webMainCTA" onclick="webCtaClick()" style="width:100%;padding:.9rem 1.2rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(11,124,110,.25);transition:transform .18s,box-shadow .18s;margin-bottom:.5rem" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(11,124,110,.38)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 6px 22px rgba(11,124,110,.25)'">
+          Ver mi sitio gratis
         </button>
-
-        <div style="display:flex;justify-content:center;gap:1.4rem;flex-wrap:wrap">
-          <span style="font-size:.72rem;color:#9ca3af;display:flex;align-items:center;gap:.3rem"><span style="color:var(--teal)">🔒</span>Pago 100% seguro</span>
-          <span style="font-size:.72rem;color:#9ca3af;display:flex;align-items:center;gap:.3rem"><span style="color:var(--teal)">↩</span>Sin permanencia</span>
-          <span style="font-size:.72rem;color:#9ca3af;display:flex;align-items:center;gap:.3rem"><span style="color:var(--teal)">⚡</span>Se publica al instante</span>
-        </div>
+        <div style="font-size:.7rem;color:#9ca3af;text-align:center">Sin riesgo de crédito</div>
       </div>
     </div>
 
-    <!-- ── ESTADO 3: SITIO PUBLICADO ── -->
-    <div id="webStateActive" style="display:none">
-      <div style="background:linear-gradient(145deg,#f0fdf8,#e8faf2);border:2px solid rgba(11,124,110,.18);border-radius:20px;padding:1.4rem 1.6rem;margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
-        <div style="display:flex;align-items:center;gap:.85rem">
-          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--teal),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🌐</div>
-          <div>
-            <div style="font-size:.6rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.1em">Sitio publicado · activo</div>
-            <div style="font-family:monospace;font-size:.92rem;font-weight:700;color:#0f1a18" id="webActiveDomain">—.citadoc.lat</div>
-          </div>
+    <!-- PRICING ROW -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:.75rem">
+
+      <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:1.2rem">
+        <div style="font-size:.62rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem">Suscripción activa</div>
+        <div style="display:flex;align-items:flex-end;gap:.3rem;margin-bottom:.4rem">
+          <span style="font-family:Fraunces,serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$150</span>
+          <span style="font-size:.72rem;color:#9ca3af;margin-bottom:.25rem">USD setup</span>
         </div>
-        <div style="display:flex;gap:.5rem">
-          <a id="webUrlOpen" href="#" target="_blank" rel="noopener" style="padding:.45rem 1rem;background:var(--teal);color:#fff;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;text-decoration:none">↗ Ver sitio</a>
-          <button onclick="abrirAiWebModal()" style="padding:.45rem 1rem;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#374151;font-weight:600;cursor:pointer">↺ Actualizar</button>
-        </div>
+        <div style="font-size:.75rem;color:#6b7280;line-height:1.55">Tu sitio profesional activo en el servidor, listo para recibir pacientes.</div>
       </div>
-      <!-- Preview del sitio activo -->
-      <div style="border-radius:14px;overflow:hidden;background:#e5e7eb;box-shadow:0 4px 24px rgba(0,0,0,.1);margin-bottom:1.2rem">
-        <div style="background:#f3f4f6;padding:.35rem .65rem;display:flex;align-items:center;gap:.35rem">
-          <div style="width:8px;height:8px;border-radius:50%;background:#34c84a"></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#34c84a;opacity:.4"></div>
-          <div style="width:8px;height:8px;border-radius:50%;background:#34c84a;opacity:.2"></div>
-          <div style="flex:1;background:#fff;border-radius:4px;height:16px;margin:0 .45rem;display:flex;align-items:center;padding:0 .45rem"><span id="webPreviewUrl" style="font-size:.58rem;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">—.citadoc.lat</span></div>
-          <a id="webUrlOpen2" href="#" target="_blank" rel="noopener" style="padding:.1rem .35rem;background:none;border:none;font-size:.68rem;color:#9ca3af;text-decoration:none">↗</a>
+
+      <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:1.2rem">
+        <div style="font-size:.62rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem">Mantenimiento mensual</div>
+        <div style="display:flex;align-items:flex-end;gap:.3rem;margin-bottom:.4rem">
+          <span style="font-family:Fraunces,serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$30</span>
+          <span style="font-size:.72rem;color:#9ca3af;margin-bottom:.25rem">USD/mes</span>
         </div>
-        <div style="position:relative;overflow:hidden;height:480px;background:#fff">
-          <iframe id="webPreviewFrame" style="width:150%;height:720px;border:none;transform:scale(.667);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
-        </div>
+        <div style="font-size:.75rem;color:#6b7280;line-height:1.55">Asegura todas tus citas y funcionalidades. Cancela cuando quieras.</div>
       </div>
-      <!-- iPhone mockup estado activo -->
-      <div id="phoneMockupWrap" style="display:none;flex-direction:column;align-items:center;gap:1.1rem;margin-bottom:1.2rem">
-        <div style="font-size:.62rem;font-weight:700;color:#9ca3af;letter-spacing:.12em;text-transform:uppercase">Vista móvil</div>
-        <div style="position:relative">
-          <div style="position:absolute;left:-2.5px;top:80px;width:3px;height:22px;background:#1c1c1e;border-radius:2px 0 0 2px"></div>
-          <div style="position:absolute;left:-2.5px;top:114px;width:3px;height:46px;background:#1c1c1e;border-radius:2px 0 0 2px"></div>
-          <div style="position:absolute;left:-2.5px;top:170px;width:3px;height:46px;background:#1c1c1e;border-radius:2px 0 0 2px"></div>
-          <div style="position:absolute;right:-2.5px;top:114px;width:3px;height:68px;background:#1c1c1e;border-radius:0 2px 2px 0"></div>
-          <div style="width:248px;background:#0d0d0d;border-radius:46px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.13),0 28px 64px rgba(0,0,0,.42),0 6px 16px rgba(0,0,0,.18)">
-            <div style="height:44px;background:#0d0d0d;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 8px;position:relative">
-              <span style="font-size:10px;font-weight:700;color:#fff;letter-spacing:-.01em">9:41</span>
-              <div style="width:96px;height:26px;background:#0d0d0d;border-radius:13px;position:absolute;left:50%;transform:translateX(-50%);bottom:7px"></div>
-              <div style="display:flex;gap:4px;align-items:center">
-                <svg width="13" height="10" viewBox="0 0 13 10" fill="white" opacity=".85"><rect x="0" y="3" width="2" height="7" rx="1"/><rect x="3.5" y="2" width="2" height="8" rx="1"/><rect x="7" y="0.5" width="2" height="9.5" rx="1"/><rect x="10.5" y="0" width="2" height="10" rx="1"/></svg>
-                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="white" stroke-width="1.3" opacity=".85"><path d="M1 4C3.5 1.5 10.5 1.5 13 4"/><path d="M3 6.5C4.8 4.7 9.2 4.7 11 6.5"/><circle cx="7" cy="9.5" r="1.2" fill="white" stroke="none"/></svg>
-                <svg width="22" height="11" viewBox="0 0 22 11" fill="none" opacity=".85"><rect x=".5" y=".5" width="18" height="10" rx="2.5" stroke="white" stroke-opacity=".35"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="white"/><path d="M20 3.5v4c1.1-.5 1.1-3.5 0-4Z" fill="white" opacity=".4"/></svg>
-              </div>
-            </div>
-            <div id="phoneMockupScreen" style="background:#fff;position:relative;overflow:hidden"></div>
-            <div id="phoneMockupBottomBar" style="display:none;background:#fff;border-top:1px solid #f0f0f0"></div>
-            <div style="height:20px;background:#0d0d0d;display:flex;align-items:center;justify-content:center">
-              <div style="width:92px;height:4px;background:rgba(255,255,255,.25);border-radius:2px"></div>
-            </div>
-          </div>
-        </div>
-        <div style="font-size:.7rem;color:#9ca3af;text-align:center">Tu sitio en celular</div>
+
+      <div style="background:linear-gradient(145deg,#f0fdf8,#e8faf5);border:1.5px solid rgba(11,124,110,.18);border-radius:16px;padding:1.2rem;display:flex;flex-direction:column;gap:.5rem">
+        <div style="font-size:.72rem;color:#374151;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal)">✓</span>Todo incluido, sin costos ocultos</div>
+        <div style="font-size:.72rem;color:#374151;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal)">✓</span>Historias clínicas ilimitadas</div>
+        <div style="font-size:.72rem;color:#374151;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal)">✓</span>Recetas y notificaciones</div>
+        <div style="font-size:.72rem;color:#374151;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal)">✓</span>Soporte humano real</div>
+        <button id="aiActivarBtn" onclick="activarSitioWeb()" style="margin-top:auto;width:100%;padding:.78rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(11,124,110,.25);transition:transform .18s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
+          Quiero mi sitio con IA 🚀
+        </button>
       </div>
+
     </div>
+
+    <div style="text-align:center;font-size:.68rem;color:#c4ccd4;margin-bottom:.5rem">Sin promesas: Sin letra pequeña. Transparente y justo.</div>
+
+    <!-- hidden fields needed by other JS -->
+    <span id="webPreviewUrl" style="display:none">—.citadoc.lat</span>
+    <span id="webActiveDomain" style="display:none">—.citadoc.lat</span>
+    <a id="webUrlOpen2" href="#" style="display:none"></a>
+    <a id="aiVerSitioBtn" href="#" style="display:none"></a>
 
     <!-- AI WEB MODAL -->
     <div id="aiWebModal" style="display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;padding:1.5rem">
@@ -3484,24 +3455,47 @@ function cargarMiSitio(m) {
   var isPublished = !!(m.web_config && m.web_status === 'active');
   var hasDraft = !!m.web_config_draft;
 
-  // — Activar el estado correcto del panel —
-  var stEmpty  = document.getElementById('webStateEmpty');
-  var stDraft  = document.getElementById('webStateDraft');
-  var stActive = document.getElementById('webStateActive');
-  if (stEmpty)  stEmpty.style.display  = (!hasDraft && !isPublished) ? 'block' : 'none';
-  if (stDraft)  stDraft.style.display  = (hasDraft && !isPublished)  ? 'block' : 'none';
-  if (stActive) stActive.style.display = isPublished                 ? 'block' : 'none';
+  // — Status bar — badge + URLs —
+  var draftUrl   = 'citadoc-web.html?slug='+encodeURIComponent(slug)+'&preview=draft';
+  var liveUrl    = 'citadoc-web.html?slug='+encodeURIComponent(slug);
+  var previewUrl = isPublished ? liveUrl : draftUrl;
 
-  // — URLs compartidas entre estados —
-  var draftUrl = 'citadoc-web.html?slug='+encodeURIComponent(slug)+'&preview=draft';
-  var liveUrl  = 'citadoc-web.html?slug='+encodeURIComponent(slug);
-  document.querySelectorAll('#webUrlText').forEach(function(el){ el.textContent = webUrl; });
-  document.querySelectorAll('#webPreviewUrl').forEach(function(el){ el.textContent = webUrl; });
-  document.querySelectorAll('#webActiveDomain').forEach(function(el){ el.textContent = webUrl; });
-  document.querySelectorAll('#webUrlOpen').forEach(function(el){ el.href = isPublished ? liveUrl : draftUrl; });
-  document.querySelectorAll('#webUrlOpen2').forEach(function(el){ el.href = isPublished ? liveUrl : draftUrl; });
+  var wu = document.getElementById('webUrlText');    if (wu) wu.textContent = webUrl;
+  var pu = document.getElementById('webPreviewUrl'); if (pu) pu.textContent = webUrl;
+  var ad = document.getElementById('webActiveDomain'); if (ad) ad.textContent = webUrl;
+  var ol = document.getElementById('webUrlOpen');    if (ol) ol.href = previewUrl;
+  var ol2= document.getElementById('webUrlOpen2');   if (ol2) ol2.href = previewUrl;
   var verBtn = document.getElementById('aiVerSitioBtn');
-  if (verBtn && slug) { verBtn.href = draftUrl; verBtn.style.display = hasDraft ? 'inline-flex' : 'none'; }
+  if (verBtn && slug) { verBtn.href = draftUrl; }
+
+  var badge = document.getElementById('webStatusBadge');
+  if (badge) {
+    if (isPublished) {
+      badge.textContent = 'SITIO PUBLICADO · ACTIVO';
+      badge.style.background = '#f0fdf8'; badge.style.color = 'var(--teal)';
+      badge.style.borderColor = 'rgba(11,124,110,.2)';
+    } else if (hasDraft) {
+      badge.textContent = 'BORRADOR LISTO';
+      badge.style.background = 'rgba(109,40,217,.08)'; badge.style.color = '#6d28d9';
+      badge.style.borderColor = 'rgba(109,40,217,.2)';
+    } else {
+      badge.textContent = 'SIN SITIO';
+      badge.style.background = '#f9fafb'; badge.style.color = '#9ca3af';
+      badge.style.borderColor = '#e5e7eb';
+    }
+  }
+
+  // — CTA principal — texto según estado —
+  var mainCTA = document.getElementById('webMainCTA');
+  if (mainCTA) {
+    if (!hasDraft && !isPublished) {
+      mainCTA.textContent = '✨ Generar mi sitio gratis con AI';
+    } else if (hasDraft && !isPublished) {
+      mainCTA.textContent = '👁 Ver borrador · Publicar por $150';
+    } else {
+      mainCTA.textContent = '↺ Actualizar mi sitio con AI';
+    }
+  }
 
   var wc = m.web_config||{};
   _wcTpl = wc.template||'minimal-white';
@@ -4098,18 +4092,20 @@ function seleccionarTemplate(card, tpl) {
   refreshWebPreview();
 }
 
+function webCtaClick() {
+  var hasDraft = !!(M && M.web_config_draft);
+  var isPublished = !!(M && M.web_config && M.web_status === 'active');
+  if (!hasDraft && !isPublished) {
+    abrirAiWebModal();
+  } else if (hasDraft && !isPublished) {
+    mostrarProWebModal();
+  } else {
+    abrirAiWebModal();
+  }
+}
+
 function refreshWebPreview(draft) {
-  var frame = document.getElementById('webPreviewFrame');
-  var slug = M && M.slug ? M.slug : '';
-  if (!slug) return;
-  var url = 'citadoc-web.html?slug='+encodeURIComponent(slug)+'&preview=draft&_cb='+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  if (!(draft || M.web_config_draft)) {
-    url = 'citadoc-web.html?slug='+encodeURIComponent(slug)+'&_cb='+Date.now();
-  }
-  if (frame) {
-    frame.src = 'about:blank';
-    setTimeout(function(){ frame.src = url; }, 50);
-  }
+  // El panel nuevo no tiene iframe — solo renderiza el phone mockup
   renderPhoneMockup();
 }
 
