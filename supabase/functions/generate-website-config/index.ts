@@ -853,7 +853,7 @@ serve(async (req) => {
   try {
     const body = await req.json()
     const { medico_id, prompt, perception, use_mock, logo_colors, anchor_dna, anchor_color,
-            logo_url: reqLogoUrl, photo_url: reqPhotoUrl } = body
+            logo_url: reqLogoUrl, photo_url: reqPhotoUrl, forced_layout } = body
 
     if (!medico_id) {
       return new Response(JSON.stringify({ error: 'medico_id is required' }), {
@@ -941,8 +941,10 @@ serve(async (req) => {
       source = 'mock-specialty'
     }
 
-    // Anchors: solo aplican si NO se subió logo nuevo (para mantener consistencia visual entre regeneraciones)
-    // Si hay logo_colors recientes, el logo manda — no el anchor del draft anterior
+    // Si el médico eligió layout explícitamente → siempre se respeta
+    if (forced_layout) config.layout_id = forced_layout
+
+    // Anchors de identidad visual (solo si no hay logo nuevo)
     const hasNewLogo = logo_colors && logo_colors.length > 0
     if (!hasNewLogo && anchor_dna) config.visual_dna = anchor_dna
     if (!hasNewLogo && anchor_color) config.primary_color = anchor_color

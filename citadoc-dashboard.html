@@ -1647,10 +1647,16 @@ display:flex;
           <!-- Prompt -->
           <textarea id="webAiPrompt" rows="2" placeholder="Opcional: cuéntame algo específico tuyo. Ej: me especializo en cirugía artroscópica de hombro, atiendo deportistas, mi clínica es moderna y premium. Mientras más específico, más único el resultado." style="width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:.9rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:.88rem;color:#fff;resize:none;line-height:1.65;box-sizing:border-box;outline:none;transition:border-color .2s;margin-bottom:1rem" onfocus="this.style.borderColor='rgba(167,139,250,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
 
-          <!-- Perception chips — cada uno cambia DNA y tono real -->
-          <div style="margin-bottom:1.2rem">
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">¿Qué estilo quieres para tu sitio?</div>
+          <!-- Perception chips -->
+          <div style="margin-bottom:1.4rem">
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">Tono de comunicación</div>
             <div style="display:flex;flex-wrap:wrap;gap:.45rem" id="webPerceptionChips"></div>
+          </div>
+
+          <!-- Layout selector — 6 sistemas editoriales -->
+          <div style="margin-bottom:1.4rem">
+            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem">Sistema visual del sitio</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem" id="webLayoutChips"></div>
           </div>
 
           <div id="webRegenCounter" style="display:none;text-align:center;font-size:.72rem;margin-bottom:.6rem;font-family:DM Sans,sans-serif;transition:color .2s"></div>
@@ -3554,9 +3560,55 @@ function toggleWebEditor(btn) {
 
 // ── AI BUILDER v2 ──
 var _webPerception = 'cercania-humana';
+var _webLayoutId = null; // null = Claude decide automáticamente
 var _webPhotoUploaded = false;
 var _webLogoUploaded = false;
 var _webLogoPalette = null;
+
+var _LAYOUTS = [
+  {
+    id: 'clinic-editorial',
+    label: 'Clinic Editorial',
+    desc: 'Split blanco · navy · serif premium',
+    icon: '⬜',
+    preview: 'linear-gradient(135deg,#fff 50%,#1a2e44 50%)'
+  },
+  {
+    id: 'surgical-authority',
+    label: 'Surgical Authority',
+    desc: 'Foto fullscreen · dark · magazine',
+    icon: '⬛',
+    preview: 'linear-gradient(90deg,#08192D 45%,rgba(30,50,80,.4) 100%)'
+  },
+  {
+    id: 'performance-clinic',
+    label: 'Performance Clinic',
+    desc: 'Blanco · azul bold · energía',
+    icon: '🔵',
+    preview: 'linear-gradient(135deg,#fff 50%,#EEF3FF 100%)'
+  },
+  {
+    id: 'academic-prestige',
+    label: 'Academic Prestige',
+    desc: 'Grid · credenciales · institucional',
+    icon: '🟦',
+    preview: 'linear-gradient(135deg,#f8fafc 54%,#e2e8f0 54%)'
+  },
+  {
+    id: 'soft-clinic-luxury',
+    label: 'Soft Clinic Luxury',
+    desc: 'Crema · lavanda · cálido suave',
+    icon: '🟣',
+    preview: 'linear-gradient(135deg,#FAF8FC 50%,#EDE7F6 100%)'
+  },
+  {
+    id: 'future-minimal',
+    label: 'Future Minimal',
+    desc: 'Tipografía enorme · blanco · editorial',
+    icon: '◻️',
+    preview: 'linear-gradient(135deg,#fff 62%,#f3f4f6 62%)'
+  }
+];
 
 var _PERCEPTION_MAP = {
   'alto-rendimiento': {label:'Alto rendimiento',     dna:'sport',     energy:'high', headlines:['Vuelve a rendir al máximo.','El rendimiento comienza aquí.','Supera tus límites, recupera tu mejor versión.']},
@@ -3575,6 +3627,7 @@ function abrirAiWebModal() {
   document.body.style.overflow='';
   var m=document.getElementById('aiWebModal'); if(m){m.style.display='flex';document.body.style.overflow='hidden';}
   webInitPerceptionChips();
+  webInitLayoutChips();
   aiModalState('form');
   webActualizarRegenUI();
   console.log('[AI] aiWebModal opened');
@@ -3658,6 +3711,46 @@ function cerrarAiReveal() {
 function webBuilderState(state) {
   // Legacy: redirect to modal states
   if(state==='form') abrirAiWebModal();
+}
+
+function webInitLayoutChips() {
+  var wrap = document.getElementById('webLayoutChips');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  _LAYOUTS.forEach(function(layout) {
+    var active = _webLayoutId === layout.id;
+    var btn = document.createElement('button');
+    btn.dataset.layoutId = layout.id;
+    btn.style.cssText = 'display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;border-radius:12px;font-family:\'DM Sans\',sans-serif;cursor:pointer;transition:all .18s;text-align:left;width:100%;'
+      + (active ? 'background:rgba(167,139,250,.18);border:1.5px solid rgba(167,139,250,.5);' : 'background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);');
+    // Preview swatch
+    var swatch = document.createElement('div');
+    swatch.style.cssText = 'width:32px;height:32px;border-radius:8px;flex-shrink:0;background:' + layout.preview + ';border:1px solid rgba(255,255,255,.1)';
+    // Text
+    var txt = document.createElement('div');
+    txt.innerHTML = '<div style="font-size:.76rem;font-weight:700;color:' + (active?'#e9d5ff':'rgba(255,255,255,.75)') + ';line-height:1.2">' + layout.label + '</div>'
+      + '<div style="font-size:.62rem;color:rgba(255,255,255,.35);margin-top:1px">' + layout.desc + '</div>';
+    btn.appendChild(swatch);
+    btn.appendChild(txt);
+    // Auto chip (Claude decides)
+    if (!_webLayoutId && _LAYOUTS.indexOf(layout) === 0) {
+      // No-op — "Auto" is the default shown separately
+    }
+    btn.onclick = function() {
+      _webLayoutId = (_webLayoutId === layout.id) ? null : layout.id; // toggle
+      webInitLayoutChips(); // re-render
+    };
+    wrap.appendChild(btn);
+  });
+  // Auto button
+  var auto = document.createElement('button');
+  auto.style.cssText = 'display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;border-radius:12px;font-family:\'DM Sans\',sans-serif;cursor:pointer;transition:all .18s;text-align:left;width:100%;grid-column:1/-1;'
+    + (!_webLayoutId ? 'background:rgba(52,211,153,.12);border:1.5px solid rgba(52,211,153,.35);' : 'background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);');
+  auto.innerHTML = '<div style="width:32px;height:32px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,rgba(124,58,237,.3),rgba(52,211,153,.2));border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.9rem">✨</div>'
+    + '<div><div style="font-size:.76rem;font-weight:700;color:' + (!_webLayoutId?'#34d399':'rgba(255,255,255,.55)') + '">Auto — Claude decide</div>'
+    + '<div style="font-size:.62rem;color:rgba(255,255,255,.3)">Analiza tu logo y foto para elegir el más adecuado</div></div>';
+  auto.onclick = function() { _webLayoutId = null; webInitLayoutChips(); };
+  wrap.insertBefore(auto, wrap.firstChild);
 }
 
 function webInitPerceptionChips() {
@@ -3904,10 +3997,10 @@ async function webAiGenerar() {
         perception: _webPerception,
         prompt: prompt,
         logo_colors: logoColors,
-        // Claude vision es el primario — pasa las URLs para que vea las imágenes
         photo_url: (await photoPromise) || M.foto_url || null,
         logo_url:  logoUrl || (prevDraft.logo_url) || null,
-        // Mock solo si el médico no escribió brief Y no subió logo ni foto
+        // Si el médico eligió un layout específico, forzarlo
+        forced_layout: _webLayoutId || null,
         use_mock: (!prompt || prompt.trim().length < 20) && !_webLogoUploaded && !_webPhotoUploaded,
         anchor_dna: (!_webLogoPalette && prevDraft.visual_dna) ? prevDraft.visual_dna : null,
         anchor_color: (!_webLogoPalette && prevDraft.primary_color) ? prevDraft.primary_color : null
