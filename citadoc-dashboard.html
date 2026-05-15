@@ -3402,7 +3402,7 @@ function webOnPhotoSelected(input) {
     var thumb = document.getElementById('webPhotoThumb');
     if (thumb) { thumb.innerHTML=''; var img=document.createElement('img'); img.src=e.target.result; img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:8px'; thumb.appendChild(img); }
     _webPhotoUploaded = true;
-    var lbl = document.getElementById('webPhotoLbl'); if(lbl) lbl.textContent = file.name.slice(0,18)+(file.name.length>18?'…':'');
+    var lbl = document.getElementById('webPhotoLbl'); if(lbl) lbl.textContent = file.name.slice(0,18)+(file.name.length>18?'...':'');
     var card = document.getElementById('webPhotoCard'); if(card){card.style.borderColor='rgba(52,211,153,.4)';card.style.background='rgba(52,211,153,.05)';}
   };
   reader.readAsDataURL(file);
@@ -6802,6 +6802,25 @@ function renderFicha(p, consultas, proximaCita) {
         hdr.querySelector('span:last-child').textContent = open ? '▴' : '▾';
       });
 
+      // Audit panel v1 — "Ver extracción AI" expandible
+      if (con.ai_raw_extraction && con.voice_transcript) {
+        var auditBtn = document.createElement('button');
+        auditBtn.style.cssText = 'width:100%;margin-top:.4rem;padding:.35rem;background:none;border:1px solid #e5e7eb;border-radius:8px;font-size:.7rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;text-align:left';
+        auditBtn.innerHTML = '&#129302; Ver extraccion AI &rarr;';
+        var auditOpen = false;
+        var auditPanel = document.createElement('div');
+        auditPanel.style.cssText = 'display:none;margin-top:.4rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.7rem .85rem;font-size:.72rem;color:#374151';
+        auditPanel.innerHTML = '<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Transcript dictado</div>'
+          +'<div style="font-style:italic;color:#6b7280;margin-bottom:.7rem;line-height:1.5">'+con.voice_transcript.slice(0,300)+(con.voice_transcript.length>300?'…':'')+'</div>'
+          +'<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">AI propuso · médico guardó</div>'
+          +'<div style="color:#059669;font-size:.68rem">Diagnósticos: '+(con.ai_raw_extraction.assessment&&con.ai_raw_extraction.assessment.diagnoses&&con.ai_raw_extraction.assessment.diagnoses.length||0)+' → '+(con.diagnostico?con.diagnostico.split('
+').length:0)+'</div>'
+          +'<div style="color:#3b82f6;font-size:.68rem">Medicamentos: '+(con.ai_raw_extraction.plan&&con.ai_raw_extraction.plan.medications&&con.ai_raw_extraction.plan.medications.length||0)+' → '+(con.plan?(con.plan.split('|').filter(Boolean).length):0)+'</div>';
+        auditBtn.addEventListener('click', function(e){ e.stopPropagation(); auditOpen=!auditOpen; auditPanel.style.display=auditOpen?'block':'none'; auditBtn.innerHTML=(auditOpen?'&#129302; Ocultar extraccion AI &uarr;':'&#129302; Ver extraccion AI &rarr;'); });
+        item.appendChild(auditBtn);
+        item.appendChild(auditPanel);
+      }
+
       // Botón documentos (si hay plan/imágenes/labs)
       if (con.plan || con.imagenes || con.estudios) {
         var docsBtn = document.createElement('button');
@@ -6919,6 +6938,18 @@ async function generarAISummary(pacienteId, forceRegen) {
         +'</div>';
     }
     if(btn){btn.style.display='none';}
+  // Count corrections vs ai_raw for subtle feedback (first session only)
+  var rawMeds  = (window._mcAiRawExtraction&&window._mcAiRawExtraction.plan&&window._mcAiRawExtraction.plan.medications||[]).length;
+  var finalMeds= (_mcRxState.med.items||[]).length;
+  var diff     = Math.abs(finalMeds - rawMeds);
+  var shownKey = 'citadoc_cotrainer_shown';
+  if (diff > 0 && !sessionStorage.getItem(shownKey)) {
+    sessionStorage.setItem(shownKey,'1');
+    var tip = document.createElement('div');
+    tip.style.cssText = 'margin-top:.4rem;font-size:.65rem;color:#059669;text-align:center;animation:mcSlideIn .3s cubic-bezier(.16,1,.3,1)';
+    tip.textContent = diff + ' corrección' + (diff>1?'es':'') + ' registrada' + (diff>1?'s':'') + ' — mejora MedCopilot ✓';
+    if(box) box.appendChild(tip);
+  }
   } catch(e) {
     mostrarToast('Error de red: '+e.message,'error');
     if(btn){btn.textContent='🧠 Generar resumen clínico';btn.disabled=false;btn.style.opacity='1';}
@@ -7260,11 +7291,20 @@ function mcVoiceStart() {
       if (e.results[i].isFinal) { _mcVoiceText += e.results[i][0].transcript + ' '; }
       else { interim = e.results[i][0].transcript; }
     }
+    // Persist draft locally so it survives modal close or network failure
+    try { localStorage.setItem('citadoc_voice_draft_'+(_fichaId||''), _mcVoiceText.trim()); } catch(_) {}
     if(trans) trans.textContent = (_mcVoiceText + interim).trim() || '...';
   };
 
   _mcVoiceRec.onerror = function(e) {
-    if(status) status.textContent = 'Error: ' + e.error;
+    var msg = {
+      'not-allowed':   'Permiso de micrófono denegado. Actívalo en ajustes del navegador.',
+      'no-speech':     'No se detectó voz. Intenta nuevamente.',
+      'network':       'Error de red. Verifica conexión.',
+      'audio-capture': 'No se detectó micrófono.'
+    }[e.error] || ('Error: ' + e.error);
+    if(status) status.textContent = '⚠ ' + msg;
+    mcVoiceRestoreFromDraft();
     mcVoiceReset();
   };
 
@@ -7319,9 +7359,25 @@ async function mcVoiceExtract(texto) {
     if (!data.ok || !data.soap) throw new Error(data.error || 'sin respuesta');
     mcVoiceFillModal(data.soap, texto);
   } catch(e) {
-    if(status) status.textContent='Error AI: ' + e.message + ' — campos disponibles para editar';
+    var draft = _mcVoiceText || texto;
+    if(status) status.innerHTML = '⚠ No se pudo estructurar automáticamente.<br>'
+      +'<span style="font-size:.72rem">Tu dictado fue preservado. Puedes editar manualmente o </span>'
+      +'<button onclick="mcVoiceRetry()" style="font-size:.72rem;color:#0b7c6e;background:none;border:none;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:700;padding:0">reintentar ↻</button>';
+    if(trans){ trans.style.display='block'; trans.style.color='#9ca3af'; trans.textContent=draft; }
+    // Put draft in motivo so doctor doesn't lose it
+    var mot=document.getElementById('c_motivo'); if(mot&&!mot.value&&draft) mot.value=draft.slice(0,200);
     console.error('[voice]', e);
   }
+}
+
+function mcVoiceRetry() {
+  var draft = _mcVoiceText || (localStorage.getItem('citadoc_voice_draft_'+(_fichaId||''))||'');
+  if (draft && draft.length > 5) mcVoiceExtract(draft);
+}
+
+function mcVoiceRestoreFromDraft() {
+  var draft = localStorage.getItem('citadoc_voice_draft_'+(_fichaId||''));
+  if (draft && _mcVoiceText.length < 5) _mcVoiceText = draft;
 }
 
 function mcVoiceFillModal(soap, rawText) {
@@ -7394,11 +7450,22 @@ function mcVoiceFillModal(soap, rawText) {
   // Highlight low-confidence fields (confidence < 0.7)
   function highlightConf(id, conf) {
     var el = document.getElementById(id);
-    if (!el) return;
-    if (conf > 0 && conf < 0.7) {
+    if (!el || !conf) return;
+    if (conf < 0.7) {
       el.style.borderColor = '#f59e0b';
       el.style.boxShadow = '0 0 0 2px rgba(245,158,11,.15)';
-      el.title = 'Baja confianza (' + Math.round(conf*100) + '%) — revisa este campo';
+      // Tooltip badge
+      var badge = document.createElement('div');
+      badge.style.cssText = 'display:none;position:absolute;top:-32px;left:0;background:#1a1a1a;color:#fff;font-size:.65rem;padding:.25rem .55rem;border-radius:7px;white-space:nowrap;z-index:999;pointer-events:none';
+      badge.textContent = '⚠ Confianza ' + Math.round(conf*100) + '% — revisa este campo';
+      var wrap = el.parentNode;
+      if(wrap && wrap.style) {
+        wrap.style.position='relative';
+        wrap.appendChild(badge);
+        var show=function(){badge.style.display='block';}; var hide=function(){badge.style.display='none';};
+        el.addEventListener('mouseenter',show); el.addEventListener('mouseleave',hide);
+        el.addEventListener('touchstart',show,{passive:true}); el.addEventListener('touchend',hide,{passive:true});
+      }
     } else if (conf >= 0.9) {
       el.style.borderColor = '#10b981';
     }
