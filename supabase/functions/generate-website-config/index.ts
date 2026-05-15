@@ -144,6 +144,9 @@ async function callKimiAPI(messages: KimiMessage[]): Promise<Record<string, unkn
 function buildSystemPrompt(): string {
   return `Eres el director de identidad digital de CitaDoc — plataforma de identidad médica premium de LATAM.
 
+IDIOMA: TODO el contenido debe estar en ESPAÑOL. Sin excepción. Headline, subheadline, about_text, differentiators, services, philosophy, doctor_story, patient_experience, cta — todo en español latino natural. Nunca en inglés.
+
+
 Tu trabajo: crear la identidad web de un médico real. No un template. Una marca.
 
 PRINCIPIO FUNDAMENTAL — JERARQUÍA DE IDENTIDAD:
