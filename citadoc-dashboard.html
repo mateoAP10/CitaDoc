@@ -6813,8 +6813,7 @@ function renderFicha(p, consultas, proximaCita) {
         auditPanel.innerHTML = '<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Transcript dictado</div>'
           +'<div style="font-style:italic;color:#6b7280;margin-bottom:.7rem;line-height:1.5">'+con.voice_transcript.slice(0,300)+(con.voice_transcript.length>300?'…':'')+'</div>'
           +'<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">AI propuso · médico guardó</div>'
-          +'<div style="color:#059669;font-size:.68rem">Diagnósticos: '+(con.ai_raw_extraction.assessment&&con.ai_raw_extraction.assessment.diagnoses&&con.ai_raw_extraction.assessment.diagnoses.length||0)+' → '+(con.diagnostico?con.diagnostico.split('
-').length:0)+'</div>'
+          +'<div style="color:#059669;font-size:.68rem">Diagnosticos: '+(con.ai_raw_extraction.assessment&&con.ai_raw_extraction.assessment.diagnoses&&con.ai_raw_extraction.assessment.diagnoses.length||0)+' vs '+(con.diagnostico?con.diagnostico.split('\\n').filter(Boolean).length:0)+'</div>'
           +'<div style="color:#3b82f6;font-size:.68rem">Medicamentos: '+(con.ai_raw_extraction.plan&&con.ai_raw_extraction.plan.medications&&con.ai_raw_extraction.plan.medications.length||0)+' → '+(con.plan?(con.plan.split('|').filter(Boolean).length):0)+'</div>';
         auditBtn.addEventListener('click', function(e){ e.stopPropagation(); auditOpen=!auditOpen; auditPanel.style.display=auditOpen?'block':'none'; auditBtn.innerHTML=(auditOpen?'&#129302; Ocultar extraccion AI &uarr;':'&#129302; Ver extraccion AI &rarr;'); });
         item.appendChild(auditBtn);
