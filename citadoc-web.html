@@ -1536,14 +1536,15 @@ function renderWeb(m,locs,wc,isPreview){
       li.style.cssText = 'height:52px;max-width:180px;object-fit:contain;filter:brightness(0) invert(1)';
       heroLogoEl.appendChild(li);
     } else {
-      // Fallback: monograma serif con iniciales + nombre del médico
-      var initials = (m.apellido || '').slice(0,2).toUpperCase() || 'MA';
-      var logoFallback = document.createElement('div');
-      logoFallback.style.cssText = 'display:flex;flex-direction:column;gap:2px';
-      logoFallback.innerHTML =
-        '<span style="font-family:var(--D);font-size:2.2rem;font-weight:700;color:#fff;letter-spacing:-.04em;line-height:1">' + initials + '</span>' +
-        '<span style="font-size:.6rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase">' + (m.titulo||'Dr.') + ' ' + (m.apellido||'') + '</span>';
-      heroLogoEl.appendChild(logoFallback);
+      // Sin logo: nombre del médico como wordmark limpio
+      var wordmark = document.createElement('div');
+      wordmark.style.cssText = 'display:flex;flex-direction:column;gap:3px';
+      wordmark.innerHTML =
+        '<span style="font-family:var(--D);font-size:1rem;font-weight:700;color:#fff;letter-spacing:-.01em;line-height:1">'
+        + (m.titulo||'Dr.') + ' ' + (m.nombre||'') + ' ' + (m.apellido||'')
+        + '</span>'
+        + '<span style="width:32px;height:1.5px;background:rgba(255,255,255,.35);border-radius:1px"></span>';
+      heroLogoEl.appendChild(wordmark);
     }
   }
 
