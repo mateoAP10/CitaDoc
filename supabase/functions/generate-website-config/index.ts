@@ -422,7 +422,27 @@ function assignDNAFallback(esp: string): string {
   return 'clinic' // default premium clínico
 }
 
-function buildMockConfig(medico: Record<string, unknown>, logoColors?: string[]): Record<string, unknown> {
+// Perception → DNA override (cuando el médico elige explícitamente un estilo)
+const PERCEPTION_DNA: Record<string, string> = {
+  'alto-rendimiento':  'sports',
+  'elegancia-premium': 'luxury',
+  'confianza-clinica': 'authority',
+  'innovacion-medica': 'modern',
+  'cercania-humana':   'warm',
+  'recuperacion-dep':  'sports',
+}
+
+// Perception → rango de headlines (0-3 formal/premium, 4-7 energético/cercano)
+const PERCEPTION_HL_RANGE: Record<string, [number,number]> = {
+  'elegancia-premium': [0, 3],   // primeros 4 — más formales/premium
+  'confianza-clinica': [0, 3],
+  'alto-rendimiento':  [4, 7],   // últimos 4 — más energéticos
+  'recuperacion-dep':  [4, 7],
+  'innovacion-medica': [2, 5],   // mix
+  'cercania-humana':   [4, 7],   // más cálidos
+}
+
+function buildMockConfig(medico: Record<string, unknown>, logoColors?: string[], perception?: string): Record<string, unknown> {
   const nombre = `${medico.titulo || 'Dr.'} ${medico.nombre || ''} ${medico.apellido || ''}`.trim()
   const espRaw = (medico.especialidades as string[] || [])[0] || 'Especialista médico'
   const esp = espRaw.toLowerCase()
@@ -535,7 +555,15 @@ function buildMockConfig(medico: Record<string, unknown>, logoColors?: string[])
   }
 
   const headlinePool = HEADLINES[specKey] || HEADLINES.default
-  const headline = headlinePool[Math.floor(Math.random() * headlinePool.length)]
+  // Si hay perception, pick del rango correspondiente; sino, aleatorio total
+  let headline: string
+  if (perception && PERCEPTION_HL_RANGE[perception]) {
+    const [lo, hi] = PERCEPTION_HL_RANGE[perception]
+    const available = headlinePool.slice(lo, hi+1)
+    headline = available[Math.floor(Math.random() * available.length)]
+  } else {
+    headline = headlinePool[Math.floor(Math.random() * headlinePool.length)]
+  }
 
   // Servicios específicos por especialidad
   const SERVICES: Record<string, Array<Record<string, string>>> = {
@@ -586,7 +614,12 @@ function buildMockConfig(medico: Record<string, unknown>, logoColors?: string[])
     seo_title: `${nombre} — ${espRaw}${ciudad ? ' en ' + ciudad : ''}`,
     seo_description: `${nombre}, especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}${anos ? ' con ' + anos + ' años de experiencia' : ''}. Atención médica personalizada y de excelencia.`,
     primary_color: (logoColors && logoColors.length > 0) ? logoColors[0] : assignPrimaryColor(espRaw),
-    visual_dna: (logoColors && logoColors.length > 0) ? (logoColorToDna(logoColors[0]) || assignDNAFallback(espRaw)) : assignDNAFallback(espRaw),
+    // Jerarquía: perception explícita > logo > especialidad
+    visual_dna: (perception && PERCEPTION_DNA[perception])
+      ? PERCEPTION_DNA[perception]
+      : (logoColors && logoColors.length > 0)
+        ? (logoColorToDna(logoColors[0]) || assignDNAFallback(espRaw))
+        : assignDNAFallback(espRaw),
     // Backwards compatibility
     cta_primary_text: 'Agendar cita',
     seo_desc: `${nombre}, especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}${anos ? ' con ' + anos + ' años de experiencia' : ''}. Atención médica personalizada y de excelencia.`,
@@ -659,7 +692,7 @@ serve(async (req) => {
     console.log('[KIMI DIAGNOSTIC] KIMI_API_KEY present?', !!Deno.env.get('KIMI_API_KEY'))
 
     if (use_mock === true) {
-      config = buildMockConfig(medico, logo_colors || [])
+      config = buildMockConfig(medico, logo_colors || [], perception || '')
       source = 'mock-specialty'
     } else {
       const apiKey = Deno.env.get('KIMI_API_KEY')
