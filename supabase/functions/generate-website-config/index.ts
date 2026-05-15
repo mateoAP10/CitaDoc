@@ -640,6 +640,138 @@ function validateConfig(cfg: Record<string, unknown>): string | null {
   return null
 }
 
+// ── CLAUDE VISION API ──
+// Analiza foto + logo del médico y genera identidad ÚNICA con visión real
+async function callClaudeVisionAPI(
+  medico: Record<string, unknown>,
+  photoUrl: string,
+  logoUrl: string,
+  perception: string,
+  userPrompt: string,
+  logoColors: string[]
+): Promise<Record<string, unknown>> {
+  const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+
+  const nombre = `${medico.titulo || 'Dr.'} ${medico.nombre || ''} ${medico.apellido || ''}`.trim()
+  const esp    = (medico.especialidades as string[] || [])[0] || ''
+  const ciudad = (medico.ciudad as string) || ''
+  const anos   = (medico.anos_experiencia as string) || ''
+  const bio    = (medico.bio as string) || ''
+
+  // Construir bloques de contenido con imágenes reales
+  const contentBlocks: unknown[] = []
+  if (photoUrl) {
+    contentBlocks.push({ type: 'image', source: { type: 'url', url: photoUrl } })
+    contentBlocks.push({ type: 'text', text: 'Foto profesional del médico.' })
+  }
+  if (logoUrl) {
+    contentBlocks.push({ type: 'image', source: { type: 'url', url: logoUrl } })
+    contentBlocks.push({ type: 'text', text: 'Logo de su práctica médica.' })
+  }
+
+  const infoText = [
+    `MÉDICO: ${nombre}`,
+    `ESPECIALIDAD: ${esp}`,
+    ciudad && `CIUDAD: ${ciudad}`,
+    anos   && `EXPERIENCIA: ${anos} años`,
+    bio    && `BIO: ${bio}`,
+    userPrompt && `BRIEF: ${userPrompt}`,
+    `TONO: ${perception || 'confianza-clinica'}`,
+    logoColors.length > 0 && `COLORES LOGO: ${logoColors.join(', ')}`,
+    '',
+    'Devuelve SOLO JSON válido. Sin markdown. Sin texto fuera del JSON.'
+  ].filter(Boolean).join('\n')
+  contentBlocks.push({ type: 'text', text: infoText })
+
+  const systemPrompt = `Eres el director de identidad digital de CitaDoc — plataforma de identidad médica premium de LATAM.
+IDIOMA: TODO en español latino natural. Sin excepción absoluta.
+
+Analizas la foto y el logo del médico para crear su sitio web con identidad ÚNICA y AUTÉNTICA.
+
+DEL LOGO extrae:
+- Color dominante exacto → primary_color en hex
+- Estilo: navy/oscuro→clinic, verde vibrante→sports, cálido/naranja→warm, dorado→luxury, cian→modern
+- Mood visual: serif+formal=elegancia, geométrico+oscuro=autoridad, redondeado+cálido=cercanía
+
+DE LA FOTO observa:
+- Proyección personal: formal, cercano, experto, atlético, clínico
+- Ambiente si visible: consultorio, lab, exterior
+- Usa lo que ves para personalizar el copy — que se sienta ESTE médico, no cualquiera
+
+COPY — AUTORIDAD MÉDICA, NO TRAILER DE MARVEL:
+- Headline: orientado al paciente, beneficio claro, máx 70 chars
+- BUENO: "Recupera tu movimiento. Vive sin límites."
+- MALO: "DERRIBADO EL DESAFÍO, SE LEVANTA CON EL DR..."
+- Usa verbos de resultado: recupera, restaura, retoma, libera — no: conquista, domina
+- Servicios específicos de la especialidad real
+
+JSON a devolver:
+{
+  "headline": "...",
+  "subheadline": "...",
+  "about_text": "...",
+  "philosophy": "...",
+  "doctor_story": "...",
+  "differentiators": ["...", "...", "...", "..."],
+  "treatment_approach": "...",
+  "patient_experience": "...",
+  "tone": "confianza-clinica|cercania-humana|elegancia-premium|innovacion-medica",
+  "visual_dna": "clinic|sports|luxury|authority|warm|modern",
+  "primary_color": "#hexcolor",
+  "services": [{"t":"nombre","d":"descripción 1 línea","i":"emoji"}],
+  "cta_primary": "Agendar cita",
+  "cta_final": "...",
+  "seo_title": "...",
+  "seo_description": "..."
+}`
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: contentBlocks }]
+    })
+  })
+
+  if (!res.ok) {
+    const errText = await res.text()
+    throw new Error(`Claude API ${res.status}: ${errText.slice(0, 400)}`)
+  }
+
+  const data = await res.json()
+  const rawContent = (data.content as Array<{type:string; text?:string}>)?.[0]?.text || ''
+
+  // Sanear caracteres no-latinos y parsear JSON
+  function sanitize(obj: unknown): unknown {
+    if (typeof obj === 'string') return obj.replace(/[Ѐ-ӿ一-鿿぀-ゟ゠-ヿ؀-ۿ]/g, '').replace(/\s{2,}/g, ' ').trim()
+    if (Array.isArray(obj)) return obj.map(sanitize)
+    if (obj && typeof obj === 'object') {
+      const out: Record<string, unknown> = {}
+      for (const [k, v] of Object.entries(obj as Record<string, unknown>)) out[k] = sanitize(v)
+      return out
+    }
+    return obj
+  }
+
+  try {
+    return sanitize(JSON.parse(rawContent)) as Record<string, unknown>
+  } catch {
+    const m = rawContent.match(/```json\s*([\s\S]*?)\s*```/)
+    if (m) return sanitize(JSON.parse(m[1])) as Record<string, unknown>
+    const s = rawContent.indexOf('{'), e = rawContent.lastIndexOf('}')
+    if (s !== -1 && e !== -1) return sanitize(JSON.parse(rawContent.slice(s, e + 1))) as Record<string, unknown>
+    throw new Error('Claude response no es JSON válido: ' + rawContent.slice(0, 300))
+  }
+}
+
 // ── MAIN HANDLER ──
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -656,7 +788,8 @@ serve(async (req) => {
   const handlerT0 = Date.now()
   try {
     const body = await req.json()
-    const { medico_id, prompt, perception, use_mock, logo_colors, anchor_dna, anchor_color } = body
+    const { medico_id, prompt, perception, use_mock, logo_colors, anchor_dna, anchor_color,
+            logo_url: reqLogoUrl, photo_url: reqPhotoUrl } = body
 
     if (!medico_id) {
       return new Response(JSON.stringify({ error: 'medico_id is required' }), {
@@ -688,39 +821,60 @@ serve(async (req) => {
     let config: Record<string, unknown>
     let source = 'kimi'
 
-    console.log('[KIMI DIAGNOSTIC] Handler start. medico_id=' + medico_id + ' use_mock=' + use_mock)
-    console.log('[KIMI DIAGNOSTIC] KIMI_API_KEY present?', !!Deno.env.get('KIMI_API_KEY'))
+    // Resolver URLs de imagen para Claude vision
+    const existingDraft = medico.web_config_draft as Record<string, unknown> | null
+    const photoUrl = (reqPhotoUrl as string) || (medico.foto_url as string) || ''
+    const logoUrl  = (reqLogoUrl  as string) || (existingDraft?.logo_url as string) || ''
+    const hasImages = !!(photoUrl || logoUrl)
+
+    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
+    const kimiKey      = Deno.env.get('KIMI_API_KEY')
+
+    console.log(`[AI] medico_id=${medico_id} use_mock=${use_mock} hasImages=${hasImages} claude=${!!anthropicKey} kimi=${!!kimiKey}`)
 
     if (use_mock === true) {
+      // Mock garantizado: español perfecto, variación de headlines, rápido
       config = buildMockConfig(medico, logo_colors || [], perception || '')
       source = 'mock-specialty'
-    } else {
-      const apiKey = Deno.env.get('KIMI_API_KEY')
-      if (!apiKey) {
-        return new Response(JSON.stringify({ error: 'KIMI_API_KEY not configured in Edge Function environment' }), {
-          status: 503,
-          headers: corsHeaders
-        })
+
+    } else if (anthropicKey) {
+      // ★ CLAUDE — primario: ve las imágenes, genera identidad real
+      try {
+        config = await callClaudeVisionAPI(
+          medico, photoUrl, logoUrl,
+          perception || 'confianza-clinica',
+          prompt || '',
+          logo_colors || []
+        )
+        source = 'claude-vision'
+        console.log('[AI] Claude vision ✓')
+      } catch (e) {
+        const errMsg = e instanceof Error ? e.message : String(e)
+        console.error('[AI] Claude failed, falling back to mock:', errMsg)
+        config = buildMockConfig(medico, logo_colors || [], perception || '')
+        source = 'mock-fallback'
       }
+
+    } else if (kimiKey) {
+      // Kimi — fallback si no hay Claude
       try {
         const messages: KimiMessage[] = [
           { role: 'system', content: buildSystemPrompt() },
           { role: 'user', content: buildUserPrompt(medico, prompt || '', perception || 'confianza-clinica', logo_colors || [], anchor_dna, anchor_color) }
         ]
         config = await callKimiAPI(messages)
+        source = 'kimi'
       } catch (e) {
         const errMsg = e instanceof Error ? e.message : String(e)
-        const diagLogs = (e as any).diagnosticLogs || []
-        console.error('Kimi API failed:', errMsg)
-        return new Response(JSON.stringify({
-          error: 'Kimi API failed',
-          detail: errMsg,
-          diagnostic_logs: diagLogs
-        }), {
-          status: 502,
-          headers: corsHeaders
-        })
+        console.error('[AI] Kimi failed, falling back to mock:', errMsg)
+        config = buildMockConfig(medico, logo_colors || [], perception || '')
+        source = 'mock-fallback'
       }
+
+    } else {
+      // Sin API key: mock con variación
+      config = buildMockConfig(medico, logo_colors || [], perception || '')
+      source = 'mock-specialty'
     }
 
     // Anchors: solo aplican si NO se subió logo nuevo (para mantener consistencia visual entre regeneraciones)

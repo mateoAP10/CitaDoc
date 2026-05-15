@@ -3904,9 +3904,11 @@ async function webAiGenerar() {
         perception: _webPerception,
         prompt: prompt,
         logo_colors: logoColors,
-        // Mock garantiza español perfecto + variación de headlines cada vez
-        // Solo usa Kimi si el médico escribe un brief específico (prompt)
-        use_mock: !prompt || prompt.trim().length < 20,
+        // Claude vision es el primario — pasa las URLs para que vea las imágenes
+        photo_url: (await photoPromise) || M.foto_url || null,
+        logo_url:  logoUrl || (prevDraft.logo_url) || null,
+        // Mock solo si el médico no escribió brief Y no subió logo ni foto
+        use_mock: (!prompt || prompt.trim().length < 20) && !_webLogoUploaded && !_webPhotoUploaded,
         anchor_dna: (!_webLogoPalette && prevDraft.visual_dna) ? prevDraft.visual_dna : null,
         anchor_color: (!_webLogoPalette && prevDraft.primary_color) ? prevDraft.primary_color : null
       };
