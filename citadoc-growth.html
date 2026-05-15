@@ -236,6 +236,9 @@ header{
       <button class="type-btn" data-type="caption" onclick="setType('caption',this)">
         <span class="type-icon">💬</span>Caption
       </button>
+      <button class="type-btn" data-type="campaign" onclick="setType('campaign',this)">
+        <span class="type-icon">📊</span>Campaña Meta
+      </button>
 
       <div class="sidebar-section">Tono</div>
       <div>
@@ -279,6 +282,36 @@ header{
         <button class="platform-btn" data-platform="facebook" onclick="setPlatform('facebook',this)">Facebook</button>
       </div>
 
+      <!-- Campaign inputs — only shown when type = campaign -->
+      <div id="campaignInputs" style="display:none;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;margin-bottom:1.2rem">
+        <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem">Parámetros de campaña</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Nicho médico</label>
+            <input id="campSpecialty" style="width:100%;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:DM Sans,sans-serif;font-size:.85rem;color:var(--ink);background:var(--cream);outline:none" placeholder="Ej: traumatólogos">
+          </div>
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Ciudad / región</label>
+            <input id="campCity" style="width:100%;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:DM Sans,sans-serif;font-size:.85rem;color:var(--ink);background:var(--cream);outline:none" placeholder="Ej: Guayaquil">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Presupuesto diario (USD)</label>
+            <input id="campBudget" type="number" min="1" style="width:100%;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:DM Sans,sans-serif;font-size:.85rem;color:var(--ink);background:var(--cream);outline:none" placeholder="10" value="10">
+          </div>
+          <div>
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);display:block;margin-bottom:.3rem">Objetivo</label>
+            <select id="campObjective" style="width:100%;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:DM Sans,sans-serif;font-size:.85rem;color:var(--ink);background:var(--cream);outline:none">
+              <option value="registros">Registros en CitaDoc</option>
+              <option value="demos">Agendar demo</option>
+              <option value="awareness">Awareness de marca</option>
+              <option value="trafico">Tráfico al perfil</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <button class="generate-btn" id="generateBtn" onclick="generateContent()">
         <span id="generateBtnIcon">✨</span>
         <span id="generateBtnText">Generar</span>
@@ -308,7 +341,8 @@ var TYPE_META = {
   carousel: { title:'Carousel', sub:'6 slides listos para diseñar. LinkedIn e Instagram.' },
   founder:  { title:'Founder post', sub:'Voz auténtica. LinkedIn-style. Propósito y visión.' },
   ad:       { title:'Ad copy', sub:'Headline, cuerpo y CTA para Facebook/Instagram Ads.' },
-  caption:  { title:'Caption', sub:'Caption standalone para Instagram y versión LinkedIn.' }
+  caption:  { title:'Caption', sub:'Caption standalone para Instagram y versión LinkedIn.' },
+  campaign: { title:'Campaña Meta', sub:'Campaña completa lista para Meta Ads Manager. 3 variantes A/B/C + targeting + presupuesto.' }
 };
 
 // ── AUTH ──
@@ -343,6 +377,7 @@ function setType(type, btn) {
   var meta = TYPE_META[type] || TYPE_META.caption;
   document.getElementById('pageTitle').textContent = meta.title;
   document.getElementById('pageSub').textContent = meta.sub;
+  document.getElementById('campaignInputs').style.display = type === 'campaign' ? 'block' : 'none';
 }
 function setTone(tone, chip) {
   state.tone = tone;
@@ -388,7 +423,11 @@ async function generateContent() {
         tone:         state.tone,
         angle:        state.angle,
         custom_angle: customAngle,
-        platform:     state.platform
+        platform:     state.platform,
+        campaign_specialty:  (document.getElementById('campSpecialty')||{}).value || 'médicos especialistas',
+        campaign_city:       (document.getElementById('campCity')||{}).value || 'Ecuador',
+        campaign_budget:     (document.getElementById('campBudget')||{}).value || '10',
+        campaign_objective:  (document.getElementById('campObjective')||{}).value || 'registros'
       })
     });
 
@@ -501,6 +540,51 @@ function renderOutput(type, c) {
   else if (type === 'caption') {
     out.appendChild(section('Instagram', [makeCard(null, c.caption_instagram||'')]));
     out.appendChild(section('LinkedIn', [makeCard(null, c.caption_linkedin||'')]));
+  }
+  else if (type === 'campaign') {
+    // Audience
+    var aud = c.audience || {};
+    var audText = [
+      aud.age_range ? 'Edad: ' + aud.age_range : '',
+      aud.locations ? 'Ubicación: ' + (aud.locations||[]).join(', ') : '',
+      aud.interests ? 'Intereses: ' + (aud.interests||[]).join(' · ') : '',
+      aud.behaviors ? 'Comportamientos: ' + (aud.behaviors||[]).join(' · ') : '',
+      aud.exclusions ? 'Excluir: ' + (aud.exclusions||[]).join(', ') : ''
+    ].filter(Boolean).join('\n');
+    out.appendChild(section('Audiencia', [makeCard(null, audText)]));
+
+    // Budget
+    var bud = c.budget || {};
+    var budText = [
+      'Presupuesto diario: $' + (bud.daily_budget_usd||'—') + ' USD',
+      'Duración: ' + (bud.duration_days||'—') + ' días',
+      'Total: $' + (bud.total_budget_usd||'—') + ' USD',
+      bud.distribution ? 'Distribución: ' + bud.distribution : ''
+    ].filter(Boolean).join('\n');
+    out.appendChild(section('Presupuesto', [makeCard(null, budText)]));
+
+    // Ad variants
+    var variantsWrap = document.createElement('div');
+    variantsWrap.className = 'output-section';
+    var varLbl = document.createElement('div'); varLbl.className = 'output-label'; varLbl.textContent = '3 variantes A/B/C';
+    variantsWrap.appendChild(varLbl);
+    (c.ad_variants||[]).forEach(function(v) {
+      var varText = [
+        'Formato: ' + (v.format||''),
+        'Headline: ' + (v.headline||''),
+        'Texto principal: ' + (v.primary_text||''),
+        v.description ? 'Descripción: ' + v.description : '',
+        'Botón CTA: ' + (v.cta_button||''),
+        '— Visual: ' + (v.visual_brief||'')
+      ].filter(Boolean).join('\n');
+      variantsWrap.appendChild(makeCard('Variante ' + (v.variant||''), varText));
+    });
+    out.appendChild(variantsWrap);
+
+    // Landing + KPIs
+    if (c.landing_strategy) out.appendChild(section('Estrategia de landing', [makeCard(null, c.landing_strategy)]));
+    if (c.kpis && c.kpis.length) out.appendChild(section('KPIs a monitorear', [makeCard(null, (c.kpis||[]).join('\n'))]));
+    if (c.warnings && c.warnings.length) out.appendChild(section('⚠ Políticas Meta a considerar', [makeCard(null, (c.warnings||[]).join('\n'))]));
   }
 
   // Regenerar

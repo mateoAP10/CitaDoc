@@ -68,6 +68,62 @@ RESPONDE EN JSON:
 {
   "caption_instagram": "caption Instagram con hook fuerte + cuerpo + hashtags (máx 5)",
   "caption_linkedin": "versión adaptada para LinkedIn (más narrativa, sin hashtags excesivos)"
+}`,
+
+  campaign: `Eres un experto en Meta Ads (Facebook e Instagram) para campañas B2B en LATAM.
+Genera una campaña completa de Meta Ads para adquirir médicos especialistas para CitaDoc.
+Usa los parámetros recibidos (nicho, ciudad, presupuesto, objetivo).
+
+RESPONDE EN JSON:
+{
+  "campaign_name": "nombre sugerido para la campaña en Ads Manager",
+  "objective": "objetivo de campaña Meta recomendado (LEAD_GENERATION / CONVERSIONS / REACH)",
+  "audience": {
+    "age_range": "rango de edad sugerido",
+    "gender": "all / men / women",
+    "locations": ["ciudades o regiones exactas"],
+    "interests": ["intereses exactos a targetear en Meta"],
+    "behaviors": ["comportamientos de Meta relevantes"],
+    "exclusions": ["qué excluir del targeting"]
+  },
+  "ad_variants": [
+    {
+      "variant": "A",
+      "format": "imagen o video",
+      "headline": "título del anuncio (máx 40 caracteres)",
+      "primary_text": "texto principal (3-4 líneas directas)",
+      "description": "descripción secundaria (máx 30 caracteres)",
+      "cta_button": "texto del botón",
+      "visual_brief": "descripción exacta del visual: colores, composición, texto en imagen, estilo"
+    },
+    {
+      "variant": "B",
+      "format": "imagen o video",
+      "headline": "...",
+      "primary_text": "...",
+      "description": "...",
+      "cta_button": "...",
+      "visual_brief": "..."
+    },
+    {
+      "variant": "C",
+      "format": "imagen o video",
+      "headline": "...",
+      "primary_text": "...",
+      "description": "...",
+      "cta_button": "...",
+      "visual_brief": "..."
+    }
+  ],
+  "budget": {
+    "daily_budget_usd": "presupuesto diario sugerido en USD",
+    "duration_days": "duración recomendada",
+    "total_budget_usd": "presupuesto total",
+    "distribution": "cómo distribuir entre variantes"
+  },
+  "landing_strategy": "qué debe pasar cuando el médico hace clic (landing page, formulario, DM)",
+  "kpis": ["métricas clave a monitorear"],
+  "warnings": ["advertencias sobre políticas de Meta Ads en salud/medicina a tener en cuenta"]
 }`
 }
 
@@ -99,13 +155,26 @@ serve(async (req) => {
   }
 
   try {
-    const { type = 'caption', tone = 'premium', angle = 'agenda', custom_angle = '', platform = 'instagram' } = await req.json()
+    const {
+      type = 'caption', tone = 'premium', angle = 'agenda',
+      custom_angle = '', platform = 'instagram',
+      // campaign-specific
+      campaign_specialty = 'médicos especialistas', campaign_city = 'Ecuador',
+      campaign_budget = '10', campaign_objective = 'registros'
+    } = await req.json()
 
-    const typePrompt = PROMPTS[type] || PROMPTS.caption
+    const isCampaign = type === 'campaign'
+
+    const typePrompt = isCampaign
+      ? `${PROMPTS.campaign}\n\nPARÁMETROS DE CAMPAÑA:\n- Nicho: ${campaign_specialty}\n- Ciudad/región: ${campaign_city}\n- Presupuesto total disponible: $${campaign_budget} USD/día\n- Objetivo principal: ${campaign_objective}`
+      : (PROMPTS[type] || PROMPTS.caption)
+
     const toneCtx   = TONE_CONTEXT[tone] || TONE_CONTEXT.premium
     const angleCtx  = angle === 'custom' ? `Ángulo: ${custom_angle}` : (ANGLE_CONTEXT[angle] || '')
 
-    const systemPrompt = `Eres el director creativo de CitaDoc, una startup healthtech premium de LATAM.
+    const systemPrompt = isCampaign
+      ? `Eres un experto en Meta Ads y marketing B2B para healthtech en LATAM.\nContexto de marca:\n${BRAND_CONTEXT}\nRESPONDE SOLO en JSON válido. Sin markdown. Sin texto fuera del JSON.`
+      : `Eres el director creativo de CitaDoc, una startup healthtech premium de LATAM.
 Tu trabajo: crear contenido de marketing auténtico, premium y diferenciado que atraiga médicos especialistas a la plataforma.
 
 CONTEXTO DE MARCA:
