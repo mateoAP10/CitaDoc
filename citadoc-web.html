@@ -717,9 +717,11 @@ button,a{-webkit-tap-highlight-color:transparent}
   /* DNA mobile overrides */
   body.dna-sports .hero-left{padding:100px 6% 70px}
   body.dna-modern .hero-left{padding:100px 6% 70px}
-  body.dna-clinic .hero{grid-template-columns:1fr;display:flex;flex-direction:column}
-  body.dna-clinic .hero-left{order:2;padding:50px 6% 60px}
-  body.dna-clinic .hero-right{order:1;min-height:55vh}
+  body.dna-clinic .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
+  body.dna-clinic .hero-left{order:2!important;padding:1.8rem 5% 2.5rem!important;align-items:flex-start!important;text-align:left!important}
+  body.dna-clinic .hero-right{order:-1!important;width:100%!important;height:52vw!important;min-height:200px!important;max-height:280px!important;border-radius:0!important;margin:0!important}
+  body.dna-clinic .hero-right-img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-position:center 15%!important}
+  body.dna-clinic .hero-right-card{display:none!important}
   /* Authority mobile: photo reduces to 40vh on small screens */
   body.dna-authority .hero-right{min-height:40vh}
   body.dna-authority .hero-left{padding:50px 6% 60px}
