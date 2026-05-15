@@ -400,32 +400,132 @@ function buildMockConfig(medico: Record<string, unknown>): Record<string, unknow
     diffs.unshift(`${anos} años de experiencia clínica en ${espRaw}`)
   }
 
-  // Generate headline based on specialty
-  const headlines: Record<string, string> = {
-    traumatologia: `${nombre} — Recupera tu movimiento sin miedo`,
-    cirugia: `${nombre} — Precisión quirúrgica con propósito`,
-    cardiologia: `${nombre} — Tu corazón en manos de precisión`,
-    dermatologia: `${nombre} — Piel que recupera tu confianza`,
-    ginecologia: `${nombre} — Salud integral de la mujer`,
-    neurologia: `${nombre} — Claridad para tu sistema nervioso`,
-    rehabilitacion: `${nombre} — Recuperación que se siente`,
-    pediatria: `${nombre} — Crecimiento sano, familia tranquila`,
-    default: `${nombre} — Atención médica que transforma vidas`
+  // Headlines con variación real — 8 opciones por especialidad, rotación aleatoria
+  const HEADLINES: Record<string, string[]> = {
+    traumatologia: [
+      'Recupera tu movimiento. Vive sin límites.',
+      'Tu cuerpo sabe moverse. Nosotros lo recordamos.',
+      'Cada lesión tiene solución. Empecemos.',
+      'De la lesión al movimiento pleno.',
+      'Precisión quirúrgica. Recuperación real.',
+      'Tu movilidad es nuestra especialidad.',
+      'Vuelve a moverte como antes. Mejor que antes.',
+      'Ortopedia que entiende tu ritmo de vida.'
+    ],
+    cirugia: [
+      'Cirugía con propósito. Resultados que duran.',
+      'Precisión quirúrgica al servicio de tu salud.',
+      'No operamos por rutina. Operamos con certeza.',
+      'Cada intervención, una decisión precisa.',
+      'Tu seguridad es nuestra primera incisión.',
+      'Cirugía de vanguardia, recuperación guiada.',
+      'Del diagnóstico a la cirugía sin incertidumbre.',
+      'Confianza quirúrgica que se construye paso a paso.'
+    ],
+    cardiologia: [
+      'Tu corazón merece precisión y cuidado.',
+      'El ritmo de tu vida empieza en tu corazón.',
+      'Cardiología preventiva que cuida tu futuro.',
+      'Un corazón fuerte. Una vida plena.',
+      'Diagnóstico preciso. Corazón protegido.',
+      'Cuida tu motor. Cuida tu vida.',
+      'Cardiología con visión integral y humana.',
+      'Tu corazón habla. Nosotros lo escuchamos.'
+    ],
+    dermatologia: [
+      'Tu piel cuenta tu historia. Cuidémosla.',
+      'Piel sana. Confianza renovada.',
+      'Dermatología que va más allá de la superficie.',
+      'Diagnóstico preciso para una piel que resplandece.',
+      'Cada piel es única. Tu tratamiento también.',
+      'La piel que quieres. El cuidado que mereces.',
+      'Salud de piel. Bienestar visible.',
+      'Dermato­logía con ciencia y sensibilidad.'
+    ],
+    ginecologia: [
+      'Salud femenina integral, en cada etapa.',
+      'Acompañamos cada ciclo de tu vida.',
+      'Tu salud, en manos que la entienden.',
+      'Ginecología con enfoque humano y preciso.',
+      'Cada mujer, un plan de salud único.',
+      'Desde la prevención hasta el bienestar pleno.',
+      'Tu salud reproductiva, nuestra prioridad.',
+      'Atención ginecológica que te escucha de verdad.'
+    ],
+    neurologia: [
+      'Claridad diagnóstica para un sistema nervioso sano.',
+      'Neurología que entiende lo que el cerebro no dice.',
+      'Tu mente en manos expertas y empáticas.',
+      'Diagnóstico neurológico preciso y humano.',
+      'Del síntoma al diagnóstico sin demoras.',
+      'Neurología de vanguardia con calidez clínica.',
+      'Tu bienestar neurológico, nuestra misión.',
+      'Cuando el cerebro necesita al mejor aliado.'
+    ],
+    rehabilitacion: [
+      'Recuperación que se siente en cada paso.',
+      'No solo sanas. Volvés mejor que antes.',
+      'Rehabilitación con objetivos reales.',
+      'Tu movimiento es nuestra medida de éxito.',
+      'De la lesión a la acción, paso a paso.',
+      'Fisioterapia que mide resultados, no sesiones.',
+      'Rehabilitación de alta especialidad.',
+      'Tu cuerpo en su mejor versión. Siempre.'
+    ],
+    pediatria: [
+      'Crecimiento sano. Familia tranquila.',
+      'Cada niño, una historia de salud única.',
+      'Pediatría que cuida el cuerpo y el alma.',
+      'Tu hijo en las mejores manos desde el primer día.',
+      'Salud pediátrica integral con calidez.',
+      'Crecemos contigo, cuidamos a los tuyos.',
+      'Pediatría moderna con corazón.',
+      'La salud de tu hijo, nuestra vocación.'
+    ],
+    default: [
+      'Atención médica que transforma vidas.',
+      'Tu salud, nuestra vocación.',
+      'Medicina con propósito y humanidad.',
+      'Diagnóstico preciso. Cuidado genuino.',
+      'Salud integral para una vida plena.',
+      'Tu médico de confianza, siempre presente.',
+      'Medicina de excelencia con calidez humana.',
+      'Atención que va más allá del diagnóstico.'
+    ]
   }
-  const headline = headlines[specKey] || `${nombre} — ${espRaw} de excelencia`
+
+  const headlinePool = HEADLINES[specKey] || HEADLINES.default
+  const headline = headlinePool[Math.floor(Math.random() * headlinePool.length)]
+
+  // Servicios específicos por especialidad
+  const SERVICES: Record<string, Array<Record<string, string>>> = {
+    traumatologia: [
+      { t: 'Lesiones deportivas', d: 'Diagnóstico y tratamiento de lesiones en deportistas y pacientes activos.', i: '🏃' },
+      { t: 'Cirugía artroscópica', d: 'Técnica mínimamente invasiva con recuperación más rápida y menor dolor.', i: '🔬' },
+      { t: 'Fracturas y trauma', d: 'Atención especializada en fracturas complejas con fijación de precisión.', i: '🦴' },
+      { t: 'Reemplazo articular', d: 'Prótesis de cadera y rodilla con resultados duraderos y movilidad plena.', i: '⚕️' }
+    ],
+    cirugia: [
+      { t: 'Cirugía laparoscópica', d: 'Técnica mínimamente invasiva, menos dolor y recuperación acelerada.', i: '🏥' },
+      { t: 'Cirugía de urgencia', d: 'Respuesta rápida y precisa en situaciones de emergencia quirúrgica.', i: '⚡' },
+      { t: 'Cirugía oncológica', d: 'Resección tumoral con márgenes precisos y preservación de función.', i: '🎗️' },
+      { t: 'Segunda opinión', d: 'Evaluación quirúrgica independiente con criterio clínico experto.', i: '💬' }
+    ],
+    default: [
+      { t: 'Consulta integral', d: 'Evaluación completa con tiempo real para escuchar todas tus preocupaciones.', i: '🩺' },
+      { t: 'Diagnóstico de precisión', d: 'Estudios especializados interpretados con criterio clínico experto.', i: '🔬' },
+      { t: 'Tratamiento personalizado', d: 'Protocolo adaptado a tu estilo de vida y tus objetivos de salud.', i: '✦' },
+      { t: 'Seguimiento continuo', d: 'Acompañamiento más allá de la consulta, siempre disponible para ti.', i: '↗' }
+    ]
+  }
+
+  const services = SERVICES[specKey] || SERVICES.default
 
   const sub = bio
-    ? bio.slice(0, 120) + (bio.length > 120 ? '…' : '')
-    : `Especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}. Atención que no se queda en el diagnóstico.`
+    ? bio.slice(0, 130) + (bio.length > 130 ? '.' : '')
+    : `Especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}.${anos ? ' ' + anos + ' años de experiencia clínica.' : ''} Atención que va más allá del diagnóstico.`
 
-  const about = bio || `${nombre} es especialista en ${espRaw}${ciudad ? ' con práctica en ' + ciudad : ''}.${anos ? ' Con ' + anos + ' años de experiencia clínica, ha desarrollado un enfoque que prioriza la escucha activa y la precisión diagnóstica.' : ''} Su práctica se distingue por combinar la evidencia científica más reciente con una atención genuinamente humana.`
-
-  const services: Array<Record<string, string>> = [
-    { t: 'Consulta integral', d: 'Evaluación completa con tiempo real para escuchar todas tus preocupaciones.', i: '🩺' },
-    { t: 'Diagnóstico de precisión', d: 'Estudios especializados interpretados con criterio clínico, no solo técnico.', i: '🔬' },
-    { t: 'Tratamiento personalizado', d: 'Protocolo adaptado a tu estilo de vida, no a un manual genérico.', i: '✦' },
-    { t: 'Seguimiento continuo', d: 'Acompañamiento más allá de la consulta. Tu médico disponible para lo que necesites.', i: '↗' }
-  ]
+  const about = bio || `${nombre} es especialista en ${espRaw}${ciudad ? ' con práctica en ' + ciudad : ''}.${anos ? ' Con ' + anos + ' años de experiencia, ha desarrollado un enfoque que combina precisión diagnóstica y atención genuinamente humana.' : ''} Su práctica se distingue por tratar a cada paciente como un caso único, nunca como un número.`
 
   return {
     headline,

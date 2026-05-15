@@ -3904,6 +3904,9 @@ async function webAiGenerar() {
         perception: _webPerception,
         prompt: prompt,
         logo_colors: logoColors,
+        // Mock garantiza español perfecto + variación de headlines cada vez
+        // Solo usa Kimi si el médico escribe un brief específico (prompt)
+        use_mock: !prompt || prompt.trim().length < 20,
         anchor_dna: (!_webLogoPalette && prevDraft.visual_dna) ? prevDraft.visual_dna : null,
         anchor_color: (!_webLogoPalette && prevDraft.primary_color) ? prevDraft.primary_color : null
       };
