@@ -1595,8 +1595,8 @@ display:flex;
         <div style="font-size:.72rem;color:#374151;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal)">✓</span>Historias clínicas ilimitadas</div>
         <div style="font-size:.72rem;color:#374151;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal)">✓</span>Recetas y notificaciones</div>
         <div style="font-size:.72rem;color:#374151;display:flex;align-items:center;gap:.45rem"><span style="color:var(--teal)">✓</span>Soporte humano real</div>
-        <button id="aiActivarBtn" onclick="activarSitioWeb()" style="margin-top:auto;width:100%;padding:.78rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(11,124,110,.25);transition:transform .18s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
-          Quiero mi sitio con IA 🚀
+        <button onclick="abrirAiWebModal()" style="margin-top:auto;width:100%;padding:.82rem;background:linear-gradient(135deg,#065f46,#0b7c6e);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(11,124,110,.32);transition:transform .18s,box-shadow .18s;letter-spacing:.01em" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 32px rgba(11,124,110,.45)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 6px 24px rgba(11,124,110,.32)'">
+          ✨ Generar mi sitio con IA
         </button>
       </div>
 
@@ -3471,29 +3471,32 @@ function cargarMiSitio(m) {
   var badge = document.getElementById('webStatusBadge');
   if (badge) {
     if (isPublished) {
-      badge.textContent = 'SITIO PUBLICADO · ACTIVO';
-      badge.style.background = '#f0fdf8'; badge.style.color = 'var(--teal)';
-      badge.style.borderColor = 'rgba(11,124,110,.2)';
-    } else if (hasDraft) {
-      badge.textContent = 'BORRADOR LISTO';
-      badge.style.background = 'rgba(109,40,217,.08)'; badge.style.color = '#6d28d9';
-      badge.style.borderColor = 'rgba(109,40,217,.2)';
+      badge.innerHTML = '✅ SITIO PUBLICADO · ACTIVO';
+      badge.style.background = '#f0fdf8'; badge.style.color = '#065f46';
+      badge.style.borderColor = 'rgba(11,124,110,.25)';
     } else {
-      badge.textContent = 'SIN SITIO';
-      badge.style.background = '#f9fafb'; badge.style.color = '#9ca3af';
-      badge.style.borderColor = '#e5e7eb';
+      badge.innerHTML = '🔒 SITIO AÚN NO ACTIVO';
+      badge.style.background = '#fff7ed'; badge.style.color = '#92400e';
+      badge.style.borderColor = 'rgba(234,88,12,.2)';
     }
+  }
+
+  // Botón "Ver sitio": solo tiene sentido si está publicado
+  var verSitioBtn = document.getElementById('webUrlOpen');
+  if (verSitioBtn) {
+    verSitioBtn.textContent = isPublished ? '↗ Ver sitio' : '👁 Ver borrador';
+    verSitioBtn.style.background = isPublished ? 'var(--teal)' : '#f3f4f6';
+    verSitioBtn.style.color = isPublished ? '#fff' : '#374151';
+    verSitioBtn.style.border = isPublished ? 'none' : '1.5px solid #e5e7eb';
   }
 
   // — CTA principal — texto según estado —
   var mainCTA = document.getElementById('webMainCTA');
   if (mainCTA) {
-    if (!hasDraft && !isPublished) {
-      mainCTA.textContent = '✨ Generar mi sitio gratis con AI';
-    } else if (hasDraft && !isPublished) {
-      mainCTA.textContent = '👁 Ver borrador · Publicar por $150';
+    if (isPublished) {
+      mainCTA.textContent = '✨ Mejorar mi sitio con AI';
     } else {
-      mainCTA.textContent = '↺ Actualizar mi sitio con AI';
+      mainCTA.textContent = '✨ Generar mi sitio gratis con AI';
     }
   }
 
@@ -4093,15 +4096,8 @@ function seleccionarTemplate(card, tpl) {
 }
 
 function webCtaClick() {
-  var hasDraft = !!(M && M.web_config_draft);
-  var isPublished = !!(M && M.web_config && M.web_status === 'active');
-  if (!hasDraft && !isPublished) {
-    abrirAiWebModal();
-  } else if (hasDraft && !isPublished) {
-    mostrarProWebModal();
-  } else {
-    abrirAiWebModal();
-  }
+  // Siempre abre el modal de generación — desde ahí se genera y luego se paga
+  abrirAiWebModal();
 }
 
 function refreshWebPreview(draft) {
