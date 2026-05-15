@@ -962,20 +962,22 @@ body[data-layout="surgical-authority"] .hero{
   display:block;position:relative;min-height:100svh;
   background:#08192D;overflow:hidden
 }
-/* Gradiente: izquierda oscura → derecha transparente */
+/* Gradiente doble: cubre el fondo y da profundidad */
 body[data-layout="surgical-authority"] .hero::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(8,25,45,.92) 0%,rgba(8,25,45,.62) 42%,rgba(8,25,45,.18) 65%,transparent 80%);
+  background:
+    linear-gradient(90deg,rgba(8,25,45,.96) 0%,rgba(8,25,45,.75) 38%,rgba(8,25,45,.25) 60%,transparent 78%),
+    linear-gradient(0deg,rgba(8,25,45,.55) 0%,transparent 40%);
   z-index:2;pointer-events:none
 }
-/* Foto: derecha, anclada abajo, llena altura */
+/* Foto: derecha, llena altura, centrada en la persona */
 body[data-layout="surgical-authority"] .hero-right{
-  position:absolute;right:0;top:0;bottom:0;width:68%;z-index:1
+  position:absolute;right:0;top:0;bottom:0;width:72%;z-index:1
 }
 body[data-layout="surgical-authority"] .hero-right-img{
-  position:absolute;right:0;bottom:0;top:0;
+  position:absolute;inset:0;
   width:100%;height:100%;
-  object-fit:cover;object-position:right center;
+  object-fit:cover;object-position:center top;
   opacity:1;animation:none
 }
 body[data-layout="surgical-authority"] .hero-right-ov{
@@ -1525,13 +1527,23 @@ function renderWeb(m,locs,wc,isPreview){
   var heroLogoEl = el('wHeroLogo');
   if (heroLogoEl) {
     heroLogoEl.innerHTML = '';
-    var logoSrcHero = (wc && wc.logo_url) || m.logo_url || null;
+    var logoSrcHero = (wc && wc.logo_url) || null;
     if (logoSrcHero) {
+      // Logo imagen
       var li = document.createElement('img');
       li.src = logoSrcHero;
       li.alt = 'Logo';
       li.style.cssText = 'height:52px;max-width:180px;object-fit:contain;filter:brightness(0) invert(1)';
       heroLogoEl.appendChild(li);
+    } else {
+      // Fallback: monograma serif con iniciales + nombre del médico
+      var initials = (m.apellido || '').slice(0,2).toUpperCase() || 'MA';
+      var logoFallback = document.createElement('div');
+      logoFallback.style.cssText = 'display:flex;flex-direction:column;gap:2px';
+      logoFallback.innerHTML =
+        '<span style="font-family:var(--D);font-size:2.2rem;font-weight:700;color:#fff;letter-spacing:-.04em;line-height:1">' + initials + '</span>' +
+        '<span style="font-size:.6rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase">' + (m.titulo||'Dr.') + ' ' + (m.apellido||'') + '</span>';
+      heroLogoEl.appendChild(logoFallback);
     }
   }
 
