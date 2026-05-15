@@ -1523,6 +1523,30 @@ display:flex;
           <button onclick="activarSitioWeb()" style="padding:.62rem 1.3rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(11,124,110,.24);transition:all .2s ease;margin-top:.2rem">✨ Publicar mi sitio médico</button>
         </div>
       </div>
+    <!-- iPhone mockup preview -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:.9rem;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:.55rem">
+        <div style="width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,#374151,#1f2937);display:flex;align-items:center;justify-content:center;font-size:.65rem">📱</div>
+        <span style="font-size:.72rem;font-weight:700;color:var(--muted2);letter-spacing:.04em;text-transform:uppercase">Vista móvil</span>
+      </div>
+      <div style="position:relative;filter:drop-shadow(0 24px 48px rgba(0,0,0,.22))">
+        <!-- iPhone frame -->
+        <div style="width:264px;background:linear-gradient(160deg,#2d2d2d,#191919);border-radius:50px;padding:12px 10px 18px;box-shadow:0 0 0 1.5px rgba(255,255,255,.09),0 0 0 3px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04)">
+          <!-- Dynamic Island -->
+          <div style="width:88px;height:26px;background:#191919;border-radius:20px;margin:0 auto 8px;position:relative;z-index:2"></div>
+          <!-- Screen -->
+          <div style="border-radius:38px;overflow:hidden;height:520px;background:#fff;position:relative">
+            <iframe id="webPreviewFrameMobile" style="width:375px;height:750px;border:none;transform:scale(.659);transform-origin:top left;pointer-events:none" scrolling="no" loading="lazy"></iframe>
+          </div>
+          <!-- Home indicator -->
+          <div style="margin:10px auto 0;width:96px;height:4px;background:rgba(255,255,255,.22);border-radius:2px"></div>
+        </div>
+        <!-- Side buttons -->
+        <div style="position:absolute;left:-3px;top:90px;width:3px;height:28px;background:rgba(255,255,255,.12);border-radius:2px 0 0 2px"></div>
+        <div style="position:absolute;left:-3px;top:128px;width:3px;height:48px;background:rgba(255,255,255,.12);border-radius:2px 0 0 2px"></div>
+        <div style="position:absolute;left:-3px;top:184px;width:3px;height:48px;background:rgba(255,255,255,.12);border-radius:2px 0 0 2px"></div>
+        <div style="position:absolute;right:-3px;top:128px;width:3px;height:72px;background:rgba(255,255,255,.12);border-radius:0 2px 2px 0"></div>
+      </div>
     </div>
 
     <!-- AI WEB MODAL -->
@@ -3981,19 +4005,21 @@ function seleccionarTemplate(card, tpl) {
 
 function refreshWebPreview(draft) {
   var frame = document.getElementById('webPreviewFrame');
+  var mobileFrame = document.getElementById('webPreviewFrameMobile');
   var slug = M && M.slug ? M.slug : '';
-  if (!frame || !slug) return;
-  // Force cache bust + draft mode. Use a unique hash to ensure browser reload.
+  if (!slug) return;
   var url = 'citadoc-web.html?slug='+encodeURIComponent(slug)+'&preview=draft&_cb='+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  // If there's no draft and we're not explicitly requesting draft, show published version
   if (!(draft || M.web_config_draft)) {
     url = 'citadoc-web.html?slug='+encodeURIComponent(slug)+'&_cb='+Date.now();
   }
-  // Force reload: clear src first then set new URL to avoid iframe caching issues
-  frame.src = 'about:blank';
-  setTimeout(function(){
-    frame.src = url;
-  }, 50);
+  if (frame) {
+    frame.src = 'about:blank';
+    setTimeout(function(){ frame.src = url; }, 50);
+  }
+  if (mobileFrame) {
+    mobileFrame.src = 'about:blank';
+    setTimeout(function(){ mobileFrame.src = url; }, 80);
+  }
 }
 
 function showWebTab(tab, btn) {
