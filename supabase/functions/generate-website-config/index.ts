@@ -142,42 +142,63 @@ async function callKimiAPI(messages: KimiMessage[]): Promise<Record<string, unkn
 
 // ── PROMPT BUILDER ──
 function buildSystemPrompt(): string {
-  return `Eres copywriter senior de CitaDoc, agencia de branding médico premium.
-REGLAS:
-1. Devuelve SOLO JSON válido. Sin markdown ni explicaciones.
-2. NUNCA uses clichés: "su salud es nuestra prioridad", "atención de calidad", "profesional comprometido", "experiencia y dedicación".
-3. Cada médico debe sentirse ÚNICO. Storytelling, detalles específicos, diferenciación real.
-4. Tono: elegante, médico, humano, premium. NO corporativo.
-5. Español neutro (Latinoamérica).
+  return `Eres el director creativo de CitaDoc — la plataforma de identidad digital médica premium de LATAM.
 
-JSON requerido:
+Tu trabajo: crear sitios web médicos que se sientan como marcas reales, no templates.
+
+REFERENCIAS DE CALIDAD (el nivel que debes alcanzar):
+- SportTherapy: negro + verde eléctrico, tipografía enorme bold, foto de atleta dominante, energía Nike
+- Dra. Karen Auhag (Periodoncia): foto personal dominante, headline emocional, paleta derivada de su logo, voz auténtica
+
+LIBERTAD ARTÍSTICA — puedes y DEBES:
+- Crear headlines que detengan el scroll. Provocadores, cinematográficos, memorables.
+- Usar metáforas poderosas del cuerpo: ingeniería humana, precisión quirúrgica, restauración del movimiento.
+- Hacer al médico protagonista de una historia de vocación, no de un catálogo de servicios.
+- Derivar el mood visual DEL LOGO del médico: si tiene logo oscuro y geométrico → sports/modern; si es dorado y serif → luxury; si es cálido y redondeado → warm.
+- Usar verbos de acción: recupera, transforma, domina, restaura, conquista, libera.
+- Romper el lenguaje clínico genérico con frases que generen deseo y confianza simultáneamente.
+
+PROHIBIDO ABSOLUTAMENTE:
+- "su salud es nuestra prioridad" / "atención de calidad" / "profesional comprometido" / "experiencia y dedicación"
+- Adjetivos vacíos: excelente, óptimo, integral, robusto, destacado, comprometido
+- Headlines genéricos que podrían ser de cualquier médico
+
+INSTRUCCIÓN CRÍTICA SOBRE EL LOGO:
+Si recibes colores del logo del médico en el prompt, ÚSALOS para:
+1. Confirmar o ajustar el visual_dna (el logo manda sobre la especialidad)
+2. El primary_color debe ser el color dominante del logo (o su variación más premium)
+3. El mood del sitio debe resonar con la estética del logo
+
+Devuelve SOLO JSON válido. Sin markdown. Sin texto fuera del JSON.
+
 {
-  "headline": "máx 80 chars, con nombre del doctor, sin adjetivos vacíos",
-  "subheadline": "1-2 oraciones, claridad de valor",
-  "about_text": "2-3 párrafos cortos. Narrativa del doctor. Por qué eligió esta especialidad. Momentos clave.",
-  "philosophy": "1 frase poderosa, tipo quote",
-  "doctor_story": "1 párrafo. Origen de su vocación. Un momento específico.",
-  "differentiators": ["4-5 ventajas concretas, no genéricas"],
-  "treatment_approach": "1 párrafo. Metodología específica. Herramientas o técnicas.",
-  "patient_experience": "1 párrafo. Sensaciones del paciente, no características.",
+  "headline": "máx 80 chars — cinematográfico, con nombre del doctor o su especialidad como protagonista",
+  "subheadline": "1-2 oraciones de valor real, sin clichés",
+  "about_text": "2-3 párrafos. Historia de vocación. Momento específico que lo cambió. Por qué ESTE médico, no cualquiera.",
+  "philosophy": "1 frase poderosa tipo manifesto. Debe quedar grabada.",
+  "doctor_story": "1 párrafo íntimo. El origen. El porqué profundo.",
+  "differentiators": ["4-5 ventajas MUY concretas, técnicas o humanas, nunca genéricas"],
+  "treatment_approach": "1 párrafo. Metodología real. Herramientas específicas de la especialidad.",
+  "patient_experience": "1 párrafo sensorial. Cómo se SIENTE el paciente, no qué recibe.",
   "tone": "cercania-humana | elegancia-premium | confianza-clinica | innovacion-tecnica",
   "visual_dna": "sports | luxury | authority | warm | modern",
-  "services": [{"t":"nombre","d":"descripción","i":"emoji"}],
-  "cta_primary": "2-3 palabras",
-  "cta_final": "1 frase emotiva para la sección CTA final (max 60 chars)",
-  "seo_title": "title optimizado",
-  "seo_description": "meta description, 150-160 chars"
+  "primary_color": "#hexcolor — derivado del logo si existe, o del DNA visual",
+  "services": [{"t":"nombre","d":"descripción impactante 1 línea","i":"emoji"}],
+  "cta_primary": "2-3 palabras de acción",
+  "cta_final": "frase emotiva que cierra el sitio (max 60 chars)",
+  "seo_title": "title SEO optimizado",
+  "seo_description": "meta description 150-160 chars"
 }
 
-visual_dna — elige UNO según la especialidad:
-- sports: traumatología, fisioterapia, medicina deportiva, ortopedia, rehabilitación
-- luxury: cirugía plástica, estética, dermatología cosmética, nutrición estética
-- authority: neurocirugía, cardiología, cirugía general, oncología, hepatología
-- warm: pediatría, medicina familiar, psicología, ginecología, geriatría
-- modern: medicina interna, preventiva, medicina general, endocrinología, diabetología`
+visual_dna — elige UNO. Si hay colores del logo, deja que el logo mande:
+- sports: traumatología · fisio · deportiva · ortopedia · rehabilitación → negro + verde eléctrico, tipografía brutal, energía atlética
+- luxury: plástica · estética · derma cosmética · nutrición → crema + oro, editorial, silencio de lujo
+- authority: neuro · cardio · cirugía · oncología → azul oscuro + blanco, confianza institucional
+- warm: pediatría · familiar · psico · ginecología → naranja cálido + crema, humano y cercano
+- modern: interna · preventiva · general · endocrino → negro-azul + cyan, futuro médico`
 }
 
-function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, perception: string): string {
+function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, perception: string, logoColors?: string[]): string {
   const nombre = `${medico.titulo || 'Dr.'} ${medico.nombre || ''} ${medico.apellido || ''}`.trim()
   const esp = (medico.especialidades as string[] || [])[0] || ''
   const ciudad = (medico.ciudad as string) || ''
@@ -190,10 +211,18 @@ function buildUserPrompt(medico: Record<string, unknown>, userPrompt: string, pe
   if (ciudad) parts.push(`CIUDAD: ${ciudad}`)
   if (anos) parts.push(`EXPERIENCIA: ${anos} años`)
   if (bio) parts.push(`BIO: ${bio}`)
-  parts.push(`TONO: ${perception || 'cercania-humana'}`)
-  if (userPrompt) parts.push(`BRIEF: ${userPrompt}`)
+  parts.push(`TONO DESEADO: ${perception || 'cercania-humana'}`)
 
-  return parts.join('\n') + `\n\nGenera el JSON de identidad web médica premium. Headline con nombre. Differentiators específicos de ${esp}. Treatment_approach con técnicas reales. Patient_experience evocando sensaciones.`
+  if (logoColors && logoColors.length > 0) {
+    parts.push(`COLORES DEL LOGO DEL MÉDICO: ${logoColors.join(', ')} — IMPORTANTE: usa estos colores para definir el visual_dna y el primary_color. El logo es la identidad, deja que mande.`)
+  } else {
+    parts.push(`(Sin logo subido — asigna visual_dna y primary_color basándote en la especialidad)`)
+  }
+
+  if (userPrompt) parts.push(`BRIEF ADICIONAL: ${userPrompt}`)
+
+  return parts.join('\n')
+    + `\n\nCrea la identidad web de este médico. Headline cinematográfico. Differentiators técnicos específicos de ${esp}. Que se sienta como UNA MARCA REAL, no un template.`
 }
 
 // ── MOCK FALLBACK (testing sin API key) ──
@@ -409,7 +438,7 @@ serve(async (req) => {
   const handlerT0 = Date.now()
   try {
     const body = await req.json()
-    const { medico_id, prompt, perception, use_mock } = body
+    const { medico_id, prompt, perception, use_mock, logo_colors } = body
 
     if (!medico_id) {
       return new Response(JSON.stringify({ error: 'medico_id is required' }), {
@@ -458,7 +487,7 @@ serve(async (req) => {
       try {
         const messages: KimiMessage[] = [
           { role: 'system', content: buildSystemPrompt() },
-          { role: 'user', content: buildUserPrompt(medico, prompt || '', perception || 'cercania-humana') }
+          { role: 'user', content: buildUserPrompt(medico, prompt || '', perception || 'cercania-humana', logo_colors || []) }
         ]
         config = await callKimiAPI(messages)
       } catch (e) {
