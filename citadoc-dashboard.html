@@ -4453,8 +4453,8 @@ function mostrarActivacionProWeb(slug) {
   if (btns) {
     var screenshotBtn = document.createElement('button');
     screenshotBtn.style.cssText = 'padding:.65rem;background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(124,58,237,.1));border:1px solid rgba(167,139,250,.25);border-radius:12px;font-size:.82rem;font-weight:700;color:#c4b5fd;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .2s';
-    screenshotBtn.innerHTML = '✨ Generar imagen para Instagram';
-    screenshotBtn.onclick = function() { generarIdentityCard(slug); };
+    screenshotBtn.innerHTML = '✨ Crear story profesional';
+    screenshotBtn.onclick = function() { abrirStoryModal(slug); };
     btns.insertBefore(screenshotBtn, btns.children[1]);
   }
 
@@ -4470,130 +4470,245 @@ var MOCKUP_DNA_COLORS = {
   modern:    { bg1:'#020817', bg2:'#050f1f', orb:'rgba(34,211,238,.4)', accent:'#22d3ee', accentBtn:'rgba(14,165,233,.9)', screenBg:'linear-gradient(180deg,#020817,#03101f)', text:'#fff' }
 };
 
-async function generarIdentityCard(slug) {
-  if (!M) return;
-  var btn = event && event.target;
-  if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
+// ── Story variants ──
+var STORY_VARIANTS = [
+  {
+    id:'editorial', name:'Editorial', desc:'Minimal · Bold · Atemporal',
+    bg:'linear-gradient(160deg,#0a0a0a 0%,#111 100%)',
+    bgColor:'#0a0a0a',
+    orb1:'rgba(255,255,255,.04)', orb2:'rgba(255,255,255,.02)',
+    topBadgeBg:'rgba(255,255,255,.05)', topBadgeBorder:'rgba(255,255,255,.1)',
+    topAccent:'rgba(255,255,255,.9)', topSub:'rgba(255,255,255,.25)',
+    phoneFrame:'linear-gradient(145deg,#2a2a2a,#111)',
+    screenBg:'linear-gradient(180deg,#0d0d0d,#000)',
+    navNameColor:'rgba(255,255,255,.9)', agendarBg:'#fff', agendarText:'#000',
+    heroOverlay:'linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.8))',
+    espColor:'rgba(255,255,255,.5)', hlColor:'#fff',
+    ctaBg:'rgba(255,255,255,.9)', ctaText:'#000',
+    svcBg:'rgba(255,255,255,.05)', svcText:'rgba(255,255,255,.6)',
+    waBarBg:'rgba(37,211,102,.08)', waBorder:'rgba(37,211,102,.12)',
+    nameColor:'#fff', specialtyColor:'rgba(255,255,255,.45)', urlColor:'rgba(255,255,255,.25)',
+    qrColor:'fff', qrBg:'111', badgeColor:'rgba(255,255,255,.2)', badgeText:'rgba(255,255,255,.4)'
+  },
+  null, // DNA variant — filled dynamically
+  {
+    id:'clinical', name:'Clínico', desc:'Confianza · Institución · Autoridad',
+    bg:'linear-gradient(160deg,#f8fafc 0%,#eef2f7 100%)',
+    bgColor:'#f8fafc',
+    orb1:'rgba(29,78,216,.08)', orb2:'rgba(29,78,216,.05)',
+    topBadgeBg:'rgba(29,78,216,.08)', topBadgeBorder:'rgba(29,78,216,.18)',
+    topAccent:'#1d4ed8', topSub:'rgba(15,23,42,.4)',
+    phoneFrame:'linear-gradient(145deg,#1e3a8a,#0f172a)',
+    screenBg:'linear-gradient(180deg,#0f172a,#1e3a8a)',
+    navNameColor:'rgba(255,255,255,.9)', agendarBg:'rgba(59,130,246,.9)', agendarText:'#fff',
+    heroOverlay:'linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.75))',
+    espColor:'#93c5fd', hlColor:'#fff',
+    ctaBg:'rgba(96,165,250,.9)', ctaText:'#fff',
+    svcBg:'rgba(255,255,255,.07)', svcText:'rgba(255,255,255,.65)',
+    waBarBg:'rgba(37,211,102,.08)', waBorder:'rgba(37,211,102,.12)',
+    nameColor:'#0f172a', specialtyColor:'#1d4ed8', urlColor:'#64748b',
+    qrColor:'0f172a', qrBg:'f8fafc', badgeColor:'rgba(15,23,42,.2)', badgeText:'rgba(15,23,42,.4)'
+  }
+];
 
-  var wc = M.web_config || M.web_config_draft || {};
-  var dna = wc.visual_dna || 'modern';
-  var pal = MOCKUP_DNA_COLORS[dna] || MOCKUP_DNA_COLORS.modern;
-  var nombre = (M.titulo||'Dr.') + ' ' + (M.nombre||'') + (M.apellido ? ' '+M.apellido : '');
-  var esp = (M.especialidades||[])[0] || '';
-  var ini = nombre.split(' ').slice(0,2).map(function(w){return (w[0]||'').toUpperCase();}).join('');
-  var headline = (wc.headline || nombre).slice(0, 48);
-  var url = slug + '.citadoc.lat';
-  var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&color=ffffff&bgcolor=' + pal.bg1.replace('#','') + '&data=' + encodeURIComponent('https://'+url);
-  var svcs = (wc.services||[]).slice(0,3).map(function(s){ return s.t||s.nombre||''; }).filter(Boolean);
-
-  // Create off-screen card 540×960 (Stories ratio)
-  var card = document.createElement('div');
-  card.style.cssText = [
-    'position:fixed;top:-9999px;left:-9999px;',
-    'width:540px;height:960px;overflow:hidden;',
-    'font-family:DM Sans,sans-serif;',
-    'background:linear-gradient(145deg,'+pal.bg1+' 0%,'+pal.bg2+' 100%)'
-  ].join('');
-  card.innerHTML =
-    // Background orbs
-    '<div style="position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,'+pal.orb+',transparent 65%);top:-120px;right:-180px;pointer-events:none"></div>'
-    +'<div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,'+pal.orb.replace('.4','  .2')+',transparent 65%);bottom:80px;left:-120px;pointer-events:none"></div>'
-
-    // Top label
+function buildStoryCard(slug, v, data) {
+  var n = data.nombre; var esp = data.esp; var hl = data.headline;
+  var url = slug+'.citadoc.lat'; var svcs = data.svcs;
+  var foto = data.foto; var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&color='+v.qrColor+'&bgcolor='+v.qrBg+'&data='+encodeURIComponent('https://'+url);
+  return '<div id="storyCard_'+v.id+'" style="position:fixed;top:-9999px;left:-9999px;width:540px;height:960px;overflow:hidden;font-family:DM Sans,sans-serif;background:'+v.bg+'">'
+    // orbs
+    +'<div style="position:absolute;width:580px;height:580px;border-radius:50%;background:radial-gradient(circle,'+v.orb1+',transparent 65%);top:-130px;right:-160px;pointer-events:none"></div>'
+    +'<div style="position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,'+v.orb2+',transparent 65%);bottom:100px;left:-110px;pointer-events:none"></div>'
+    // top badge
     +'<div style="position:absolute;top:42px;left:0;right:0;text-align:center">'
-      +'<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:5px 14px">'
-        +'<span style="font-size:8px;font-weight:700;color:'+pal.accent+';text-transform:uppercase;letter-spacing:.14em">CitaDoc</span>'
-        +'<span style="font-size:8px;color:rgba(255,255,255,.3);font-weight:400">· Presencia Médica Premium</span>'
+      +'<div style="display:inline-flex;align-items:center;gap:5px;background:'+v.topBadgeBg+';border:1px solid '+v.topBadgeBorder+';border-radius:20px;padding:5px 14px">'
+        +'<span style="font-size:8px;font-weight:700;color:'+v.topAccent+';text-transform:uppercase;letter-spacing:.14em">CitaDoc</span>'
+        +'<span style="font-size:8px;color:'+v.topSub+';font-weight:400">· Presencia Médica Premium</span>'
       +'</div>'
     +'</div>'
-
-    // iPhone frame
-    +'<div style="position:absolute;left:50%;transform:translateX(-50%);top:95px;width:250px;height:500px;border-radius:36px;background:linear-gradient(145deg,#222,#0a0a0a);box-shadow:0 40px 100px rgba(0,0,0,.7),0 0 0 1.5px rgba(255,255,255,.1),inset 0 0 0 2px rgba(255,255,255,.04)">'
-      // Screen
-      +'<div style="position:absolute;inset:8px;border-radius:28px;overflow:hidden;background:'+pal.screenBg+'">'
-        // Status bar
-        +'<div style="height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 16px">'
-          +'<span style="font-size:8px;font-weight:600;color:rgba(255,255,255,.5)">9:41</span>'
-          +'<div style="display:flex;gap:3px;align-items:center"><span style="font-size:6px;color:rgba(255,255,255,.4)">●●●</span></div>'
-        +'</div>'
-        // Nav
+    // iPhone
+    +'<div style="position:absolute;left:50%;transform:translateX(-50%);top:95px;width:250px;height:500px;border-radius:36px;background:'+v.phoneFrame+';box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 0 1.5px rgba(255,255,255,.08),inset 0 0 0 2px rgba(255,255,255,.04)">'
+      +'<div style="position:absolute;inset:8px;border-radius:28px;overflow:hidden;background:'+v.screenBg+'">'
+        +'<div style="height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 16px"><span style="font-size:8px;font-weight:600;color:rgba(255,255,255,.45)">9:41</span><span style="font-size:6px;color:rgba(255,255,255,.35)">●●●</span></div>'
         +'<div style="padding:0 14px 8px;display:flex;align-items:center;justify-content:space-between">'
-          +'<span style="font-family:Georgia,serif;font-size:10px;font-weight:700;color:'+pal.text+';opacity:.9">'+nombre.split(' ').slice(0,2).join(' ')+'</span>'
-          +'<div style="background:'+pal.accentBtn+';color:'+(dna==='luxury'?'#1a0f06':'#000')+';padding:4px 10px;border-radius:20px;font-size:7px;font-weight:800">Agendar</div>'
+          +'<span style="font-family:Georgia,serif;font-size:10px;font-weight:700;color:'+v.navNameColor+'">'+n.split(' ').slice(0,2).join(' ')+'</span>'
+          +'<div style="background:'+v.agendarBg+';color:'+v.agendarText+';padding:4px 10px;border-radius:20px;font-size:7px;font-weight:800">Agendar</div>'
         +'</div>'
-        // Hero area
-        +'<div style="margin:0 10px;height:200px;border-radius:16px;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.65));display:flex;flex-direction:column;justify-content:flex-end;padding:14px;position:relative;overflow:hidden">'
-          +(M.foto_url ? '<div style="position:absolute;inset:0;background:url('+M.foto_url+') center/cover;filter:brightness(.45) saturate(1.2)"></div>' : '<div style="position:absolute;inset:0;background:'+pal.orb.replace('.4','.15')+'"></div>')
+        +'<div style="margin:0 10px;height:200px;border-radius:16px;background:'+v.heroOverlay+';display:flex;flex-direction:column;justify-content:flex-end;padding:14px;position:relative;overflow:hidden">'
+          +(foto ? '<div style="position:absolute;inset:0;background:url('+foto+') center/cover;filter:brightness(.45) saturate(1.1)"></div>' : '')
           +'<div style="position:relative;z-index:1">'
-            +'<div style="font-size:7px;font-weight:700;color:'+pal.accent+';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">'+esp.slice(0,28)+'</div>'
-            +'<div style="font-family:Georgia,serif;font-size:13px;font-weight:700;color:#fff;line-height:1.15;margin-bottom:8px">'+headline+'</div>'
-            +'<div style="display:inline-flex;align-items:center;gap:4px;background:'+pal.accentBtn+';color:'+(dna==='luxury'?'#1a0f06':'#000')+';padding:5px 10px;border-radius:20px;font-size:6.5px;font-weight:800">📅 Agendar consulta</div>'
+            +'<div style="font-size:7px;font-weight:700;color:'+v.espColor+';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">'+esp.slice(0,28)+'</div>'
+            +'<div style="font-family:Georgia,serif;font-size:13px;font-weight:700;color:'+v.hlColor+';line-height:1.15;margin-bottom:8px">'+hl+'</div>'
+            +'<div style="display:inline-flex;align-items:center;gap:4px;background:'+v.ctaBg+';color:'+v.ctaText+';padding:5px 10px;border-radius:20px;font-size:6.5px;font-weight:800">📅 Agendar consulta</div>'
           +'</div>'
         +'</div>'
-        // Services
-        +(svcs.length ? '<div style="padding:10px 14px">'
-          +'<div style="font-size:6px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Servicios</div>'
-          +svcs.map(function(s){ return '<div style="background:rgba(255,255,255,.06);border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:7px;color:rgba(255,255,255,.7)">'+s+'</div>'; }).join('')
-          +'</div>' : '')
-        // Bottom WA bar
-        +'<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 14px;background:rgba(37,211,102,.1);border-top:1px solid rgba(37,211,102,.15);display:flex;align-items:center;gap:6px">'
-          +'<span style="font-size:9px">💬</span>'
-          +'<span style="font-size:7px;font-weight:700;color:#4ade80">WhatsApp</span>'
-        +'</div>'
+        +(svcs.length ? '<div style="padding:10px 14px"><div style="font-size:6px;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Servicios</div>'+svcs.map(function(s){return '<div style="background:'+v.svcBg+';border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:7px;color:'+v.svcText+'">'+s+'</div>';}).join('')+'</div>' : '')
+        +'<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 14px;background:'+v.waBarBg+';border-top:1px solid '+v.waBorder+';display:flex;align-items:center;gap:6px"><span style="font-size:9px">💬</span><span style="font-size:7px;font-weight:700;color:#4ade80">WhatsApp</span></div>'
       +'</div>'
-      // Home indicator
-      +'<div style="position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:80px;height:3px;border-radius:2px;background:rgba(255,255,255,.2)"></div>'
+      +'<div style="position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:80px;height:3px;border-radius:2px;background:rgba(255,255,255,.18)"></div>'
     +'</div>'
-
     // Doctor info
     +'<div style="position:absolute;bottom:210px;left:0;right:0;text-align:center;padding:0 50px">'
-      +'<div style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#fff;line-height:1.1;margin-bottom:5px">'+nombre+'</div>'
-      +'<div style="font-size:10px;font-weight:700;color:'+pal.accent+';text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px">'+esp+'</div>'
-      +'<div style="font-family:monospace;font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.02em">'+url+'</div>'
+      +'<div style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:'+v.nameColor+';line-height:1.1;margin-bottom:5px">'+n+'</div>'
+      +'<div style="font-size:10px;font-weight:700;color:'+v.specialtyColor+';text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px">'+esp+'</div>'
+      +'<div style="font-family:monospace;font-size:12px;color:'+v.urlColor+'">'+url+'</div>'
     +'</div>'
-
-    // Bottom bar
+    // Bottom
     +'<div style="position:absolute;bottom:50px;left:50px;right:50px;display:flex;align-items:center;justify-content:space-between">'
-      +'<img src="'+qrUrl+'" width="64" height="64" style="border-radius:8px;opacity:.85" crossorigin="anonymous">'
-      +'<div style="text-align:right">'
-        +'<div style="font-size:8px;font-weight:700;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.1em">Powered by</div>'
-        +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.05em">CitaDoc AI ✦</div>'
+      +'<img src="'+qrUrl+'" width="64" height="64" style="border-radius:8px;opacity:.8" crossorigin="anonymous">'
+      +'<div style="text-align:right"><div style="font-size:8px;font-weight:700;color:'+v.badgeColor+';text-transform:uppercase;letter-spacing:.1em">Powered by</div><div style="font-size:10px;font-weight:700;color:'+v.badgeText+';letter-spacing:.05em">CitaDoc AI ✦</div></div>'
+    +'</div>'
+  +'</div>';
+}
+
+function abrirStoryModal(slug) {
+  // Inject loading modal
+  var existing = document.getElementById('storyGenModal');
+  if (existing) existing.remove();
+  var modal = document.createElement('div');
+  modal.id = 'storyGenModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:300000;display:flex;align-items:center;justify-content:center;background:rgba(5,3,12,.92);backdrop-filter:blur(24px);font-family:DM Sans,sans-serif';
+  modal.innerHTML =
+    '<div style="background:linear-gradient(145deg,#09060f,#0f0c1a);border:1px solid rgba(167,139,250,.18);border-radius:24px;padding:2.5rem 2rem;max-width:480px;width:90%;text-align:center">'
+      +'<div id="storyLoadingView">'
+        +'<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(124,58,237,.1));border:1.5px solid rgba(167,139,250,.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 1.2rem">✨</div>'
+        +'<div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.5rem">Creando story profesional</div>'
+        +'<div id="storyLoadStep" style="font-size:.82rem;color:rgba(255,255,255,.4);margin-bottom:1.8rem;min-height:1.2rem">Iniciando...</div>'
+        +'<div style="display:flex;flex-direction:column;gap:.5rem" id="storyStepsList">'
+          +'<div id="sSt0" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .75rem;border-radius:9px;background:rgba(255,255,255,.04)"><span id="sSi0" style="width:12px;height:12px;border-radius:50%;border:2px solid rgba(167,139,250,.3);flex-shrink:0"></span><span style="font-size:.78rem;color:rgba(255,255,255,.4)">Analizando identidad médica</span></div>'
+          +'<div id="sSt1" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .75rem;border-radius:9px;background:rgba(255,255,255,.04)"><span id="sSi1" style="width:12px;height:12px;border-radius:50%;border:2px solid rgba(167,139,250,.3);flex-shrink:0"></span><span style="font-size:.78rem;color:rgba(255,255,255,.4)">Generando dirección visual</span></div>'
+          +'<div id="sSt2" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .75rem;border-radius:9px;background:rgba(255,255,255,.04)"><span id="sSi2" style="width:12px;height:12px;border-radius:50%;border:2px solid rgba(167,139,250,.3);flex-shrink:0"></span><span style="font-size:.78rem;color:rgba(255,255,255,.4)">Creando 3 variantes premium</span></div>'
+        +'</div>'
+      +'</div>'
+      +'<div id="storyResultView" style="display:none">'
+        +'<div style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:.3rem">3 stories listas</div>'
+        +'<div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:1.4rem">Elige la que más representa tu marca</div>'
+        +'<div id="storyPreviews" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.4rem"></div>'
+        +'<button onclick="document.getElementById(\'storyGenModal\').remove()" style="width:100%;padding:.6rem;background:none;border:1px solid rgba(255,255,255,.1);border-radius:10px;font-size:.8rem;color:rgba(255,255,255,.35);cursor:pointer;font-family:DM Sans,sans-serif">Cerrar</button>'
       +'</div>'
     +'</div>';
+  document.body.appendChild(modal);
 
-  document.body.appendChild(card);
+  // Run generation with loading sequence
+  var steps = [
+    {id:'sSi0', label:'Analizando identidad médica...', ms:600},
+    {id:'sSi1', label:'Generando dirección visual...', ms:1300},
+    {id:'sSi2', label:'Creando 3 variantes premium...', ms:2100}
+  ];
+  steps.forEach(function(s, i) {
+    setTimeout(function() {
+      var icon = document.getElementById(s.id);
+      if (icon) { icon.style.background='rgba(167,139,250,.3)'; icon.style.borderColor='rgba(167,139,250,.7)'; icon.style.boxShadow='0 0 8px rgba(124,58,237,.4)'; }
+      var stepEl = document.getElementById('storyLoadStep');
+      if (stepEl) stepEl.textContent = s.label;
+      if (i > 0) { var prev=document.getElementById(steps[i-1].id); if(prev){prev.innerHTML='✓';prev.style.background='rgba(52,211,153,.25)';prev.style.border='none';prev.style.color='#34d399';prev.style.boxShadow='none';} }
+    }, s.ms);
+  });
 
-  try {
-    // Load html2canvas if not loaded
-    if (!window.html2canvas) {
-      await new Promise(function(resolve, reject) {
-        var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
-        s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    }
+  setTimeout(function() {
+    var last = document.getElementById('sSi2');
+    if (last) { last.innerHTML='✓'; last.style.background='rgba(52,211,153,.25)'; last.style.border='none'; last.style.color='#34d399'; last.style.boxShadow='none'; }
+    renderStoryVariants(slug, modal);
+  }, 2500);
+}
 
-    var canvas = await window.html2canvas(card, {
-      width: 540, height: 960, scale: 2,
-      useCORS: true, allowTaint: true,
-      backgroundColor: pal.bg1,
-      logging: false
+async function renderStoryVariants(slug, modal) {
+  if (!M) return;
+  var wc = M.web_config || M.web_config_draft || {};
+  var dna = wc.visual_dna || 'modern';
+  var dnaColors = MOCKUP_DNA_COLORS[dna] || MOCKUP_DNA_COLORS.modern;
+
+  // Build DNA variant from palette
+  var dnaVariant = {
+    id:'signature', name:'Signature', desc:'Tu DNA · Tu marca · Único',
+    bg:'linear-gradient(160deg,'+dnaColors.bg1+' 0%,'+dnaColors.bg2+' 100%)',
+    bgColor:dnaColors.bg1,
+    orb1:dnaColors.orb, orb2:dnaColors.orb.replace('.4','.2'),
+    topBadgeBg:'rgba(255,255,255,.05)', topBadgeBorder:'rgba(255,255,255,.1)',
+    topAccent:dnaColors.accent, topSub:'rgba(255,255,255,.3)',
+    phoneFrame:'linear-gradient(145deg,#222,#0a0a0a)',
+    screenBg:dnaColors.screenBg,
+    navNameColor:'rgba(255,255,255,.9)', agendarBg:dnaColors.accentBtn, agendarText:'#000',
+    heroOverlay:'linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.75))',
+    espColor:dnaColors.accent, hlColor:'#fff',
+    ctaBg:dnaColors.accentBtn, ctaText:'#000',
+    svcBg:'rgba(255,255,255,.06)', svcText:'rgba(255,255,255,.6)',
+    waBarBg:'rgba(37,211,102,.08)', waBorder:'rgba(37,211,102,.12)',
+    nameColor:'#fff', specialtyColor:dnaColors.accent, urlColor:'rgba(255,255,255,.35)',
+    qrColor:'ffffff', qrBg:dnaColors.bg1.replace('#',''), badgeColor:'rgba(255,255,255,.2)', badgeText:'rgba(255,255,255,.4)'
+  };
+
+  var variants = [STORY_VARIANTS[0], dnaVariant, STORY_VARIANTS[2]];
+  var nombre = (M.titulo||'Dr.')+' '+(M.nombre||'')+(M.apellido?' '+M.apellido:'');
+  var esp = (M.especialidades||[])[0]||'';
+  var headline = (wc.headline||nombre).slice(0,48);
+  var svcs = (wc.services||[]).slice(0,3).map(function(s){return s.t||s.nombre||'';}).filter(Boolean);
+  var data = { nombre:nombre, esp:esp, headline:headline, svcs:svcs, foto:M.foto_url||'' };
+
+  // Load html2canvas
+  if (!window.html2canvas) {
+    await new Promise(function(resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
     });
-
-    var link = document.createElement('a');
-    link.download = 'citadoc-' + slug + '-identity.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-
-    mostrarToast('✓ Imagen descargada — lista para Instagram Stories');
-  } catch(e) {
-    console.error('[mockup]', e);
-    mostrarToast('Error generando imagen. Intenta de nuevo.', 'error');
-  } finally {
-    document.body.removeChild(card);
-    if (btn) { btn.textContent = '✨ Generar imagen para Instagram'; btn.disabled = false; }
   }
+
+  var previews = document.getElementById('storyPreviews');
+  if (!previews) return;
+
+  // Generate each variant
+  for (var i = 0; i < variants.length; i++) {
+    var v = variants[i];
+    var cardEl = document.createElement('div');
+    cardEl.innerHTML = buildStoryCard(slug, v, data);
+    document.body.appendChild(cardEl.firstChild);
+    var offscreenCard = document.getElementById('storyCard_'+v.id);
+
+    try {
+      var canvas = await window.html2canvas(offscreenCard, {
+        width:540, height:960, scale:.5,
+        useCORS:true, allowTaint:true,
+        backgroundColor:v.bgColor, logging:false
+      });
+      var dataUrl = canvas.toDataURL('image/png');
+
+      // Full res canvas for download
+      var fullCanvas = await window.html2canvas(offscreenCard, {
+        width:540, height:960, scale:2,
+        useCORS:true, allowTaint:true,
+        backgroundColor:v.bgColor, logging:false
+      });
+      var fullDataUrl = fullCanvas.toDataURL('image/png');
+
+      // Preview card
+      var previewWrap = document.createElement('div');
+      previewWrap.style.cssText = 'display:flex;flex-direction:column;gap:.4rem;cursor:pointer';
+      previewWrap.innerHTML =
+        '<div style="border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.1);aspect-ratio:9/16">'
+          +'<img src="'+dataUrl+'" style="width:100%;height:100%;object-fit:cover" alt="'+v.name+'">'
+        +'</div>'
+        +'<div style="font-size:.65rem;font-weight:700;color:#fff;text-align:center">'+v.name+'</div>'
+        +'<div style="font-size:.58rem;color:rgba(255,255,255,.35);text-align:center;line-height:1.3">'+v.desc+'</div>'
+        +'<button style="width:100%;padding:.35rem;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.25);border-radius:7px;font-size:.65rem;font-weight:700;color:#c4b5fd;cursor:pointer;font-family:DM Sans,sans-serif" onclick="(function(){var a=document.createElement(\'a\');a.download=\'citadoc-'+slug+'-'+v.id+'.png\';a.href=\''+fullDataUrl+'\';a.click();}())">↓ Descargar</button>';
+      previews.appendChild(previewWrap);
+    } catch(e) {
+      console.error('[story '+v.id+']', e);
+    } finally {
+      if (offscreenCard && offscreenCard.parentNode) offscreenCard.parentNode.removeChild(offscreenCard);
+    }
+  }
+
+  // Switch to results view
+  var loadingView = document.getElementById('storyLoadingView');
+  var resultView = document.getElementById('storyResultView');
+  if (loadingView) loadingView.style.display = 'none';
+  if (resultView) resultView.style.display = 'block';
+}
+
+async function generarIdentityCard(slug) {
+  abrirStoryModal(slug);
 }
 
 async function refreshMedico() {
