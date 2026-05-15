@@ -719,7 +719,14 @@ REGLAS DE COPY:
 
 IDENTIDAD VISUAL:
 - primary_color: extráelo del logo. Si no hay logo, del tono de la foto.
-- visual_dna: navy/formal → clinic · verde vibrante → sports · cálido → warm · dorado → luxury · cian/tech → modern
+- visual_dna según el logo y la especialidad:
+  · clinic → traumatología, ortopedia, cirugía articular, rehabilitación, fisioterapia clínica (split limpio, navy, elegante)
+  · authority → SOLO neurocirugía, cardiología, oncología, hepatología (paleta azul oscura institucional)
+  · sports → medicina deportiva pura, performance, atletas de alto rendimiento (negro + verde eléctrico)
+  · luxury → estética, dermatología cosmética, cirugía plástica (crema + dorado)
+  · warm → pediatría, psicología, medicina familiar, ginecología (naranja cálido)
+  · modern → medicina interna, preventiva, tecnología médica (cian/tech)
+  IMPORTANTE: un traumatólogo con fellowship y máster usa SIEMPRE "clinic" — sus credenciales elevan el copy, no el DNA
 - El color que elegís tiñe botones, nav, headlines. Elegí el correcto.
 
 JSON a devolver (SOLO JSON, sin texto antes ni después):
