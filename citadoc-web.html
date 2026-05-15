@@ -1325,11 +1325,20 @@ function renderWeb(m,locs,wc,isPreview){
 
   if(wc.primary_color){
     var pc = wc.primary_color;
-    document.documentElement.style.setProperty('--ga', pc);
-    document.documentElement.style.setProperty('--gm', pc);
-    document.documentElement.style.setProperty('--p',  pc);
-    // Variante más brillante para hover/accent
-    document.documentElement.style.setProperty('--gg', pc);
+    // Parsear hex → crear variantes oscura/media/clara para jerarquía visual real
+    var hex = pc.replace('#','');
+    var r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+    var darken = function(v,a){return Math.max(0,Math.round(v*(1-a)));};
+    var lighten = function(v,a){return Math.min(255,Math.round(v+(255-v)*a));};
+    var toHex = function(r,g,b){return '#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');};
+    var dark   = toHex(darken(r,.2), darken(g,.2), darken(b,.2));   // --gd, --gm (headlines)
+    var mid    = pc;                                                   // --ga (botones)
+    var bright = toHex(lighten(r,.15),lighten(g,.15),lighten(b,.15)); // --gg (hover)
+    document.documentElement.style.setProperty('--gd', dark);
+    document.documentElement.style.setProperty('--gm', dark);
+    document.documentElement.style.setProperty('--ga', mid);
+    document.documentElement.style.setProperty('--gg', bright);
+    document.documentElement.style.setProperty('--p',  mid);
   }
   var nombre=(_M.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   var esp=(m.especialidades||[])[0]||'';

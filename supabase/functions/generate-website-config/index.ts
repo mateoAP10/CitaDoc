@@ -382,6 +382,36 @@ function assignPrimaryColor(esp: string): string {
   return '#1a2e44'
 }
 
+// Deriva el DNA visual desde el color dominante del logo
+// Esta función es el corazón de la identidad: el logo MANDA sobre la especialidad
+function logoColorToDna(hexColor: string): string | null {
+  if (!hexColor) return null
+  const hex = hexColor.replace('#', '')
+  if (hex.length < 6) return null
+  const r = parseInt(hex.slice(0,2), 16)
+  const g = parseInt(hex.slice(2,4), 16)
+  const b = parseInt(hex.slice(4,6), 16)
+  const max = Math.max(r,g,b)
+  const min = Math.min(r,g,b)
+  const lightness = (max+min) / 510 // 0-1
+  const saturation = max === 0 ? 0 : (max-min)/max
+
+  // Muy oscuro (negro, navy profundo) → sports o authority según saturación
+  if (lightness < 0.18) return saturation > 0.3 ? 'sports' : 'authority'
+  // Verde dominante → sports
+  if (g > r*1.2 && g > b*1.2 && saturation > 0.25) return 'sports'
+  // Rojo/naranja dominante → warm
+  if (r > g*1.3 && r > b*1.3 && r > 140) return 'warm'
+  // Azul dominante, oscuro → clinic/authority
+  if (b > r*1.2 && b > g*1.1 && lightness < 0.5) return lightness < 0.3 ? 'authority' : 'clinic'
+  // Dorado/crema (alta R+G, baja B, saturación baja) → luxury
+  if (r > 160 && g > 130 && b < 100 && saturation < 0.5) return 'luxury'
+  // Cian/teal brillante → modern
+  if (b > 150 && g > 150 && r < 120) return 'modern'
+  // Por defecto: clinic (profesional, neutro)
+  return 'clinic'
+}
+
 function assignDNAFallback(esp: string): string {
   const e = esp.toLowerCase()
   if (['deport','rendimiento','atletism','performanc'].some(k => e.includes(k))) return 'sports'
@@ -556,6 +586,7 @@ function buildMockConfig(medico: Record<string, unknown>, logoColors?: string[])
     seo_title: `${nombre} — ${espRaw}${ciudad ? ' en ' + ciudad : ''}`,
     seo_description: `${nombre}, especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}${anos ? ' con ' + anos + ' años de experiencia' : ''}. Atención médica personalizada y de excelencia.`,
     primary_color: (logoColors && logoColors.length > 0) ? logoColors[0] : assignPrimaryColor(espRaw),
+    visual_dna: (logoColors && logoColors.length > 0) ? (logoColorToDna(logoColors[0]) || assignDNAFallback(espRaw)) : assignDNAFallback(espRaw),
     // Backwards compatibility
     cta_primary_text: 'Agendar cita',
     seo_desc: `${nombre}, especialista en ${espRaw}${ciudad ? ' en ' + ciudad : ''}${anos ? ' con ' + anos + ' años de experiencia' : ''}. Atención médica personalizada y de excelencia.`,
@@ -659,9 +690,11 @@ serve(async (req) => {
       }
     }
 
-    // Forzar anchors si Kimi los ignoró — la identidad visual no puede derivar entre regeneraciones
-    if (anchor_dna && !logo_colors?.length) config.visual_dna = anchor_dna
-    if (anchor_color && !logo_colors?.length) config.primary_color = anchor_color
+    // Anchors: solo aplican si NO se subió logo nuevo (para mantener consistencia visual entre regeneraciones)
+    // Si hay logo_colors recientes, el logo manda — no el anchor del draft anterior
+    const hasNewLogo = logo_colors && logo_colors.length > 0
+    if (!hasNewLogo && anchor_dna) config.visual_dna = anchor_dna
+    if (!hasNewLogo && anchor_color) config.primary_color = anchor_color
 
     // Normalize and validate
     const validationError = validateConfig(config)
