@@ -591,6 +591,7 @@ display:flex;
 .ficha-stat:last-child{border-right:none}
 .ficha-stat-val{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1.2}
 .ficha-stat-label{font-size:.62rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem}
+.ficha-stat-icon{display:none}
 .ficha-antecedentes{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:1rem 1.2rem;margin-bottom:1rem}
 .ficha-ante-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.7rem}
 .ficha-ante-item{display:flex;align-items:flex-start;gap:.45rem;padding:.5rem .65rem;background:var(--cream);border-radius:10px}
@@ -615,6 +616,45 @@ display:flex;
 .ficha-doc-item:hover{background:var(--cream)}
 .ficha-doc-icon{width:28px;height:28px;border-radius:7px;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
 @media(max-width:900px){.ficha-layout{grid-template-columns:1fr}.ficha-stats{grid-template-columns:repeat(2,1fr)}.ficha-ante-grid{grid-template-columns:1fr}}
+
+/* ── FICHA MOBILE ── */
+.ficha-fab{display:none}
+@media(max-width:768px){
+  /* Hero */
+  .ficha-hero{padding:.9rem 1rem;margin-bottom:.65rem;gap:.8rem;flex-wrap:nowrap;align-items:flex-start}
+  .ficha-hero-consulta-inline{display:none!important}
+  /* Stats 2×2 con íconos */
+  .ficha-stats{grid-template-columns:1fr 1fr;border-radius:14px}
+  .ficha-stat{padding:.75rem .8rem;text-align:left;display:flex;align-items:center;gap:.55rem;border-right:1px solid var(--border)}
+  .ficha-stat:nth-child(2),.ficha-stat:nth-child(4){border-right:none}
+  .ficha-stat:nth-child(1),.ficha-stat:nth-child(2){border-bottom:1px solid var(--border)}
+  .ficha-stat-icon{font-size:1.1rem;flex-shrink:0;width:28px;height:28px;border-radius:8px;background:var(--cream);display:flex;align-items:center;justify-content:center}
+  .ficha-stat-val{font-size:.82rem;font-weight:700;line-height:1.2}
+  .ficha-stat-label{font-size:.58rem;margin-top:.1rem}
+  /* Antecedentes como lista tappable */
+  .ficha-antecedentes{padding:.85rem 0;overflow:hidden}
+  .ficha-ante-grid{grid-template-columns:1fr;gap:0;margin-top:0}
+  .ficha-ante-item{background:var(--white);border-radius:0;padding:.8rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:center}
+  .ficha-ante-item:last-child{border-bottom:none}
+  .ficha-ante-item:active{background:var(--cream)}
+  .ficha-ante-chevron{display:flex!important}
+  /* Historial mobile */
+  .ficha-consulta-header{padding:.75rem .9rem;gap:.6rem}
+  .ficha-consulta-item{border-radius:12px;margin-bottom:.45rem}
+  /* FAB */
+  .ficha-fab{
+    display:flex;align-items:center;justify-content:center;
+    position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));right:1.2rem;
+    width:52px;height:52px;border-radius:50%;
+    background:var(--teal);color:#fff;border:none;
+    font-size:1.6rem;line-height:1;
+    box-shadow:0 4px 20px rgba(11,124,110,.4),0 1px 4px rgba(11,124,110,.2);
+    cursor:pointer;z-index:149;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .ficha-fab:active{transform:scale(.88);box-shadow:0 2px 10px rgba(11,124,110,.3)}
+}
 @media(max-width:768px){
   .pac-folder{flex:0 0 80px}
   .pac-folder-letter{font-size:1.6rem}
@@ -1998,6 +2038,7 @@ function showPanel(id, el) {
   closeSidebarOnMobile();
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  if (id !== 'ficha') { var _fab = document.getElementById('fichaFab'); if (_fab) _fab.remove(); }
   var panel = _el('panel-'+id);
   if (!panel) return;
   panel.classList.add('active');
@@ -6634,6 +6675,7 @@ function renderFicha(p, consultas, proximaCita) {
   if (!cont) return;
   cont.innerHTML = '';
 
+  var isMobile = window.innerWidth <= 900;
   var ini = (p.nombre||'P').split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase()||'?';
   var edad = '';
   if (p.fecha_nacimiento) {
@@ -6642,8 +6684,9 @@ function renderFicha(p, consultas, proximaCita) {
   }
   var ultimaConsulta = consultas[0] ? new Date(consultas[0].created_at).toLocaleDateString('es',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
   var esp = M ? ((M.especialidades||[])[0]||'General') : 'General';
+  var proximaFecha = proximaCita ? new Date(proximaCita.fecha+'T12:00:00').toLocaleDateString('es',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
 
-  // Back
+  // ── BACK ──
   var back = document.createElement('button');
   back.style.cssText='background:none;border:none;cursor:pointer;color:var(--muted);font-size:.82rem;display:flex;align-items:center;gap:.35rem;padding:.25rem .5rem;border-radius:8px;margin-bottom:.85rem;font-family:DM Sans,sans-serif';
   back.innerHTML='← Volver a pacientes';
@@ -6652,246 +6695,361 @@ function renderFicha(p, consultas, proximaCita) {
   back.onclick=function(){ showPanel('pacientes', document.querySelector('[onclick*="pacientes"]')); };
   cont.appendChild(back);
 
-  // Hero
-  var hero = document.createElement('div');
-  hero.className = 'ficha-hero';
-  var wa = p.telefono ? '<a href="https://wa.me/'+p.telefono.replace(/[^0-9]/g,'')+'" target="_blank" style="width:32px;height:32px;border-radius:9px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);display:flex;align-items:center;justify-content:center;color:#25d366;text-decoration:none;font-size:.9rem;flex-shrink:0">💬</a>' : '';
-  hero.innerHTML = '<div class="ficha-avatar">'+ini+'</div>'
-    +'<div style="flex:1;min-width:0">'
-      +'<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
-        +'<span style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:var(--ink);letter-spacing:-.02em">'+p.nombre+'</span>'
-        +(p.cedula?'<span style="font-size:.68rem;font-weight:700;padding:.15rem .5rem;background:var(--teal-lite);color:var(--teal-dark);border-radius:20px">'+p.cedula+'</span>':'')
-      +'</div>'
-      +'<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.3rem">'
-        +(p.email?'<span style="font-size:.75rem;color:var(--muted)">✉ '+p.email+'</span>':'')
-        +(p.telefono?'<span style="font-size:.75rem;color:var(--muted)">📱 '+p.telefono+'</span>':'')
-      +'</div>'
-    +'</div>'
-    +'<div style="display:flex;gap:.5rem;align-items:center;margin-left:auto">'
-      +wa
-      +'<button onclick="abrirConsultaFicha()" style="padding:.5rem 1rem;background:var(--white);border:1.5px solid var(--teal);color:var(--teal);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:600;cursor:pointer">+ Consulta</button>'
-    +'</div>';
-  cont.appendChild(hero);
+  if (isMobile) {
+    // ══════════════════════════════════════════
+    // MOBILE LAYOUT — fully inline, no CSS deps
+    // ══════════════════════════════════════════
 
-  // Stats strip
-  var stats = document.createElement('div');
-  stats.className = 'ficha-stats';
-  var proximaFecha = proximaCita ? new Date(proximaCita.fecha+'T12:00:00').toLocaleDateString('es',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
-  [
-    {val: edad||'—', label:'Edad', sub: edad?'años':''},
-    {val: ultimaConsulta, label:'Última visita'},
-    {val: esp, label:'Especialidad'},
-    {val: proximaFecha, label:'Próxima cita'}
-  ].forEach(function(s) {
-    var el = document.createElement('div');
-    el.className = 'ficha-stat';
-    el.innerHTML = '<div class="ficha-stat-val">'+s.val+'</div>'
-      +'<div class="ficha-stat-label">'+s.label+'</div>';
-    stats.appendChild(el);
-  });
-  cont.appendChild(stats);
-
-  // Main 2-col layout
-  var layout = document.createElement('div');
-  layout.className = 'ficha-layout';
-  var main = document.createElement('div');
-  var sidebar = document.createElement('div');
-
-  // ── ANTECEDENTES ──
-  var ante = document.createElement('div');
-  ante.className = 'ficha-antecedentes';
-  ante.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center">'
-    +'<span style="font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em">Antecedentes clínicos</span>'
-    +'<button onclick="editarResumenClinico(\''+p.id+'\')" style="background:none;border:1px solid var(--border);padding:.2rem .6rem;border-radius:7px;font-size:.72rem;color:var(--muted);cursor:pointer;font-family:DM Sans,sans-serif">Editar</button>'
-    +'</div>'
-    +'<div class="ficha-ante-grid">'
-    +[['🌿','#e8f5e2','Alergias',p.alergias],['💊','#e0f0ff','Medicación actual',p.medicacion],['🫀','#fce8e8','Antecedentes',p.antecedentes],['✂️','#fef3e2','Cirugías previas',p.cirugias]].map(function(f){
-      return '<div class="ficha-ante-item">'
-        +'<div class="ficha-ante-icon" style="background:'+f[1]+'">'+f[0]+'</div>'
-        +'<div><div class="ficha-ante-label">'+f[2]+'</div><div class="ficha-ante-val">'+(f[3]||'No registrado')+'</div></div>'
-        +'</div>';
-    }).join('')
-    +'</div>';
-  main.appendChild(ante);
-
-  // ── HISTORIAL CLÍNICO ──
-  var hlabel = document.createElement('div');
-  hlabel.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem';
-  hlabel.innerHTML='<span style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:var(--ink)">Historial clínico</span>'
-    +'<span style="font-size:.75rem;color:var(--muted2)">'+consultas.length+' consulta'+(consultas.length!==1?'s':'')+'</span>';
-  main.appendChild(hlabel);
-
-  if (!consultas.length) {
-    var emp = document.createElement('div');
-    emp.style.cssText='text-align:center;padding:2rem;color:var(--muted2);border:1.5px dashed var(--border);border-radius:12px';
-    emp.innerHTML='<div style="font-size:1.6rem;margin-bottom:.4rem">📋</div><div style="font-weight:600;color:var(--ink2)">Sin consultas aún</div>';
-    main.appendChild(emp);
-  } else {
-    consultas.forEach(function(con, idx) {
-      var _d = con.created_at ? new Date(con.created_at) : null;
-      var fecha = _d ? _d.toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}) : '';
-      var fechaLarga = _d ? _d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
-      var pend = (con.estado||'atendida')==='pendiente';
-      var dotColor = pend ? '#f59e0b' : 'var(--teal)';
-      var diags = (con.diagnostico||'').split('\n').filter(Boolean).slice(0,2);
-
-      var item = document.createElement('div');
-      item.className = 'ficha-consulta-item';
-
-      // Header row
-      var hdr = document.createElement('div');
-      hdr.className = 'ficha-consulta-header';
-      hdr.innerHTML = '<div class="ficha-consulta-dot" style="background:'+dotColor+'"></div>'
+    // Hero card
+    var hero = document.createElement('div');
+    hero.style.cssText='background:#fff;border-radius:16px;padding:1rem;border:1px solid rgba(11,124,110,.13);margin-bottom:.75rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)';
+    var waHref = p.telefono ? 'https://wa.me/'+p.telefono.replace(/[^0-9]/g,'') : '';
+    hero.innerHTML =
+      '<div style="display:flex;align-items:flex-start;gap:.85rem">'
+        +'<div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;color:#fff;flex-shrink:0">'+ini+'</div>'
         +'<div style="flex:1;min-width:0">'
-          +'<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
-            +'<span style="font-size:.84rem;font-weight:700;color:var(--ink)">'+(con.motivo||'Consulta')+'</span>'
-            +(diags.length ? diags.map(function(d){
-              var m=d.match(/^([A-Z][0-9]{2}\.?[0-9A-Z]*)\s*[—\-]+\s*(.+)/);
-              return m ? '<span style="display:inline-flex;align-items:center;gap:.2rem;padding:.12rem .45rem;background:var(--teal-lite);border-radius:20px;font-size:.65rem;font-weight:700;color:var(--teal-dark)"><span style="background:#fff;padding:.05rem .3rem;border-radius:4px;font-size:.6rem;color:var(--teal)">'+m[1]+'</span>'+m[2].slice(0,20)+'</span>'
-                : '<span style="padding:.12rem .45rem;background:var(--cream);border-radius:20px;font-size:.68rem;color:var(--ink2)">'+d.slice(0,30)+'</span>';
-            }).join('') : '')
+          +'<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">'
+            +'<span style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#0f1a18;letter-spacing:-.02em;line-height:1.2">'+p.nombre+'</span>'
+            +(waHref?'<a href="'+waHref+'" target="_blank" style="width:30px;height:30px;border-radius:9px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);display:flex;align-items:center;justify-content:center;color:#25d366;text-decoration:none;font-size:.85rem;flex-shrink:0">💬</a>':'')
           +'</div>'
-          +'<div style="font-size:.7rem;color:var(--muted);margin-top:.1rem">'+fechaLarga+'</div>'
+          +(p.email?'<div style="font-size:.73rem;color:#6b7c79;margin-top:.3rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✉ '+p.email+'</div>':'')
+          +(p.telefono?'<div style="font-size:.73rem;color:#6b7c79;margin-top:.15rem">📱 '+p.telefono+'</div>':'')
+          +'<button onclick="abrirConsultaFicha()" style="margin-top:.7rem;padding:.5rem 1.1rem;background:#0b7c6e;border:none;color:#fff;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent">+ Consulta</button>'
         +'</div>'
-        +'<span style="font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;background:'+(pend?'#fef3c7':'#d1fae5')+';color:'+(pend?'#b45309':'#065f46')+';white-space:nowrap;flex-shrink:0">'+(pend?'Pendiente':'Atendida')+'</span>'
-        +'<span style="font-size:.8rem;color:var(--muted2);flex-shrink:0">▾</span>';
+      +'</div>';
+    cont.appendChild(hero);
 
-      // Body (hidden by default)
-      var body = document.createElement('div');
-      body.className = 'ficha-consulta-body';
-
-      var sections = [
-        ['Motivo', con.motivo],
-        ['Enfermedad actual', con.enfermedad_actual||con.sintomas],
-        ['Examen físico', con.examen_fisico],
-        ['Diagnóstico', con.diagnostico],
-        ['Medicamentos', con.plan||con.tratamiento],
-        ['Imágenes solicitadas', con.imagenes],
-        ['Laboratorios solicitados', con.estudios],
-        ['Indicaciones', con.indicaciones],
-        ['Notas', con.notas]
-      ].filter(function(s){ return s[1] && s[1].trim(); });
-
-      // Fecha prominente al inicio del cuerpo expandido
-      if (fechaLarga) {
-        var fechaEl = document.createElement('div');
-        fechaEl.style.cssText = 'display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;background:var(--teal-lite);border-radius:9px;margin-bottom:.7rem';
-        fechaEl.innerHTML = '<span style="font-size:.95rem">📅</span>'
-          +'<span style="font-family:Fraunces,serif;font-size:.95rem;font-weight:700;color:var(--teal-dark)">'+fechaLarga+'</span>';
-        body.appendChild(fechaEl);
-      }
-
-      if (!sections.length) {
-        body.innerHTML += '<div style="font-size:.82rem;color:var(--muted2);font-style:italic">Consulta sin detalles adicionales.</div>';
-      } else {
-        sections.forEach(function(s) {
-          var sec = document.createElement('div');
-          sec.className = 'ficha-consulta-section';
-          sec.innerHTML = '<div class="ficha-consulta-section-label">'+s[0]+'</div>'
-            +'<div class="ficha-consulta-section-val">'+s[1].trim()+'</div>';
-          body.appendChild(sec);
-        });
-      }
-
-      // Toggle click
-      var open = false;
-      hdr.addEventListener('click', function() {
-        open = !open;
-        body.className = 'ficha-consulta-body' + (open ? ' open' : '');
-        item.style.borderColor = open ? 'rgba(11,124,110,.3)' : '';
-        hdr.querySelector('span:last-child').textContent = open ? '▴' : '▾';
-      });
-
-      // Audit panel v1 — "Ver extracción AI" expandible
-      if (con.ai_raw_extraction && con.voice_transcript) {
-        var auditBtn = document.createElement('button');
-        auditBtn.style.cssText = 'width:100%;margin-top:.4rem;padding:.35rem;background:none;border:1px solid #e5e7eb;border-radius:8px;font-size:.7rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;text-align:left';
-        auditBtn.innerHTML = '&#129302; Ver extraccion AI &rarr;';
-        var auditOpen = false;
-        var auditPanel = document.createElement('div');
-        auditPanel.style.cssText = 'display:none;margin-top:.4rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.7rem .85rem;font-size:.72rem;color:#374151';
-        auditPanel.innerHTML = '<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Transcript dictado</div>'
-          +'<div style="font-style:italic;color:#6b7280;margin-bottom:.7rem;line-height:1.5">'+con.voice_transcript.slice(0,300)+(con.voice_transcript.length>300?'…':'')+'</div>'
-          +'<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">AI propuso · médico guardó</div>'
-          +'<div style="color:#059669;font-size:.68rem">Diagnosticos: '+(con.ai_raw_extraction.assessment&&con.ai_raw_extraction.assessment.diagnoses&&con.ai_raw_extraction.assessment.diagnoses.length||0)+' vs '+(con.diagnostico?con.diagnostico.split('\\n').filter(Boolean).length:0)+'</div>'
-          +'<div style="color:#3b82f6;font-size:.68rem">Medicamentos: '+(con.ai_raw_extraction.plan&&con.ai_raw_extraction.plan.medications&&con.ai_raw_extraction.plan.medications.length||0)+' → '+(con.plan?(con.plan.split('|').filter(Boolean).length):0)+'</div>';
-        auditBtn.addEventListener('click', function(e){ e.stopPropagation(); auditOpen=!auditOpen; auditPanel.style.display=auditOpen?'block':'none'; auditBtn.innerHTML=(auditOpen?'&#129302; Ocultar extraccion AI &uarr;':'&#129302; Ver extraccion AI &rarr;'); });
-        item.appendChild(auditBtn);
-        item.appendChild(auditPanel);
-      }
-
-      // Botón documentos (si hay plan/imágenes/labs)
-      if (con.plan || con.imagenes || con.estudios) {
-        var docsBtn = document.createElement('button');
-        docsBtn.style.cssText = 'width:100%;margin-top:.5rem;padding:.4rem;background:none;border:1px solid rgba(11,124,110,.18);border-radius:8px;font-size:.72rem;color:var(--teal);cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem';
-        docsBtn.innerHTML = '📄 Documentos de esta consulta';
-        docsBtn.onmouseenter=function(){this.style.background='var(--teal-lite)';};
-        docsBtn.onmouseleave=function(){this.style.background='none';};
-        (function(co,pa){ docsBtn.addEventListener('click',function(e){e.stopPropagation();mcDocsConsulta(co,pa);}); })(con, p);
-        item.appendChild(docsBtn);
-      }
-
-      item.appendChild(hdr);
-      item.appendChild(body);
-      main.appendChild(item);
+    // Stats 2×2
+    var statsWrap = document.createElement('div');
+    statsWrap.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0;background:#fff;border-radius:14px;border:1px solid rgba(11,124,110,.13);overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)';
+    [
+      {val:edad||'—', label:'Edad', icon:'📅', pos:'tl'},
+      {val:ultimaConsulta, label:'Última visita', icon:'🕐', pos:'tr'},
+      {val:esp, label:'Especialidad', icon:'🩺', pos:'bl'},
+      {val:proximaFecha, label:'Próxima cita', icon:'📆', pos:'br'}
+    ].forEach(function(s) {
+      var borderR = (s.pos==='tl'||s.pos==='bl') ? '1px solid rgba(11,124,110,.13)' : 'none';
+      var borderB = (s.pos==='tl'||s.pos==='tr') ? '1px solid rgba(11,124,110,.13)' : 'none';
+      var el = document.createElement('div');
+      el.style.cssText='padding:.8rem;display:flex;align-items:center;gap:.55rem;border-right:'+borderR+';border-bottom:'+borderB;
+      el.innerHTML='<div style="width:28px;height:28px;border-radius:8px;background:#f7f4ef;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">'+s.icon+'</div>'
+        +'<div><div style="font-family:Fraunces,serif;font-size:.85rem;font-weight:700;color:#0f1a18;line-height:1.2">'+s.val+'</div>'
+        +'<div style="font-size:.58rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.05em;margin-top:.1rem">'+s.label+'</div></div>';
+      statsWrap.appendChild(el);
     });
-  }
+    cont.appendChild(statsWrap);
 
-  // ── SIDEBAR ──
-  // Próxima cita
-  var proxCard = document.createElement('div');
-  proxCard.className = 'ficha-sidebar-card';
-  if (proximaCita) {
-    var loc = proximaCita.location_id ? (window.locationsMedico||[]).find(function(l){ return String(l.id)===String(proximaCita.location_id); }) : null;
-    var fechaProx = new Date(proximaCita.fecha+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
-    proxCard.innerHTML = '<div class="ficha-sidebar-title">Próxima cita</div>'
-      +'<div style="font-size:.88rem;font-weight:700;color:var(--teal-dark);margin-bottom:.25rem">'+fechaProx+'</div>'
-      +'<div style="font-size:.78rem;color:var(--muted);margin-bottom:.15rem">🕒 '+proximaCita.hora+'</div>'
-      +(loc?'<div style="font-size:.76rem;color:var(--muted);margin-bottom:.6rem">📍 '+loc.nombre+'</div>':'<div style="margin-bottom:.6rem"></div>')
-      +'<button onclick="abrirNuevaCita(_fichaPaciente)" style="width:100%;padding:.5rem;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">+ Nueva cita</button>';
+    // Antecedentes clínicos
+    var ante = document.createElement('div');
+    ante.style.cssText='background:#fff;border-radius:14px;border:1px solid rgba(11,124,110,.13);overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)';
+    ante.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:.85rem 1rem .6rem">'
+      +'<span style="font-size:.68rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em">Antecedentes clínicos</span>'
+      +'<button onclick="editarResumenClinico(\''+p.id+'\')" style="background:none;border:1px solid rgba(11,124,110,.13);padding:.2rem .65rem;border-radius:7px;font-size:.72rem;color:#6b7c79;cursor:pointer;font-family:DM Sans,sans-serif">Editar</button>'
+      +'</div>';
+    [
+      ['🌿','#e8f5e2','Alergias',p.alergias],
+      ['💊','#e0f0ff','Medicación actual',p.medicacion],
+      ['🫀','#fce8e8','Antecedentes',p.antecedentes],
+      ['✂️','#fef3e2','Cirugías previas',p.cirugias]
+    ].forEach(function(f, fi, fa) {
+      var row = document.createElement('div');
+      var isLast = fi === fa.length - 1;
+      row.style.cssText='display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-top:1px solid rgba(11,124,110,.09);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s';
+      row.innerHTML='<div style="width:28px;height:28px;border-radius:8px;background:'+f[1]+';display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0">'+f[0]+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:.62rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.05em">'+f[2]+'</div>'
+          +'<div style="font-size:.78rem;color:#2c3a38;margin-top:.1rem">'+(f[3]||'No registrado')+'</div>'
+        +'</div>'
+        +'<span style="font-size:1.15rem;color:#a0b0ae;flex-shrink:0">›</span>';
+      row.ontouchstart=function(){this.style.background='#f7f4ef';};
+      row.ontouchend=function(){this.style.background='';};
+      row.onclick=function(){ editarResumenClinico(p.id); };
+      ante.appendChild(row);
+    });
+    cont.appendChild(ante);
+
+    // Historial clínico
+    var hist = document.createElement('div');
+    hist.style.cssText='margin-bottom:1.5rem';
+    var histHdr = document.createElement('div');
+    histHdr.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;padding:0 .1rem';
+    histHdr.innerHTML='<span style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:#0f1a18">Historial clínico</span>'
+      +'<span style="font-size:.75rem;color:#0b7c6e;font-weight:600">Ver todo</span>';
+    hist.appendChild(histHdr);
+
+    if (!consultas.length) {
+      var emp = document.createElement('div');
+      emp.style.cssText='text-align:center;padding:2rem;color:#a0b0ae;border:1.5px dashed rgba(11,124,110,.2);border-radius:12px;background:#fff';
+      emp.innerHTML='<div style="font-size:1.6rem;margin-bottom:.4rem">📋</div><div style="font-weight:600;color:#2c3a38">Sin consultas aún</div>';
+      hist.appendChild(emp);
+    } else {
+      consultas.forEach(function(con, idx) {
+        var _d = con.created_at ? new Date(con.created_at) : null;
+        var fechaCorta = _d ? _d.toLocaleDateString('es',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+        var fechaLarga = _d ? _d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
+        var pend = (con.estado||'atendida')==='pendiente';
+        var dotColor = pend ? '#f59e0b' : '#0b7c6e';
+        var nConsulta = consultas.length - idx;
+        var diags = (con.diagnostico||'').split('\n').filter(Boolean).slice(0,1);
+
+        var item = document.createElement('div');
+        item.style.cssText='background:#fff;border:1.5px solid rgba(11,124,110,.12);border-radius:12px;margin-bottom:.45rem;overflow:hidden;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)';
+
+        var hdr = document.createElement('div');
+        hdr.style.cssText='display:flex;align-items:center;gap:.65rem;padding:.75rem .9rem;cursor:pointer;-webkit-tap-highlight-color:transparent';
+        hdr.innerHTML='<div style="width:9px;height:9px;border-radius:50%;background:'+dotColor+';flex-shrink:0"></div>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap">'
+              +'<span style="font-size:.72rem;font-weight:700;color:#0b7c6e">'+fechaCorta+'</span>'
+              +'<span style="font-size:.84rem;font-weight:700;color:#0f1a18">'+(con.motivo||'Consulta médica')+'</span>'
+            +'</div>'
+            +'<div style="font-size:.7rem;color:#6b7c79;margin-top:.15rem">'+esp+'</div>'
+          +'</div>'
+          +'<div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0">'
+            +'<span style="font-size:.62rem;font-weight:700;padding:.2rem .5rem;border-radius:20px;background:#e0f5f2;color:#085f54;white-space:nowrap">'+nConsulta+' consulta'+(nConsulta!==1?'s':'')+'</span>'
+            +'<span id="fichaCaret_'+idx+'" style="font-size:1rem;color:#a0b0ae;line-height:1">›</span>'
+          +'</div>';
+
+        var body = document.createElement('div');
+        body.style.cssText='display:none;border-top:1px solid rgba(11,124,110,.1);padding:.9rem 1rem 1rem;background:#fafcfb';
+
+        var sections = [
+          ['Motivo', con.motivo],
+          ['Enfermedad actual', con.enfermedad_actual||con.sintomas],
+          ['Examen físico', con.examen_fisico],
+          ['Diagnóstico', con.diagnostico],
+          ['Medicamentos', con.plan||con.tratamiento],
+          ['Imágenes solicitadas', con.imagenes],
+          ['Laboratorios solicitados', con.estudios],
+          ['Indicaciones', con.indicaciones],
+          ['Notas', con.notas]
+        ].filter(function(s){ return s[1] && s[1].trim(); });
+
+        if (fechaLarga) {
+          var fechaEl = document.createElement('div');
+          fechaEl.style.cssText='display:flex;align-items:center;gap:.5rem;padding:.5rem .7rem;background:#e0f5f2;border-radius:9px;margin-bottom:.7rem';
+          fechaEl.innerHTML='<span style="font-size:.9rem">📅</span><span style="font-family:Fraunces,serif;font-size:.9rem;font-weight:700;color:#085f54">'+fechaLarga+'</span>';
+          body.appendChild(fechaEl);
+        }
+        if (!sections.length) {
+          body.innerHTML+='<div style="font-size:.82rem;color:#a0b0ae;font-style:italic">Consulta sin detalles adicionales.</div>';
+        } else {
+          sections.forEach(function(s) {
+            var sec = document.createElement('div');
+            sec.className='ficha-consulta-section';
+            sec.innerHTML='<div class="ficha-consulta-section-label">'+s[0]+'</div>'
+              +'<div class="ficha-consulta-section-val">'+s[1].trim()+'</div>';
+            body.appendChild(sec);
+          });
+        }
+
+        // Audit AI
+        if (con.ai_raw_extraction && con.voice_transcript) {
+          var auditBtn = document.createElement('button');
+          auditBtn.style.cssText='width:100%;margin-top:.4rem;padding:.35rem;background:none;border:1px solid #e5e7eb;border-radius:8px;font-size:.7rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;text-align:left';
+          auditBtn.innerHTML='&#129302; Ver extraccion AI &rarr;';
+          var auditOpen=false;
+          var auditPanel=document.createElement('div');
+          auditPanel.style.cssText='display:none;margin-top:.4rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.7rem .85rem;font-size:.72rem;color:#374151';
+          auditPanel.innerHTML='<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Transcript dictado</div>'
+            +'<div style="font-style:italic;color:#6b7280;margin-bottom:.7rem;line-height:1.5">'+con.voice_transcript.slice(0,300)+(con.voice_transcript.length>300?'…':'')+'</div>'
+            +'<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">AI propuso · médico guardó</div>'
+            +'<div style="color:#059669;font-size:.68rem">Diagnosticos: '+(con.ai_raw_extraction.assessment&&con.ai_raw_extraction.assessment.diagnoses&&con.ai_raw_extraction.assessment.diagnoses.length||0)+' vs '+(con.diagnostico?con.diagnostico.split('\\n').filter(Boolean).length:0)+'</div>'
+            +'<div style="color:#3b82f6;font-size:.68rem">Medicamentos: '+(con.ai_raw_extraction.plan&&con.ai_raw_extraction.plan.medications&&con.ai_raw_extraction.plan.medications.length||0)+' → '+(con.plan?(con.plan.split('|').filter(Boolean).length):0)+'</div>';
+          auditBtn.addEventListener('click',function(e){e.stopPropagation();auditOpen=!auditOpen;auditPanel.style.display=auditOpen?'block':'none';auditBtn.innerHTML=(auditOpen?'&#129302; Ocultar extraccion AI &uarr;':'&#129302; Ver extraccion AI &rarr;');});
+          body.appendChild(auditBtn);
+          body.appendChild(auditPanel);
+        }
+
+        // Docs btn
+        if (con.plan||con.imagenes||con.estudios) {
+          var docsBtn=document.createElement('button');
+          docsBtn.style.cssText='width:100%;margin-top:.5rem;padding:.4rem;background:none;border:1px solid rgba(11,124,110,.18);border-radius:8px;font-size:.72rem;color:#0b7c6e;cursor:pointer;font-family:DM Sans,sans-serif;display:flex;align-items:center;justify-content:center;gap:.35rem';
+          docsBtn.innerHTML='📄 Documentos de esta consulta';
+          (function(co,pa){docsBtn.addEventListener('click',function(e){e.stopPropagation();mcDocsConsulta(co,pa);});})(con,p);
+          body.appendChild(docsBtn);
+        }
+
+        var open=false;
+        (function(b,caretId){
+          hdr.addEventListener('click',function(){
+            open=!open;
+            b.style.display=open?'block':'none';
+            item.style.borderColor=open?'rgba(11,124,110,.3)':'rgba(11,124,110,.12)';
+            var c=document.getElementById(caretId);
+            if(c) c.textContent=open?'▾':'›';
+          });
+        })(body,'fichaCaret_'+idx);
+
+        item.appendChild(hdr);
+        item.appendChild(body);
+        hist.appendChild(item);
+      });
+    }
+    cont.appendChild(hist);
+
+    // FAB
+    var existFab = document.getElementById('fichaFab');
+    if (existFab) existFab.remove();
+    var fab = document.createElement('button');
+    fab.id = 'fichaFab';
+    fab.style.cssText='display:flex;align-items:center;justify-content:center;position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));right:1.2rem;width:52px;height:52px;border-radius:50%;background:#0b7c6e;color:#fff;border:none;font-size:1.6rem;line-height:1;box-shadow:0 4px 20px rgba(11,124,110,.4);cursor:pointer;z-index:149;-webkit-tap-highlight-color:transparent;font-family:DM Sans,sans-serif';
+    fab.innerHTML='+';
+    fab.setAttribute('aria-label','Nueva consulta');
+    fab.onclick=function(){ abrirConsultaFicha(); };
+    document.body.appendChild(fab);
+
   } else {
-    proxCard.innerHTML = '<div class="ficha-sidebar-title">Próxima cita</div>'
-      +'<div style="font-size:.8rem;color:var(--muted);margin-bottom:.7rem">Sin citas programadas.</div>'
-      +'<button onclick="abrirNuevaCita(_fichaPaciente)" style="width:100%;padding:.5rem;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">+ Agendar cita</button>';
+    // ══════════════════════════════════════════
+    // DESKTOP LAYOUT — original unchanged
+    // ══════════════════════════════════════════
+
+    var hero = document.createElement('div');
+    hero.className = 'ficha-hero';
+    var wa = p.telefono ? '<a href="https://wa.me/'+p.telefono.replace(/[^0-9]/g,'')+'" target="_blank" style="width:32px;height:32px;border-radius:9px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);display:flex;align-items:center;justify-content:center;color:#25d366;text-decoration:none;font-size:.9rem;flex-shrink:0">💬</a>' : '';
+    hero.innerHTML = '<div class="ficha-avatar">'+ini+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
+          +'<span style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:var(--ink);letter-spacing:-.02em">'+p.nombre+'</span>'
+          +(p.cedula?'<span style="font-size:.68rem;font-weight:700;padding:.15rem .5rem;background:var(--teal-lite);color:var(--teal-dark);border-radius:20px">'+p.cedula+'</span>':'')
+        +'</div>'
+        +'<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.3rem">'
+          +(p.email?'<span style="font-size:.75rem;color:var(--muted)">✉ '+p.email+'</span>':'')
+          +(p.telefono?'<span style="font-size:.75rem;color:var(--muted)">📱 '+p.telefono+'</span>':'')
+        +'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:.5rem;align-items:center;margin-left:auto">'
+        +wa
+        +'<button onclick="abrirConsultaFicha()" style="padding:.5rem 1rem;background:var(--teal);border:none;color:#fff;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:600;cursor:pointer">+ Consulta</button>'
+      +'</div>';
+    cont.appendChild(hero);
+
+    var stats = document.createElement('div');
+    stats.className = 'ficha-stats';
+    [{val:edad||'—',label:'Edad'},{val:ultimaConsulta,label:'Última visita'},{val:esp,label:'Especialidad'},{val:proximaFecha,label:'Próxima cita'}].forEach(function(s){
+      var el=document.createElement('div'); el.className='ficha-stat';
+      el.innerHTML='<div class="ficha-stat-val">'+s.val+'</div><div class="ficha-stat-label">'+s.label+'</div>';
+      stats.appendChild(el);
+    });
+    cont.appendChild(stats);
+
+    var layout = document.createElement('div');
+    layout.className = 'ficha-layout';
+    var main = document.createElement('div');
+    var sidebar = document.createElement('div');
+
+    var ante = document.createElement('div');
+    ante.className = 'ficha-antecedentes';
+    ante.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em">Antecedentes clínicos</span>'
+      +'<button onclick="editarResumenClinico(\''+p.id+'\')" style="background:none;border:1px solid var(--border);padding:.2rem .6rem;border-radius:7px;font-size:.72rem;color:var(--muted);cursor:pointer;font-family:DM Sans,sans-serif">Editar</button>'
+      +'</div>'
+      +'<div class="ficha-ante-grid">'
+      +[['🌿','#e8f5e2','Alergias',p.alergias],['💊','#e0f0ff','Medicación actual',p.medicacion],['🫀','#fce8e8','Antecedentes',p.antecedentes],['✂️','#fef3e2','Cirugías previas',p.cirugias]].map(function(f){
+        return '<div class="ficha-ante-item">'
+          +'<div class="ficha-ante-icon" style="background:'+f[1]+'">'+f[0]+'</div>'
+          +'<div><div class="ficha-ante-label">'+f[2]+'</div><div class="ficha-ante-val">'+(f[3]||'No registrado')+'</div></div>'
+          +'</div>';
+      }).join('')+'</div>';
+    main.appendChild(ante);
+
+    var hlabel = document.createElement('div');
+    hlabel.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem';
+    hlabel.innerHTML='<span style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:var(--ink)">Historial clínico</span>'
+      +'<span style="font-size:.75rem;color:var(--muted2)">'+consultas.length+' consulta'+(consultas.length!==1?'s':'')+'</span>';
+    main.appendChild(hlabel);
+
+    if (!consultas.length) {
+      var emp = document.createElement('div');
+      emp.style.cssText='text-align:center;padding:2rem;color:var(--muted2);border:1.5px dashed var(--border);border-radius:12px';
+      emp.innerHTML='<div style="font-size:1.6rem;margin-bottom:.4rem">📋</div><div style="font-weight:600;color:var(--ink2)">Sin consultas aún</div>';
+      main.appendChild(emp);
+    } else {
+      consultas.forEach(function(con, idx) {
+        var _d = con.created_at ? new Date(con.created_at) : null;
+        var fecha = _d ? _d.toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}) : '';
+        var fechaLarga = _d ? _d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
+        var pend = (con.estado||'atendida')==='pendiente';
+        var dotColor = pend ? '#f59e0b' : 'var(--teal)';
+        var diags = (con.diagnostico||'').split('\n').filter(Boolean).slice(0,2);
+        var item = document.createElement('div');
+        item.className = 'ficha-consulta-item';
+        var hdr = document.createElement('div');
+        hdr.className = 'ficha-consulta-header';
+        hdr.innerHTML = '<div class="ficha-consulta-dot" style="background:'+dotColor+'"></div>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
+              +'<span style="font-size:.84rem;font-weight:700;color:var(--ink)">'+(con.motivo||'Consulta')+'</span>'
+              +(diags.length?diags.map(function(d){var m=d.match(/^([A-Z][0-9]{2}\.?[0-9A-Z]*)\s*[—\-]+\s*(.+)/);return m?'<span style="display:inline-flex;align-items:center;gap:.2rem;padding:.12rem .45rem;background:var(--teal-lite);border-radius:20px;font-size:.65rem;font-weight:700;color:var(--teal-dark)"><span style="background:#fff;padding:.05rem .3rem;border-radius:4px;font-size:.6rem;color:var(--teal)">'+m[1]+'</span>'+m[2].slice(0,20)+'</span>':'<span style="padding:.12rem .45rem;background:var(--cream);border-radius:20px;font-size:.68rem;color:var(--ink2)">'+d.slice(0,30)+'</span>';}).join(''):'')
+            +'</div>'
+            +'<div style="font-size:.7rem;color:var(--muted);margin-top:.1rem">'+fechaLarga+'</div>'
+          +'</div>'
+          +'<span style="font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;background:'+(pend?'#fef3c7':'#d1fae5')+';color:'+(pend?'#b45309':'#065f46')+';white-space:nowrap;flex-shrink:0">'+(pend?'Pendiente':'Atendida')+'</span>'
+          +'<span style="font-size:.8rem;color:var(--muted2);flex-shrink:0">▾</span>';
+        var body = document.createElement('div');
+        body.className = 'ficha-consulta-body';
+        var sections=[['Motivo',con.motivo],['Enfermedad actual',con.enfermedad_actual||con.sintomas],['Examen físico',con.examen_fisico],['Diagnóstico',con.diagnostico],['Medicamentos',con.plan||con.tratamiento],['Imágenes solicitadas',con.imagenes],['Laboratorios solicitados',con.estudios],['Indicaciones',con.indicaciones],['Notas',con.notas]].filter(function(s){return s[1]&&s[1].trim();});
+        if(fechaLarga){var fEl=document.createElement('div');fEl.style.cssText='display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;background:var(--teal-lite);border-radius:9px;margin-bottom:.7rem';fEl.innerHTML='<span style="font-size:.95rem">📅</span><span style="font-family:Fraunces,serif;font-size:.95rem;font-weight:700;color:var(--teal-dark)">'+fechaLarga+'</span>';body.appendChild(fEl);}
+        if(!sections.length){body.innerHTML+='<div style="font-size:.82rem;color:var(--muted2);font-style:italic">Consulta sin detalles adicionales.</div>';}
+        else{sections.forEach(function(s){var sec=document.createElement('div');sec.className='ficha-consulta-section';sec.innerHTML='<div class="ficha-consulta-section-label">'+s[0]+'</div><div class="ficha-consulta-section-val">'+s[1].trim()+'</div>';body.appendChild(sec);});}
+        var open=false;
+        hdr.addEventListener('click',function(){open=!open;body.className='ficha-consulta-body'+(open?' open':'');item.style.borderColor=open?'rgba(11,124,110,.3)':'';hdr.querySelector('span:last-child').textContent=open?'▴':'▾';});
+        if(con.ai_raw_extraction&&con.voice_transcript){var auditBtn=document.createElement('button');auditBtn.style.cssText='width:100%;margin-top:.4rem;padding:.35rem;background:none;border:1px solid #e5e7eb;border-radius:8px;font-size:.7rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;text-align:left';auditBtn.innerHTML='&#129302; Ver extraccion AI &rarr;';var auditOpen=false;var auditPanel=document.createElement('div');auditPanel.style.cssText='display:none;margin-top:.4rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.7rem .85rem;font-size:.72rem;color:#374151';auditPanel.innerHTML='<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Transcript dictado</div><div style="font-style:italic;color:#6b7280;margin-bottom:.7rem;line-height:1.5">'+con.voice_transcript.slice(0,300)+(con.voice_transcript.length>300?'…':'')+'</div><div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">AI propuso · médico guardó</div><div style="color:#059669;font-size:.68rem">Diagnosticos: '+(con.ai_raw_extraction.assessment&&con.ai_raw_extraction.assessment.diagnoses&&con.ai_raw_extraction.assessment.diagnoses.length||0)+' vs '+(con.diagnostico?con.diagnostico.split('\\n').filter(Boolean).length:0)+'</div><div style="color:#3b82f6;font-size:.68rem">Medicamentos: '+(con.ai_raw_extraction.plan&&con.ai_raw_extraction.plan.medications&&con.ai_raw_extraction.plan.medications.length||0)+' → '+(con.plan?(con.plan.split('|').filter(Boolean).length):0)+'</div>';auditBtn.addEventListener('click',function(e){e.stopPropagation();auditOpen=!auditOpen;auditPanel.style.display=auditOpen?'block':'none';auditBtn.innerHTML=(auditOpen?'&#129302; Ocultar extraccion AI &uarr;':'&#129302; Ver extraccion AI &rarr;');});item.appendChild(auditBtn);item.appendChild(auditPanel);}
+        if(con.plan||con.imagenes||con.estudios){var docsBtn=document.createElement('button');docsBtn.style.cssText='width:100%;margin-top:.5rem;padding:.4rem;background:none;border:1px solid rgba(11,124,110,.18);border-radius:8px;font-size:.72rem;color:var(--teal);cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem';docsBtn.innerHTML='📄 Documentos de esta consulta';docsBtn.onmouseenter=function(){this.style.background='var(--teal-lite)';};docsBtn.onmouseleave=function(){this.style.background='none';};(function(co,pa){docsBtn.addEventListener('click',function(e){e.stopPropagation();mcDocsConsulta(co,pa);});})(con,p);item.appendChild(docsBtn);}
+        item.appendChild(hdr);
+        item.appendChild(body);
+        main.appendChild(item);
+      });
+    }
+
+    // Sidebar
+    var proxCard = document.createElement('div');
+    proxCard.className = 'ficha-sidebar-card';
+    if (proximaCita) {
+      var loc = proximaCita.location_id ? (window.locationsMedico||[]).find(function(l){return String(l.id)===String(proximaCita.location_id);}) : null;
+      var fechaProx = new Date(proximaCita.fecha+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
+      proxCard.innerHTML='<div class="ficha-sidebar-title">Próxima cita</div>'
+        +'<div style="font-size:.88rem;font-weight:700;color:var(--teal-dark);margin-bottom:.25rem">'+fechaProx+'</div>'
+        +'<div style="font-size:.78rem;color:var(--muted);margin-bottom:.15rem">🕒 '+proximaCita.hora+'</div>'
+        +(loc?'<div style="font-size:.76rem;color:var(--muted);margin-bottom:.6rem">📍 '+loc.nombre+'</div>':'<div style="margin-bottom:.6rem"></div>')
+        +'<button onclick="abrirNuevaCita(_fichaPaciente)" style="width:100%;padding:.5rem;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">+ Nueva cita</button>';
+    } else {
+      proxCard.innerHTML='<div class="ficha-sidebar-title">Próxima cita</div>'
+        +'<div style="font-size:.8rem;color:var(--muted);margin-bottom:.7rem">Sin citas programadas.</div>'
+        +'<button onclick="abrirNuevaCita(_fichaPaciente)" style="width:100%;padding:.5rem;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">+ Agendar cita</button>';
+    }
+    sidebar.appendChild(proxCard);
+
+    var docsCard = document.createElement('div');
+    docsCard.className = 'ficha-sidebar-card';
+    docsCard.innerHTML = '<div class="ficha-sidebar-title">Documentos e imágenes</div>';
+    [['🧪','Exámenes de laboratorio'],['🩻','Imagen médica'],['💊','Receta médica'],['📋','Resumen de consulta']].forEach(function(d){
+      var it=document.createElement('div'); it.className='ficha-doc-item';
+      it.innerHTML='<div class="ficha-doc-icon">'+d[0]+'</div><span>'+d[1]+'</span>';
+      docsCard.appendChild(it);
+    });
+    sidebar.appendChild(docsCard);
+
+    var aiCard = document.createElement('div');
+    aiCard.className = 'ficha-sidebar-card';
+    aiCard.id = 'fichaAICard';
+    var minCons = consultas.length;
+    if (minCons < 3) {
+      aiCard.innerHTML='<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
+        +'<div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-bottom:.65rem">Disponible con 3+ consultas.<br>Actualmente: <strong>'+minCons+'</strong> consulta'+(minCons!==1?'s':'')+'.</div>'
+        +'<div style="font-size:.65rem;color:var(--muted2)">El análisis longitudinal aparecerá aquí.</div>';
+    } else {
+      aiCard.innerHTML='<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
+        +'<div id="fichaAISummary" style="display:none"></div>'
+        +'<button id="fichaAIBtn" onclick="generarAISummary(\''+p.id+'\')" style="width:100%;padding:.55rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;margin-top:.1rem">🧠 Generar resumen clínico</button>'
+        +'<div style="font-size:.62rem;color:var(--muted2);text-align:center;margin-top:.4rem">'+minCons+' consultas · Powered by Kimi</div>';
+    }
+    sidebar.appendChild(aiCard);
+
+    layout.appendChild(main);
+    layout.appendChild(sidebar);
+    cont.appendChild(layout);
   }
-  sidebar.appendChild(proxCard);
-
-  // Documentos
-  var docsCard = document.createElement('div');
-  docsCard.className = 'ficha-sidebar-card';
-  docsCard.innerHTML = '<div class="ficha-sidebar-title">Documentos e imágenes</div>';
-  var docTypes = [['🧪','Exámenes de laboratorio'],['🩻','Imagen médica'],['💊','Receta médica'],['📋','Resumen de consulta']];
-  docTypes.forEach(function(d) {
-    var item = document.createElement('div');
-    item.className = 'ficha-doc-item';
-    item.innerHTML = '<div class="ficha-doc-icon">'+d[0]+'</div><span>'+d[1]+'</span>';
-    docsCard.appendChild(item);
-  });
-  sidebar.appendChild(docsCard);
-
-  // ── AI SUMMARY CARD ──
-  var aiCard = document.createElement('div');
-  aiCard.className = 'ficha-sidebar-card';
-  aiCard.id = 'fichaAICard';
-  var minCons = consultas.length;
-  if (minCons < 3) {
-    aiCard.innerHTML = '<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
-      +'<div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-bottom:.65rem">Disponible con 3+ consultas.<br>Actualmente: <strong>'+minCons+'</strong> consulta'+(minCons!==1?'s':'')+'.</div>'
-      +'<div style="font-size:.65rem;color:var(--muted2)">El análisis longitudinal aparecerá aquí.</div>';
-  } else {
-    aiCard.innerHTML = '<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
-      +'<div id="fichaAISummary" style="display:none"></div>'
-      +'<button id="fichaAIBtn" onclick="generarAISummary(\''+p.id+'\')" '
-        +'style="width:100%;padding:.55rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;margin-top:.1rem">'
-        +'🧠 Generar resumen clínico'
-      +'</button>'
-      +'<div style="font-size:.62rem;color:var(--muted2);text-align:center;margin-top:.4rem">'+minCons+' consultas · Powered by Kimi</div>';
-  }
-  sidebar.appendChild(aiCard);
-
-  layout.appendChild(main);
-  layout.appendChild(sidebar);
-  cont.appendChild(layout);
 }
 async function generarAISummary(pacienteId, forceRegen) {
   var btn = document.getElementById('fichaAIBtn');
