@@ -3991,10 +3991,10 @@ async function webAiGenerar() {
 async function activarSitioWeb() {
   if (!M||!M.id||!M.web_config_draft) { mostrarToast('Genera un sitio primero','error'); return; }
 
-  // Si aún no tiene PRO+WEB pagado, ir directo al checkout unificado
+  // Si aún no tiene PRO+WEB pagado, mostrar modal con preview + botón de pago
   if (!esProWeb()) {
     cerrarAiWebModal();
-    iniciarPagoRedirect('pro_web');
+    mostrarProWebModal();
     return;
   }
 
@@ -4091,8 +4091,8 @@ function renderPhoneMockup() {
       +'<button style="background:'+primary+';color:#fff;border:none;border-radius:20px;font-size:9px;font-weight:700;padding:5px 12px;font-family:DM Sans,sans-serif">Agendar cita</button>'
     +'</div>'
     // Hero photo
-    + '<div style="position:relative;height:260px;overflow:hidden;background:'+primary+'">'
-      + (foto ? '<img src="'+foto+'" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block">' : '')
+    + '<div style="position:relative;height:280px;overflow:hidden;background:'+primary+'">'
+      + (foto ? '<img src="'+foto+'" style="width:100%;height:100%;object-fit:cover;object-position:center 10%;display:block">' : '')
       +'<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.52) 100%)"></div>'
       +'<div style="position:absolute;bottom:0;left:0;right:0;padding:12px 14px">'
         +'<div style="display:inline-block;background:'+badgeBg+';border:1px solid '+badgeColor+'44;border-radius:20px;padding:3px 9px;font-size:8px;font-weight:700;color:#fff;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">'+esp.slice(0,26)+'</div>'
@@ -5047,8 +5047,16 @@ function mostrarProWebModal() {
   if (card) { card.style.animation='none'; void card.offsetWidth; card.style.animation='proModalIn .28s cubic-bezier(.16,1,.3,1)'; }
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  // Reset checkout state: always show interstitial first
   ocultarPayCheckout('pro_web');
+  // Mostrar link de preview si hay draft
+  var linkWrap = document.getElementById('proWebPreviewLinkWrap');
+  var link = document.getElementById('proWebPreviewLink');
+  if (linkWrap && link && M && M.slug && M.web_config_draft) {
+    link.href = 'citadoc-web.html?slug=' + encodeURIComponent(M.slug) + '&preview=draft';
+    linkWrap.style.display = 'block';
+  } else if (linkWrap) {
+    linkWrap.style.display = 'none';
+  }
 }
 
 function cerrarProWebModal() {
@@ -9343,9 +9351,15 @@ function enviarRecetaWhatsApp() {
     <div class="pay-sep"></div>
     <div class="pay-micro">Tu sitio se activará automáticamente tras confirmar el pago.</div>
 
+    <!-- Preview link -->
+    <div id="proWebPreviewLinkWrap" style="margin-bottom:.75rem;display:none">
+      <a id="proWebPreviewLink" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:.45rem;width:100%;padding:.72rem;background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#374151;text-decoration:none;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--teal)'" onmouseleave="this.style.borderColor='#e5e7eb'">
+        <span style="font-size:1rem">👁</span> Ver cómo quedó mi sitio
+      </a>
+    </div>
     <!-- Interstitial CTA -->
     <div id="proWebModalInterstitial">
-      <button onclick="mostrarPayCheckout('pro_web')" style="width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.6rem;display:block;box-shadow:0 6px 22px rgba(11,124,110,.28);transition:all .2s ease;letter-spacing:.01em">🔒 Continuar al pago seguro</button>
+      <button onclick="mostrarPayCheckout('pro_web')" style="width:100%;padding:.9rem 1rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:.6rem;display:block;box-shadow:0 6px 22px rgba(11,124,110,.28);transition:all .2s ease;letter-spacing:.01em">🔒 Continuar al pago — $150</button>
       <button onclick="cerrarProWebModal()" style="background:none;border:none;font-size:.78rem;color:var(--muted2);cursor:pointer;font-family:'DM Sans',sans-serif">Ahora no</button>
     </div>
 
