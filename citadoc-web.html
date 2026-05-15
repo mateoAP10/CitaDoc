@@ -719,8 +719,8 @@ button,a{-webkit-tap-highlight-color:transparent}
   body.dna-modern .hero-left{padding:100px 6% 70px}
   body.dna-clinic .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
   body.dna-clinic .hero-left{order:2!important;padding:1.8rem 5% 2.5rem!important;align-items:flex-start!important;text-align:left!important}
-  body.dna-clinic .hero-right{order:-1!important;width:100%!important;height:52vw!important;min-height:200px!important;max-height:280px!important;border-radius:0!important;margin:0!important}
-  body.dna-clinic .hero-right-img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-position:center 15%!important}
+  body.dna-clinic .hero-right{order:-1!important;width:100%!important;height:64vw!important;min-height:240px!important;max-height:340px!important;border-radius:0!important;margin:0!important}
+  body.dna-clinic .hero-right-img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-position:center 30%!important}
   body.dna-clinic .hero-right-card{display:none!important}
   /* Authority mobile: photo reduces to 40vh on small screens */
   body.dna-authority .hero-right{min-height:40vh}
@@ -1596,6 +1596,12 @@ function renderWeb(m,locs,wc,isPreview){
     wm.textContent='BORRADOR';
     wm.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:.025;font-family:var(--D);font-size:clamp(4rem,15vw,10rem);font-weight:900;color:#000;transform:rotate(-12deg);letter-spacing:.15em;text-transform:uppercase;user-select:none';
     document.body.appendChild(wm);
+
+    // Bloquear WhatsApp y CTAs externos en modo preview
+    document.querySelectorAll('a[href*="wa.me"],a[href*="whatsapp"]').forEach(function(a){
+      a.addEventListener('click',function(e){e.preventDefault();},true);
+      a.style.pointerEvents='none';a.style.opacity='.5';
+    });
 
     // Mobile sticky CTA
     var sticky=document.createElement('a');
