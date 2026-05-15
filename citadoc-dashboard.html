@@ -4392,6 +4392,14 @@ function mostrarActivacionProWeb(slug) {
         +'</div>'
         +'<button onclick="navigator.clipboard.writeText(\''+fullUrl+'\').then(function(){this.textContent=\'✓\';setTimeout(function(){document.querySelector(\'#proWebActivacionOverlay .copy-url-btn\').textContent=\'Copiar\'},2000)}.bind(this))" class="copy-url-btn" style="padding:.4rem .85rem;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);border-radius:8px;font-size:.78rem;font-weight:700;color:#34d399;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copiar</button>'
       +'</div>'
+      // QR
+      +'<div style="display:flex;align-items:center;gap:1rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:.85rem 1rem;margin-bottom:1.1rem;text-align:left">'
+        +'<img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&color=ffffff&bgcolor=1a1225&data='+encodeURIComponent(fullUrl)+'" alt="QR" style="width:72px;height:72px;border-radius:8px;flex-shrink:0">'
+        +'<div>'
+          +'<div style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:.2rem">Código QR</div>'
+          +'<div style="font-size:.78rem;color:rgba(255,255,255,.35);line-height:1.45">Muéstralo en tu consultorio,<br>tarjetas o stories</div>'
+        +'</div>'
+      +'</div>'
       // Buttons
       +'<div style="display:flex;flex-direction:column;gap:.6rem">'
         +'<a href="'+fullUrl+'" target="_blank" rel="noopener" style="display:block;padding:.75rem;background:linear-gradient(135deg,rgba(52,211,153,.15),rgba(16,185,129,.1));border:1px solid rgba(52,211,153,.25);border-radius:12px;font-size:.9rem;font-weight:700;color:#34d399;text-decoration:none;transition:all .2s">Ver mi sitio →</a>'
