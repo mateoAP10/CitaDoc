@@ -7325,6 +7325,17 @@ async function mcVoiceExtract(texto) {
 }
 
 function mcVoiceFillModal(soap, rawText) {
+  // Immutable snapshot of AI raw output
+  window._mcAiRawExtraction = JSON.parse(JSON.stringify(soap));
+
+  // Extract confidence map
+  var conf = {};
+  if (soap.subjective) { conf.chief_complaint = soap.subjective.chief_complaint_confidence||0; conf.history = soap.subjective.history_confidence||0; }
+  if (soap.objective)  { conf.physical_exam = soap.objective.physical_exam_confidence||0; conf.vitals = soap.objective.vitals_confidence||0; }
+  if (soap.plan)       { conf.instructions = soap.plan.instructions_confidence||0; }
+  conf.overall = (soap.metadata&&soap.metadata.overall_confidence)||0;
+  window._mcAiConfidence = conf;
+
   var status = document.getElementById('mc_voice_status');
   var trans  = document.getElementById('mc_voice_transcript');
 
@@ -7379,6 +7390,26 @@ function mcVoiceFillModal(soap, rawText) {
 
   if(status) status.textContent = '✓ Consulta organizada — revisa y corrige si es necesario';
   if(trans)  { trans.style.color='#059669'; }
+
+  // Highlight low-confidence fields (confidence < 0.7)
+  function highlightConf(id, conf) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (conf > 0 && conf < 0.7) {
+      el.style.borderColor = '#f59e0b';
+      el.style.boxShadow = '0 0 0 2px rgba(245,158,11,.15)';
+      el.title = 'Baja confianza (' + Math.round(conf*100) + '%) — revisa este campo';
+    } else if (conf >= 0.9) {
+      el.style.borderColor = '#10b981';
+    }
+  }
+  if (window._mcAiConfidence) {
+    var cf = window._mcAiConfidence;
+    highlightConf('c_motivo',   cf.chief_complaint);
+    highlightConf('c_enfermedad', cf.history);
+    highlightConf('c_examen',   cf.physical_exam);
+    highlightConf('c_indicaciones', cf.instructions);
+  }
 
   // Auto-abrir vitales si hay datos
   if (vits.bp || vits.hr || vits.temp || vits.wt) {
@@ -7674,7 +7705,9 @@ async function guardarConsulta(pacienteId) {
     peso: v('c_peso'),
     notas: v('c_notas'),
     soap_jsonb: soapJsonb,
-    ai_raw_extraction: null,
+    ai_raw_extraction: window._mcAiRawExtraction || null,
+    doctor_final: soapJsonb,
+    ai_confidence: window._mcAiConfidence || null,
     voice_transcript: window._mcVoiceTranscript || null
   };
   var res = await _sb.from('consultas').insert([consData]).select().single();

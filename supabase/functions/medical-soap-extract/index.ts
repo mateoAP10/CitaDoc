@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -20,42 +21,54 @@ REGLAS:
 - Para medicamentos, extrae dosis y frecuencia si están mencionados.
 - certainty: "probable" | "confirmado" | "descartado"
 - response: siempre "pendiente" para medicamentos nuevos.
+- confidence: número 0.0-1.0 por campo/item según tu certeza de la extracción.
+  0.95+ = mención explícita clara
+  0.75-0.94 = mención implícita o parcial
+  0.5-0.74 = inferencia
+  <0.5 = muy incierto, mejor dejar vacío
 
-ESQUEMA DE RESPUESTA:
+ESQUEMA DE RESPUESTA (incluye confidence en cada item):
 {
   "schema_version": "v1",
   "subjective": {
     "chief_complaint": "",
-    "history_present_illness": ""
+    "chief_complaint_confidence": 0.0,
+    "history_present_illness": "",
+    "history_confidence": 0.0
   },
   "objective": {
     "physical_exam": "",
-    "vitals": { "bp": "", "hr": "", "temp": "", "wt": "" }
+    "physical_exam_confidence": 0.0,
+    "vitals": { "bp": "", "hr": "", "temp": "", "wt": "" },
+    "vitals_confidence": 0.0
   },
   "assessment": {
     "diagnoses": [
-      { "cie10": "", "label": "", "certainty": "probable" }
+      { "cie10": "", "label": "", "certainty": "probable", "confidence": 0.0 }
     ]
   },
   "plan": {
     "medications": [
-      { "drug": "", "dose": "", "route": "VO", "frequency": "", "duration_days": 0, "response": "pendiente" }
+      { "drug": "", "dose": "", "route": "VO", "frequency": "", "duration_days": 0, "response": "pendiente", "confidence": 0.0 }
     ],
-    "labs": [{ "name": "" }],
-    "images": [{ "name": "" }],
-    "instructions": ""
+    "labs": [{ "name": "", "confidence": 0.0 }],
+    "images": [{ "name": "", "confidence": 0.0 }],
+    "instructions": "",
+    "instructions_confidence": 0.0
   },
   "metadata": {
     "created_with": "voice",
-    "raw_text": ""
+    "raw_text": "",
+    "overall_confidence": 0.0
   }
 }`
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  const t0 = Date.now()
 
   try {
-    const { text, medico_id } = await req.json()
+    const { text, medico_id, patient_id, consultation_id } = await req.json()
     if (!text) return Response.json({ ok: false, error: 'text required' }, { headers: cors, status: 400 })
 
     const apiKey = Deno.env.get('KIMI_API_KEY')
@@ -74,30 +87,65 @@ serve(async (req) => {
       })
     })
 
+    const latency = Date.now() - t0
+
     if (!kimiRes.ok) {
       const err = await kimiRes.text()
       return Response.json({ ok: false, error: 'Kimi error: ' + err.slice(0, 200) }, { headers: cors, status: 500 })
     }
 
     const kimiData = await kimiRes.json()
-    const content = kimiData.choices?.[0]?.message?.content || ''
+    const content  = kimiData.choices?.[0]?.message?.content || ''
+    const usage    = kimiData.usage || {}
 
     let soap: Record<string, unknown> = {}
     try {
       soap = JSON.parse(content)
     } catch {
-      // Try to extract JSON from content if wrapped in markdown
       const match = content.match(/\{[\s\S]+\}/)
       if (match) soap = JSON.parse(match[0])
-      else return Response.json({ ok: false, error: 'Could not parse Kimi JSON', raw: content.slice(0, 500) }, { headers: cors })
+      else return Response.json({ ok: false, error: 'JSON parse failed', raw: content.slice(0, 500) }, { headers: cors })
     }
 
-    // Attach raw text to metadata
+    // Attach raw text + timestamp
     if (soap.metadata && typeof soap.metadata === 'object') {
-      (soap.metadata as Record<string, unknown>).raw_text = text
+      const meta = soap.metadata as Record<string, unknown>
+      meta.raw_text = text
+      meta.extracted_at = new Date().toISOString()
     }
 
-    return Response.json({ ok: true, soap, model: KIMI_MODEL }, { headers: cors })
+    // Log usage (best effort, non-blocking)
+    const inputTokens  = usage.prompt_tokens || 0
+    const outputTokens = usage.completion_tokens || 0
+    const costUsd      = (inputTokens * 0.000012) + (outputTokens * 0.000012) // moonshot-v1-8k pricing
+
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      )
+      await supabase.from('ai_usage_logs').insert({
+        doctor_id:        medico_id || null,
+        patient_id:       patient_id || null,
+        consultation_id:  consultation_id || null,
+        feature:          'voice_extraction',
+        model:            KIMI_MODEL,
+        input_tokens:     inputTokens,
+        output_tokens:    outputTokens,
+        audio_seconds:    Math.round(text.split(' ').length / 2.5), // rough estimate
+        estimated_cost_usd: costUsd,
+        latency_ms:       latency,
+        success:          true
+      })
+    } catch (_) { /* non-blocking */ }
+
+    return Response.json({
+      ok: true,
+      soap,
+      model: KIMI_MODEL,
+      latency_ms: latency,
+      usage: { input_tokens: inputTokens, output_tokens: outputTokens, estimated_cost_usd: costUsd }
+    }, { headers: cors })
 
   } catch (e) {
     return Response.json({ ok: false, error: String(e) }, { headers: cors, status: 500 })
