@@ -1071,10 +1071,11 @@ function renderWeb(m,locs,wc,isPreview){
   document.title=wc.seo_title||(nombre+(esp?' — '+esp:'')+(ciudad?' en '+ciudad:''));
   var md=el('pageDesc');if(md)md.setAttribute('content',(wc.seo_description||wc.seo_desc||m.bio||nombre+' '+esp).slice(0,155));
 
-  // Logo: if doctor has logo_url, show image in nav instead of text
+  // Logo: check web_config first, then medico profile
+  var logoSrc = (wc && wc.logo_url) || m.logo_url || null;
   var navBrand = el('wNavBrand');
-  if (navBrand && m.logo_url) {
-    navBrand.innerHTML = '<img src="'+m.logo_url+'" alt="'+nombre+'" style="height:36px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1);transition:filter .35s" id="wNavLogoImg">'
+  if (navBrand && logoSrc) {
+    navBrand.innerHTML = '<img src="'+logoSrc+'" alt="'+nombre+'" style="height:36px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1);transition:filter .35s" id="wNavLogoImg">'
       +'<span style="font-size:.62rem;color:rgba(255,255,255,.5);font-weight:400;margin-top:1px;transition:color .35s" id="wNavEspLogo">'+esp+'</span>';
     // Scrolled: remove invert
     var origScroll = window.onscroll;
@@ -1090,10 +1091,11 @@ function renderWeb(m,locs,wc,isPreview){
   var nc=el('navCta');if(nc)nc.textContent=wc.cta_primary||wc.cta_primary_text||'Agendar cita';
   setText('wFooterBrand',nombre+(esp?' · '+esp:''));
 
-  // Hero photo
+  // Hero photo — check web_config first, then medico profile
+  var fotoSrc = (wc && wc.doctor_photo_url) || m.foto_url || null;
   var bg=el('wHeroBg'),init=el('wHeroInit');
-  if(m.foto_url){
-    if(bg){bg.src=m.foto_url;bg.alt=nombre;bg.style.display='block';}
+  if(fotoSrc){
+    if(bg){bg.src=fotoSrc;bg.alt=nombre;bg.style.display='block';}
     if(init)init.style.display='none';
   } else {
     if(init)init.textContent=((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase()||'MD';
