@@ -5961,7 +5961,7 @@ function showProBlur(wrapId, ghostHTML, feature) {
   + '</div>';
   var btnUp = overlay.querySelector('.btn-pro-upgrade');
   var btnCn = overlay.querySelector('.btn-pro-cancel');
-  if (btnUp) btnUp.addEventListener('click', abrirStripe);
+  if (btnUp) btnUp.addEventListener('click', function() { mostrarProModal(feature); });
   if (btnCn) btnCn.addEventListener('click', function() {
     preview.remove();
     wrap.innerHTML = '<div class="empty-citas">Activa CitaDoc Pro para acceder.</div>';
