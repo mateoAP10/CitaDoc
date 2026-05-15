@@ -6888,6 +6888,23 @@ function renderFicha(p, consultas, proximaCita) {
     }
     cont.appendChild(hist);
 
+    // MedCopilot AI card
+    var aiCard = document.createElement('div');
+    aiCard.id = 'fichaAICard';
+    aiCard.style.cssText='background:#fff;border-radius:14px;border:1px solid rgba(11,124,110,.13);padding:1rem;margin-bottom:1.5rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)';
+    var minCons = consultas.length;
+    if (minCons < 3) {
+      aiCard.innerHTML='<div style="font-size:.68rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">✨ MedCopilot AI</div>'
+        +'<div style="font-size:.78rem;color:#6b7c79;line-height:1.55;margin-bottom:.4rem">Disponible con 3+ consultas.<br>Actualmente: <strong style="color:#0f1a18">'+minCons+'</strong> consulta'+(minCons!==1?'s':'')+'.</div>'
+        +'<div style="font-size:.7rem;color:#a0b0ae">El análisis longitudinal aparecerá aquí cuando tengas más historial.</div>';
+    } else {
+      aiCard.innerHTML='<div style="font-size:.68rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">✨ MedCopilot AI</div>'
+        +'<div id="fichaAISummary" style="display:none"></div>'
+        +'<button id="fichaAIBtn" onclick="generarAISummary(\''+p.id+'\')" style="width:100%;padding:.6rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">🧠 Generar resumen clínico</button>'
+        +'<div style="font-size:.62rem;color:#a0b0ae;text-align:center;margin-top:.45rem">'+minCons+' consultas · Powered by Kimi</div>';
+    }
+    cont.appendChild(aiCard);
+
     // FAB
     var existFab = document.getElementById('fichaFab');
     if (existFab) existFab.remove();
