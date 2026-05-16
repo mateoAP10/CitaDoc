@@ -2457,7 +2457,7 @@ async function bkConfirmar(){
     medico_id:_M.id,paciente_id:pid||null,
     paciente_nombre:n,paciente_tel:t,paciente_email:e||null,
     motivo:motivo||null,fecha:_bkDate,hora:_bkSlot,
-    estado:'confirmada',origen:'web-ai'
+    estado:'confirmada'
   });
   if(btn){btn.disabled=false;btn.textContent='✓ Confirmar cita';}
   if(rC.error){
