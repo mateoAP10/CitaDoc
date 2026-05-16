@@ -41,14 +41,14 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-
 .nav.solid .nav-btn{background:var(--navy);color:#fff;border-color:var(--navy)}
 
 /* ── HERO — mobile: foto full-bleed, texto tercio inferior ── */
-.hero{position:relative;height:100svh;min-height:640px;overflow:hidden;background:var(--navy);display:flex;align-items:flex-end}
-.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%}
-.hero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(11,35,65,.0) 0%,rgba(11,35,65,.0) 30%,rgba(11,35,65,.78) 65%,rgba(11,35,65,.97) 100%)}
-.hero-body{position:relative;z-index:2;padding:0 6% calc(5.5rem + env(safe-area-inset-bottom));max-width:540px}
-.hero-tag{font-family:var(--sans);font-size:.58rem;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.18em;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
-.hero-tag::before{content:'';width:20px;height:1px;background:rgba(255,255,255,.35)}
-.hero-h1{font-family:var(--serif);font-size:clamp(2.6rem,9vw,4.2rem);font-weight:700;line-height:.95;letter-spacing:-.035em;color:#fff;margin-bottom:1.5rem}
-.hero-btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--navy);color:#fff;border:none;border-radius:0;height:52px;padding:0 1.8rem;font-family:var(--sans);font-size:.82rem;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:background .2s}
+.hero{position:relative;height:100svh;min-height:680px;overflow:hidden;background:var(--navy);display:flex;align-items:flex-end}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 10%}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(11,35,65,.0) 0%,rgba(11,35,65,.0) 25%,rgba(11,35,65,.82) 62%,rgba(11,35,65,1) 100%)}
+.hero-body{position:relative;z-index:2;padding:0 7% calc(6.5rem + env(safe-area-inset-bottom));max-width:540px}
+.hero-tag{font-family:var(--sans);font-size:.55rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.2em;margin-bottom:1.2rem;display:flex;align-items:center;gap:.7rem}
+.hero-tag::before{content:'';width:22px;height:1px;background:rgba(255,255,255,.3)}
+.hero-h1{font-family:var(--serif);font-size:clamp(3rem,11vw,4.6rem);font-weight:700;line-height:.93;letter-spacing:-.04em;color:#fff;margin-bottom:2rem}
+.hero-btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--navy);color:#fff;border:none;border-radius:0;height:54px;padding:0 2rem;font-family:var(--sans);font-size:.8rem;font-weight:700;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:background .2s}
 .hero-btn:hover{background:#0a1d35}
 
 /* ── HERO desktop: split 38 / 62 ── */
@@ -64,29 +64,33 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-
 }
 
 /* ── CREDENTIAL STRIP ── */
-.cred-strip{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--bo)}
-.cred-cell{padding:2rem 6% 1.8rem;border-right:1px solid var(--bo)}
-.cred-cell:last-child{border-right:none}
-.cred-n{font-family:var(--serif);font-size:2.4rem;font-weight:700;color:var(--navy);line-height:1;letter-spacing:-.04em}
-.cred-l{font-size:.7rem;color:var(--mu);line-height:1.4;margin-top:.3rem}
-@media(min-width:900px){.cred-cell{padding:2.2rem 4%}}
+.cred-strip{display:flex;flex-direction:column;border-bottom:1px solid var(--bo)}
+.cred-cell{padding:2rem 7%;border-bottom:1px solid var(--bo)}
+.cred-cell:last-child{border-bottom:none}
+.cred-n{font-family:var(--serif);font-size:3.2rem;font-weight:700;color:var(--navy);line-height:1;letter-spacing:-.05em}
+.cred-l{font-size:.72rem;color:var(--mu);line-height:1.4;margin-top:.35rem}
+@media(min-width:600px){
+  .cred-strip{flex-direction:row}
+  .cred-cell{flex:1;padding:2.5rem 4%;border-bottom:none;border-right:1px solid var(--bo)}
+  .cred-cell:last-child{border-right:none}
+}
 
 /* ── SURGICAL RECORD (signature section) ── */
-.record{padding:4rem 6%;border-bottom:1px solid var(--bo)}
-.record-label{font-size:.58rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.18em;margin-bottom:2rem}
+.record{padding:5rem 7%;border-bottom:1px solid var(--bo);background:var(--s)}
+.record-label{font-size:.55rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.2em;margin-bottom:2.5rem}
 .record-table{width:100%;border-collapse:collapse}
 .record-table tr{border-bottom:1px solid var(--bo)}
 .record-table tr:last-child{border-bottom:none}
-.record-table td{padding:.9rem 0;vertical-align:top}
-.record-key{font-family:var(--mono);font-size:.68rem;font-weight:500;color:#fff;background:var(--navy);padding:.35rem .6rem;border-radius:2px;white-space:nowrap;width:1%;padding-right:.8rem}
-.record-val{font-size:.88rem;color:var(--ink);padding-left:1.2rem;line-height:1.55}
+.record-table td{padding:1rem 0;vertical-align:top}
+.record-key{font-family:var(--mono);font-size:.6rem;font-weight:500;color:var(--navy);white-space:nowrap;width:1%;padding-right:1.2rem;letter-spacing:.06em;opacity:.6}
+.record-val{font-size:.88rem;color:var(--ink);line-height:1.55}
 @media(min-width:900px){
-  .record{padding:5rem 7%}
-  .record-inner{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start}
+  .record{padding:6rem 7%}
+  .record-inner{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start}
 }
 
 /* ── SERVICES — lista quirúrgica ── */
-.services{padding:4rem 6%;border-bottom:1px solid var(--bo)}
+.services{padding:5rem 7%;border-bottom:1px solid var(--bo)}
 .srv-label{font-size:.58rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.18em;margin-bottom:.6rem}
 .srv-h2{font-family:var(--serif);font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:600;line-height:1.08;color:var(--ink);margin-bottom:2rem;letter-spacing:-.025em}
 .srv-item{display:flex;align-items:baseline;justify-content:space-between;padding:1rem 0;border-bottom:.5px solid var(--bo);cursor:default}
@@ -101,7 +105,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-
 }
 
 /* ── ABOUT — foto B&W ── */
-.about{padding:4rem 6%;background:var(--s);border-bottom:1px solid var(--bo)}
+.about{padding:5rem 7%;background:var(--bg);border-bottom:1px solid var(--bo)}
 .about-label{font-size:.58rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.18em;margin-bottom:2rem}
 .about-photo{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center 10%;filter:grayscale(100%);margin-bottom:2rem}
 .about-name{font-family:var(--serif);font-size:1.5rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;letter-spacing:-.025em}
@@ -140,10 +144,10 @@ footer{padding:1.4rem 6% calc(.8rem + env(safe-area-inset-bottom));border-top:1p
 .ft-powered a{color:var(--navy);font-weight:600;text-decoration:none}
 
 /* ── STICKY BAR ── */
-.sticky{position:fixed;bottom:0;inset-x:0;z-index:90;background:#fff;border-top:1px solid var(--bo);padding:.6rem 5% calc(.6rem + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 72px 72px;gap:.4rem;transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.sticky{position:fixed;bottom:0;inset-x:0;z-index:90;background:#fff;border-top:1.5px solid var(--bo);padding:.8rem 5% calc(.8rem + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 88px 88px;gap:.5rem;transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1)}
 .sticky.show{transform:translateY(0)}
-.sticky-book{background:var(--navy);color:#fff;border:none;height:46px;font-family:var(--sans);font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
-.sticky-wa,.sticky-call{height:46px;background:var(--s);border:1.5px solid var(--bo);color:var(--ink);font-family:var(--sans);font-size:.7rem;font-weight:600;cursor:pointer}
+.sticky-book{background:var(--navy);color:#fff;border:none;height:52px;font-family:var(--sans);font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.08em;text-transform:uppercase}
+.sticky-wa,.sticky-call{height:52px;background:var(--s);border:1.5px solid var(--bo);color:var(--ink);font-family:var(--sans);font-size:.68rem;font-weight:600;cursor:pointer;letter-spacing:.02em}
 @media(min-width:900px){.sticky{display:none}}
 
 /* ── BOOKING MODAL ── */
@@ -394,13 +398,19 @@ function render(m,wc){
   if(m.anos_experiencia){set('cn1',m.anos_experiencia+'+');set('cl1','años de experiencia clínica');}
   else{el('credStrip').style.display='none';}
 
-  // Surgical Record
-  set('rEspecialidad',esp||'—');
-  set('rFormacion',wc.formacion||m.universidad||'Medicina especializada');
-  set('rRegistro',m.senescyt?'SENESCYT '+m.senescyt:'Médico certificado');
-  set('rSede',_locs.length?_locs[0].nombre+(m.ciudad?' — '+m.ciudad:''):(m.ciudad||'—'));
-  set('rAtencion',((m.dias_atencion||[]).join(', ')||'Lun – Vie')+' · '+(m.horario_desde||'07:00')+' – '+(m.horario_hasta||'20:00'));
-  set('recordBio',wc.about_text||wc.doctor_story||m.bio||'Especialista en '+esp+' comprometido con la precisión diagnóstica y el tratamiento personalizado de cada paciente.');
+  // Surgical Record — solo mostrar filas con data real
+  function setRecord(id, val){
+    var row=el(id);if(!row)return;
+    var tr=row.closest('tr');
+    if(val){row.textContent=val;}else if(tr){tr.style.display='none';}
+  }
+  setRecord('rEspecialidad', esp||null);
+  setRecord('rFormacion', wc.formacion||m.universidad||null);
+  setRecord('rRegistro', m.senescyt?'SENESCYT '+m.senescyt:null);
+  setRecord('rSede', null); // se llena en renderSedes
+  setRecord('rAtencion', m.dias_atencion&&m.dias_atencion.length?(m.dias_atencion.join(' · '))+' · '+(m.horario_desde||'07:00')+' – '+(m.horario_hasta||'20:00'):null);
+  set('recordBio',wc.about_text||wc.doctor_story||m.bio||null);
+  if(!wc.about_text&&!wc.doctor_story&&!m.bio){var rb=el('recordBio');if(rb)rb.style.display='none';}
 
   // Services
   var DEFLT=[{t:'Consulta de traumatología',d:'Evaluación clínica completa y diagnóstico preciso.'},{t:'Cirugía ortopédica',d:'Procedimientos con técnica mínimamente invasiva.'},{t:'Lesiones deportivas',d:'Diagnóstico y tratamiento especializado.'},{t:'Fracturas y trauma',d:'Atención oportuna y seguimiento continuo.'},{t:'Artroplastia',d:'Reemplazo articular con implantes de alta gama.'}];
@@ -441,8 +451,10 @@ function renderSedes(locs){
     return'<div class="sede-item rv"><div class="sede-name">'+(l.nombre||'Consultorio')+'</div><div class="sede-addr">'+(l.direccion||'')+(l.ciudad?', '+l.ciudad:'')+'</div>'+(l.maps_url?'<a class="sede-map" href="'+l.maps_url+'" target="_blank">Ver ubicación →</a>':'')+'</div>';
   }).join('');
   list.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
-  // populate surgical record sede
-  if(locs[0]){set('rSede',locs[0].nombre+(locs[0].ciudad?' — '+locs[0].ciudad:''));}
+  // popula sede en Surgical Record
+  if(locs[0]){
+    var rs=el('rSede');if(rs){rs.textContent=locs[0].nombre+(locs[0].ciudad?' — '+locs[0].ciudad:'');}
+  }
 }
 
 // ── BOOKING ENGINE (shared) ──
