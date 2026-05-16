@@ -1527,11 +1527,12 @@ body[data-layout="future-minimal"] .h-trust-icon{width:38px;height:38px;border-r
         <span style="margin:0 .3rem;opacity:.4">·</span>
         <span id="bkSelTime" style="color:var(--gg);font-weight:700;font-size:.83rem"></span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:.58rem;margin-bottom:1rem">
-        <input id="bkNombre" class="bk-inp" placeholder="Tu nombre completo *">
-        <input id="bkTelefono" class="bk-inp" placeholder="Teléfono / WhatsApp *" type="tel">
-        <input id="bkEmail" class="bk-inp" placeholder="Email (para recibir confirmación) *" type="email">
-        <input id="bkMotivo" class="bk-inp" placeholder="Motivo de consulta (opcional)">
+      <div id="bkSedeInfo" style="display:none;background:var(--s);border-radius:10px;padding:.6rem .9rem;font-size:.78rem;color:var(--ink2);margin-bottom:.9rem"></div>
+      <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem">
+        <div><label style="display:block;font-size:.72rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem">Nombre completo *</label><input id="bkNombre" class="bk-inp" placeholder="María García" autocomplete="name"></div>
+        <div><label style="display:block;font-size:.72rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem">Teléfono / WhatsApp *</label><input id="bkTelefono" class="bk-inp" placeholder="0998 123 456" type="tel" autocomplete="tel"></div>
+        <div><label style="display:block;font-size:.72rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem">Email <span style="font-weight:400;color:var(--mu)">(para recibir confirmación)</span></label><input id="bkEmail" class="bk-inp" placeholder="correo@email.com" type="email" autocomplete="email"></div>
+        <div><label style="display:block;font-size:.72rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem">Motivo <span style="font-weight:400;color:var(--mu)">(opcional)</span></label><input id="bkMotivo" class="bk-inp" placeholder="Control de rutina"></div>
       </div>
       <button class="bk-btn" id="bkConfirmBtn" onclick="bkConfirmar()">✓ Confirmar cita</button>
       <button onclick="bkGoStep1()" style="width:100%;padding:.5rem;background:none;border:none;color:var(--mu);font-family:var(--B);font-size:.8rem;cursor:pointer;margin-top:.4rem">← Cambiar fecha/hora</button>
@@ -2269,6 +2270,9 @@ function abrirBooking(){
       _bkSedeId=String(locs[0].id);
       sedeWrap.innerHTML='';
       sedeWrap.style.display='none';
+      // Mostrar info de sede en step 2
+      var si=el('bkSedeInfo');
+      if(si){si.innerHTML='📍 <strong>'+(locs[0].nombre||'Consultorio')+'</strong>'+(locs[0].direccion?' · '+locs[0].direccion.split(',')[0]:'');si.style.display='block';}
     } else {
       sedeWrap.innerHTML='';
       sedeWrap.style.display='none';
