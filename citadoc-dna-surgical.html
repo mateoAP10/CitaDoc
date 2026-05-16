@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('HwpQ3DPRMmtcVZVt1')"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -805,23 +806,41 @@ async function bkConfirmar(){
         notas:'Agendado desde sitio web CitaDoc'
       });
 
-      // Notificación email al médico (via edge function si existe)
-      try{
-        await fetch('https://qxoomcqaafogczrvsyhg.functions.supabase.co/notify-booking',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'},
-          body:JSON.stringify({
-            medico_email:_bkMedico.email||'',
-            medico_nombre:nombreMedico,
-            paciente_nombre:nombre,
-            paciente_telefono:tel,
-            paciente_email:email||'',
-            fecha:_bkSelectedDate,
-            hora:_bkSelectedSlot,
-            motivo:motivo||'Consulta médica'
-          })
-        });
-      }catch(e){console.log('Email notification skipped');} // silencioso si no existe la función
+      // EmailJS — igual que perfil público
+      if(typeof emailjs!=='undefined'){
+        var perfilUrl='https://citadoc.lat/citadoc-perfil.html?slug='+(_bkMedico.slug||'');
+        var notaMedico='🩺 Nueva cita agendada'
+          +'\nPaciente: '+nombre+' · '+tel
+          +(email?'\nEmail: '+email:'')
+          +'\nFecha: '+_bkSelectedDate+' a las '+_bkSelectedSlot
+          +(motivo?'\nMotivo: '+motivo:'');
+        // Al médico
+        if(_bkMedico.email){
+          emailjs.send('service_63xln0n','template_e8t8qkq',{
+            to_email:_bkMedico.email,
+            doctor_name:nombreMedico,
+            patient_name:nombre,
+            appointment_date:_bkSelectedDate,
+            appointment_time:_bkSelectedSlot,
+            location_name:notaMedico,
+            appointment_mode:'📋 Ver dashboard: https://citadoc.lat/citadoc-dashboard.html',
+            public_profile_url:perfilUrl
+          }).catch(function(e){console.warn('emailjs médico:',e);});
+        }
+        // Al paciente
+        if(email){
+          emailjs.send('service_63xln0n','template_e8t8qkq',{
+            to_email:email,
+            doctor_name:nombreMedico,
+            patient_name:nombre,
+            appointment_date:_bkSelectedDate,
+            appointment_time:_bkSelectedSlot,
+            location_name:'Consultorio de '+nombreMedico,
+            appointment_mode:'🏥 Presencial',
+            public_profile_url:perfilUrl
+          }).catch(function(e){console.warn('emailjs paciente:',e);});
+        }
+      }
     }
   }catch(e){console.warn('Booking error:',e);}
 
