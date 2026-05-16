@@ -724,13 +724,13 @@ function bkRenderCalendar(){
     btn.style.cssText='aspect-ratio:1;border:none;border-radius:10px;font-size:.78rem;font-weight:600;cursor:'+(isWeekend?'default':'pointer')+';background:'+(isWeekend?'transparent':'#f8fafc')+';color:'+(isWeekend?'#d1d5db':'#0d1b2a')+';transition:background .15s';
     btn.textContent=date.getDate();
     if(!isWeekend){
-      (function(dateStr,b){
+      (function(dateStr,b,d){
         b.onclick=function(){
           document.querySelectorAll('#bkCalendar button.sel').forEach(function(x){x.classList.remove('sel');x.style.background='#f8fafc';x.style.color='#0d1b2a';});
           b.classList.add('sel');b.style.background='var(--p,#1a2e44)';b.style.color='#fff';
-          _bkSelectedDate=dateStr;_bkSelectedSlot=null;_bkDateObj=date;bkRenderSlots();
+          _bkSelectedDate=dateStr;_bkSelectedSlot=null;_bkDateObj=d;bkRenderSlots();
         };
-      })(date.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}),btn);
+      })(date.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}),btn,date);
     }
     cal.appendChild(btn);
   }
