@@ -471,15 +471,19 @@ if(slug){
     var m=r.data;
     var wc=(isDraft&&m.web_config_draft)?m.web_config_draft:(m.web_config||{});
 
-    // Cargar sedes en paralelo
-    var [locsRes, schedRes] = await Promise.all([
+    // Misma lógica que perfil público: citas + sedes + blocks en paralelo
+    var hoy=new Date().toISOString().split('T')[0];
+    var en60=new Date();en60.setDate(en60.getDate()+60);
+    var [locsRes, schedRes, citasRes] = await Promise.all([
       _sb.from('doctor_locations').select('*').eq('medico_id',m.id).order('principal',{ascending:false}),
-      _sb.from('doctor_schedule_blocks').select('*').eq('medico_id',m.id).eq('is_active',true)
+      _sb.from('doctor_schedule_blocks').select('*').eq('medico_id',m.id).eq('is_active',true),
+      _sb.from('citas').select('fecha,hora').eq('medico_id',m.id).gte('fecha',hoy).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada')
     ]);
     _bkLocs = (locsRes.data||[]);
     _bkSchedule = (schedRes.data||[]);
+    _bkCitas = (citasRes.data||[]);
 
-    // Pre-computar disponibilidad: horarios_config primero (fuente de verdad), blocks como fallback
+    // Pre-computar disponibilidad: horarios_config primero, blocks como fallback
     _bkDisp = bkComputeDispFromConfig(m.horarios_config, m.dias_atencion, m.horario_desde, m.horario_hasta);
     if(!Object.keys(_bkDisp).length && _bkSchedule.length){
       _bkDisp = bkComputeDispFromBlocks(_bkSchedule);
