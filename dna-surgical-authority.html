@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title id="pgTitle">Dr. Médico — CitaDoc</title>
+<meta name="description" id="pgDesc" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/booking.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('HwpQ3DPRMmtcVZVt1')"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --p:#1a3a5c;
+  --ice:#93c5fd;
+  --ink:#f0f4ff;
+  --ink2:rgba(240,244,255,.65);
+  --bg:#060d18;
+  --card:rgba(240,244,255,.04);
+  --bo:rgba(240,244,255,.08);
+  --serif:'Fraunces',serif;
+  --sans:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.9rem 5%;display:flex;align-items:center;justify-content:space-between;transition:background .3s,backdrop-filter .3s}
+.nav.scrolled{background:rgba(6,13,24,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--bo)}
+.nav-brand{display:flex;flex-direction:column;gap:1px}
+.nav-name{font-family:var(--serif);font-size:.95rem;font-weight:700;color:var(--ink);line-height:1}
+.nav-esp{font-size:.6rem;color:var(--ice);text-transform:uppercase;letter-spacing:.12em;font-weight:500}
+.nav-cta{background:var(--ice);color:#060d18;border:none;border-radius:50px;height:38px;padding:0 1.1rem;font-family:var(--sans);font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:opacity .2s}
+.nav-cta:hover{opacity:.85}
+.nav-logo-img{height:34px;max-width:120px;object-fit:contain}
+
+/* ── HERO ── */
+.hero{position:relative;min-height:100svh;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 5% calc(5rem + env(safe-area-inset-bottom));overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:var(--bg)}
+.hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 15%;opacity:.5}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,13,24,.2) 0%,rgba(6,13,24,.1) 40%,rgba(6,13,24,.85) 75%,rgba(6,13,24,1) 100%)}
+.hero-content{position:relative;z-index:2;max-width:500px}
+.hero-pill{display:inline-flex;align-items:center;gap:.45rem;background:rgba(147,197,253,.1);border:1px solid rgba(147,197,253,.2);border-radius:50px;padding:.3rem .8rem;font-size:.68rem;font-weight:600;color:var(--ice);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.1rem}
+.hero-pill-dot{width:6px;height:6px;border-radius:50%;background:var(--ice);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero-h1{font-family:var(--serif);font-size:clamp(2.6rem,9vw,5rem);font-weight:700;line-height:.95;letter-spacing:-.03em;margin-bottom:.9rem;color:#fff}
+.hero-h1 em{font-style:italic;font-weight:300;color:var(--ice);display:block}
+.hero-sub{font-size:.92rem;color:var(--ink2);line-height:1.65;margin-bottom:1.6rem;max-width:360px}
+.hero-actions{display:flex;flex-direction:column;gap:.6rem;max-width:320px}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:.5rem;background:var(--ice);color:#060d18;border:none;border-radius:14px;height:54px;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:opacity .2s}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{display:flex;align-items:center;justify-content:center;gap:.5rem;background:rgba(240,244,255,.07);color:var(--ink);border:1px solid var(--bo);border-radius:14px;height:48px;font-family:var(--sans);font-size:.85rem;font-weight:500;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn-ghost:hover{background:rgba(240,244,255,.12)}
+.hero-trust{display:flex;gap:1.2rem;margin-top:1.6rem;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--ink2)}
+.trust-icon{width:28px;height:28px;border-radius:8px;background:rgba(147,197,253,.1);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+
+/* ── SECTIONS ── */
+.sec{padding:4rem 5%;border-bottom:1px solid var(--bo)}
+.sec-label{font-size:.6rem;font-weight:700;color:var(--ice);text-transform:uppercase;letter-spacing:.16em;margin-bottom:.6rem}
+.sec-h2{font-family:var(--serif);font-size:clamp(1.7rem,5vw,2.6rem);font-weight:700;line-height:1.05;letter-spacing:-.02em;color:#fff;margin-bottom:1.4rem}
+.sec-h2 em{font-style:italic;font-weight:300;color:var(--ice)}
+
+/* ── SERVICES ── */
+.srv-list{display:flex;flex-direction:column;gap:.65rem}
+.srv-item{display:flex;align-items:center;gap:1rem;background:var(--card);border:1px solid var(--bo);border-radius:16px;padding:1rem 1.1rem;cursor:pointer;transition:background .2s,border-color .2s}
+.srv-item:hover{background:rgba(147,197,253,.06);border-color:rgba(147,197,253,.18)}
+.srv-icon{width:40px;height:40px;border-radius:12px;background:rgba(147,197,253,.08);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.srv-title{font-family:var(--serif);font-size:.95rem;font-weight:600;color:#fff;line-height:1.2}
+.srv-desc{font-size:.75rem;color:var(--ink2);margin-top:.15rem;line-height:1.4}
+.srv-arr{margin-left:auto;color:var(--ice);font-size:.85rem;opacity:.5;flex-shrink:0}
+
+/* ── ABOUT ── */
+.about-photo-wrap{position:relative;border-radius:20px;overflow:hidden;margin-bottom:1.5rem;aspect-ratio:4/3}
+.about-photo{width:100%;height:100%;object-fit:cover;object-position:center 10%}
+.about-photo-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,13,24,.7) 0%,transparent 50%)}
+.about-photo-tag{position:absolute;bottom:1rem;left:1rem;right:1rem;display:flex;align-items:center;gap:.7rem}
+.about-tag-name{font-family:var(--serif);font-size:.92rem;font-weight:700;color:#fff}
+.about-tag-esp{font-size:.62rem;color:var(--ice);text-transform:uppercase;letter-spacing:.1em}
+.about-quote{font-family:var(--serif);font-size:1.15rem;font-style:italic;font-weight:300;color:var(--ink);line-height:1.55;margin-bottom:1rem;padding-left:1rem;border-left:2px solid var(--ice);opacity:.85}
+.about-bio{font-size:.88rem;color:var(--ink2);line-height:1.75;margin-bottom:1.4rem}
+.creds-list{display:flex;flex-direction:column;gap:.55rem}
+.cred-item{display:flex;align-items:flex-start;gap:.6rem;font-size:.8rem;color:var(--ink2)}
+.cred-dot{width:6px;height:6px;border-radius:50%;background:var(--ice);margin-top:.35rem;flex-shrink:0}
+
+/* ── SEDES ── */
+.sedes-list{display:flex;flex-direction:column;gap:.65rem}
+.sede-card{display:flex;gap:.9rem;background:var(--card);border:1px solid var(--bo);border-radius:16px;padding:1rem 1.1rem}
+.sede-icon{width:38px;height:38px;border-radius:11px;background:rgba(147,197,253,.08);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.sede-name{font-size:.88rem;font-weight:700;color:#fff;margin-bottom:.2rem}
+.sede-addr{font-size:.75rem;color:var(--ink2);line-height:1.5}
+.sede-tel{font-size:.72rem;color:var(--ice);margin-top:.25rem;font-weight:600}
+.sede-map{font-size:.7rem;color:var(--ice);font-weight:600;text-decoration:none;display:inline-block;margin-top:.3rem}
+
+/* ── CTA FINAL ── */
+.final-cta{padding:4rem 5% calc(6rem + env(safe-area-inset-bottom));text-align:center}
+.final-cta .sec-h2{margin-bottom:.8rem}
+.final-cta p{font-size:.88rem;color:var(--ink2);line-height:1.7;margin-bottom:2rem;max-width:380px;margin-left:auto;margin-right:auto}
+.final-cta .btn-primary{max-width:300px;margin:0 auto}
+
+/* ── FOOTER ── */
+footer#saFooter{padding:1rem 5% calc(env(safe-area-inset-bottom) + .5rem);border-top:1px solid var(--bo);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+#saFooterLogo img{height:28px;max-width:100px;object-fit:contain;opacity:.7}
+footer a{display:flex;align-items:center;gap:.4rem;text-decoration:none;font-size:.7rem;color:var(--ink2)}
+footer a span.c-icon{width:22px;height:22px;border-radius:6px;background:rgba(147,197,253,.12);border:1px solid var(--bo);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:var(--ice)}
+
+/* ── STICKY BAR ── */
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;z-index:90;background:rgba(6,13,24,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--bo);padding:.65rem 5% calc(.65rem + env(safe-area-inset-bottom));display:flex;gap:.5rem;transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.sticky-bar.show{transform:translateY(0)}
+.s-book{flex:1;background:var(--ice);color:#060d18;border:none;border-radius:12px;height:46px;font-family:var(--sans);font-size:.85rem;font-weight:700;cursor:pointer}
+.s-wa{flex:0 0 46px;height:46px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.2);border-radius:12px;font-size:1.1rem;cursor:pointer}
+.s-call{flex:0 0 46px;height:46px;background:var(--card);border:1px solid var(--bo);border-radius:12px;font-size:1.1rem;cursor:pointer}
+
+/* ── BOOKING MODAL ── */
+.bk-overlay{position:fixed;inset:0;z-index:200;background:rgba(4,10,20,.85);backdrop-filter:blur(10px);display:none;align-items:flex-end}
+.bk-sheet{background:#0d1b2e;border-radius:24px 24px 0 0;width:100%;max-height:92svh;max-height:92vh;overflow-y:auto;padding:0 0 env(safe-area-inset-bottom);transform:translateY(100%);transition:transform .38s cubic-bezier(.16,1,.3,1)}
+.bk-sheet.open{transform:translateY(0)}
+.bk-handle{width:36px;height:4px;background:var(--bo);border-radius:2px;margin:12px auto 0}
+.bk-hdr{padding:1.1rem 1.4rem .8rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bo)}
+.bk-hdr-name{font-family:var(--serif);font-size:1rem;font-weight:700;color:#fff}
+.bk-hdr-esp{font-size:.68rem;color:var(--ice);margin-top:.1rem}
+.bk-close{width:30px;height:30px;border-radius:50%;background:var(--card);border:1px solid var(--bo);color:var(--ink2);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.bk-body{padding:1.2rem 1.4rem}
+.bk-label{font-size:.62rem;font-weight:700;color:var(--ice);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.65rem}
+/* Calendar */
+.bk-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:1.2rem}
+.bk-cal-hdr{text-align:center;font-size:.58rem;font-weight:600;color:var(--ink2);padding:.25rem 0}
+.bk-day{aspect-ratio:1;border:none;border-radius:8px;font-size:.78rem;font-weight:600;cursor:default;background:transparent;color:rgba(240,244,255,.2)}
+.bk-day.avail{background:rgba(147,197,253,.08);color:var(--ink);cursor:pointer;transition:background .15s}
+.bk-day.avail:hover{background:rgba(147,197,253,.16)}
+.bk-day.sel{background:var(--ice);color:#060d18}
+.bk-day.today{ring:1px solid var(--ice)}
+.bk-day.past,.bk-day.unavail{opacity:.25}
+/* Slots */
+.bk-slots{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.2rem}
+.bk-slot{padding:.4rem .85rem;border:1px solid var(--bo);border-radius:50px;font-family:var(--sans);font-size:.78rem;color:var(--ink);background:var(--card);cursor:pointer;transition:all .15s}
+.bk-slot:hover{border-color:var(--ice);color:var(--ice)}
+.bk-slot.sel{background:var(--ice);border-color:var(--ice);color:#060d18;font-weight:700}
+.bk-slot.taken{opacity:.25;cursor:default}
+/* Form */
+.bk-inp{width:100%;padding:.75rem 1rem;background:rgba(240,244,255,.05);border:1.5px solid var(--bo);border-radius:11px;font-family:var(--sans);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s}
+.bk-inp::placeholder{color:rgba(240,244,255,.3)}
+.bk-inp:focus{border-color:var(--ice)}
+.bk-inp-label{display:block;font-size:.68rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem}
+.bk-sede-info{background:rgba(147,197,253,.06);border:1px solid rgba(147,197,253,.15);border-radius:10px;padding:.55rem .9rem;font-size:.78rem;color:var(--ink2);margin-bottom:.9rem}
+.bk-btn{width:100%;height:52px;background:var(--ice);color:#060d18;border:none;border-radius:14px;font-family:var(--sans);font-size:.92rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.bk-btn:hover{opacity:.88}
+.bk-btn:disabled{opacity:.4;cursor:default}
+
+/* ── REVEAL ── */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1)}
+.rv.in{opacity:1;transform:none}
+.d1{transition-delay:.05s}.d2{transition-delay:.1s}.d3{transition-delay:.15s}.d4{transition-delay:.2s}
+
+/* ── DESKTOP ── */
+@media(min-width:768px){
+  .hero{padding-bottom:4rem}
+  .hero-actions{flex-direction:row;max-width:none}
+  .btn-primary{width:auto;padding:0 2rem}
+  .btn-ghost{width:auto;padding:0 1.6rem}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+  .about-photo-wrap{margin-bottom:0;aspect-ratio:3/4}
+  .final-cta .btn-primary{width:auto;padding:0 2.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-brand" id="navBrand">
+    <span class="nav-name" id="navName">Dr. Médico</span>
+    <span class="nav-esp" id="navEsp">Especialidad</span>
+  </div>
+  <button class="nav-cta" onclick="abrirBooking()">Agendar cita</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <img class="hero-photo" id="heroPhoto" src="" alt="" onerror="this.style.display='none'">
+    <div class="hero-ov"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-pill"><span class="hero-pill-dot"></span><span id="heroPill">Especialidad</span></div>
+    <h1 class="hero-h1" id="heroH1">Tu salud<em>en las mejores manos</em></h1>
+    <p class="hero-sub" id="heroSub">Diagnóstico preciso y tratamiento personalizado.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="abrirBooking()">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agendar consulta
+      </button>
+      <a class="btn-ghost" id="heroWa" href="#" target="_blank" rel="noopener" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+    <div class="hero-trust" id="heroTrust"></div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="sec">
+  <div class="sec-label">Lo que tratamos</div>
+  <h2 class="sec-h2 rv d1" id="srvH2">Áreas de <em>especialización</em></h2>
+  <p style="font-size:.87rem;color:var(--ink2);line-height:1.7;margin-bottom:1.6rem" id="srvSub"></p>
+  <div class="srv-list rv d2" id="srvList"></div>
+</section>
+
+<!-- SOBRE MÍ -->
+<section class="sec">
+  <div class="sec-label">El médico</div>
+  <h2 class="sec-h2 rv d1" id="aboutH2">Sobre el <em>especialista</em></h2>
+  <div class="about-grid">
+    <div>
+      <div class="about-photo-wrap rv d1">
+        <img class="about-photo" id="aboutPhoto" src="" alt="" onerror="this.parentElement.style.display='none'">
+        <div class="about-photo-ov"></div>
+        <div class="about-photo-tag">
+          <div><div class="about-tag-name" id="aboutName"></div><div class="about-tag-esp" id="aboutEsp"></div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="about-quote rv d2" id="aboutQuote"></p>
+      <p class="about-bio rv d3" id="aboutBio"></p>
+      <div class="creds-list rv d4" id="credsList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SEDES -->
+<section class="sec" id="sedesSection" style="display:none">
+  <div class="sec-label">Dónde atendemos</div>
+  <h2 class="sec-h2 rv d1">Sedes de <em>atención</em></h2>
+  <div class="sedes-list" id="sedesList"></div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta rv">
+  <div class="sec-label" style="justify-content:center;display:flex">Comenzá hoy</div>
+  <h2 class="sec-h2" id="ctaH2">Tu bienestar,<em>nuestra prioridad</em></h2>
+  <p id="ctaSub">Atención personalizada con los más altos estándares clínicos.</p>
+  <button class="btn-primary" onclick="abrirBooking()">
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Agendar consulta
+  </button>
+</div>
+
+<!-- FOOTER -->
+<footer id="saFooter">
+  <div id="saFooterLogo"></div>
+  <a href="https://citadoc.lat" target="_blank" rel="noopener">
+    <span class="c-icon">C</span>
+    <span style="color:rgba(240,244,255,.5)">CitaDoc <span style="opacity:.6;font-weight:400">Health Network</span></span>
+  </a>
+</footer>
+
+<!-- STICKY BAR -->
+<div class="sticky-bar" id="stickyBar">
+  <button class="s-book" onclick="abrirBooking()">📅 Agendar cita</button>
+  <button class="s-wa" id="stickyWa">💬</button>
+  <button class="s-call" id="stickyCall">📞</button>
+</div>
+
+<!-- BOOKING OVERLAY -->
+<div class="bk-overlay" id="bkOverlay" onclick="cerrarBooking()">
+  <div class="bk-sheet" id="bkSheet" onclick="event.stopPropagation()">
+    <div class="bk-handle"></div>
+    <div class="bk-hdr">
+      <div>
+        <div class="bk-hdr-name" id="bkDrName">Agendar cita</div>
+        <div class="bk-hdr-esp" id="bkEsp"></div>
+      </div>
+      <button class="bk-close" onclick="cerrarBooking()">✕</button>
+    </div>
+
+    <!-- STEP 1: fecha + hora -->
+    <div id="bkStep1" class="bk-body">
+      <div id="bkSedeWrap" style="margin-bottom:.9rem"></div>
+      <div class="bk-label">Seleccioná una fecha</div>
+      <div class="bk-cal" id="bkCal"></div>
+      <div id="bkSlotsWrap" style="display:none">
+        <div class="bk-label" id="bkSlotsLabel">Horarios disponibles</div>
+        <div class="bk-slots" id="bkSlots"></div>
+        <div style="display:none;font-size:.82rem;color:var(--ink2);padding:.5rem 0" id="bkNoSlots">Sin horarios disponibles este día.</div>
+      </div>
+      <button class="bk-btn" id="bkNextBtn" style="opacity:.4;cursor:default" disabled onclick="bkGoStep2()">Continuar →</button>
+    </div>
+
+    <!-- STEP 2: datos -->
+    <div id="bkStep2" class="bk-body" style="display:none">
+      <div style="font-size:.78rem;color:var(--ink2);margin-bottom:1rem">
+        <span id="bkSelDate" style="color:#fff;font-weight:600"></span>
+        <span style="margin:0 .3rem;opacity:.4">·</span>
+        <span id="bkSelTime" style="color:var(--ice);font-weight:700"></span>
+      </div>
+      <div id="bkSedeInfo2" style="display:none" class="bk-sede-info"></div>
+      <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem">
+        <div><label class="bk-inp-label">Nombre completo *</label><input id="bkNombre" class="bk-inp" placeholder="María García" autocomplete="name"></div>
+        <div><label class="bk-inp-label">Teléfono / WhatsApp *</label><input id="bkTelefono" class="bk-inp" placeholder="0998 123 456" type="tel" autocomplete="tel"></div>
+        <div><label class="bk-inp-label">Email <span style="font-weight:400;opacity:.6">(para confirmación)</span></label><input id="bkEmail" class="bk-inp" placeholder="correo@email.com" type="email" autocomplete="email"></div>
+        <div><label class="bk-inp-label">Motivo <span style="font-weight:400;opacity:.6">(opcional)</span></label><input id="bkMotivo" class="bk-inp" placeholder="Control de rutina"></div>
+      </div>
+      <button class="bk-btn" id="bkConfirmBtn" onclick="bkConfirmar()">✓ Confirmar cita</button>
+      <button onclick="bkGoStep1()" style="width:100%;padding:.5rem;background:none;border:none;color:var(--ink2);font-family:var(--sans);font-size:.8rem;cursor:pointer;margin-top:.4rem">← Cambiar fecha/hora</button>
+    </div>
+
+    <!-- STEP 3: confirmado -->
+    <div id="bkStep3" class="bk-body" style="display:none;text-align:center;padding:2.5rem 1.4rem">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(147,197,253,.1);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 1.2rem;color:var(--ice)">✓</div>
+      <div style="font-family:var(--serif);font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.4rem">¡Cita confirmada!</div>
+      <div id="bkConfMsg" style="font-size:.85rem;color:var(--ink2);line-height:1.7;margin-bottom:1.5rem"></div>
+      <a id="bkWaLink" href="#" target="_blank" rel="noopener" style="display:none;align-items:center;justify-content:center;gap:.5rem;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:12px;height:48px;font-family:var(--sans);font-size:.85rem;font-weight:600;color:#4ade80;text-decoration:none;margin-bottom:.5rem">💬 Confirmar por WhatsApp</a>
+      <button onclick="cerrarBooking()" style="width:100%;padding:.6rem;background:none;border:none;color:var(--ink2);font-family:var(--sans);font-size:.82rem;cursor:pointer">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _sb=supabase.createClient('https://qxoomcqaafogczrvsyhg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs');
+function el(id){return document.getElementById(id)}
+function set(id,v){var e=el(id);if(e)e.textContent=v}
+function css(p,v){document.documentElement.style.setProperty(p,v)}
+
+var _M=null,_locs=[],_bkCitas=[],_bkDisp={},_bkDate=null,_bkSlot=null,_bkSedeId=null;
+var _MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var _meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var _DIAS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var params=new URLSearchParams(location.search);
+var slug=params.get('slug')||'';
+var isDraft=params.get('preview')==='draft'||params.get('preview')==='clean';
+
+// Nav scroll
+window.addEventListener('scroll',function(){el('nav').classList.toggle('scrolled',window.scrollY>60);el('stickyBar').classList.toggle('show',window.scrollY>window.innerHeight*.5);},{passive:true});
+
+// Reveal
+var _ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');_ro.unobserve(e.target);}});},{threshold:.07,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
+
+// Data load
+if(slug){
+  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(async function(r){
+    if(r.error||!r.data)return;
+    _M=r.data;
+    var wc=isDraft&&_M.web_config_draft?_M.web_config_draft:(_M.web_config||{});
+    var hoy=new Date().toISOString().split('T')[0];
+    var en60=new Date();en60.setDate(en60.getDate()+60);
+    var [locsRes,citasRes]=await Promise.all([
+      _sb.from('doctor_locations').select('*').eq('medico_id',_M.id).order('principal',{ascending:false}),
+      _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada')
+    ]);
+    _locs=locsRes.data||[];
+    _bkCitas=citasRes.data||[];
+    _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
+    render(_M,wc);
+    renderSedes(_locs);
+  });
+}
+
+function render(m,wc){
+  var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  var esp=(m.especialidades||[])[0]||'';
+  var pc=wc.primary_color||m.primary_color||'#1a3a5c';
+  var photo=wc.doctor_photo_url||m.foto_url||'';
+  var logo=wc.logo_url||null;
+  var waActive=m.whatsapp_activo&&m.whatsapp;
+  var waUrl=waActive?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.'):'';
+
+  // Colors from primary
+  var hex=pc.replace('#','');
+  var pr=parseInt(hex.slice(0,2),16),pg=parseInt(hex.slice(2,4),16),pb=parseInt(hex.slice(4,6),16);
+  var d=function(v,a){return Math.max(0,Math.round(v*(1-a)));};
+  var bg='#'+[d(pr,.7),d(pg,.7),d(pb,.7)].map(function(v){return v.toString(16).padStart(2,'0');}).join('');
+  css('--p',pc);css('--bg',bg);css('--ice',pc);
+
+  // Meta
+  document.title=(wc.seo_title||nombre+' — '+esp);
+  var pd=el('pgDesc');if(pd)pd.setAttribute('content',wc.seo_description||nombre+' '+esp);
+
+  // Nav
+  if(logo){el('navBrand').innerHTML='<img class="nav-logo-img" src="'+logo+'" alt="'+nombre+'">';}
+  else{set('navName',nombre);set('navEsp',esp);}
+
+  // Hero
+  var hp=el('heroPhoto');if(hp&&photo){hp.src=photo;hp.alt=nombre;}
+  set('heroPill',esp.toUpperCase());
+  var h1=el('heroH1');
+  if(h1){var hl=wc.headline||nombre;h1.innerHTML=hl.indexOf('<')>-1?hl:'<span>'+hl.split(' ').slice(0,2).join(' ')+'</span><em>'+hl.split(' ').slice(2).join(' ')+'</em>';}
+  set('heroSub',wc.subheadline||esp+(m.ciudad?' · '+m.ciudad:''));
+  if(waActive){var wa=el('heroWa');if(wa){wa.href=waUrl;wa.style.display='flex';}}
+
+  // Trust
+  var trust=el('heroTrust');
+  if(trust){
+    var items=[];
+    if(m.anos_experiencia)items.push({i:'⭐',t:m.anos_experiencia+' años exp.'});
+    if(esp)items.push({i:'🔬',t:'Basada en evidencia'});
+    if(m.ciudad)items.push({i:'📍',t:m.ciudad});
+    trust.innerHTML=items.map(function(x){return'<div class="trust-item"><div class="trust-icon">'+x.i+'</div><span>'+x.t+'</span></div>';}).join('');
+  }
+
+  // Services
+  var DEFLT_SRV=[{i:'🩺',t:'Consulta integral',d:'Evaluación clínica completa y diagnóstico personalizado.'},{i:'🔬',t:'Diagnóstico de precisión',d:'Estudios especializados con tecnología de vanguardia.'},{i:'💊',t:'Plan de tratamiento',d:'Protocolo diseñado para tu caso específico.'},{i:'🤝',t:'Seguimiento continuo',d:'Acompañamiento durante todo el proceso de recuperación.'}];
+  var srvs=wc.services&&wc.services.length?wc.services:DEFLT_SRV;
+  var sl=el('srvList');
+  if(sl){sl.innerHTML=srvs.slice(0,5).map(function(s){return'<div class="srv-item rv"><div class="srv-icon">'+(s.i||'🩺')+'</div><div><div class="srv-title">'+(s.t||s.titulo||'Servicio')+'</div>'+(s.d||s.descripcion?'<div class="srv-desc">'+(s.d||s.descripcion)+'</div>':'')+'</div><span class="srv-arr">→</span></div>';}).join('');sl.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});}
+  set('srvH2',wc.services_title||'Áreas de especialización');
+  set('srvSub',wc.services_subtitle||wc.treatment_approach||'Tratamientos especializados con los más altos estándares médicos.');
+
+  // About
+  var ap=el('aboutPhoto');if(ap&&photo){ap.src=photo;ap.alt=nombre;}
+  set('aboutName',nombre);set('aboutEsp',esp);
+  var q=wc.philosophy||wc.sobre_quote||(m.bio?'"'+m.bio.slice(0,120).trim()+'…"':'');
+  if(!q)q='"Cada paciente merece diagnóstico preciso, tratamiento efectivo y atención humana."';
+  set('aboutQuote',q);
+  set('aboutBio',wc.about_text||wc.doctor_story||m.bio||('Especialista en '+(esp||'medicina')+(m.ciudad?' con consultorio en '+m.ciudad:'')+'. Comprometido con la excelencia clínica y el bienestar integral de cada paciente.'));
+  var cl=el('credsList');
+  var creds=wc.differentiators||wc.sobre_mi_highlights||[];
+  if(!creds.length){if(m.anos_experiencia)creds.push(m.anos_experiencia+' años de experiencia clínica');if(esp)creds.push('Especialista en '+esp);if(m.senescyt)creds.push('Reg. SENESCYT '+m.senescyt);if(m.ciudad)creds.push('Consultorio en '+m.ciudad);}
+  if(cl)cl.innerHTML=creds.slice(0,5).map(function(c){return'<div class="cred-item"><span class="cred-dot"></span><span>'+c+'</span></div>';}).join('');
+  el('aboutH2').innerHTML='Sobre el <em>especialista</em>';
+
+  // CTA
+  set('ctaH2',wc.cta_final||'Tu salud en las mejores manos');
+  set('ctaSub',wc.patient_experience||'Atención personalizada, diagnóstico preciso y acompañamiento en cada etapa de tu recuperación.');
+
+  // Footer
+  var fl=el('saFooterLogo');
+  if(fl&&logo){fl.innerHTML='<img src="'+logo+'" style="height:28px;max-width:100px;object-fit:contain;opacity:.7" alt="'+nombre+'">';}
+  else if(fl){fl.style.display='none';}
+
+  // Sticky WA/Call
+  var sw=el('stickyWa');if(sw){if(waActive){sw.onclick=function(){window.open(waUrl,'_blank');};}else{sw.style.display='none';}}
+  var sc=el('stickyCall');if(sc){if(m.telefono){sc.onclick=function(){location='tel:'+m.telefono.replace(/\D/g,'');};}else{sc.style.display='none';}}
+
+  // Booking header
+  set('bkDrName','Agendar con '+nombre);set('bkEsp',esp);
+}
+
+function renderSedes(locs){
+  var sec=el('sedesSection'),list=el('sedesList');
+  if(!locs||!locs.length||!sec||!list)return;
+  sec.style.display='block';
+  list.innerHTML=locs.map(function(l){
+    return'<div class="sede-card rv"><div class="sede-icon">📍</div><div>'
+      +'<div class="sede-name">'+(l.nombre||'Consultorio')+'</div>'
+      +'<div class="sede-addr">'+(l.direccion||'')+(l.ciudad?', '+l.ciudad:'')+'</div>'
+      +(l.telefono?'<div class="sede-tel">📞 '+l.telefono+'</div>':'')
+      +(l.maps_url?'<a class="sede-map" href="'+l.maps_url+'" target="_blank">Ver en mapa →</a>':'')
+      +'</div></div>';
+  }).join('');
+  list.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
+}
+
+// ── BOOKING ──
+function abrirBooking(){
+  if(!_M)return;
+  var ov=el('bkOverlay');if(!ov)return;
+  ov.style.display='flex';
+  requestAnimationFrame(function(){el('bkSheet').classList.add('open');});
+  document.body.style.overflow='hidden';
+  _bkDate=null;_bkSlot=null;_bkSedeId=null;
+
+  var locs=_locs||[];
+  var sw=el('bkSedeWrap'),si2=el('bkSedeInfo2');
+  if(sw){
+    if(locs.length>1){
+      var sel='<select class="bk-inp" style="font-size:.82rem" onchange="_bkSedeId=this.value?String(this.value):null;bkRecargar()">';
+      sel+='<option value="">Todas las sedes</option>';
+      locs.forEach(function(l){sel+='<option value="'+(l.id||'')+'">'+(l.nombre||'Sede')+'</option>';});
+      sel+='</select>';
+      sw.innerHTML=sel;sw.style.display='block';
+    } else if(locs.length===1&&locs[0].id){
+      _bkSedeId=String(locs[0].id);
+      sw.innerHTML='';sw.style.display='none';
+      if(si2){si2.innerHTML='📍 <strong>'+(locs[0].nombre||'Consultorio')+'</strong>'+(locs[0].direccion?' · '+locs[0].direccion.split(',')[0]:'');si2.style.display='block';}
+    } else {sw.innerHTML='';sw.style.display='none';}
+  }
+  bkRecargar();
+}
+
+function cerrarBooking(){
+  el('bkSheet').classList.remove('open');
+  setTimeout(function(){var ov=el('bkOverlay');if(ov)ov.style.display='none';},350);
+  document.body.style.overflow='';
+  bkGoStep1();
+}
+
+async function bkRecargar(){
+  var btn=el('bkNextBtn');if(btn){btn.disabled=true;btn.style.opacity='.4';}
+  var hoy=new Date().toISOString().split('T')[0];
+  var e90=new Date();e90.setDate(e90.getDate()+90);
+  var r=await _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',e90.toISOString().split('T')[0]).neq('estado','cancelada');
+  _bkCitas=r.data||[];
+  _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
+  bkRenderCal();
+}
+
+var _bkY,_bkM;
+function bkRenderCal(){
+  var n=new Date();if(!_bkY){_bkY=n.getFullYear();_bkM=n.getMonth();}
+  var g=el('bkCal');if(!g)return;g.innerHTML='';
+  _DIAS.forEach(function(d){var h=document.createElement('div');h.className='bk-cal-hdr';h.textContent=d.charAt(0);g.appendChild(h);});
+  var fd=new Date(_bkY,_bkM,1).getDay(),dm=new Date(_bkY,_bkM+1,0).getDate();
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var hoyS=hoy.toISOString().split('T')[0];
+  for(var i=0;i<fd;i++){var e=document.createElement('div');e.className='bk-day';g.appendChild(e);}
+  for(var d=1;d<=dm;d++){
+    var f=new Date(_bkY,_bkM,d),fs=f.toISOString().split('T')[0];
+    var has=_bkDisp[fs]&&_bkDisp[fs].length>0;
+    var c=document.createElement('div');c.textContent=d;
+    var cls=['bk-day'];
+    if(fs===hoyS)cls.push('today');
+    if(f<hoy||!has){cls.push(f<hoy?'past':'unavail');}
+    else{cls.push('avail');if(fs===_bkDate)cls.push('sel');(function(s){c.onclick=function(){_bkDate=s;_bkSlot=null;var b=el('bkNextBtn');if(b){b.disabled=true;b.style.opacity='.4';}bkRenderCal();bkRenderSlots(s);};})(fs);}
+    c.className=cls.join(' ');g.appendChild(c);
+  }
+  el('bkSlotsWrap').style.display=_bkDate?'block':'none';
+  if(_bkDate)bkRenderSlots(_bkDate);
+}
+
+function bkRenderSlots(fecha){
+  var sl=el('bkSlotsLabel');
+  if(sl){var d=new Date(fecha+'T12:00:00');sl.textContent=d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});}
+  var slots=(_bkDisp[fecha]||[]).slice();
+  var cont=el('bkSlots');cont.innerHTML='';
+  var disp=0;
+  slots.forEach(function(s){
+    var chip=document.createElement('div');
+    chip.className='bk-slot'+(s===_bkSlot?' sel':'');
+    chip.textContent=s;
+    disp++;
+    (function(sl){chip.onclick=function(){_bkSlot=sl;document.querySelectorAll('.bk-slot').forEach(function(c){c.classList.toggle('sel',c.textContent===sl);});var b=el('bkNextBtn');if(b){b.disabled=false;b.style.opacity='1';}};})(s);
+    cont.appendChild(chip);
+  });
+  el('bkNoSlots').style.display=disp===0?'block':'none';
+  el('bkSlotsWrap').style.display='block';
+}
+
+function bkGoStep1(){
+  el('bkStep1').style.display='block';
+  el('bkStep2').style.display='none';
+  el('bkStep3').style.display='none';
+}
+function bkGoStep2(){
+  if(!_bkDate||!_bkSlot)return;
+  el('bkStep1').style.display='none';el('bkStep2').style.display='block';el('bkStep3').style.display='none';
+  var d=new Date(_bkDate+'T12:00:00');
+  set('bkSelDate',d.toLocaleDateString('es',{day:'numeric',month:'long'}));
+  set('bkSelTime',_bkSlot);
+}
+
+async function bkConfirmar(){
+  if(!_M||!_bkDate||!_bkSlot)return;
+  var n=((el('bkNombre')||{}).value||'').trim();
+  var t=((el('bkTelefono')||{}).value||'').trim();
+  var e=((el('bkEmail')||{}).value||'').trim();
+  var motivo=((el('bkMotivo')||{}).value||'').trim();
+  if(!n||!t){alert('Completá nombre y teléfono.');return;}
+  var btn=el('bkConfirmBtn');if(btn){btn.disabled=true;btn.textContent='Confirmando…';}
+  var dr=(_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido;
+  var nd=new Date(_bkDate+'T12:00:00');
+  var fechaLabel=nd.getDate()+' de '+_meses[nd.getMonth()]+' '+nd.getFullYear();
+  var perfilUrl='https://citadoc.lat/citadoc-perfil.html?slug='+(_M.slug||'');
+
+  var check=await _sb.from('citas').select('id').eq('medico_id',_M.id).eq('fecha',_bkDate).eq('hora',_bkSlot).in('estado',['confirmada','pendiente']);
+  if(check.data&&check.data.length>0){
+    alert('Este horario acaba de ser reservado. Seleccioná otro.');
+    if(btn){btn.disabled=false;btn.textContent='✓ Confirmar cita';}
+    bkGoStep1();_bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);bkRenderCal();return;
+  }
+
+  var pid=typeof buscarOCrearPaciente==='function'?await buscarOCrearPaciente(_sb,n,e,t):null;
+
+  var rC=await _sb.from('citas').insert({
+    medico_id:_M.id,paciente_id:pid||null,
+    paciente_nombre:n,paciente_tel:t,paciente_email:e||null,
+    motivo:motivo||null,fecha:_bkDate,hora:_bkSlot,estado:'confirmada'
+  });
+  if(btn){btn.disabled=false;btn.textContent='✓ Confirmar cita';}
+  if(rC.error){
+    if(rC.error.message&&rC.error.message.indexOf('unique_slot_cita')>-1){alert('Ese horario acaba de ser reservado. Seleccioná otro.');bkGoStep1();}
+    else alert('Error: '+rC.error.message);
+    return;
+  }
+
+  if(typeof emailjs!=='undefined'){
+    var nota='🩺 Nueva cita\nPaciente: '+n+' · '+t+(e?'\nEmail: '+e:'')+'\nFecha: '+fechaLabel+' a las '+_bkSlot+(motivo?'\nMotivo: '+motivo:'');
+    if(_M.email) emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:_M.email,doctor_name:dr,patient_name:n,appointment_date:fechaLabel,appointment_time:_bkSlot,location_name:nota,appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',public_profile_url:perfilUrl}).catch(function(){});
+    if(e) emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:e,doctor_name:dr,patient_name:n,appointment_date:fechaLabel,appointment_time:_bkSlot,location_name:'Consultorio de '+dr,appointment_mode:'🏥 Presencial — confirmación de cita',public_profile_url:perfilUrl}).catch(function(){});
+  }
+
+  el('bkStep2').style.display='none';el('bkStep3').style.display='block';
+  set('bkConfMsg',n+', tu cita con '+dr+' fue confirmada para el '+fechaLabel+' a las '+_bkSlot+'.'+(e?' Confirmación enviada a '+e+'.':''));
+  var wl=el('bkWaLink');
+  if(wl&&_M.whatsapp_activo&&_M.whatsapp){wl.href='https://wa.me/'+_M.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+dr+', confirmé mi cita para el '+fechaLabel+' a las '+_bkSlot+'. Soy '+n+'.');wl.style.display='flex';}
+  _bkCitas.push({fecha:_bkDate,hora:_bkSlot});
+  _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
+}
+</script>
+</body>
+</html>
