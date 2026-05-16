@@ -1058,13 +1058,13 @@ body[data-layout="performance-clinic"] .hero-right{
   background:#fff;display:flex;align-items:flex-end;
   justify-content:center;overflow:hidden;position:relative
 }
-/* Foto: full-body, bottom-aligned, object-contain */
+/* Foto: cover con énfasis en parte superior — funciona con cualquier foto */
 body[data-layout="performance-clinic"] .hero-right-img{
-  position:absolute!important;bottom:0!important;top:auto!important;
-  left:50%!important;transform:translateX(-50%)!important;
-  width:auto!important;height:92%!important;
-  object-fit:contain!important;object-position:bottom center!important;
-  filter:contrast(1.1) brightness(1.02) saturate(1.12);animation:none
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  object-fit:cover!important;object-position:center 15%!important;
+  filter:contrast(1.1) brightness(1.02) saturate(1.12);animation:none;
+  transform:none!important
 }
 body[data-layout="performance-clinic"] .hero-right-ov{display:none}
 body[data-layout="performance-clinic"] .hero-right-card{display:none}
@@ -1152,13 +1152,13 @@ body[data-layout="soft-clinic-luxury"] .hero-right{
   background:#FAF8FC;display:flex;align-items:flex-end;
   justify-content:center;overflow:hidden;position:relative
 }
-/* Foto: full-body, bottom-aligned, object-contain — igual que performance-clinic */
+/* Foto: cover suave, funciona con cualquier foto */
 body[data-layout="soft-clinic-luxury"] .hero-right-img{
-  position:absolute!important;bottom:0!important;top:auto!important;
-  left:50%!important;transform:translateX(-50%)!important;
-  width:auto!important;height:92%!important;
-  object-fit:contain!important;object-position:bottom center!important;
-  filter:contrast(1.0) brightness(1.06) saturate(0.9);animation:none
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  object-fit:cover!important;object-position:center 12%!important;
+  filter:contrast(1.0) brightness(1.06) saturate(0.9);animation:none;
+  transform:none!important
 }
 body[data-layout="soft-clinic-luxury"] .hero-right-ov{display:none}
 body[data-layout="soft-clinic-luxury"] .hero-right-card{display:none}
@@ -1243,7 +1243,7 @@ body[data-layout="future-minimal"] .h-trust-icon{width:38px;height:38px;border-r
   body[data-layout="performance-clinic"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
   body[data-layout="performance-clinic"] .hero-left{order:2!important;padding:1.8rem 5% 2.5rem!important}
   body[data-layout="performance-clinic"] .hero-right{order:-1!important;width:100%!important;height:72vw!important;max-height:340px!important;background:#fff!important}
-  body[data-layout="performance-clinic"] .hero-right-img{left:50%!important;transform:translateX(-50%)!important;height:100%!important;width:auto!important;bottom:0!important;top:0!important}
+  body[data-layout="performance-clinic"] .hero-right-img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 8%!important;transform:none!important}
   body[data-layout="performance-clinic"] .h-h1{font-size:clamp(2.4rem,9vw,3.8rem)}
   /* 4 academic-prestige */
   body[data-layout="academic-prestige"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
@@ -1255,7 +1255,7 @@ body[data-layout="future-minimal"] .h-trust-icon{width:38px;height:38px;border-r
   body[data-layout="soft-clinic-luxury"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important;background:#FAF8FC!important}
   body[data-layout="soft-clinic-luxury"] .hero-left{order:2!important;padding:1.8rem 5% 2.5rem!important;background:#FAF8FC!important}
   body[data-layout="soft-clinic-luxury"] .hero-right{order:-1!important;width:100%!important;height:72vw!important;max-height:340px!important;background:#FAF8FC!important}
-  body[data-layout="soft-clinic-luxury"] .hero-right-img{left:50%!important;transform:translateX(-50%)!important;height:100%!important;width:auto!important;bottom:0!important;top:0!important}
+  body[data-layout="soft-clinic-luxury"] .hero-right-img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 10%!important;transform:none!important}
   body[data-layout="soft-clinic-luxury"] .h-h1{font-size:clamp(1.9rem,7.5vw,2.8rem)}
   /* 6 future-minimal */
   body[data-layout="future-minimal"] .hero{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
