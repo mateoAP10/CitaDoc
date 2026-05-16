@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/demo/:slug",
+      "destination": "/demo.html?slug=:slug"
+    },
+    {
+      "source": "/generar",
+      "destination": "/landing.html"
+    },
+    {
       "source": "/(.*)",
       "has": [
         {

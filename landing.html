@@ -332,7 +332,7 @@ async function generarDemo() {
     document.getElementById('loadSub').textContent  = 'Redirigiendo...';
 
     setTimeout(function () {
-      window.location.href = '/demo.html?slug=' + data.slug;
+      window.location.href = '/demo/' + data.slug;
     }, 800);
 
   } catch (err) {
