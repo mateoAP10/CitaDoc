@@ -2329,30 +2329,17 @@ async function bkCargarDisponibilidad(locationId){
   var r=await _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',e90.toISOString().split('T')[0]).neq('estado','cancelada');
   _bkCitas=r.data||[];
 
-  console.log('[bk] scheduleBlocks=',_bkScheduleBlocks.length,'locationId=',locationId);
-
-  // 1. PRIMARIO: doctor_schedule_blocks (fuente de verdad, igual a DNA surgical)
-  if(_bkScheduleBlocks.length){
-    var blocks=locationId
-      ?_bkScheduleBlocks.filter(function(b){return String(b.location_id||'')===String(locationId);})
-      :_bkScheduleBlocks;
-    if(!blocks.length)blocks=_bkScheduleBlocks;
-    _bkDisp=bkComputeDispFromBlocks(blocks,_bkCitas);
-    console.log('[bk] disp from blocks — dias disponibles:',Object.keys(_bkDisp).length);
+  // PRIMARY: schedule global sin filtro de sede — evita perder días por location_id parcial
+  if(typeof cargarDisponibilidadPorSede==='function'){
+    try{_bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);}catch(e){_bkDisp={};}
+  } else {
+    _bkDisp={};
   }
 
-  // 2. FALLBACK: shared.js (horarios_config / dias_atencion)
-  if(!Object.keys(_bkDisp).length&&typeof cargarDisponibilidadPorSede==='function'){
-    try{
-      _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,locationId||null);
-      if(!Object.keys(_bkDisp).length&&locationId!=null){
-        _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
-      }
-    }catch(e){console.warn('[bk] cargarDisponibilidadPorSede error:',e);_bkDisp={};}
-    console.log('[bk] disp from shared.js — dias:',Object.keys(_bkDisp).length);
+  // FALLBACK: doctor_schedule_blocks si horarios_config está vacío
+  if(!Object.keys(_bkDisp).length&&_bkScheduleBlocks.length){
+    _bkDisp=bkComputeDispFromBlocks(_bkScheduleBlocks,_bkCitas);
   }
-
-  if(!Object.keys(_bkDisp).length)console.warn('[bk] SIN disponibilidad — horarios_config:',JSON.stringify(_M.horarios_config),'dias_atencion:',_M.dias_atencion);
 }
 function bkRenderCal(){
   setText('bkCalTitle',_MESES[_bkM]+' '+_bkY);

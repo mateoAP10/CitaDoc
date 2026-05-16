@@ -375,6 +375,76 @@ h2{font-family:var(--serif);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;c
 var _sb=supabase.createClient('https://qxoomcqaafogczrvsyhg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs');
 function el(id){return document.getElementById(id)}
 function set(id,v){var e=el(id);if(e)e.textContent=v}
+
+var _bkDisp={};
+var _bkLocs=[],_bkSchedule=[],_bkMedico=null,_bkCitas=[];
+
+// Disponibilidad desde horarios_config (fuente de verdad)
+function bkComputeDispFromConfig(hc,diasAtencion,desde,hasta){
+  var DIAS=['dom','lun','mar','mie','jue','vie','sab'];
+  var disp={};
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  for(var i=0;i<60;i++){
+    var date=new Date(hoy);date.setDate(hoy.getDate()+i);
+    var fechaStr=date.toISOString().split('T')[0];
+    var diaKey=DIAS[date.getDay()];
+    var cfgDia=hc&&hc[diaKey];
+    var bloques=null;
+    if(cfgDia&&cfgDia.activo&&cfgDia.bloques&&cfgDia.bloques.length){
+      bloques=cfgDia.bloques;
+    } else if((diasAtencion||[]).indexOf(diaKey)>-1){
+      bloques=[{desde:desde||'09:00',hasta:hasta||'17:00'}];
+    }
+    if(!bloques)continue;
+    var limHoy=(i===0)?(new Date().getHours()*60+new Date().getMinutes()+120):0;
+    var slots=[];
+    bloques.forEach(function(b){
+      var cur=parseInt(b.desde.split(':')[0])*60+parseInt((b.desde.split(':')[1])||0);
+      var end=parseInt(b.hasta.split(':')[0])*60+parseInt((b.hasta.split(':')[1])||0);
+      while(cur+30<=end){
+        var ts=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
+        var ocp=_bkCitas.some(function(c){return c.fecha===fechaStr&&c.hora===ts;});
+        if(!ocp&&!(i===0&&cur<limHoy))slots.push(ts);
+        cur+=30;
+      }
+    });
+    if(slots.length)disp[fechaStr]=slots;
+  }
+  return disp;
+}
+
+// Disponibilidad desde doctor_schedule_blocks (fallback)
+var _BK_DAY_MAP={0:['domingo','sunday'],1:['lunes','monday','lun'],2:['martes','tuesday','mar'],3:['miercoles','miércoles','wednesday','mie'],4:['jueves','thursday','jue'],5:['viernes','friday','vie'],6:['sabado','sábado','saturday','sab']};
+function _sa(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function bkComputeDispFromBlocks(blocks){
+  var disp={};
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  for(var i=0;i<60;i++){
+    var date=new Date(hoy);date.setDate(hoy.getDate()+i);
+    var fechaStr=date.toISOString().split('T')[0];
+    var vn=_BK_DAY_MAP[date.getDay()]||[];
+    var dayBlocks=blocks.filter(function(b){
+      if(!b.day||!b.is_active)return false;
+      var d=_sa(b.day.toLowerCase());
+      return vn.some(function(n){return d===_sa(n);});
+    });
+    if(!dayBlocks.length)continue;
+    var limHoy=(i===0)?(new Date().getHours()*60+new Date().getMinutes()+120):0;
+    var slots=[];
+    dayBlocks.forEach(function(b){
+      var cur=parseInt((b.start_time||'09:00').split(':')[0])*60+parseInt(((b.start_time||'09:00').split(':')[1])||0);
+      var end=parseInt((b.end_time||'17:00').split(':')[0])*60+parseInt(((b.end_time||'17:00').split(':')[1])||0);
+      while(cur+30<=end){
+        var ts=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
+        var ocp=_bkCitas.some(function(c){return c.fecha===fechaStr&&c.hora===ts;});
+        if(!ocp&&!(i===0&&cur<limHoy))slots.push(ts);
+        cur+=30;
+      }
+    });
+    if(slots.length)disp[fechaStr]=slots;
+  }
+  return disp;
+}
 function css(prop,val){document.documentElement.style.setProperty(prop,val)}
 
 var params=new URLSearchParams(location.search);
@@ -401,13 +471,19 @@ if(slug){
     var m=r.data;
     var wc=(isDraft&&m.web_config_draft)?m.web_config_draft:(m.web_config||{});
 
-    // Cargar sedes y horarios en paralelo
+    // Cargar sedes en paralelo
     var [locsRes, schedRes] = await Promise.all([
       _sb.from('doctor_locations').select('*').eq('medico_id',m.id).order('principal',{ascending:false}),
       _sb.from('doctor_schedule_blocks').select('*').eq('medico_id',m.id).eq('is_active',true)
     ]);
     _bkLocs = (locsRes.data||[]);
     _bkSchedule = (schedRes.data||[]);
+
+    // Pre-computar disponibilidad: horarios_config primero (fuente de verdad), blocks como fallback
+    _bkDisp = bkComputeDispFromConfig(m.horarios_config, m.dias_atencion, m.horario_desde, m.horario_hasta);
+    if(!Object.keys(_bkDisp).length && _bkSchedule.length){
+      _bkDisp = bkComputeDispFromBlocks(_bkSchedule);
+    }
 
     render(m, wc, isDraft);
     renderSedes(_bkLocs);
@@ -591,8 +667,8 @@ function shiftColor(hex,amt){
   var b=Math.max(0,Math.min(255,(n&0xff)+amt));
   return '#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0')}).join('');
 }
-/* ── BOOKING ENGINE — lógica propia, sin redirección ── */
-var _bkMedico=null, _bkSelectedDate=null, _bkSelectedSlot=null, _bkLocs=[], _bkSchedule=[], _bkSelectedLoc=null, _bkDateObj=null;
+/* ── BOOKING ENGINE ── */
+var _bkSelectedDate=null, _bkSelectedSlot=null, _bkSelectedLoc=null, _bkDateObj=null;
 
 function abrirBooking(){
   var ov=el('bookingOverlay'), sh=el('bookingSheet');
@@ -704,44 +780,44 @@ function bkGetSlotsForDate(dateObj){
 function bkRenderCalendar(){
   var cal=el('bkCalendar');if(!cal)return;
   cal.innerHTML='';
-  var days=['D','L','M','M','J','V','S'];
+  // Mes/año
+  var today=new Date();
+  var MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var titleEl=document.createElement('div');
+  titleEl.style.cssText='grid-column:1/-1;font-size:.72rem;font-weight:700;color:#0d1b2a;padding:.2rem 0 .5rem;letter-spacing:.01em';
+  titleEl.textContent=MESES[today.getMonth()]+' '+today.getFullYear();
+  cal.appendChild(titleEl);
+  var days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   days.forEach(function(d){
     var h=document.createElement('div');
     h.style.cssText='text-align:center;font-size:.6rem;font-weight:600;color:#9ca3af;padding:.3rem 0';
-    h.textContent=d;cal.appendChild(h);
+    h.textContent=d.charAt(0);cal.appendChild(h);
   });
-  var today=new Date();
-  for(var i=0;i<today.getDay();i++){
-    var empty=document.createElement('div');cal.appendChild(empty);
-  }
-  for(var d=0;d<21;d++){
+  for(var i=0;i<today.getDay();i++){var empty=document.createElement('div');cal.appendChild(empty);}
+  for(var d=0;d<28;d++){
     var date=new Date(today);date.setDate(today.getDate()+d);
-    var dow=date.getDay();
+    var fechaStr=date.toISOString().split('T')[0];
+    var hasSlots=_bkDisp[fechaStr]&&_bkDisp[fechaStr].length>0;
     var btn=document.createElement('button');
-    // Día bloqueado si no hay horarios (o fin de semana si no hay config)
-    var hasSlots=_bkSchedule.length?bkGetSlotsForDate(date).length>0:dow!==0&&dow!==6;
-    var isWeekend=!hasSlots;
-    btn.style.cssText='aspect-ratio:1;border:none;border-radius:10px;font-size:.78rem;font-weight:600;cursor:'+(isWeekend?'default':'pointer')+';background:'+(isWeekend?'transparent':'#f8fafc')+';color:'+(isWeekend?'#d1d5db':'#0d1b2a')+';transition:background .15s';
+    btn.style.cssText='aspect-ratio:1;border:none;border-radius:10px;font-size:.78rem;font-weight:600;cursor:'+(hasSlots?'pointer':'default')+';background:'+(hasSlots?'#f8fafc':'transparent')+';color:'+(hasSlots?'#0d1b2a':'#d1d5db')+';transition:background .15s';
     btn.textContent=date.getDate();
-    if(!isWeekend){
-      (function(dateStr,b,d){
+    if(hasSlots){
+      (function(fStr,label,b,dt){
         b.onclick=function(){
           document.querySelectorAll('#bkCalendar button.sel').forEach(function(x){x.classList.remove('sel');x.style.background='#f8fafc';x.style.color='#0d1b2a';});
           b.classList.add('sel');b.style.background='var(--p,#1a2e44)';b.style.color='#fff';
-          _bkSelectedDate=dateStr;_bkSelectedSlot=null;_bkDateObj=d;bkRenderSlots();
+          _bkSelectedDate=label;_bkSelectedSlot=null;_bkSelectedFechaStr=fStr;bkRenderSlots();
         };
-      })(date.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}),btn,date);
+      })(fechaStr,date.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}),btn,date);
     }
     cal.appendChild(btn);
   }
 }
 
+var _bkSelectedFechaStr=null;
 function bkRenderSlots(){
   var sc=el('bkSlots');if(!sc)return;
-  // Calcular fecha real desde selección
-  var today=new Date();
-  var dateForSlots=_bkDateObj||today;
-  var slots=bkGetSlotsForDate(dateForSlots);
+  var slots=(_bkSelectedFechaStr&&_bkDisp[_bkSelectedFechaStr])?_bkDisp[_bkSelectedFechaStr].slice():[];
   if(!slots.length){
     sc.innerHTML='<div style="font-size:.82rem;color:#6b7280;padding:.5rem 0">Sin horarios disponibles para este día.</div>';
     return;
