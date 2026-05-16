@@ -48,8 +48,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-
 .hero{position:relative;min-height:100svh;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
 .hero-photo-wrap{position:absolute;inset:0}
 .hero-photo{width:100%;height:100%;object-fit:cover;object-position:center 10%}
-.hero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(13,27,42,.15) 0%,rgba(13,27,42,.05) 35%,rgba(13,27,42,.65) 68%,rgba(13,27,42,.92) 100%)}
-.hero-init{position:absolute;inset:0;background:var(--p);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:4rem;font-weight:700;color:rgba(255,255,255,.15)}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,20,35,.08) 0%,rgba(10,20,35,.05) 30%,rgba(10,20,35,.72) 62%,rgba(10,20,35,.95) 100%)}
+.hero-init{position:absolute;inset:0;background:var(--s);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:5rem;font-weight:700;color:rgba(26,46,68,.12)}
 .hero-content{position:relative;z-index:2;padding:2rem 5% calc(5.5rem + env(safe-area-inset-bottom))}
 .hero-esp{display:inline-block;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.75rem}
 .hero-h1{font-family:var(--serif);font-size:clamp(2.4rem,8vw,3.8rem);font-weight:700;line-height:.97;letter-spacing:-.03em;color:#fff;margin-bottom:.85rem}
@@ -63,9 +63,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-
 /* ── HERO DESKTOP: split ── */
 @media(min-width:900px){
   .hero{min-height:100vh;flex-direction:row;align-items:stretch}
-  .hero-photo-wrap{position:relative;flex:0 0 55%;order:2}
-  .hero-photo-wrap .hero-ov{background:linear-gradient(to right,rgba(255,255,255,.5) 0%,transparent 30%)}
-  .hero-content{flex:0 0 45%;order:1;padding:9rem 5% 4rem;display:flex;flex-direction:column;justify-content:center;background:var(--bg);position:relative;z-index:2}
+  .hero-photo-wrap{position:relative;flex:1;order:2;overflow:hidden}
+  .hero-photo-wrap .hero-ov{background:linear-gradient(to right,rgba(255,255,255,.32) 0%,transparent 18%)}
+  .hero-content{flex:0 0 46%;order:1;padding:10rem 5% 4rem 6%;display:flex;flex-direction:column;justify-content:center;background:#fff;position:relative;z-index:2}
   .hero-h1{color:var(--ink);font-size:clamp(2.4rem,3.5vw,3.8rem)}
   .hero-esp{color:var(--mu)}
   .hero-sub{color:var(--ink2)}
@@ -80,7 +80,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-
 /* ── PILLARS ── */
 .pillars{padding:3rem 5%;display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;border-bottom:1px solid var(--bo)}
 .pillar{display:flex;flex-direction:column;gap:.5rem}
-.pillar-icon{font-size:1.4rem;margin-bottom:.2rem}
+.pillar-icon{width:36px;height:36px;margin-bottom:.4rem;color:var(--p)}
 .pillar-title{font-size:.85rem;font-weight:700;color:var(--ink);line-height:1.2}
 .pillar-desc{font-size:.76rem;color:var(--mu);line-height:1.55}
 @media(min-width:900px){
@@ -88,9 +88,9 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-
 }
 
 /* ── SPECIALTY BANNER ── */
-.spec-banner{position:relative;overflow:hidden;min-height:280px;display:flex;align-items:flex-end}
-.spec-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.spec-ov{position:absolute;inset:0;background:linear-gradient(to right,rgba(13,27,42,.85) 40%,rgba(13,27,42,.3) 100%)}
+.spec-banner{position:relative;overflow:hidden;min-height:280px;display:flex;align-items:flex-end;background:var(--p)}
+.spec-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+.spec-ov{position:absolute;inset:0;background:linear-gradient(to right,rgba(13,27,42,.9) 0%,rgba(13,27,42,.4) 100%)}
 .spec-content{position:relative;z-index:2;padding:2.5rem 5%}
 .spec-label{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.5rem}
 .spec-h2{font-family:var(--serif);font-size:clamp(1.5rem,4vw,2.2rem);font-weight:700;line-height:1.1;color:#fff;max-width:400px}
@@ -242,19 +242,31 @@ footer a{display:flex;align-items:center;gap:.4rem;text-decoration:none}
 
 <!-- PILLARS -->
 <div class="pillars" id="pillars">
-  <div class="pillar rv d1"><div class="pillar-icon">⭐</div><div class="pillar-title" id="p1t">Experiencia</div><div class="pillar-desc" id="p1d">Años de trayectoria y formación especializada.</div></div>
-  <div class="pillar rv d2"><div class="pillar-icon">🔬</div><div class="pillar-title" id="p2t">Especialización</div><div class="pillar-desc" id="p2d">Diagnóstico avanzado y técnicas de vanguardia.</div></div>
-  <div class="pillar rv d3"><div class="pillar-icon">💡</div><div class="pillar-title" id="p3t">Tecnología</div><div class="pillar-desc" id="p3d">Equipamiento y procedimientos de alta precisión.</div></div>
-  <div class="pillar rv d4"><div class="pillar-icon">🤝</div><div class="pillar-title" id="p4t">Atención personalizada</div><div class="pillar-desc" id="p4d">Plan de tratamiento diseñado para cada paciente.</div></div>
+  <div class="pillar rv d1">
+    <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <div class="pillar-title" id="p1t">Experiencia</div><div class="pillar-desc" id="p1d">Años de trayectoria y formación especializada.</div>
+  </div>
+  <div class="pillar rv d2">
+    <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 7.76a6 6 0 0 0 0 8.49"/></svg>
+    <div class="pillar-title" id="p2t">Especialización</div><div class="pillar-desc" id="p2d">Diagnóstico avanzado y técnicas de vanguardia.</div>
+  </div>
+  <div class="pillar rv d3">
+    <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    <div class="pillar-title" id="p3t">Tecnología</div><div class="pillar-desc" id="p3d">Equipamiento de alta precisión para mejores resultados.</div>
+  </div>
+  <div class="pillar rv d4">
+    <svg class="pillar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <div class="pillar-title" id="p4t">Atención personalizada</div><div class="pillar-desc" id="p4d">Plan de tratamiento diseñado para cada caso.</div>
+  </div>
 </div>
 
 <!-- SPECIALTY SECTION -->
-<div class="spec-banner rv" id="specBanner" style="display:none">
-  <img class="spec-img" id="specImg" src="" alt="">
+<div class="spec-banner rv" id="specBanner">
+  <img class="spec-img" id="specImg" src="" alt="" style="display:none">
   <div class="spec-ov"></div>
   <div class="spec-content">
     <div class="spec-label" id="specLabel">Área de especialización</div>
-    <h2 class="spec-h2" id="specH2">Enfoque en lo que más importa: tu movilidad.</h2>
+    <h2 class="spec-h2" id="specH2">Enfoque en lo que más importa: tu salud.</h2>
   </div>
 </div>
 
@@ -320,9 +332,9 @@ footer a{display:flex;align-items:center;gap:.4rem;text-decoration:none}
 
 <!-- STICKY BAR -->
 <div class="sticky-bar" id="stickyBar">
-  <button class="s-book" onclick="abrirBooking()">📅 Agendar cita</button>
-  <button class="s-wa" id="stickyWa">💬 WhatsApp</button>
-  <button class="s-call" id="stickyCall">📞 Llamar</button>
+  <button class="s-book" onclick="abrirBooking()">Agendar cita</button>
+  <button class="s-wa" id="stickyWa">WhatsApp</button>
+  <button class="s-call" id="stickyCall">Llamar</button>
 </div>
 
 <!-- BOOKING MODAL -->
@@ -460,10 +472,10 @@ function render(m,wc){
     set('p4t','Atención personalizada');set('p4d','Plan de tratamiento diseñado para cada caso.');
   }
 
-  // Spec banner (if has sport/movement related photo in wc)
-  var specH2=wc.spec_headline||(esp?'Enfoque en lo que más importa: tu '+esp.toLowerCase()+'.':null);
-  var sb=el('specBanner');
-  if(sb&&specH2){sb.style.display='flex';set('specH2',specH2);set('specLabel',(esp||'Especialización').toUpperCase());}
+  // Spec banner — siempre visible con datos del médico
+  set('specH2',wc.spec_headline||wc.services_subtitle||('Enfoque especializado en '+esp+'.'));
+  set('specLabel',(esp||'Especialización').toUpperCase());
+  var si=el('specImg');if(si&&photo){si.src=photo;si.style.display='block';}
 
   // Services
   var DEFLT=[{t:'Consulta integral',d:'Evaluación clínica y diagnóstico personalizado.'},{t:'Diagnóstico de precisión',d:'Estudios especializados con tecnología de vanguardia.'},{t:'Plan de tratamiento',d:'Protocolo diseñado para tu caso específico.'},{t:'Seguimiento continuo',d:'Acompañamiento durante toda la recuperación.'}];
