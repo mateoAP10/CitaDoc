@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title id="pgTitle">Dr. Médico — CitaDoc</title>
+<meta name="description" id="pgDesc" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/booking.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('HwpQ3DPRMmtcVZVt1')"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --p:#1B4D3E;
+  --ink:#0D1F1A;
+  --ink2:#374151;
+  --mu:#6B7280;
+  --bg:#FAFAF8;
+  --s:#F3F7F4;
+  --bo:#E5EBE8;
+  --serif:'Fraunces',serif;
+  --sans:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;inset-x:0;z-index:100;padding:1rem 6%;display:flex;align-items:center;justify-content:space-between}
+.nav.scrolled{background:rgba(250,250,248,.96);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--bo)}
+.nav-brand{display:flex;flex-direction:column;gap:2px}
+.nav-name{font-family:var(--serif);font-size:.92rem;font-weight:700;color:#fff;line-height:1;letter-spacing:-.01em;transition:color .3s}
+.nav.scrolled .nav-name{color:var(--ink)}
+.nav-esp{font-size:.56rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;transition:color .3s}
+.nav.scrolled .nav-esp{color:var(--mu)}
+.nav-cta{background:#fff;color:var(--p);border:none;border-radius:50px;height:38px;padding:0 1.1rem;font-family:var(--sans);font-size:.78rem;font-weight:700;cursor:pointer;transition:background .2s,color .2s}
+.nav.scrolled .nav-cta{background:var(--p);color:#fff}
+
+/* ── HERO: foto full-screen mobile, split desktop ── */
+.hero{position:relative;min-height:100svh;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;background:var(--p)}
+.hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(11,40,30,.06) 0%,rgba(11,40,30,.04) 28%,rgba(11,40,30,.68) 60%,rgba(11,40,30,.94) 100%)}
+.hero-content{position:relative;z-index:2;padding:2rem 6% calc(6rem + env(safe-area-inset-bottom))}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;font-size:.6rem;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.16em;margin-bottom:.9rem}
+.hero-tag-line{width:24px;height:1px;background:rgba(255,255,255,.4)}
+.hero-h1{font-family:var(--serif);font-size:clamp(2.6rem,9vw,4rem);font-weight:700;line-height:.96;letter-spacing:-.03em;color:#fff;margin-bottom:1rem}
+.hero-sub{font-size:.92rem;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:1.8rem;max-width:360px}
+.hero-btns{display:flex;flex-direction:column;gap:.55rem;max-width:320px}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:.5rem;background:var(--p);color:#fff;border:none;border-radius:12px;height:54px;font-family:var(--sans);font-size:.88rem;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:opacity .2s}
+.btn-primary:hover{opacity:.88}
+.btn-secondary{display:flex;align-items:center;justify-content:center;gap:.5rem;background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:12px;height:46px;font-family:var(--sans);font-size:.84rem;font-weight:500;cursor:pointer;text-decoration:none;transition:background .2s;backdrop-filter:blur(6px)}
+
+/* Desktop hero split */
+@media(min-width:900px){
+  .hero{flex-direction:row;align-items:stretch;min-height:100vh}
+  .hero-photo{position:relative;flex:1;order:2;height:auto}
+  .hero-ov{background:linear-gradient(to right,rgba(11,40,30,.3) 0%,transparent 20%)}
+  .hero-content{flex:0 0 46%;order:1;background:var(--bg);padding:10rem 5% 5rem 7%;display:flex;flex-direction:column;justify-content:center}
+  .hero-h1{color:var(--ink);font-size:clamp(2.6rem,3.8vw,4rem)}
+  .hero-tag{color:var(--p)}
+  .hero-tag-line{background:var(--p)}
+  .hero-sub{color:var(--ink2)}
+  .btn-primary{width:auto;align-self:flex-start;padding:0 2rem}
+  .btn-secondary{width:auto;align-self:flex-start;padding:0 1.5rem;background:transparent;color:var(--p);border-color:var(--bo)}
+  .hero-btns{flex-direction:row;max-width:none}
+}
+
+/* ── CREDIBILITY GRID ── */
+.credibility{padding:2.5rem 6%;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bo);border-bottom:1px solid var(--bo)}
+.cred-item{background:var(--bg);padding:1.6rem 1.2rem;display:flex;flex-direction:column;gap:.35rem}
+.cred-number{font-family:var(--serif);font-size:2rem;font-weight:700;color:var(--p);line-height:1;letter-spacing:-.03em}
+.cred-label{font-size:.75rem;color:var(--ink2);line-height:1.4}
+@media(min-width:900px){.credibility{grid-template-columns:repeat(4,1fr);padding:2.5rem 7%}}
+
+/* ── SPECIALTIES ── */
+.specialties{padding:3.5rem 6%;border-bottom:1px solid var(--bo)}
+.sec-eyebrow{font-size:.58rem;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.16em;margin-bottom:.5rem}
+.sec-h2{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.3rem);font-weight:700;line-height:1.08;color:var(--ink);margin-bottom:1.6rem;letter-spacing:-.02em}
+.spec-list{display:flex;flex-direction:column}
+.spec-row{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;border-bottom:1px solid var(--bo);cursor:pointer;transition:padding .2s}
+.spec-row:last-child{border:none}
+.spec-row:hover{padding-left:.5rem}
+.spec-row:hover .spec-name{color:var(--p)}
+.spec-name{font-size:.92rem;font-weight:600;color:var(--ink);transition:color .15s}
+.spec-desc{font-size:.73rem;color:var(--mu);margin-top:.12rem}
+.spec-arrow{color:var(--bo);font-size:.85rem;flex-shrink:0;transition:color .15s,transform .2s}
+.spec-row:hover .spec-arrow{color:var(--p);transform:translateX(3px)}
+@media(min-width:900px){
+  .specialties{padding:4.5rem 7%}
+  .specialties-inner{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start}
+}
+
+/* ── ABOUT ── */
+.about{padding:3.5rem 6%;background:var(--s);border-bottom:1px solid var(--bo)}
+.about-photo{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center 10%;border-radius:18px;margin-bottom:1.8rem}
+.about-name{font-family:var(--serif);font-size:1.5rem;font-weight:700;color:var(--ink);margin-bottom:.3rem;letter-spacing:-.02em}
+.about-esp{font-size:.68rem;color:var(--p);text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:1.2rem}
+.about-quote{font-family:var(--serif);font-size:1.08rem;font-style:italic;font-weight:300;color:var(--ink2);line-height:1.65;margin-bottom:1rem;border-left:2px solid var(--p);padding-left:.9rem}
+.about-bio{font-size:.88rem;color:var(--ink2);line-height:1.8;margin-bottom:1.4rem}
+.about-creds{display:flex;flex-direction:column;gap:.4rem}
+.about-cred{display:flex;align-items:flex-start;gap:.5rem;font-size:.82rem;color:var(--ink2)}
+.about-cred-dot{width:5px;height:5px;border-radius:50%;background:var(--p);margin-top:.4rem;flex-shrink:0}
+@media(min-width:900px){
+  .about{padding:5rem 7%}
+  .about-inner{display:grid;grid-template-columns:5fr 7fr;gap:4.5rem;align-items:center}
+  .about-photo{aspect-ratio:3/4;margin-bottom:0;border-radius:20px}
+}
+
+/* ── SEDES ── */
+.contact-sec{padding:3.5rem 6%;border-bottom:1px solid var(--bo);display:none}
+.contact-sec.visible{display:block}
+.sede-card{background:#fff;border:1px solid var(--bo);border-radius:14px;padding:1.1rem 1.2rem;margin-bottom:.6rem;display:flex;gap:.9rem;align-items:flex-start}
+.sede-icon{width:36px;height:36px;border-radius:10px;background:var(--s);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sede-icon svg{color:var(--p)}
+.sede-name{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:.15rem}
+.sede-addr{font-size:.75rem;color:var(--mu);line-height:1.5}
+.sede-link{font-size:.7rem;color:var(--p);font-weight:600;text-decoration:none;display:inline-block;margin-top:.3rem}
+
+/* ── FINAL CTA ── */
+.final-cta{padding:4rem 6% calc(7rem + env(safe-area-inset-bottom));text-align:center}
+.final-cta .sec-h2{margin-bottom:.7rem}
+.final-cta p{font-size:.88rem;color:var(--mu);line-height:1.72;margin-bottom:2rem;max-width:380px;margin-left:auto;margin-right:auto}
+.cta-btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--p);color:#fff;border:none;border-radius:12px;height:54px;padding:0 2rem;font-family:var(--sans);font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.cta-btn:hover{opacity:.88}
+
+/* ── FOOTER ── */
+footer{padding:1.2rem 6% calc(.8rem + env(safe-area-inset-bottom));border-top:1px solid var(--bo);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.footer-brand{font-family:var(--serif);font-size:.82rem;font-weight:600;color:var(--ink2)}
+.footer-cd{display:flex;align-items:center;gap:.4rem;text-decoration:none}
+.footer-cd-icon{width:22px;height:22px;border-radius:6px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:#fff}
+.footer-cd-text{font-size:.7rem;color:var(--mu)}
+
+/* ── STICKY BAR ── */
+.sticky-bar{position:fixed;bottom:0;inset-x:0;z-index:90;background:#fff;border-top:1px solid var(--bo);padding:.6rem 5% calc(.6rem + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr auto auto;gap:.5rem;transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1)}
+.sticky-bar.show{transform:translateY(0)}
+.sticky-book{background:var(--p);color:#fff;border:none;border-radius:10px;height:46px;font-family:var(--sans);font-size:.8rem;font-weight:700;cursor:pointer;letter-spacing:.01em}
+.sticky-wa{width:80px;height:46px;border-radius:10px;background:#F0FDF4;border:1.5px solid #BBF7D0;color:#16A34A;font-family:var(--sans);font-size:.72rem;font-weight:600;cursor:pointer}
+.sticky-call{width:80px;height:46px;border-radius:10px;background:var(--s);border:1.5px solid var(--bo);color:var(--ink2);font-family:var(--sans);font-size:.72rem;font-weight:600;cursor:pointer}
+@media(min-width:900px){.sticky-bar{display:none}}
+
+/* ── BOOKING MODAL ── */
+.bk-overlay{position:fixed;inset:0;z-index:200;background:rgba(11,31,24,.55);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
+@media(min-width:680px){.bk-overlay{align-items:center}}
+.bk-sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:92svh;overflow-y:auto;transform:translateY(100%);transition:transform .38s cubic-bezier(.16,1,.3,1)}
+@media(min-width:680px){.bk-sheet{border-radius:20px;transform:scale(.97);opacity:0;transition:transform .3s,opacity .3s}}
+.bk-sheet.open{transform:translateY(0);opacity:1}
+.bk-handle{width:36px;height:4px;background:var(--bo);border-radius:2px;margin:12px auto 0}
+@media(min-width:680px){.bk-handle{display:none}}
+.bk-hdr{padding:1.2rem 1.5rem .9rem;border-bottom:1px solid var(--bo);display:flex;justify-content:space-between;align-items:flex-start}
+.bk-dr{font-family:var(--serif);font-size:1.05rem;font-weight:700;color:var(--ink)}
+.bk-esp{font-size:.68rem;color:var(--mu);margin-top:.1rem}
+.bk-close{width:30px;height:30px;border-radius:50%;background:var(--s);border:1px solid var(--bo);color:var(--mu);cursor:pointer;font-size:.8rem}
+.bk-body{padding:1.2rem 1.5rem}
+.bk-step-lbl{font-size:.62rem;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.65rem}
+.bk-cal-month{font-size:.78rem;font-weight:700;color:var(--ink);margin-bottom:.55rem;text-align:center}
+.bk-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:1.1rem}
+.bk-cal-hdr{text-align:center;font-size:.58rem;font-weight:600;color:var(--mu);padding:.2rem 0}
+.bk-day{aspect-ratio:1;border:none;border-radius:8px;font-size:.78rem;font-weight:500;cursor:default;background:transparent;color:rgba(100,116,139,.3)}
+.bk-day.avail{background:var(--s);color:var(--ink);cursor:pointer;font-weight:600;transition:background .15s}
+.bk-day.avail:hover{background:#D1FAE5}
+.bk-day.sel{background:var(--p);color:#fff}
+.bk-day.past,.bk-day.unavail{opacity:.25}
+.bk-slots{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.1rem}
+.bk-slot{padding:.4rem .85rem;border:1.5px solid var(--bo);border-radius:50px;font-family:var(--sans);font-size:.78rem;color:var(--ink);background:#fff;cursor:pointer;transition:all .15s}
+.bk-slot:hover{border-color:var(--p);color:var(--p)}
+.bk-slot.sel{background:var(--p);border-color:var(--p);color:#fff;font-weight:700}
+.bk-lbl{display:block;font-size:.68rem;font-weight:600;color:var(--ink2);margin-bottom:.3rem}
+.bk-inp{width:100%;padding:.75rem 1rem;background:var(--s);border:1.5px solid var(--bo);border-radius:11px;font-family:var(--sans);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s}
+.bk-inp::placeholder{color:var(--mu)}
+.bk-inp:focus{border-color:var(--p);background:#fff}
+.bk-btn{width:100%;height:52px;background:var(--p);color:#fff;border:none;border-radius:12px;font-family:var(--sans);font-size:.92rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+.bk-btn:hover{opacity:.88}
+.bk-btn:disabled{opacity:.35;cursor:default}
+.bk-sede-info{background:var(--s);border-radius:10px;padding:.55rem .9rem;font-size:.78rem;color:var(--ink2);margin-bottom:.9rem}
+
+/* ── REVEAL ── */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1)}
+.rv.in{opacity:1;transform:none}
+.d1{transition-delay:.05s}.d2{transition-delay:.1s}.d3{transition-delay:.16s}.d4{transition-delay:.22s}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div id="navBrand" class="nav-brand">
+    <span class="nav-name" id="navName">Dr. Médico</span>
+    <span class="nav-esp" id="navEsp">Especialidad</span>
+  </div>
+  <button class="nav-cta" onclick="abrirBooking()">Agendar cita</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <img class="hero-photo" id="heroPhoto" src="" alt="" style="display:none">
+  <div class="hero-ov"></div>
+  <div class="hero-content">
+    <div class="hero-tag"><span class="hero-tag-line"></span><span id="heroTag">Especialidad</span></div>
+    <h1 class="hero-h1" id="heroH1">Tu salud en las mejores manos</h1>
+    <p class="hero-sub" id="heroSub">Atención médica personalizada con calidez y precisión.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="abrirBooking()">Agendar consulta</button>
+      <a class="btn-secondary" id="heroWa" href="#" target="_blank" rel="noopener" style="display:none">WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<!-- CREDIBILITY GRID -->
+<div class="credibility rv" id="credGrid">
+  <div class="cred-item"><div class="cred-number" id="c1n">10+</div><div class="cred-label" id="c1l">años de experiencia clínica</div></div>
+  <div class="cred-item"><div class="cred-number" id="c2n">∞</div><div class="cred-label" id="c2l">pacientes atendidos</div></div>
+  <div class="cred-item"><div class="cred-number" id="c3n">100%</div><div class="cred-label" id="c3l">atención personalizada</div></div>
+  <div class="cred-item"><div class="cred-number" id="c4n">24h</div><div class="cred-label" id="c4l">respuesta WhatsApp</div></div>
+</div>
+
+<!-- SPECIALTIES -->
+<section class="specialties" id="servicios">
+  <div class="specialties-inner">
+    <div>
+      <div class="sec-eyebrow rv">Áreas de atención</div>
+      <h2 class="sec-h2 rv d1" id="specH2">Lo que tratamos</h2>
+    </div>
+    <div class="spec-list rv d2" id="specList"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="sobre-mi">
+  <div class="about-inner">
+    <div>
+      <img class="about-photo rv" id="aboutPhoto" src="" alt="" style="display:none">
+    </div>
+    <div>
+      <div class="sec-eyebrow rv">El médico</div>
+      <div class="about-name rv d1" id="aboutName"></div>
+      <div class="about-esp rv d1" id="aboutEsp"></div>
+      <p class="about-quote rv d2" id="aboutQuote"></p>
+      <p class="about-bio rv d3" id="aboutBio"></p>
+      <div class="about-creds rv d4" id="aboutCreds"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SEDES -->
+<section class="contact-sec" id="sedesSection">
+  <div class="sec-eyebrow rv">Dónde atendemos</div>
+  <h2 class="sec-h2 rv d1">Consultorio</h2>
+  <div id="sedesList"></div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta rv" id="contacto">
+  <div class="sec-eyebrow" style="justify-content:center;display:flex">Comenzá hoy</div>
+  <h2 class="sec-h2" style="margin-top:.4rem" id="ctaH2">Agendá tu consulta</h2>
+  <p id="ctaSub">Atención personalizada, diagnóstico preciso y acompañamiento continuo.</p>
+  <button class="cta-btn" onclick="abrirBooking()">
+    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Agendar cita
+  </button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div id="footerBrandWrap"><span class="footer-brand" id="footerBrand"></span></div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.2rem">
+    <a href="https://citadoc.lat" target="_blank" rel="noopener" class="footer-cd">
+      <div class="footer-cd-icon">C</div>
+      <span class="footer-cd-text" style="font-weight:600;color:var(--ink2)">CitaDoc Health Network</span>
+    </a>
+    <span style="font-size:.62rem;color:var(--mu)">Powered by <a href="https://citadoc.lat" target="_blank" style="color:var(--p);font-weight:600;text-decoration:none">CitaDoc AI</a></span>
+  </div>
+</footer>
+
+<!-- STICKY BAR -->
+<div class="sticky-bar" id="stickyBar">
+  <button class="sticky-book" onclick="abrirBooking()">Agendar cita</button>
+  <button class="sticky-wa" id="stickyWa">WhatsApp</button>
+  <button class="sticky-call" id="stickyCall">Llamar</button>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="bk-overlay" id="bkOverlay" onclick="cerrarBooking()">
+  <div class="bk-sheet" id="bkSheet" onclick="event.stopPropagation()">
+    <div class="bk-handle"></div>
+    <div class="bk-hdr">
+      <div><div class="bk-dr" id="bkDrName">Agendar cita</div><div class="bk-esp" id="bkEsp"></div></div>
+      <button class="bk-close" onclick="cerrarBooking()">✕</button>
+    </div>
+    <div id="bkStep1" class="bk-body">
+      <div id="bkSedeWrap" style="margin-bottom:.8rem"></div>
+      <div class="bk-step-lbl">Seleccioná una fecha</div>
+      <div class="bk-cal-month" id="bkCalMonth"></div>
+      <div class="bk-cal" id="bkCal"></div>
+      <div id="bkSlotsWrap" style="display:none">
+        <div class="bk-step-lbl" id="bkSlotsLabel">Horarios disponibles</div>
+        <div class="bk-slots" id="bkSlots"></div>
+        <div style="display:none;font-size:.82rem;color:var(--mu);padding:.4rem 0" id="bkNoSlots">Sin horarios para este día.</div>
+      </div>
+      <button class="bk-btn" id="bkNextBtn" disabled onclick="bkGoStep2()">Continuar →</button>
+    </div>
+    <div id="bkStep2" class="bk-body" style="display:none">
+      <div style="font-size:.8rem;color:var(--ink2);margin-bottom:1rem">
+        <span id="bkSelDate" style="color:var(--ink);font-weight:700"></span>
+        <span style="margin:0 .3rem;opacity:.4">·</span>
+        <span id="bkSelTime" style="color:var(--p);font-weight:700"></span>
+      </div>
+      <div id="bkSedeInfo2" class="bk-sede-info" style="display:none"></div>
+      <div style="display:flex;flex-direction:column;gap:.7rem;margin-bottom:1rem">
+        <div><label class="bk-lbl">Nombre completo *</label><input id="bkNombre" class="bk-inp" placeholder="María García" autocomplete="name"></div>
+        <div><label class="bk-lbl">Teléfono / WhatsApp *</label><input id="bkTelefono" class="bk-inp" placeholder="0998 123 456" type="tel" autocomplete="tel"></div>
+        <div><label class="bk-lbl">Email <span style="font-weight:400;color:var(--mu)">(para confirmación)</span></label><input id="bkEmail" class="bk-inp" placeholder="correo@email.com" type="email" autocomplete="email"></div>
+        <div><label class="bk-lbl">Motivo <span style="font-weight:400;color:var(--mu)">(opcional)</span></label><input id="bkMotivo" class="bk-inp" placeholder="Consulta de rutina"></div>
+      </div>
+      <button class="bk-btn" id="bkConfirmBtn" onclick="bkConfirmar()">Confirmar cita</button>
+      <button onclick="bkGoStep1()" style="width:100%;padding:.5rem;background:none;border:none;color:var(--mu);font-family:var(--sans);font-size:.8rem;cursor:pointer;margin-top:.3rem">← Cambiar fecha/hora</button>
+    </div>
+    <div id="bkStep3" class="bk-body" style="display:none;text-align:center;padding:2.5rem 1.5rem">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--s);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1.2rem;color:var(--p)">✓</div>
+      <div style="font-family:var(--serif);font-size:1.25rem;font-weight:700;color:var(--ink);margin-bottom:.4rem">¡Cita confirmada!</div>
+      <div id="bkConfMsg" style="font-size:.85rem;color:var(--ink2);line-height:1.7;margin-bottom:1.5rem"></div>
+      <a id="bkWaLink" href="#" target="_blank" rel="noopener" style="display:none;align-items:center;justify-content:center;gap:.5rem;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;height:48px;font-family:var(--sans);font-size:.85rem;font-weight:600;color:#16A34A;text-decoration:none;margin-bottom:.5rem">Confirmar por WhatsApp</a>
+      <button onclick="cerrarBooking()" style="width:100%;padding:.6rem;background:none;border:none;color:var(--mu);font-family:var(--sans);font-size:.82rem;cursor:pointer">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _sb=supabase.createClient('https://qxoomcqaafogczrvsyhg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs');
+function el(id){return document.getElementById(id)}
+function set(id,v){var e=el(id);if(e)e.textContent=v}
+function css(p,v){document.documentElement.style.setProperty(p,v)}
+var _M=null,_locs=[],_bkCitas=[],_bkDisp={},_bkDate=null,_bkSlot=null,_bkSedeId=null,_bkY,_bkM;
+var _MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var _meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var _DIAS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var params=new URLSearchParams(location.search);
+var slug=params.get('slug')||'';
+var isDraft=params.get('preview')==='draft'||params.get('preview')==='clean';
+
+window.addEventListener('scroll',function(){el('nav').classList.toggle('scrolled',window.scrollY>70);el('stickyBar').classList.toggle('show',window.scrollY>window.innerHeight*.45);},{passive:true});
+var _ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');_ro.unobserve(e.target);}});},{threshold:.07,rootMargin:'0px 0px -20px 0px'});
+document.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
+
+if(slug){
+  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(async function(r){
+    if(r.error||!r.data)return;
+    _M=r.data;
+    var wc=isDraft&&_M.web_config_draft?_M.web_config_draft:(_M.web_config||{});
+    var hoy=new Date().toISOString().split('T')[0];
+    var en60=new Date();en60.setDate(en60.getDate()+60);
+    var [locsRes,citasRes]=await Promise.all([
+      _sb.from('doctor_locations').select('*').eq('medico_id',_M.id).order('principal',{ascending:false}),
+      _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada')
+    ]);
+    _locs=locsRes.data||[];_bkCitas=citasRes.data||[];
+    _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
+    render(_M,wc);renderSedes(_locs);
+  });
+}
+
+function render(m,wc){
+  var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  var esp=(m.especialidades||[])[0]||'';
+  var pc=wc.primary_color||m.primary_color||'#1B4D3E';
+  var photo=wc.doctor_photo_url||m.foto_url||'';
+  var logo=wc.logo_url||null;
+  var waActive=m.whatsapp_activo&&m.whatsapp;
+  var waUrl=waActive?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.'):'';
+  css('--p',pc);
+  document.title=wc.seo_title||nombre+' — '+esp;
+  // Nav
+  if(logo)el('navBrand').innerHTML='<img src="'+logo+'" style="height:32px;max-width:110px;object-fit:contain;filter:brightness(0) invert(1);transition:filter .3s" id="navLogoImg" alt="'+nombre+'">';
+  else{set('navName',nombre);set('navEsp',esp);}
+  window.addEventListener('scroll',function(){var li=el('navLogoImg');if(li)li.style.filter=el('nav').classList.contains('scrolled')?'none':'brightness(0) invert(1)';},{passive:true});
+  // Hero
+  var hp=el('heroPhoto');if(hp&&photo){hp.src=photo;hp.alt=nombre;hp.style.display='block';}
+  set('heroTag',(esp+' · '+(m.ciudad||'')).replace(/ · $/,'').toUpperCase());
+  set('heroH1',wc.headline||nombre);
+  set('heroSub',wc.subheadline||(esp?(esp+(m.ciudad?' en '+m.ciudad:'')):'Atención médica personalizada.'));
+  if(waActive){var wa=el('heroWa');if(wa){wa.href=waUrl;wa.style.display='flex';}}
+  // Credibility
+  if(m.anos_experiencia){set('c1n',m.anos_experiencia+'+');set('c1l','años de experiencia clínica');}
+  else{el('credGrid').style.display='none';}
+  // Specialties
+  var DEFLT=[{t:'Consulta integral',d:'Evaluación clínica completa y plan de tratamiento.'},{t:'Diagnóstico de precisión',d:'Estudios especializados con tecnología avanzada.'},{t:'Seguimiento continuo',d:'Acompañamiento en cada etapa de tu recuperación.'},{t:'Atención preventiva',d:'Enfoque proactivo para mantener tu salud óptima.'}];
+  var srvs=wc.services&&wc.services.length?wc.services:DEFLT;
+  var sl=el('specList');
+  if(sl){sl.innerHTML=srvs.slice(0,6).map(function(s){return'<div class="spec-row"><div><div class="spec-name">'+(s.t||s.titulo||'Servicio')+'</div>'+(s.d||s.descripcion?'<div class="spec-desc">'+(s.d||s.descripcion)+'</div>':'')+'</div><span class="spec-arrow">→</span></div>';}).join('');sl.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});}
+  set('specH2',wc.services_title||('Especialidades en '+esp));
+  // About
+  var ap=el('aboutPhoto');if(ap&&photo){ap.src=photo;ap.alt=nombre;ap.style.display='block';}
+  set('aboutName',nombre);set('aboutEsp',esp.toUpperCase());
+  var q=wc.philosophy||wc.sobre_quote||(m.bio?'"'+m.bio.slice(0,115).trim()+'…"':'');
+  if(!q)q='"Cada paciente merece tiempo, escucha y la mejor atención médica posible."';
+  set('aboutQuote',q);
+  set('aboutBio',wc.about_text||wc.doctor_story||m.bio||'Especialista comprometido con la salud y el bienestar integral de cada paciente.');
+  var creds=wc.differentiators||[];if(!creds.length){if(m.anos_experiencia)creds.push(m.anos_experiencia+' años de experiencia');if(esp)creds.push('Especialista en '+esp);if(m.senescyt)creds.push('Reg. SENESCYT '+m.senescyt);if(m.ciudad)creds.push('Atención en '+m.ciudad);}
+  var ac=el('aboutCreds');if(ac)ac.innerHTML=creds.slice(0,4).map(function(c){return'<div class="about-cred"><span class="about-cred-dot"></span><span>'+c+'</span></div>';}).join('');
+  // CTA
+  set('ctaH2',wc.cta_final||'Agendá tu consulta hoy');
+  set('ctaSub',wc.patient_experience||'Atención cálida, personalizada y comprometida con tu bienestar.');
+  var cw=el('heroWa');// already handled above
+  // Footer
+  var fl=el('footerBrandWrap');
+  if(fl&&logo){fl.innerHTML='<img src="'+logo+'" style="height:26px;max-width:100px;object-fit:contain;opacity:.7" alt="'+nombre+'">';}
+  else{set('footerBrand',nombre+(esp?' · '+esp:''));}
+  // Sticky
+  var sw=el('stickyWa');if(sw){if(waActive){sw.onclick=function(){window.open(waUrl,'_blank');};}else{sw.style.display='none';}}
+  var sc=el('stickyCall');if(sc){if(m.telefono){sc.onclick=function(){location='tel:'+m.telefono.replace(/\D/g,'');};}else{sc.style.display='none';}}
+  // Booking
+  set('bkDrName','Agendar con '+nombre);set('bkEsp',esp);
+}
+
+function renderSedes(locs){
+  var sec=el('sedesSection'),list=el('sedesList');
+  if(!locs||!locs.length||!sec||!list)return;
+  sec.classList.add('visible');
+  list.innerHTML=locs.map(function(l){
+    return'<div class="sede-card rv"><div class="sede-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div><div class="sede-name">'+(l.nombre||'Consultorio')+'</div><div class="sede-addr">'+(l.direccion||'')+(l.ciudad?', '+l.ciudad:'')+'</div>'+(l.maps_url?'<a class="sede-link" href="'+l.maps_url+'" target="_blank">Ver en mapa →</a>':'')+'</div></div>';
+  }).join('');
+  list.querySelectorAll('.rv').forEach(function(e){_ro.observe(e);});
+}
+
+// ── BOOKING ──
+function abrirBooking(){
+  if(!_M)return;
+  var ov=el('bkOverlay');if(!ov)return;
+  ov.style.display='flex';document.body.style.overflow='hidden';
+  requestAnimationFrame(function(){el('bkSheet').classList.add('open');});
+  _bkDate=null;_bkSlot=null;_bkSedeId=null;
+  var locs=_locs||[],sw=el('bkSedeWrap'),si2=el('bkSedeInfo2');
+  if(sw){
+    if(locs.length>1){var sel='<select class="bk-inp" style="font-size:.82rem" onchange="_bkSedeId=this.value?String(this.value):null;bkRecargar()"><option value="">Todas las sedes</option>';locs.forEach(function(l){sel+='<option value="'+(l.id||'')+'">'+(l.nombre||'Sede')+'</option>';});sel+='</select>';sw.innerHTML=sel;sw.style.display='block';}
+    else if(locs.length===1&&locs[0].id){_bkSedeId=String(locs[0].id);sw.innerHTML='';sw.style.display='none';if(si2){si2.innerHTML='📍 <strong>'+(locs[0].nombre||'Consultorio')+'</strong>'+(locs[0].direccion?' · '+locs[0].direccion.split(',')[0]:'');si2.style.display='block';}}
+    else{sw.innerHTML='';sw.style.display='none';}
+  }
+  bkRecargar();
+}
+function cerrarBooking(){el('bkSheet').classList.remove('open');setTimeout(function(){var o=el('bkOverlay');if(o)o.style.display='none';},350);document.body.style.overflow='';bkGoStep1();}
+async function bkRecargar(){
+  var btn=el('bkNextBtn');if(btn)btn.disabled=true;
+  var hoy=new Date().toISOString().split('T')[0],e90=new Date();e90.setDate(e90.getDate()+90);
+  var r=await _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',e90.toISOString().split('T')[0]).neq('estado','cancelada');
+  _bkCitas=r.data||[];_bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
+  var n=new Date();_bkY=n.getFullYear();_bkM=n.getMonth();bkRenderCal();
+}
+function bkRenderCal(){
+  var m=el('bkCalMonth');if(m)m.textContent=_MESES[_bkM]+' '+_bkY;
+  var g=el('bkCal');if(!g)return;g.innerHTML='';
+  _DIAS.forEach(function(d){var h=document.createElement('div');h.className='bk-cal-hdr';h.textContent=d.charAt(0);g.appendChild(h);});
+  var fd=new Date(_bkY,_bkM,1).getDay(),dm=new Date(_bkY,_bkM+1,0).getDate();
+  var hoy=new Date();hoy.setHours(0,0,0,0);var hoyS=hoy.toISOString().split('T')[0];
+  for(var i=0;i<fd;i++){var e=document.createElement('div');e.className='bk-day';g.appendChild(e);}
+  for(var d=1;d<=dm;d++){
+    var f=new Date(_bkY,_bkM,d),fs=f.toISOString().split('T')[0];
+    var has=_bkDisp[fs]&&_bkDisp[fs].length>0;
+    var c=document.createElement('div');c.textContent=d;
+    var cls=['bk-day'];
+    if(fs===hoyS)cls.push('today');
+    if(f<hoy||!has){cls.push(f<hoy?'past':'unavail');}
+    else{cls.push('avail');if(fs===_bkDate)cls.push('sel');(function(s){c.onclick=function(){_bkDate=s;_bkSlot=null;var b=el('bkNextBtn');if(b)b.disabled=true;bkRenderCal();bkRenderSlots(s);};})(fs);}
+    c.className=cls.join(' ');g.appendChild(c);
+  }
+  el('bkSlotsWrap').style.display=_bkDate?'block':'none';
+  if(_bkDate)bkRenderSlots(_bkDate);
+}
+function bkRenderSlots(fecha){
+  var sl=el('bkSlotsLabel');if(sl){var d=new Date(fecha+'T12:00:00');sl.textContent=d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});}
+  var slots=(_bkDisp[fecha]||[]).slice(),cont=el('bkSlots');cont.innerHTML='';var disp=0;
+  slots.forEach(function(s){var chip=document.createElement('div');chip.className='bk-slot'+(s===_bkSlot?' sel':'');chip.textContent=s;disp++;(function(sl){chip.onclick=function(){_bkSlot=sl;document.querySelectorAll('.bk-slot').forEach(function(c){c.classList.toggle('sel',c.textContent===sl);});var b=el('bkNextBtn');if(b)b.disabled=false;};})(s);cont.appendChild(chip);});
+  el('bkNoSlots').style.display=disp===0?'block':'none';el('bkSlotsWrap').style.display='block';
+}
+function bkGoStep1(){el('bkStep1').style.display='block';el('bkStep2').style.display='none';el('bkStep3').style.display='none';}
+function bkGoStep2(){if(!_bkDate||!_bkSlot)return;el('bkStep1').style.display='none';el('bkStep2').style.display='block';el('bkStep3').style.display='none';var d=new Date(_bkDate+'T12:00:00');set('bkSelDate',d.toLocaleDateString('es',{day:'numeric',month:'long'}));set('bkSelTime',_bkSlot);}
+async function bkConfirmar(){
+  if(!_M||!_bkDate||!_bkSlot)return;
+  var n=((el('bkNombre')||{}).value||'').trim(),t=((el('bkTelefono')||{}).value||'').trim(),e=((el('bkEmail')||{}).value||'').trim(),motivo=((el('bkMotivo')||{}).value||'').trim();
+  if(!n||!t){alert('Completá nombre y teléfono.');return;}
+  var btn=el('bkConfirmBtn');if(btn){btn.disabled=true;btn.textContent='Confirmando…';}
+  var dr=(_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido;
+  var nd=new Date(_bkDate+'T12:00:00'),fechaLabel=nd.getDate()+' de '+_meses[nd.getMonth()]+' '+nd.getFullYear();
+  var perfilUrl='https://citadoc.lat/citadoc-perfil.html?slug='+(_M.slug||'');
+  var check=await _sb.from('citas').select('id').eq('medico_id',_M.id).eq('fecha',_bkDate).eq('hora',_bkSlot).in('estado',['confirmada','pendiente']);
+  if(check.data&&check.data.length>0){alert('Ese horario acaba de ser reservado. Seleccioná otro.');if(btn){btn.disabled=false;btn.textContent='Confirmar cita';}bkGoStep1();return;}
+  var pid=typeof buscarOCrearPaciente==='function'?await buscarOCrearPaciente(_sb,n,e,t):null;
+  var rC=await _sb.from('citas').insert({medico_id:_M.id,paciente_id:pid||null,paciente_nombre:n,paciente_tel:t,paciente_email:e||null,motivo:motivo||null,fecha:_bkDate,hora:_bkSlot,estado:'confirmada'});
+  if(btn){btn.disabled=false;btn.textContent='Confirmar cita';}
+  if(rC.error){alert(rC.error.message&&rC.error.message.indexOf('unique_slot_cita')>-1?'Ese horario acaba de ser reservado.':'Error: '+rC.error.message);return;}
+  if(typeof emailjs!=='undefined'){
+    var nota='🩺 Nueva cita\nPaciente: '+n+' · '+t+(e?'\nEmail: '+e:'')+'\nFecha: '+fechaLabel+' a las '+_bkSlot+(motivo?'\nMotivo: '+motivo:'');
+    if(_M.email)emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:_M.email,doctor_name:dr,patient_name:n,appointment_date:fechaLabel,appointment_time:_bkSlot,location_name:nota,appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',public_profile_url:perfilUrl}).catch(function(){});
+    if(e)emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:e,doctor_name:dr,patient_name:n,appointment_date:fechaLabel,appointment_time:_bkSlot,location_name:'Consultorio de '+dr,appointment_mode:'🏥 Presencial',public_profile_url:perfilUrl}).catch(function(){});
+  }
+  el('bkStep2').style.display='none';el('bkStep3').style.display='block';
+  set('bkConfMsg',n+', tu cita con '+dr+' fue confirmada para el '+fechaLabel+' a las '+_bkSlot+'.'+(e?' Confirmación enviada a '+e+'.':''));
+  var wl=el('bkWaLink');if(wl&&_M.whatsapp_activo&&_M.whatsapp){wl.href='https://wa.me/'+_M.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+dr+', confirmé mi cita para el '+fechaLabel+' a las '+_bkSlot+'. Soy '+n+'.');wl.style.display='flex';}
+  _bkCitas.push({fecha:_bkDate,hora:_bkSlot});
+  _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
+}
+</script>
+</body>
+</html>
