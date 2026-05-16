@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title id="pageTitle">Dr. Médico — CitaDoc</title>
+<meta name="description" id="pageDesc" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;background:#fff;color:#0d1b2a;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+button{cursor:pointer;font-family:'DM Sans',sans-serif}
+:root{--p:#1a2e44;--pd:#0d1b2a;--pm:#2a4a68;--mu:#6b7280;--bo:#e5e7eb;--bg:#f8fafc;--serif:'Fraunces',Georgia,serif}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;background:transparent;transition:background .3s,box-shadow .3s}
+nav.solid{background:rgba(255,255,255,.97);backdrop-filter:blur(20px);box-shadow:0 1px 0 rgba(0,0,0,.07)}
+.nav-brand{display:flex;flex-direction:column;gap:2px}
+.nav-brand-logo{max-height:36px;max-width:100px;object-fit:contain;display:block}
+.nav-brand-text{font-family:var(--serif);font-size:1rem;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1;transition:color .3s}
+nav.solid .nav-brand-text{color:var(--pd)}
+.nav-brand-sub{font-size:.55rem;font-weight:500;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase;transition:color .3s}
+nav.solid .nav-brand-sub{color:var(--mu)}
+.nav-links{display:none}
+@media(min-width:900px){.nav-links{display:flex;gap:1.6rem;list-style:none}
+.nav-links a{font-size:.78rem;font-weight:500;color:rgba(255,255,255,.7);transition:color .2s}
+nav.solid .nav-links a{color:var(--mu)}
+.nav-links a:hover{color:#fff}
+nav.solid .nav-links a:hover{color:var(--p)}}
+.nav-btn{background:var(--p);color:#fff;border:none;border-radius:50px;padding:.5rem 1.3rem;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .2s;white-space:nowrap}
+.nav-btn:hover{background:var(--pm)}
+
+/* ── HERO ── */
+.hero{display:grid;grid-template-columns:1fr;min-height:100svh;position:relative}
+@media(min-width:768px){.hero{grid-template-columns:52% 48%}}
+
+/* LEFT — contenido */
+.hero-left{
+  position:relative;z-index:2;
+  background:#fff;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:100px 5% 60px 6%;
+  order:2
+}
+@media(min-width:768px){.hero-left{order:1;padding:100px 5% 80px 7%}}
+@media(min-width:1200px){.hero-left{padding:100px 5% 80px 9%}}
+
+.hero-left::after{
+  content:'';position:absolute;top:0;right:-1px;bottom:0;width:40px;
+  background:linear-gradient(90deg,#fff,transparent);z-index:3;pointer-events:none
+}
+@media(max-width:767px){.hero-left::after{display:none}}
+
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(26,46,68,.07);border:1px solid rgba(26,46,68,.14);border-radius:50px;padding:.3rem .85rem;width:fit-content;margin-bottom:1.4rem}
+.hero-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--p);flex-shrink:0}
+.hero-badge-text{font-size:.6rem;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.14em}
+
+h1{font-family:var(--serif);font-size:clamp(2.4rem,4.5vw,4.6rem);font-weight:700;color:var(--pd);line-height:.97;letter-spacing:-.04em;margin-bottom:1.1rem}
+h1 em{font-style:italic;font-weight:300;color:var(--pm)}
+
+.hero-sub{font-size:.98rem;color:var(--mu);line-height:1.75;max-width:400px;margin-bottom:2.2rem;font-weight:300}
+
+.hero-btns{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:2rem}
+.btn-primary{display:inline-flex;align-items:center;gap:.45rem;background:var(--p);color:#fff;border:none;border-radius:12px;height:50px;padding:0 1.6rem;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s,transform .2s,box-shadow .2s;box-shadow:0 6px 20px rgba(26,46,68,.22)}
+.btn-primary:hover{background:var(--pm);transform:translateY(-1px);box-shadow:0 10px 28px rgba(26,46,68,.3)}
+.btn-ghost{display:inline-flex;align-items:center;gap:.45rem;background:#fff;color:var(--pd);border:1.5px solid var(--bo);border-radius:12px;height:50px;padding:0 1.4rem;font-size:.88rem;font-weight:600;cursor:pointer;transition:border-color .2s,background .2s}
+.btn-ghost:hover{border-color:#25d366;background:#f0fdf4}
+
+.trust-row{display:flex;gap:1.1rem;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:.45rem;font-size:.74rem;font-weight:500;color:var(--mu)}
+.trust-icon{width:28px;height:28px;border-radius:8px;background:rgba(26,46,68,.07);display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0}
+
+/* RIGHT — foto */
+.hero-right{
+  position:relative;overflow:hidden;
+  min-height:55vw;order:1;background:var(--pd)
+}
+@media(min-width:768px){.hero-right{order:2;min-height:auto}}
+
+.hero-right img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%;filter:contrast(1.06) brightness(0.97) saturate(1.05)}
+.hero-right-ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(13,27,42,.45) 100%)}
+@media(min-width:768px){.hero-right-ov{background:linear-gradient(270deg,transparent 60%,rgba(255,255,255,.04) 100%)}}
+
+/* ── 4 PILLARS ── */
+.pillars{padding:3rem 5%;display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;background:#fff;border-top:1px solid var(--bo)}
+@media(min-width:768px){.pillars{grid-template-columns:repeat(4,1fr);padding:2.8rem 7%}}
+@media(min-width:1200px){.pillars{padding:2.8rem 9%}}
+
+.pillar{display:flex;flex-direction:column;gap:.5rem}
+.pillar-icon{width:40px;height:40px;border-radius:12px;background:rgba(26,46,68,.07);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.pillar-title{font-size:.82rem;font-weight:700;color:var(--pd);line-height:1.2}
+.pillar-desc{font-size:.72rem;color:var(--mu);line-height:1.55}
+
+/* ── SERVICES SECTION ── */
+.services-section{padding:3rem 5% 0;background:var(--bg)}
+@media(min-width:768px){.services-section{padding:4rem 7% 0}}
+@media(min-width:1200px){.services-section{padding:4rem 9% 0}}
+
+.section-label{display:inline-flex;align-items:center;gap:.5rem;font-size:.6rem;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.18em;margin-bottom:.7rem}
+.section-label::before{content:'';width:18px;height:1.5px;background:var(--p);border-radius:2px}
+
+h2{font-family:var(--serif);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;color:var(--pd);letter-spacing:-.03em;line-height:1.1;margin-bottom:.7rem}
+.section-sub{font-size:.9rem;color:var(--mu);line-height:1.75;max-width:500px;margin-bottom:2.5rem;font-weight:300}
+
+.services-inner{display:grid;grid-template-columns:1fr;gap:0}
+@media(min-width:768px){.services-inner{grid-template-columns:1fr 1fr;gap:0 3rem}}
+
+.service-row{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;border-bottom:1px solid var(--bo);cursor:pointer;transition:padding .2s}
+.service-row:last-child{border-bottom:none}
+.service-name{font-size:.92rem;font-weight:500;color:var(--pd);transition:color .2s}
+.service-row:hover .service-name{color:var(--p)}
+.service-row:hover{padding-left:6px}
+.service-arr{color:var(--bo);font-size:.8rem;transition:color .2s,transform .2s}
+.service-row:hover .service-arr{color:var(--p);transform:translateX(3px)}
+
+/* ── ABOUT ── */
+.about-section{padding:3rem 5%;display:grid;gap:2rem;background:#fff}
+@media(min-width:768px){.about-section{grid-template-columns:400px 1fr;padding:4rem 7%;gap:4rem;align-items:center}}
+@media(min-width:1200px){.about-section{grid-template-columns:440px 1fr;padding:4rem 9%}}
+
+.about-photo-wrap{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:3/4;max-height:480px}
+.about-photo-wrap img{width:100%;height:100%;object-fit:cover;object-position:center 10%}
+.about-photo-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,transparent 40%,rgba(13,27,42,.88) 100%);padding:1.5rem}
+.about-photo-name{font-family:var(--serif);font-size:1.05rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:.2rem}
+.about-photo-title{font-size:.7rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.08em}
+
+.about-content{}
+.about-philosophy{font-family:var(--serif);font-size:1.15rem;font-style:italic;font-weight:300;color:var(--pd);line-height:1.6;border-left:2px solid var(--p);padding-left:1.2rem;margin-bottom:1.5rem}
+.about-text{font-size:.88rem;color:var(--mu);line-height:1.85;font-weight:300;margin-bottom:2rem}
+.about-credentials{display:flex;flex-direction:column;gap:.65rem}
+.about-cred{display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--pd);font-weight:500}
+.about-cred-dot{width:6px;height:6px;border-radius:50%;background:var(--p);flex-shrink:0}
+
+/* ── FINAL CTA ── */
+.final-cta{padding:3.5rem 5%;background:var(--pd);text-align:center}
+@media(min-width:768px){.final-cta{padding:4rem 9%}}
+.final-cta-label{font-size:.58rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.7rem}
+.final-cta h2{font-family:var(--serif);color:#fff;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:400;margin-bottom:1.6rem;letter-spacing:-.02em;font-style:italic}
+.final-cta .btn-primary{background:#fff;color:var(--pd);margin:0 auto;width:100%;max-width:320px;justify-content:center}
+.final-cta .btn-primary:hover{background:#f1f5f9;transform:translateY(-1px)}
+
+/* ── STICKY BAR ── */
+.sticky-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(24px);
+  border-top:1px solid var(--bo);
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.16,1,.3,1)
+}
+.sticky-bar.show{transform:translateY(0)}
+.sticky-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.s-book{background:var(--p);color:#fff;border:none;border-radius:14px;height:52px;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .2s}
+.s-book:hover{background:var(--pm)}
+.s-wa{background:#22c55e;color:#fff;border:none;border-radius:14px;height:52px;font-size:.78rem;font-weight:700;cursor:pointer}
+.s-call{background:#fff;color:var(--pd);border:1.5px solid var(--bo);border-radius:14px;height:52px;font-size:.78rem;font-weight:600;cursor:pointer}
+
+/* Reveal */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.rv.in{opacity:1;transform:none}
+.d1{transition-delay:.06s}.d2{transition-delay:.12s}.d3{transition-delay:.18s}.d4{transition-delay:.24s}
+</style>
+</head>
+<body>
+
+<nav id="saNav">
+  <div class="nav-brand" id="navBrand">
+    <span class="nav-brand-text" id="navBrandName">Dr. Médico</span>
+    <span class="nav-brand-sub" id="navBrandEsp">Especialista</span>
+  </div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#inicio">Inicio</a></li>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#sobre-mi">Sobre mí</a></li>
+  </ul>
+  <button class="nav-btn" onclick="abrirBooking()">Agendar cita</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-left">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      <span class="hero-badge-text" id="heroBadge">Especialista médico</span>
+    </div>
+    <h1 id="heroH1">Headline del médico</h1>
+    <p class="hero-sub" id="heroSub"></p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="abrirBooking()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agendar cita
+      </button>
+      <a class="btn-ghost" id="heroWa" href="#" target="_blank" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+    <div class="trust-row" id="trustRow"></div>
+  </div>
+  <div class="hero-right">
+    <img id="heroPhoto" src="" alt="">
+    <div class="hero-right-ov"></div>
+  </div>
+</section>
+
+<!-- 4 PILLARS -->
+<div class="pillars rv" id="pillars"></div>
+
+<!-- SERVICES -->
+<section class="services-section" id="servicios">
+  <div class="section-label">Especialidades</div>
+  <h2 id="servicesH2">Áreas de atención</h2>
+  <p class="section-sub" id="servicesSub"></p>
+  <div class="services-inner" id="servicesList"></div>
+</section>
+<div style="height:3rem;background:var(--bg)"></div>
+
+<!-- ABOUT -->
+<section class="about-section rv" id="sobre-mi">
+  <div class="about-photo-wrap">
+    <img id="aboutPhoto" src="" alt="">
+    <div class="about-photo-overlay">
+      <div class="about-photo-name" id="aboutPhotoName"></div>
+      <div class="about-photo-title" id="aboutPhotoTitle"></div>
+    </div>
+  </div>
+  <div class="about-content">
+    <div class="section-label">El médico</div>
+    <h2 id="aboutH2">Sobre mí</h2>
+    <p class="about-philosophy" id="aboutPhilo"></p>
+    <p class="about-text" id="aboutText"></p>
+    <div class="about-credentials" id="aboutCreds"></div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta rv">
+  <div class="final-cta-label">Comenzá hoy</div>
+  <h2 id="ctaFinalH"></h2>
+  <button class="btn-primary" onclick="abrirBooking()">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Agendar cita
+  </button>
+</div>
+
+<!-- STICKY BAR -->
+<div class="sticky-bar" id="stickyBar">
+  <div class="sticky-grid">
+    <button class="s-book" onclick="abrirBooking()">📅 Agendar</button>
+    <button class="s-wa" id="stickyWa">💬 WhatsApp</button>
+    <button class="s-call" id="stickyCall">📞 Llamar</button>
+  </div>
+</div>
+
+<script>
+var _sb=supabase.createClient('https://qxoomcqaafogczrvsyhg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs');
+function el(id){return document.getElementById(id)}
+function set(id,v){var e=el(id);if(e)e.textContent=v}
+function css(prop,val){document.documentElement.style.setProperty(prop,val)}
+
+var params=new URLSearchParams(location.search);
+var slug=params.get('slug')||'';
+var prev=params.get('preview');
+var isDraft=prev==='draft'||prev==='clean';
+
+// Nav scroll
+window.addEventListener('scroll',function(){
+  var s=window.scrollY>60;
+  el('saNav').classList.toggle('solid',s);
+  el('stickyBar').classList.toggle('show',window.scrollY>window.innerHeight*.55);
+},{passive:true});
+
+// Reveal
+var ro=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target)}});
+},{threshold:.07});
+document.querySelectorAll('.rv').forEach(function(e){ro.observe(e)});
+
+if(!slug){return;}
+_sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(function(r){
+  if(r.error||!r.data)return;
+  render(r.data,(isDraft&&r.data.web_config_draft)?r.data.web_config_draft:(r.data.web_config||{}),isDraft);
+});
+
+function render(m,wc,draft){
+  var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  var esp=(m.especialidades||[])[0]||'';
+  var pc=wc.primary_color||'#1a2e44';
+  var photo=wc.doctor_photo_url||m.foto_url||'';
+  var logo=wc.logo_url||null;
+  var hl=wc.headline||nombre;
+  var sub=wc.subheadline||esp;
+  var phil=wc.philosophy||wc.sobre_quote||'';
+  var about=wc.about_text||wc.doctor_story||'';
+  var diffs=wc.differentiators||wc.sobre_mi_highlights||[];
+  var services=wc.services||[];
+  var tratamiento=wc.treatment_approach||'';
+  var ctaFinal=wc.cta_final||'Tu bienestar, nuestra prioridad.';
+  var waActive=m.whatsapp_activo&&m.whatsapp;
+  var waUrl=waActive?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.'):'';
+
+  // Colors
+  css('--p',pc);css('--pd',darken(pc,30));css('--pm',lighten(pc,15));
+
+  // Page meta
+  document.title=wc.seo_title||(nombre+' — '+esp);
+  var md=el('pageDesc');if(md)md.setAttribute('content',wc.seo_description||'');
+
+  // Nav logo
+  var nb=el('navBrand');
+  if(nb&&logo){
+    nb.innerHTML='<img class="nav-brand-logo" src="'+logo+'" alt="logo">';
+  } else {
+    set('navBrandName',nombre);set('navBrandEsp',esp);
+  }
+
+  // Hero
+  var hp=el('heroPhoto');if(hp&&photo){hp.src=photo;hp.alt=nombre;}
+  set('heroBadge',esp.toUpperCase());
+  el('heroH1').innerHTML=formatHeadline(hl);
+  set('heroSub',sub);
+
+  // WhatsApp
+  if(waActive){
+    var wa=el('heroWa');if(wa){wa.href=waUrl;wa.style.display='inline-flex';}
+    var sw=el('stickyWa');if(sw)sw.onclick=function(){window.open(waUrl,'_blank')};
+  } else {
+    var sw=el('stickyWa');if(sw)sw.style.display='none';
+  }
+
+  // Phone
+  if(m.telefono){
+    var sc=el('stickyCall');if(sc)sc.onclick=function(){location='tel:'+m.telefono.replace(/\D/g,'')};
+  }
+
+  // Trust row
+  var tr=el('trustRow');if(tr){
+    var items=[];
+    if(m.anos_experiencia)items.push({icon:'⭐',txt:m.anos_experiencia+' años de experiencia'});
+    if(esp)items.push({icon:'🔬',txt:'Basada en evidencia'});
+    if(m.ciudad)items.push({icon:'📍',txt:m.ciudad});
+    tr.innerHTML=items.map(function(i){return'<div class="trust-item"><div class="trust-icon">'+i.icon+'</div><span>'+i.txt+'</span></div>'}).join('');
+  }
+
+  // 4 Pillars
+  var pils=el('pillars');if(pils){
+    var defaults=[
+      {icon:'🏆',t:'Experiencia',d:'Formación especializada y años de práctica clínica dedicada.'},
+      {icon:'🔬',t:'Especialización',d:'Técnicas avanzadas y equipamiento de última generación.'},
+      {icon:'💡',t:'Tecnología',d:'Diagnóstico preciso con herramientas modernas y eficientes.'},
+      {icon:'🤝',t:'Atención personal',d:'Cada paciente recibe un plan de tratamiento individualizado.'}
+    ];
+    pils.innerHTML=defaults.map(function(p,i){return'<div class="pillar rv d'+(i+1)+'"><div class="pillar-icon">'+p.icon+'</div><div class="pillar-title">'+p.t+'</div><div class="pillar-desc">'+p.d+'</div></div>'}).join('');
+    document.querySelectorAll('.pillar.rv').forEach(function(e){ro.observe(e)});
+  }
+
+  // Services
+  set('servicesH2','Áreas de atención');
+  set('servicesSub',tratamiento||'Diagnóstico preciso y tratamiento personalizado para cada paciente.');
+  var sl=el('servicesList');if(sl){
+    var svcs=services.length?services:[
+      {t:'Consulta integral',d:''},
+      {t:'Diagnóstico de precisión',d:''},
+      {t:'Tratamiento personalizado',d:''},
+      {t:'Seguimiento continuo',d:''}
+    ];
+    sl.innerHTML=svcs.map(function(s){return'<div class="service-row"><span class="service-name">'+(s.t||s.titulo||'Servicio')+'</span><span class="service-arr">→</span></div>'}).join('');
+  }
+
+  // About
+  var ap=el('aboutPhoto');if(ap&&photo){ap.src=photo;ap.alt=nombre;}
+  set('aboutPhotoName',nombre);
+  set('aboutPhotoTitle',esp+(m.ciudad?' · '+m.ciudad:''));
+  el('aboutH2').textContent='Sobre '+nombre.split(' ')[0];
+  set('aboutPhilo',phil||'"Cada paciente merece atención precisa, honesta y humana."');
+  set('aboutText',about||'');
+  var ac=el('aboutCreds');if(ac&&diffs.length){
+    ac.innerHTML=diffs.slice(0,4).map(function(d){return'<div class="about-cred"><div class="about-cred-dot"></div><span>'+d+'</span></div>'}).join('');
+  }
+
+  // Final CTA
+  el('ctaFinalH').innerHTML='<em>'+ctaFinal+'</em>';
+
+  // Preview banner
+  if(draft&&prev!=='clean'){
+    var b=document.createElement('div');
+    b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.07);padding:.4rem 1rem;text-align:center;font-size:.68rem;font-weight:500;color:#374151;font-family:DM Sans,sans-serif';
+    b.innerHTML='🔒 <strong>Vista previa</strong> — Tu sitio médico aún no está publicado';
+    document.body.prepend(b);
+    document.body.style.paddingTop='32px';
+  }
+}
+
+function formatHeadline(h){
+  // Rompe el headline en dos líneas si tiene un punto
+  var parts=h.split('.');
+  if(parts.length>=2&&parts[0].trim().length>8){
+    return parts[0].trim()+'.<br><em>'+parts.slice(1).join('.').trim()+'</em>';
+  }
+  return h;
+}
+function darken(hex,amt){return shiftColor(hex,-amt)}
+function lighten(hex,amt){return shiftColor(hex,amt)}
+function shiftColor(hex,amt){
+  var n=parseInt(hex.replace('#',''),16);
+  var r=Math.max(0,Math.min(255,(n>>16)+amt));
+  var g=Math.max(0,Math.min(255,((n>>8)&0xff)+amt));
+  var b=Math.max(0,Math.min(255,(n&0xff)+amt));
+  return '#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0')}).join('');
+}
+function abrirBooking(){
+  var s=new URLSearchParams(location.search).get('slug')||'';
+  if(window._abrirBooking){window._abrirBooking();return;}
+  location='citadoc-perfil.html?slug='+s+'#booking';
+}
+</script>
+</body>
+</html>
