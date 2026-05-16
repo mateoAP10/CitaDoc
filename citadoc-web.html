@@ -317,7 +317,8 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
 .btn-cta-outline:hover{background:rgba(37,211,102,.15);border-color:rgba(37,211,102,.4);transform:translateY(-2px)}
 
 /* ── FOOTER ── */
-#siteFooter{padding-bottom:env(safe-area-inset-bottom)}
+#siteFooter{padding-bottom:env(safe-area-inset-bottom);background:#0d1b2a}
+@media(min-width:768px){#wFooterGrid{grid-template-columns:1fr 1fr 1fr!important}}
 
 /* ── BOOKING MODAL ── */
 .bk-overlay{position:fixed;inset:0;z-index:1000;background:rgba(7,21,16,.88);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);display:none;align-items:center;justify-content:center;padding:1.5rem}
@@ -1919,11 +1920,14 @@ function renderWeb(m,locs,wc,isPreview){
     var dark   = toHex(darken(r,.2), darken(g,.2), darken(b,.2));   // --gd, --gm (headlines)
     var mid    = pc;                                                   // --ga (botones)
     var bright = toHex(lighten(r,.15),lighten(g,.15),lighten(b,.15)); // --gg (hover)
+    var veryDark=toHex(darken(r,.45),darken(g,.45),darken(b,.45));
     document.documentElement.style.setProperty('--gd', dark);
     document.documentElement.style.setProperty('--gm', dark);
     document.documentElement.style.setProperty('--ga', mid);
     document.documentElement.style.setProperty('--gg', bright);
     document.documentElement.style.setProperty('--p',  mid);
+    document.documentElement.style.setProperty('--pd', veryDark);
+    el('siteFooter')&&(el('siteFooter').style.background=veryDark);
   }
   var nombre=(_M.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   var esp=(m.especialidades||[])[0]||'';
@@ -1977,9 +1981,6 @@ function renderWeb(m,locs,wc,isPreview){
       });
       fContact.innerHTML=ci.join('');
     }
-    // Desktop: 3 cols
-    var fg=el('wFooterGrid');
-    if(fg&&window.innerWidth>=768)fg.style.gridTemplateColumns='1fr 1fr 1fr';
   })();
 
   // Hero photo — check web_config first, then medico profile
@@ -2343,26 +2344,30 @@ async function bkCargarDisponibilidad(locationId){
   var r=await _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',e90.toISOString().split('T')[0]).neq('estado','cancelada');
   _bkCitas=r.data||[];
 
-  // 1. Intentar con sede específica (igual que perfil público)
-  var fn=typeof cargarDisponibilidadPorSede==='function'?cargarDisponibilidadPorSede:null;
-  if(fn){
-    try{_bkDisp=await fn(_M,_bkCitas,_sb,locationId||null);}catch(e){_bkDisp={};}
-    // 2. Si locationId filtró demasiado (bloques sin location_id), reintentar sin filtro
-    if(!Object.keys(_bkDisp).length&&locationId!=null){
-      try{_bkDisp=await fn(_M,_bkCitas,_sb,null);}catch(e){_bkDisp={};}
-    }
-  } else {
-    _bkDisp={};
-  }
+  console.log('[bk] scheduleBlocks=',_bkScheduleBlocks.length,'locationId=',locationId);
 
-  // 3. Último fallback: doctor_schedule_blocks tabla (filtrado por sede si aplica)
-  if(!Object.keys(_bkDisp).length&&_bkScheduleBlocks.length){
+  // 1. PRIMARIO: doctor_schedule_blocks (fuente de verdad, igual a DNA surgical)
+  if(_bkScheduleBlocks.length){
     var blocks=locationId
       ?_bkScheduleBlocks.filter(function(b){return String(b.location_id||'')===String(locationId);})
       :_bkScheduleBlocks;
-    if(!blocks.length)blocks=_bkScheduleBlocks; // si la sede no tiene blocks, usar todos
+    if(!blocks.length)blocks=_bkScheduleBlocks;
     _bkDisp=bkComputeDispFromBlocks(blocks,_bkCitas);
+    console.log('[bk] disp from blocks — dias disponibles:',Object.keys(_bkDisp).length);
   }
+
+  // 2. FALLBACK: shared.js (horarios_config / dias_atencion)
+  if(!Object.keys(_bkDisp).length&&typeof cargarDisponibilidadPorSede==='function'){
+    try{
+      _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,locationId||null);
+      if(!Object.keys(_bkDisp).length&&locationId!=null){
+        _bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,null);
+      }
+    }catch(e){console.warn('[bk] cargarDisponibilidadPorSede error:',e);_bkDisp={};}
+    console.log('[bk] disp from shared.js — dias:',Object.keys(_bkDisp).length);
+  }
+
+  if(!Object.keys(_bkDisp).length)console.warn('[bk] SIN disponibilidad — horarios_config:',JSON.stringify(_M.horarios_config),'dias_atencion:',_M.dias_atencion);
 }
 function bkRenderCal(){
   setText('bkCalTitle',_MESES[_bkM]+' '+_bkY);
