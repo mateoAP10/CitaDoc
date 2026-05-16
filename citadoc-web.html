@@ -317,14 +317,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
 .btn-cta-outline:hover{background:rgba(37,211,102,.15);border-color:rgba(37,211,102,.4);transform:translateY(-2px)}
 
 /* ── FOOTER ── */
-.site-footer{
-  padding:1.8rem 6%;background:#fff;border-top:1px solid var(--bo);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.footer-name{font-family:var(--D);font-size:.82rem;font-weight:600;color:var(--ink)}
-.footer-pw{font-size:.65rem;color:var(--su);letter-spacing:.03em}
-.footer-pw a{color:var(--gg);font-weight:600}
-.footer-pw a:hover{text-decoration:underline}
+#siteFooter{padding-bottom:env(safe-area-inset-bottom)}
 
 /* ── BOOKING MODAL ── */
 .bk-overlay{position:fixed;inset:0;z-index:1000;background:rgba(7,21,16,.88);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);display:none;align-items:center;justify-content:center;padding:1.5rem}
@@ -381,7 +374,6 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
   .sobre-left{min-height:320px}
   .sobre-right{padding:2.5rem 2rem}
   .testi-grid{grid-template-columns:1fr;gap:1rem}
-  .site-footer{flex-direction:column;gap:.5rem;text-align:center}
   .cta-sec{padding:5rem 5%}
 }
 @media(max-width:580px){
@@ -489,7 +481,7 @@ button{cursor:pointer;font-family:'DM Sans',sans-serif}
   .sec{padding:4rem 5% calc(4rem + env(safe-area-inset-bottom))}
   .benefits{padding:3rem 5%}
   .cta-sec{padding:4.5rem 5% calc(5rem + env(safe-area-inset-bottom))}
-  .site-footer{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  #siteFooter{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
   /* Sobre grid stacked */
   .sobre-grid{box-shadow:none;border-radius:20px}
   .sobre-right{padding:2rem 1.5rem}
@@ -1453,9 +1445,43 @@ body[data-layout="future-minimal"] .h-trust-icon{width:38px;height:38px;border-r
   </div>
 </section>
 
-<footer class="site-footer">
-  <div class="footer-name" id="wFooterBrand"></div>
-  <div class="footer-pw">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc Health Network®</a></div>
+<!-- FOOTER — identidad del médico + CitaDoc -->
+<footer id="siteFooter" style="background:var(--pd,#0d1b2a)">
+  <div style="padding:3rem 6% 2rem;display:grid;grid-template-columns:1fr;gap:2.5rem;max-width:1100px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr;gap:2rem" id="wFooterGrid">
+      <!-- Logo + nombre + descripción -->
+      <div>
+        <div id="wFooterLogo" style="margin-bottom:1.2rem"></div>
+        <p id="wFooterSub" style="font-size:.82rem;color:rgba(255,255,255,.45);line-height:1.75;max-width:340px"></p>
+      </div>
+      <!-- Contacto + sedes -->
+      <div>
+        <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.9rem">Contacto</div>
+        <div id="wFooterContact" style="display:flex;flex-direction:column;gap:.55rem"></div>
+      </div>
+      <!-- CTA -->
+      <div>
+        <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.9rem">Agenda tu cita</div>
+        <button onclick="abrirBooking()" style="display:flex;align-items:center;gap:.5rem;background:var(--p,#1a2e44);color:#fff;border:none;border-radius:12px;height:48px;padding:0 1.4rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;margin-bottom:.65rem;width:fit-content">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Agendar cita
+        </button>
+        <a id="wFooterWa" href="#" target="_blank" style="display:none;align-items:center;gap:.45rem;color:rgba(255,255,255,.5);font-size:.78rem;text-decoration:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          Escribir por WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- Barra CitaDoc -->
+  <div style="border-top:1px solid rgba(255,255,255,.07);padding:1rem 6%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+    <a href="https://citadoc.lat" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:.5rem;text-decoration:none">
+      <div style="width:22px;height:22px;border-radius:6px;background:var(--p,#1a2e44);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:#fff">C</div>
+      <span style="font-size:.72rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:-.01em">CitaDoc</span>
+      <span style="font-size:.62rem;color:rgba(255,255,255,.22);letter-spacing:.04em">— Health Network</span>
+    </a>
+    <span style="font-size:.62rem;color:rgba(255,255,255,.2);letter-spacing:.04em">Powered by CitaDoc AI</span>
+  </div>
 </footer>
 
 <!-- STICKY CTA (mobile) -->
@@ -1556,8 +1582,53 @@ var _sb=supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 );
 var _M=null;
+var _bkScheduleBlocks=[];
 function el(id){return document.getElementById(id);}
 function setText(id,v){var e=el(id);if(e)e.textContent=v;}
+
+// DAY_MAP robusto — parser español con/sin tildes, abbrs
+var _BK_DAY_MAP={
+  0:['domingo','sunday'],
+  1:['lunes','monday','lun'],
+  2:['martes','tuesday','mar'],
+  3:['miércoles','miercoles','wednesday','mie','mié'],
+  4:['jueves','thursday','jue'],
+  5:['viernes','friday','vie'],
+  6:['sábado','sabado','saturday','sab']
+};
+function _stripAccents(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function bkComputeDispFromBlocks(blocks,citas){
+  var disp={};
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  for(var i=0;i<60;i++){
+    var date=new Date(hoy);date.setDate(hoy.getDate()+i);
+    var fechaStr=date.toISOString().split('T')[0];
+    var dow=date.getDay();
+    var validNames=_BK_DAY_MAP[dow]||[];
+    var dayBlocks=blocks.filter(function(b){
+      if(!b.day||!b.is_active)return false;
+      var d=_stripAccents(b.day.toLowerCase());
+      return validNames.some(function(n){return d===_stripAccents(n);});
+    });
+    if(!dayBlocks.length)continue;
+    var limHoy=(i===0)?(new Date().getHours()*60+new Date().getMinutes()+120):0;
+    var slots=[];
+    dayBlocks.forEach(function(b){
+      var start=b.start_time||'09:00',end=b.end_time||'17:00';
+      var sp=start.split(':'),ep=end.split(':');
+      var cur=parseInt(sp[0])*60+parseInt(sp[1]||0);
+      var endMin=parseInt(ep[0])*60+parseInt(ep[1]||0);
+      while(cur+30<=endMin){
+        var ts=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
+        var ocupado=citas.some(function(c){return c.fecha===fechaStr&&c.hora===ts;});
+        if(!ocupado&&!(i===0&&cur<limHoy))slots.push(ts);
+        cur+=30;
+      }
+    });
+    if(slots.length)disp[fechaStr]=slots;
+  }
+  return disp;
+}
 
 var HOOKS={
   'traumatología':'Recupera tu movimiento, vuelve a vivir sin límites.',
@@ -1881,7 +1952,38 @@ function renderWeb(m,locs,wc,isPreview){
     if(esp)setText('wNavEsp',esp);
   }
   var nc=el('navCta');if(nc)nc.textContent=wc.cta_primary||wc.cta_primary_text||'Agendar cita';
-  setText('wFooterBrand',nombre+(esp?' · '+esp:''));
+
+  // Footer rico — logo / contacto / sedes / CitaDoc bar
+  (function(){
+    var logoSrcF=logoSrc||null;
+    var fLogo=el('wFooterLogo');
+    if(fLogo){
+      if(logoSrcF){
+        fLogo.innerHTML='<img src="'+logoSrcF+'" style="max-height:44px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1);opacity:.85" alt="'+nombre+'">';
+      } else {
+        fLogo.innerHTML='<div style="font-family:var(--D,\'Fraunces\',serif);font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.1">'+nombre+'</div>'
+          +(esp?'<div style="font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.12em;margin-top:.3rem">'+esp+'</div>':'');
+      }
+    }
+    setText('wFooterSub',wc.subheadline||wc.philosophy||('Especialista médico comprometido con tu bienestar y recuperación.'));
+    var fContact=el('wFooterContact');
+    if(fContact){
+      var ci=[];
+      if(ciudad)ci.push('<div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:rgba(255,255,255,.5)"><span>📍</span><span>'+ciudad+(m.pais?', '+m.pais:'')+'</span></div>');
+      if(m.telefono)ci.push('<div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:rgba(255,255,255,.5)"><span>📞</span><span>'+m.telefono+'</span></div>');
+      if(m.email)ci.push('<div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:rgba(255,255,255,.5)"><span>✉️</span><span>'+m.email+'</span></div>');
+      locs.slice(0,2).forEach(function(l){
+        ci.push('<div style="display:flex;align-items:flex-start;gap:.5rem;font-size:.75rem;color:rgba(255,255,255,.4);line-height:1.4"><span>🏥</span><span>'+(l.nombre||'Consultorio')+(l.direccion?'<br><span style="opacity:.7">'+l.direccion.split(',')[0]+'</span>':'')+'</span></div>');
+      });
+      fContact.innerHTML=ci.join('');
+    }
+    var fWa=el('wFooterWa');
+    var waActive=m.whatsapp_activo&&m.whatsapp;
+    if(fWa&&waActive){fWa.href='https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.');fWa.style.display='flex';}
+    // Desktop: grid 3 cols
+    var fg=el('wFooterGrid');
+    if(fg&&window.innerWidth>=768)fg.style.gridTemplateColumns='1fr 1fr 1fr';
+  })();
 
   // Hero photo — check web_config first, then medico profile
   var fotoSrc = (wc && wc.doctor_photo_url) || m.foto_url || null;
@@ -2243,11 +2345,15 @@ async function bkCargarDisponibilidad(locationId){
   var e90=new Date();e90.setDate(e90.getDate()+90);
   var r=await _sb.from('citas').select('fecha,hora').eq('medico_id',_M.id).gte('fecha',hoy).lte('fecha',e90.toISOString().split('T')[0]).neq('estado','cancelada');
   _bkCitas=r.data||[];
-  // Use shared.js modern schedule system (doctor_schedule_blocks with bloqueos/excepciones)
+  // Primary: shared.js (usa horarios_config del médico)
   if(typeof cargarDisponibilidadPorSede==='function'){
     try{_bkDisp=await cargarDisponibilidadPorSede(_M,_bkCitas,_sb,locationId||null);}catch(e){_bkDisp={};}
   } else {
     _bkDisp={};
+  }
+  // Fallback: doctor_schedule_blocks (tabla) cuando horarios_config está vacío
+  if(!Object.keys(_bkDisp).length&&_bkScheduleBlocks.length){
+    _bkDisp=bkComputeDispFromBlocks(_bkScheduleBlocks,_bkCitas);
   }
 }
 function bkRenderCal(){
@@ -2470,8 +2576,13 @@ function mnavActive(item){
       var wc = (previewDraft && _M.web_config_draft) ? _M.web_config_draft : (_M.web_config||null);
       if(tplO&&wc) wc=Object.assign({},wc,{template:tplO});
       else if(tplO) wc={template:tplO};
-      _sb.from('doctor_locations').select('id,nombre,direccion,telefono,ciudad,maps_url').eq('medico_id',_M.id).order('created_at')
-        .then(function(rl){renderWeb(_M,rl.data||[],wc,previewDraft);});
+      Promise.all([
+        _sb.from('doctor_locations').select('id,nombre,direccion,telefono,ciudad,maps_url').eq('medico_id',_M.id).order('created_at'),
+        _sb.from('doctor_schedule_blocks').select('*').eq('medico_id',_M.id).eq('is_active',true)
+      ]).then(function(results){
+        _bkScheduleBlocks=results[1].data||[];
+        renderWeb(_M,results[0].data||[],wc,previewDraft);
+      });
     });
 
 function renderComingSoon(m) {
