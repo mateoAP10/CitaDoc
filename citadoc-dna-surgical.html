@@ -298,11 +298,12 @@ var ro=new IntersectionObserver(function(entries){
 },{threshold:.07});
 document.querySelectorAll('.rv').forEach(function(e){ro.observe(e)});
 
-if(!slug){return;}
-_sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(function(r){
-  if(r.error||!r.data)return;
-  render(r.data,(isDraft&&r.data.web_config_draft)?r.data.web_config_draft:(r.data.web_config||{}),isDraft);
-});
+if(slug){
+  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(function(r){
+    if(r.error||!r.data)return;
+    render(r.data,(isDraft&&r.data.web_config_draft)?r.data.web_config_draft:(r.data.web_config||{}),isDraft);
+  });
+}
 
 function render(m,wc,draft){
   var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
