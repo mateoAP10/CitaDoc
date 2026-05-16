@@ -15,6 +15,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/shared.js"></script>
+<script src="js/booking.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('HwpQ3DPRMmtcVZVt1')"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -1528,7 +1530,8 @@ body[data-layout="future-minimal"] .h-trust-icon{width:38px;height:38px;border-r
       <div style="display:flex;flex-direction:column;gap:.58rem;margin-bottom:1rem">
         <input id="bkNombre" class="bk-inp" placeholder="Tu nombre completo *">
         <input id="bkTelefono" class="bk-inp" placeholder="Teléfono / WhatsApp *" type="tel">
-        <input id="bkEmail" class="bk-inp" placeholder="Email (opcional)" type="email">
+        <input id="bkEmail" class="bk-inp" placeholder="Email (para recibir confirmación) *" type="email">
+        <input id="bkMotivo" class="bk-inp" placeholder="Motivo de consulta (opcional)">
       </div>
       <button class="bk-btn" id="bkConfirmBtn" onclick="bkConfirmar()">✓ Confirmar cita</button>
       <button onclick="bkGoStep1()" style="width:100%;padding:.5rem;background:none;border:none;color:var(--mu);font-family:var(--B);font-size:.8rem;cursor:pointer;margin-top:.4rem">← Cambiar fecha/hora</button>
@@ -2417,26 +2420,86 @@ function bkGoStep2(){
   var d=new Date(_bkDate+'T12:00:00');setText('bkSelDate',d.toLocaleDateString('es',{day:'numeric',month:'long'}));setText('bkSelTime',_bkSlot);
 }
 async function bkConfirmar(){
-  var n=((el('bkNombre')||{}).value||'').trim(),t=((el('bkTelefono')||{}).value||'').trim(),e=((el('bkEmail')||{}).value||'').trim();
+  if(!_M||!_bkDate||!_bkSlot)return;
+  var n=((el('bkNombre')||{}).value||'').trim();
+  var t=((el('bkTelefono')||{}).value||'').trim();
+  var e=((el('bkEmail')||{}).value||'').trim();
+  var motivo=((el('bkMotivo')||{}).value||'').trim();
   if(!n||!t){alert('Completa nombre y teléfono.');return;}
   var btn=el('bkConfirmBtn');if(btn){btn.disabled=true;btn.textContent='Confirmando…';}
-  var rP=await _sb.from('pacientes').select('id').eq('telefono',t).maybeSingle();
-  var pid;
-  if(rP.data){pid=rP.data.id;_sb.from('pacientes').update({nombre:n}).eq('id',pid);}
-  else{var ins=await _sb.from('pacientes').insert({nombre:n,telefono:t,email:e||null}).select('id').single();pid=ins.data?ins.data.id:null;}
-  if(!pid){if(btn){btn.disabled=false;btn.textContent='✓ Confirmar cita';}alert('Error al registrar.');return;}
-  var rC=await _sb.from('citas').insert([{medico_id:_M.id,paciente_id:pid,fecha:_bkDate,hora:_bkSlot,estado:'confirmada',origen:'web-ai',paciente_nombre:n,paciente_tel:t}]);
+  var dr=(_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido;
+  var nd=new Date(_bkDate+'T12:00:00');
+  var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var fechaLabel=nd.getDate()+' de '+meses[nd.getMonth()]+' '+nd.getFullYear();
+  var perfilUrl='https://citadoc.lat/citadoc-perfil.html?slug='+(_M.slug||'');
+
+  // Anti-doble-booking (igual que perfil)
+  var check=await _sb.from('citas').select('id').eq('medico_id',_M.id).eq('fecha',_bkDate).eq('hora',_bkSlot).in('estado',['confirmada','pendiente']);
+  if(check.data&&check.data.length>0){
+    alert('Este horario acaba de ser reservado. Por favor selecciona otro.');
+    if(btn){btn.disabled=false;btn.textContent='✓ Confirmar cita';}
+    bkGoStep1();bkCargarDisponibilidad(_bkSedeId).then(bkRenderCal);
+    return;
+  }
+
+  // buscarOCrearPaciente (de booking.js, igual que perfil)
+  var pid=null;
+  if(typeof buscarOCrearPaciente==='function'){
+    pid=await buscarOCrearPaciente(_sb,n,e,t);
+  } else {
+    var rP=await _sb.from('pacientes').select('id').eq('telefono',t).maybeSingle();
+    if(rP.data){pid=rP.data.id;}
+    else{var ins=await _sb.from('pacientes').insert({nombre:n,telefono:t,email:e||null}).select('id').single();pid=ins.data?ins.data.id:null;}
+  }
+
+  // Insertar cita
+  var rC=await _sb.from('citas').insert({
+    medico_id:_M.id,paciente_id:pid||null,
+    paciente_nombre:n,paciente_tel:t,paciente_email:e||null,
+    motivo:motivo||null,fecha:_bkDate,hora:_bkSlot,
+    estado:'confirmada',origen:'web-ai'
+  });
   if(btn){btn.disabled=false;btn.textContent='✓ Confirmar cita';}
-  if(rC.error){alert('Error: '+rC.error.message);return;}
+  if(rC.error){
+    if(rC.error.message&&rC.error.message.indexOf('unique_slot_cita')>-1){
+      alert('Ese horario acaba de ser reservado. Selecciona otro.');
+      bkGoStep1();bkCargarDisponibilidad(_bkSedeId).then(bkRenderCal);
+    } else {alert('Error: '+rC.error.message);}
+    return;
+  }
+
+  // EmailJS — al médico y al paciente (igual que perfil)
+  if(typeof emailjs!=='undefined'){
+    var notaMedico='🩺 Nueva cita\nPaciente: '+n+' · '+t+(e?'\nEmail: '+e:'')
+      +'\nFecha: '+fechaLabel+' a las '+_bkSlot+(motivo?'\nMotivo: '+motivo:'');
+    if(_M.email){
+      emailjs.send('service_63xln0n','template_e8t8qkq',{
+        to_email:_M.email,doctor_name:dr,patient_name:n,
+        appointment_date:fechaLabel,appointment_time:_bkSlot,
+        location_name:notaMedico,
+        appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',
+        public_profile_url:perfilUrl
+      }).catch(function(err){console.warn('emailjs médico:',err);});
+    }
+    if(e){
+      emailjs.send('service_63xln0n','template_e8t8qkq',{
+        to_email:e,doctor_name:dr,patient_name:n,
+        appointment_date:fechaLabel,appointment_time:_bkSlot,
+        location_name:'Consultorio de '+dr,
+        appointment_mode:'🏥 Presencial — confirmación de cita',
+        public_profile_url:perfilUrl
+      }).catch(function(err){console.warn('emailjs paciente:',err);});
+    }
+  }
+
   el('bkStep2').style.display='none';el('bkStep3').style.display='block';
-  var nd=new Date(_bkDate+'T12:00:00'),dr=(_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido;
-  setText('bkConfMsg',n+', tu cita con '+dr+' fue confirmada para el '+nd.toLocaleDateString('es',{day:'numeric',month:'long'})+' a las '+_bkSlot+'.'+(e?' Revisa tu correo.':''));
+  setText('bkConfMsg',n+', tu cita con '+dr+' fue confirmada para el '+fechaLabel+' a las '+_bkSlot+'.'+(e?' Confirmación enviada a '+e+'.':''));
   var wl=el('bkWaLink');
   if(wl&&_M.whatsapp_activo&&_M.whatsapp){
-    wl.href='https://wa.me/'+_M.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+dr+', confirmé mi cita para el '+nd.toLocaleDateString('es',{day:'numeric',month:'long'})+' a las '+_bkSlot+'. Soy '+n+' ('+t+').');
+    wl.href='https://wa.me/'+_M.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+dr+', confirmé mi cita para el '+fechaLabel+' a las '+_bkSlot+'. Soy '+n+' ('+t+').');
     wl.style.display='block';
   }
-  bkCargarDisponibilidad(_bkSedeId);
+  bkCargarDisponibilidad(_bkSedeId).then(bkRenderCal);
 }
 
 /* ── MOBILE UX ── */
