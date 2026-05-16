@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/booking.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('HwpQ3DPRMmtcVZVt1')"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -343,74 +345,7 @@ function el(id){return document.getElementById(id)}
 function set(id,v){var e=el(id);if(e)e.textContent=v}
 
 var _bkDisp={};
-var _bkLocs=[],_bkSchedule=[],_bkMedico=null,_bkCitas=[];
-
-// Disponibilidad desde horarios_config (fuente de verdad)
-function bkComputeDispFromConfig(hc,diasAtencion,desde,hasta){
-  var DIAS=['dom','lun','mar','mie','jue','vie','sab'];
-  var disp={};
-  var hoy=new Date();hoy.setHours(0,0,0,0);
-  for(var i=0;i<60;i++){
-    var date=new Date(hoy);date.setDate(hoy.getDate()+i);
-    var fechaStr=date.toISOString().split('T')[0];
-    var diaKey=DIAS[date.getDay()];
-    var cfgDia=hc&&hc[diaKey];
-    var bloques=null;
-    if(cfgDia&&cfgDia.activo&&cfgDia.bloques&&cfgDia.bloques.length){
-      bloques=cfgDia.bloques;
-    } else if((diasAtencion||[]).indexOf(diaKey)>-1){
-      bloques=[{desde:desde||'09:00',hasta:hasta||'17:00'}];
-    }
-    if(!bloques)continue;
-    var limHoy=(i===0)?(new Date().getHours()*60+new Date().getMinutes()+120):0;
-    var slots=[];
-    bloques.forEach(function(b){
-      var cur=parseInt(b.desde.split(':')[0])*60+parseInt((b.desde.split(':')[1])||0);
-      var end=parseInt(b.hasta.split(':')[0])*60+parseInt((b.hasta.split(':')[1])||0);
-      while(cur+30<=end){
-        var ts=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
-        var ocp=_bkCitas.some(function(c){return c.fecha===fechaStr&&c.hora===ts;});
-        if(!ocp&&!(i===0&&cur<limHoy))slots.push(ts);
-        cur+=30;
-      }
-    });
-    if(slots.length)disp[fechaStr]=slots;
-  }
-  return disp;
-}
-
-// Disponibilidad desde doctor_schedule_blocks (fallback)
-var _BK_DAY_MAP={0:['domingo','sunday'],1:['lunes','monday','lun'],2:['martes','tuesday','mar'],3:['miercoles','miércoles','wednesday','mie'],4:['jueves','thursday','jue'],5:['viernes','friday','vie'],6:['sabado','sábado','saturday','sab']};
-function _sa(s){return s.normalize('NFD').replace(/[̀-ͯ]/g,'');}
-function bkComputeDispFromBlocks(blocks){
-  var disp={};
-  var hoy=new Date();hoy.setHours(0,0,0,0);
-  for(var i=0;i<60;i++){
-    var date=new Date(hoy);date.setDate(hoy.getDate()+i);
-    var fechaStr=date.toISOString().split('T')[0];
-    var vn=_BK_DAY_MAP[date.getDay()]||[];
-    var dayBlocks=blocks.filter(function(b){
-      if(!b.day||!b.is_active)return false;
-      var d=_sa(b.day.toLowerCase());
-      return vn.some(function(n){return d===_sa(n);});
-    });
-    if(!dayBlocks.length)continue;
-    var limHoy=(i===0)?(new Date().getHours()*60+new Date().getMinutes()+120):0;
-    var slots=[];
-    dayBlocks.forEach(function(b){
-      var cur=parseInt((b.start_time||'09:00').split(':')[0])*60+parseInt(((b.start_time||'09:00').split(':')[1])||0);
-      var end=parseInt((b.end_time||'17:00').split(':')[0])*60+parseInt(((b.end_time||'17:00').split(':')[1])||0);
-      while(cur+30<=end){
-        var ts=String(Math.floor(cur/60)).padStart(2,'0')+':'+String(cur%60).padStart(2,'0');
-        var ocp=_bkCitas.some(function(c){return c.fecha===fechaStr&&c.hora===ts;});
-        if(!ocp&&!(i===0&&cur<limHoy))slots.push(ts);
-        cur+=30;
-      }
-    });
-    if(slots.length)disp[fechaStr]=slots;
-  }
-  return disp;
-}
+var _bkLocs=[],_bkMedico=null,_bkCitas=[];
 function css(prop,val){document.documentElement.style.setProperty(prop,val)}
 
 var params=new URLSearchParams(location.search);
@@ -437,23 +372,16 @@ if(slug){
     var m=r.data;
     var wc=(isDraft&&m.web_config_draft)?m.web_config_draft:(m.web_config||{});
 
-    // Misma lógica que perfil público: citas + sedes + blocks en paralelo
+    // Mismo engine que perfil público
     var hoy=new Date().toISOString().split('T')[0];
     var en60=new Date();en60.setDate(en60.getDate()+60);
-    var [locsRes, schedRes, citasRes] = await Promise.all([
+    var [locsRes, citasRes] = await Promise.all([
       _sb.from('doctor_locations').select('*').eq('medico_id',m.id).order('principal',{ascending:false}),
-      _sb.from('doctor_schedule_blocks').select('*').eq('medico_id',m.id).eq('is_active',true),
       _sb.from('citas').select('fecha,hora').eq('medico_id',m.id).gte('fecha',hoy).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada')
     ]);
-    _bkLocs = (locsRes.data||[]);
-    _bkSchedule = (schedRes.data||[]);
-    _bkCitas = (citasRes.data||[]);
-
-    // Pre-computar disponibilidad: horarios_config primero, blocks como fallback
-    _bkDisp = bkComputeDispFromConfig(m.horarios_config, m.dias_atencion, m.horario_desde, m.horario_hasta);
-    if(!Object.keys(_bkDisp).length && _bkSchedule.length){
-      _bkDisp = bkComputeDispFromBlocks(_bkSchedule);
-    }
+    _bkLocs = locsRes.data||[];
+    _bkCitas = citasRes.data||[];
+    _bkDisp = await cargarDisponibilidadPorSede(m, _bkCitas, _sb, null);
 
     render(m, wc, isDraft);
     renderSedes(_bkLocs);
@@ -672,51 +600,6 @@ function renderSedes(locs){
   }).join('');
 }
 
-function bkGetSlotsForDate(dateObj){
-  // Mapeo robusto: índice del día → variantes en español que usa la DB
-  var DAY_MAP={
-    0:['domingo','sunday'],
-    1:['lunes','monday','lun'],
-    2:['martes','tuesday','mar'],
-    3:['miércoles','miercoles','wednesday','mie','mié'],
-    4:['jueves','thursday','jue'],
-    5:['viernes','friday','vie'],
-    6:['sábado','sabado','saturday','sab']
-  };
-  var dow=dateObj.getDay(); // 0=sun,1=mon...
-  var validNames=DAY_MAP[dow]||[];
-
-  var blocks=_bkSchedule.filter(function(b){
-    if(!b.day||!b.is_active)return false;
-    var d=b.day.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-    return validNames.some(function(n){
-      return d===n.normalize('NFD').replace(/[̀-ͯ]/g,'');
-    });
-  });
-
-  if(!_bkSchedule.length||!blocks.length){
-    // Fallback solo si no hay horarios configurados
-    if(!_bkSchedule.length){
-      return['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00'];
-    }
-    return[]; // día sin horarios configurados
-  }
-
-  var slots=[];
-  blocks.forEach(function(b){
-    var start=b.start_time||'09:00',end=b.end_time||'17:00';
-    var sp=start.split(':'),ep=end.split(':');
-    var sh=parseInt(sp[0]),sm=parseInt(sp[1]||0);
-    var eh=parseInt(ep[0]),em=parseInt(ep[1]||0);
-    var cur=sh*60+sm,endMin=eh*60+em;
-    while(cur+30<=endMin){
-      var h=Math.floor(cur/60),m=cur%60;
-      slots.push(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'));
-      cur+=30;
-    }
-  });
-  return slots;
-}
 
 function bkRenderCalendar(){
   var cal=el('bkCalendar');if(!cal)return;
@@ -778,77 +661,64 @@ function bkRenderSlots(){
   });
 }
 
+// bkConfirmar — mismo engine que citadoc-perfil.html y citadoc-web.html
 async function bkConfirmar(){
-  var nombre=(el('bkNombre')||{}).value||'';
-  var tel=(el('bkTelefono')||{}).value||'';
+  if(!_bkMedico||!_bkSelectedFechaStr||!_bkSelectedSlot)return;
+  var nombre=(el('bkNombre')||{}).value.trim();
+  var tel=(el('bkTelefono')||{}).value.trim();
   var email=((el('bkEmail')||{}).value||'').trim();
-  var motivo=(el('bkMotivo')||{}).value||'';
-  if(!nombre||!tel){alert('Por favor completá nombre y teléfono');return;}
-  var cb=el('bkConfirmBtn');if(cb){cb.disabled=true;cb.textContent='Confirmando...';}
+  var motivo=((el('bkMotivo')||{}).value||'').trim();
+  if(!nombre||!tel){alert('Completá nombre y teléfono.');return;}
+  var cb=el('bkConfirmBtn');if(cb){cb.disabled=true;cb.textContent='Confirmando…';}
+  var dr=(_bkMedico.titulo||'Dr.')+' '+_bkMedico.nombre+' '+_bkMedico.apellido;
+  var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var nd=new Date(_bkSelectedFechaStr+'T12:00:00');
+  var fechaLabel=nd.getDate()+' de '+meses[nd.getMonth()]+' '+nd.getFullYear();
+  var perfilUrl='https://citadoc.lat/citadoc-perfil.html?slug='+(_bkMedico.slug||'');
 
-  var locSelect=el('bkLocSelect');
-  var locId=locSelect?locSelect.value:(_bkSelectedLoc||null);
-  var nombreMedico=_bkMedico?(_bkMedico.titulo||'Dr.')+' '+_bkMedico.nombre+' '+_bkMedico.apellido:'';
+  // Anti-doble-booking
+  var check=await _sb.from('citas').select('id').eq('medico_id',_bkMedico.id).eq('fecha',_bkSelectedFechaStr).eq('hora',_bkSelectedSlot).in('estado',['confirmada','pendiente']);
+  if(check.data&&check.data.length>0){
+    alert('Este horario acaba de ser reservado. Seleccioná otro.');
+    if(cb){cb.disabled=false;cb.textContent='Confirmar cita';}
+    bkGoStep1();
+    _bkDisp=await cargarDisponibilidadPorSede(_bkMedico,_bkCitas,_sb,null);
+    bkRenderCalendar();
+    return;
+  }
 
-  try{
-    if(_bkMedico&&_bkMedico.id&&_bkDateObj){
-      // Guardar cita en Supabase
-      await _sb.from('citas').insert({
-        medico_id:_bkMedico.id,
-        paciente_nombre:nombre,
-        paciente_telefono:tel,
-        paciente_email:email||null,
-        motivo:motivo||'Consulta médica',
-        estado:'pendiente',
-        fecha:_bkSelectedFechaStr||_bkDateObj.toISOString().split('T')[0],
-        hora:_bkSelectedSlot||'09:00',
-        location_id:locId||null,
-        notas:'Agendado desde sitio web CitaDoc'
-      });
+  // buscarOCrearPaciente (booking.js — mismo que perfil)
+  var pid=typeof buscarOCrearPaciente==='function'?await buscarOCrearPaciente(_sb,nombre,email,tel):null;
 
-      // EmailJS — igual que perfil público
-      if(typeof emailjs!=='undefined'){
-        var perfilUrl='https://citadoc.lat/citadoc-perfil.html?slug='+(_bkMedico.slug||'');
-        var notaMedico='🩺 Nueva cita agendada'
-          +'\nPaciente: '+nombre+' · '+tel
-          +(email?'\nEmail: '+email:'')
-          +'\nFecha: '+_bkSelectedDate+' a las '+_bkSelectedSlot
-          +(motivo?'\nMotivo: '+motivo:'');
-        // Al médico
-        if(_bkMedico.email){
-          emailjs.send('service_63xln0n','template_e8t8qkq',{
-            to_email:_bkMedico.email,
-            doctor_name:nombreMedico,
-            patient_name:nombre,
-            appointment_date:_bkSelectedDate,
-            appointment_time:_bkSelectedSlot,
-            location_name:notaMedico,
-            appointment_mode:'📋 Ver dashboard: https://citadoc.lat/citadoc-dashboard.html',
-            public_profile_url:perfilUrl
-          }).catch(function(e){console.warn('emailjs médico:',e);});
-        }
-        // Al paciente
-        if(email){
-          emailjs.send('service_63xln0n','template_e8t8qkq',{
-            to_email:email,
-            doctor_name:nombreMedico,
-            patient_name:nombre,
-            appointment_date:_bkSelectedDate,
-            appointment_time:_bkSelectedSlot,
-            location_name:'Consultorio de '+nombreMedico,
-            appointment_mode:'🏥 Presencial',
-            public_profile_url:perfilUrl
-          }).catch(function(e){console.warn('emailjs paciente:',e);});
-        }
-      }
-    }
-  }catch(e){console.warn('Booking error:',e);}
-
-  // Mostrar confirmación
+  // Insertar cita
+  var rC=await _sb.from('citas').insert({
+    medico_id:_bkMedico.id,paciente_id:pid||null,
+    paciente_nombre:nombre,paciente_tel:tel,paciente_email:email||null,
+    motivo:motivo||null,fecha:_bkSelectedFechaStr,hora:_bkSelectedSlot,
+    estado:'confirmada',origen:'web-ai'
+  });
   if(cb){cb.disabled=false;cb.textContent='Confirmar cita';}
+  if(rC.error){
+    if(rC.error.message&&rC.error.message.indexOf('unique_slot_cita')>-1){
+      alert('Ese horario acaba de ser reservado. Seleccioná otro.');
+      bkGoStep1();
+    } else {alert('Error: '+rC.error.message);}
+    return;
+  }
+
+  // EmailJS — al médico y al paciente
+  if(typeof emailjs!=='undefined'){
+    var nota='🩺 Nueva cita\nPaciente: '+nombre+' · '+tel+(email?'\nEmail: '+email:'')+'\nFecha: '+fechaLabel+' a las '+_bkSelectedSlot+(motivo?'\nMotivo: '+motivo:'');
+    if(_bkMedico.email) emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:_bkMedico.email,doctor_name:dr,patient_name:nombre,appointment_date:fechaLabel,appointment_time:_bkSelectedSlot,location_name:nota,appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',public_profile_url:perfilUrl}).catch(function(){});
+    if(email) emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:email,doctor_name:dr,patient_name:nombre,appointment_date:fechaLabel,appointment_time:_bkSelectedSlot,location_name:'Consultorio de '+dr,appointment_mode:'🏥 Presencial — confirmación de cita',public_profile_url:perfilUrl}).catch(function(){});
+  }
+
   el('bkStep2').style.display='none';el('bkStep3').style.display='block';
   var msg=el('bkConfirmMsg');
-  if(msg)msg.innerHTML='Tu solicitud de cita para el <strong>'+_bkSelectedDate+'</strong> a las <strong>'+_bkSelectedSlot+'</strong> fue registrada.<br><br>El equipo de <strong>'+nombreMedico+'</strong> se comunicará pronto para confirmar tu turno.<br><br><span style="font-size:.72rem;color:#9ca3af">Agendado a través de CitaDoc</span>';
+  if(msg)msg.innerHTML='Tu cita con <strong>'+dr+'</strong> fue confirmada para el <strong>'+fechaLabel+'</strong> a las <strong>'+_bkSelectedSlot+'</strong>.'+(email?'<br>Confirmación enviada a '+email+'.':'');
+  // Recargar disponibilidad para bloquear el slot
+  _bkCitas.push({fecha:_bkSelectedFechaStr,hora:_bkSelectedSlot});
+  _bkDisp=await cargarDisponibilidadPorSede(_bkMedico,_bkCitas,_sb,null);
 }
 </script>
 </body>
