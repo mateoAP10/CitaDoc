@@ -606,20 +606,41 @@ function renderSedes(locs){
 }
 
 function bkGetSlotsForDate(dateObj){
-  if(!_bkSchedule.length){
-    return ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00'];
-  }
-  var days=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-  var dow=days[dateObj.getDay()];
+  // Mapeo robusto: índice del día → variantes en español que usa la DB
+  var DAY_MAP={
+    0:['domingo','sunday'],
+    1:['lunes','monday','lun'],
+    2:['martes','tuesday','mar'],
+    3:['miércoles','miercoles','wednesday','mie','mié'],
+    4:['jueves','thursday','jue'],
+    5:['viernes','friday','vie'],
+    6:['sábado','sabado','saturday','sab']
+  };
+  var dow=dateObj.getDay(); // 0=sun,1=mon...
+  var validNames=DAY_MAP[dow]||[];
+
   var blocks=_bkSchedule.filter(function(b){
-    return b.day&&b.day.toLowerCase()===dow.toLowerCase()&&b.is_active;
+    if(!b.day||!b.is_active)return false;
+    var d=b.day.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return validNames.some(function(n){
+      return d===n.normalize('NFD').replace(/[̀-ͯ]/g,'');
+    });
   });
-  if(!blocks.length)return[];
+
+  if(!_bkSchedule.length||!blocks.length){
+    // Fallback solo si no hay horarios configurados
+    if(!_bkSchedule.length){
+      return['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00'];
+    }
+    return[]; // día sin horarios configurados
+  }
+
   var slots=[];
   blocks.forEach(function(b){
     var start=b.start_time||'09:00',end=b.end_time||'17:00';
-    var sh=parseInt(start.split(':')[0]),sm=parseInt(start.split(':')[1]||0);
-    var eh=parseInt(end.split(':')[0]),em=parseInt(end.split(':')[1]||0);
+    var sp=start.split(':'),ep=end.split(':');
+    var sh=parseInt(sp[0]),sm=parseInt(sp[1]||0);
+    var eh=parseInt(ep[0]),em=parseInt(ep[1]||0);
     var cur=sh*60+sm,endMin=eh*60+em;
     while(cur+30<=endMin){
       var h=Math.floor(cur/60),m=cur%60;
@@ -647,7 +668,9 @@ function bkRenderCalendar(){
     var date=new Date(today);date.setDate(today.getDate()+d);
     var dow=date.getDay();
     var btn=document.createElement('button');
-    var isWeekend=dow===0||dow===6;
+    // Día bloqueado si no hay horarios (o fin de semana si no hay config)
+    var hasSlots=_bkSchedule.length?bkGetSlotsForDate(date).length>0:dow!==0&&dow!==6;
+    var isWeekend=!hasSlots;
     btn.style.cssText='aspect-ratio:1;border:none;border-radius:10px;font-size:.78rem;font-weight:600;cursor:'+(isWeekend?'default':'pointer')+';background:'+(isWeekend?'transparent':'#f8fafc')+';color:'+(isWeekend?'#d1d5db':'#0d1b2a')+';transition:background .15s';
     btn.textContent=date.getDate();
     if(!isWeekend){
