@@ -11,6 +11,65 @@ function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: CORS })
 }
 
+// ── Editorial sanitizer ──────────────────────────────────────────────────────
+
+// Palabras inglesas comunes que no deben aparecer en copy español
+const ENGLISH_WORDS = /\b(the|and|is|are|was|were|wants|want|have|has|your|you|for|with|that|this|from|can|will|get|be|do|an|in|to|of|at|by|on|it|we|our|my|but|not|or|so|as|if|up|out|use|its|who|which)\b/i
+
+// Frases que rompen tono premium
+const CHEAP_TONE = /(GRATIS|OFERTA|¡¡|!!!|click aquí|haz clic|suscr[íi]bete ya|no te pierdas|aprovecha ahora|precio especial|descuento)/i
+
+// Detecta mezcla de idiomas en una cadena
+function hasMixedLanguage(text: string): boolean {
+  return ENGLISH_WORDS.test(text)
+}
+
+// Detecta tono no-premium
+function hasCheapTone(text: string): boolean {
+  return CHEAP_TONE.test(text)
+}
+
+// Valida longitud mínima/máxima por campo
+const LENGTH_RULES: Record<string, [number, number]> = {
+  hook:         [8,  80],
+  headline:     [10, 75],
+  primary_text: [20, 140],
+  caption:      [30, 180],
+  description:  [5,  35],
+}
+
+function validateLength(field: string, value: string): boolean {
+  const rule = LENGTH_RULES[field]
+  if (!rule) return true
+  return value.length >= rule[0] && value.length <= rule[1]
+}
+
+// Valida todos los campos de texto de un objeto de contenido
+function validateContent(content: Record<string, unknown>): { ok: boolean; issues: string[] } {
+  const issues: string[] = []
+
+  function checkString(key: string, val: string) {
+    if (hasMixedLanguage(val))  issues.push(`mixed language in "${key}": "${val.slice(0,50)}"`)
+    if (hasCheapTone(val))      issues.push(`cheap tone in "${key}"`)
+    if (!validateLength(key, val)) issues.push(`length out of range for "${key}" (${val.length} chars)`)
+  }
+
+  for (const [k, v] of Object.entries(content)) {
+    if (typeof v === 'string' && v.length > 0) checkString(k, v)
+    if (Array.isArray(v)) {
+      v.forEach((item, i) => {
+        if (typeof item === 'object' && item !== null) {
+          for (const [sk, sv] of Object.entries(item as Record<string, unknown>)) {
+            if (typeof sv === 'string') checkString(`${k}[${i}].${sk}`, sv)
+          }
+        }
+      })
+    }
+  }
+
+  return { ok: issues.length === 0, issues }
+}
+
 // ── Brand context ────────────────────────────────────────────────────────────
 
 const BRAND = `CitaDoc es la plataforma AI premium para médicos latinoamericanos.
@@ -103,11 +162,21 @@ serve(async (req) => {
       const content = await generateContent(type, KIMI_API_KEY)
       content.generated_at = new Date().toISOString()
 
+      // Validar calidad editorial
+      const validation = validateContent(content)
+      if (!validation.ok) {
+        console.warn(`Quality issues in ${type}:`, validation.issues)
+        content._quality_issues = validation.issues.join(' | ')
+        content._quality_ok     = 'false'
+      } else {
+        content._quality_ok     = 'true'
+      }
+
       const { error } = await sb
         .from('growth_content_queue')
         .insert({ type, content_jsonb: content, status: 'pending' })
 
-      results.push({ type, ok: !error })
+      results.push({ type, ok: !error, quality: validation.ok, issues: validation.issues })
       if (error) console.error(`Insert error ${type}:`, error)
 
     } catch (e) {

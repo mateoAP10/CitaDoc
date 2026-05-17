@@ -377,8 +377,10 @@ function renderGrowthContent(items) {
   el.innerHTML = items.map(function(item) {
     var c       = item.content_jsonb || {};
     var isPubl  = item.status === 'published';
-    var lbl     = TYPE_LABELS[item.type] || item.type;
-    var id      = 'gc-' + item.id.replace(/[^a-z0-9]/gi,'').slice(0,12);
+    var lbl      = TYPE_LABELS[item.type] || item.type;
+    var id       = 'gc-' + item.id.replace(/[^a-z0-9]/gi,'').slice(0,12);
+    var qualityOk = (c._quality_ok !== 'false');
+    var qualityBadge = qualityOk ? '' : '<span style="font-size:.6rem;background:rgba(239,68,68,.15);color:#f87171;border-radius:4px;padding:.15rem .4rem;margin-left:.4rem">⚠ revisar</span>';
 
     // Extract main text to show based on type
     var mainText = c.hook || c.caption || c.primary_text || c.headline || '';
@@ -396,7 +398,7 @@ function renderGrowthContent(items) {
     var badgeClass = isPubl ? '' : 'pending';
 
     return '<div class="queue-card ' + (isPubl ? 'published' : '') + '" id="gccard-' + id + '">' +
-      '<div class="queue-doctor">' + lbl +
+      '<div class="queue-doctor">' + lbl + qualityBadge +
         '<span class="queue-badge ' + badgeClass + '">' + badgeText + '</span>' +
         '<span style="font-size:.65rem;color:rgba(255,255,255,.2);margin-left:auto">' + formatDate(item.created_at) + '</span>' +
       '</div>' +
