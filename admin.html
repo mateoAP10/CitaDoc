@@ -195,6 +195,22 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
   font-size:.68rem;cursor:pointer;flex-shrink:0;
 }
 
+/* ── Schedule ── */
+.btn-schedule{
+  padding:.32rem .65rem;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.25);
+  border-radius:7px;color:rgba(165,180,252,.8);font-family:'DM Sans',sans-serif;
+  font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;
+}
+.schedule-input{
+  padding:.3rem .5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+  border-radius:7px;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;
+  font-size:.68rem;outline:none;cursor:pointer;
+  color-scheme:dark;
+}
+.badge.due{background:rgba(239,68,68,.2);color:#f87171;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.badge.scheduled-time{background:rgba(99,102,241,.15);color:#a5b4fc;font-size:.6rem}
+
 /* ── Signals ── */
 .signal{
   display:flex;align-items:center;justify-content:space-between;
@@ -256,6 +272,12 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
   </div>
 
   <div id="contentList"><div class="loading">Cargando contenido...</div></div>
+
+  <div class="divider"></div>
+
+  <!-- Scheduled -->
+  <div class="sec-title" style="margin-bottom:.75rem">Programados</div>
+  <div id="scheduledList"><div class="empty">Sin posts programados</div></div>
 
   <div class="divider"></div>
 
@@ -341,6 +363,61 @@ async function uploadCreative(itemId, uid, input) {
   });
 }
 
+// ── Scheduling ───────────────────────────────────────────────────────────────
+
+function renderScheduled(items) {
+  var el = document.getElementById('scheduledList');
+  if (!items.length) { el.innerHTML = '<div class="empty">Sin posts programados</div>'; return; }
+
+  el.innerHTML = items.map(function(sp) {
+    var isDue  = sp.status === 'due';
+    var dt     = new Date(sp.scheduled_for);
+    var label  = dt.toLocaleDateString('es', { weekday:'short', day:'numeric', month:'short' })
+               + ' · ' + dt.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+    var c      = (sp.growth_content_queue && sp.growth_content_queue.content_jsonb) || {};
+    var text   = (c.caption || c.hook || '').slice(0, 80);
+
+    return '<div class="demo-row" style="' + (isDue ? 'border-color:rgba(239,68,68,.2)' : '') + '">' +
+      '<div>' +
+        '<span class="badge ' + (isDue ? 'due' : 'scheduled-time') + '">' +
+          (isDue ? '🔴 Publicar ahora' : '🕐 ' + label) +
+        '</span>' +
+        (text ? '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:.3rem">' + esc(text) + '...</div>' : '') +
+      '</div>' +
+      '<div style="display:flex;gap:.4rem;flex-shrink:0">' +
+        '<span style="font-size:.68rem;color:rgba(255,255,255,.25)">' + esc(sp.platform) + '</span>' +
+        '<button class="btn-sm" onclick="cancelSchedule(\'' + sp.id + '\')">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function schedulePost(itemId, uid) {
+  var dtInput = document.getElementById('dt-' + uid);
+  if (!dtInput || !dtInput.value) { alert('Elige fecha y hora'); return; }
+
+  var scheduledFor = new Date(dtInput.value).toISOString();
+  var chanEl = document.getElementById('ch-' + uid);
+  var platform = chanEl ? chanEl.value : 'instagram';
+
+  var { error } = await sb.from('scheduled_posts').insert({
+    queue_item_id: itemId,
+    platform,
+    scheduled_for: scheduledFor,
+    status: 'scheduled',
+  });
+
+  if (!error) {
+    var btn = document.querySelector('#card-' + uid + ' .btn-schedule');
+    if (btn) { btn.textContent = '✓ Programado'; btn.style.color = '#5dba8a'; }
+  }
+}
+
+async function cancelSchedule(spId) {
+  await sb.from('scheduled_posts').delete().eq('id', spId);
+  loadData();
+}
+
 var TYPE_META = {
   reel_hook:   { icon: '🎬', label: 'Reel Hook',   cls: 'reel_hook'   },
   carousel:    { icon: '📋', label: 'Carousel',     cls: 'carousel'    },
@@ -389,6 +466,13 @@ async function loadData() {
     var analytics = await ar.json();
 
     // Growth content
+    var { data: scheduled } = await sb
+      .from('scheduled_posts')
+      .select('id, scheduled_for, status, platform, queue_item_id, growth_content_queue(content_jsonb)')
+      .in('status', ['scheduled','due'])
+      .order('scheduled_for', { ascending: true })
+      .limit(10);
+
     var { data: growthContent } = await sb
       .from('growth_content_queue')
       .select('*')
@@ -436,6 +520,7 @@ async function loadData() {
     renderStats(analytics);
     updateCounts();
     renderContent();
+    renderScheduled(scheduled || []);
     renderDemos(demos || []);
     renderSignals(analytics);
 
@@ -517,6 +602,8 @@ function renderContent() {
           '<option value="linkedin">LinkedIn</option>' +
           '<option value="whatsapp">WhatsApp</option>' +
         '</select>' +
+        '<input type="datetime-local" class="schedule-input" id="dt-' + uid + '" title="Programar">' +
+        '<button class="btn-schedule" onclick="schedulePost(\'' + item.id + '\',\'' + uid + '\')">Programar</button>' +
         '<button class="btn-pub" onclick="publish(\'' + item.id + '\',\'' + uid + '\',\'' + (item._slug || '') + '\')">Publicar</button>';
 
     return '<div class="card ' + (isPubl ? 'published' : '') + (!qualOk ? ' quality-warn' : '') + '" id="card-' + uid + '">' +
