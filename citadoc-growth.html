@@ -221,20 +221,30 @@ header{
     <aside class="sidebar">
 
       <div class="sidebar-section">Tipo de contenido</div>
-      <button class="type-btn active" data-type="reel" onclick="setType('reel',this)">
-        <span class="type-icon">🎬</span>Reel
+
+      <div style="font-size:.56rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;padding:.2rem .5rem .4rem;opacity:.6">Autoridad (5:1)</div>
+      <button class="type-btn active" data-type="carousel_edu" onclick="setType('carousel_edu',this)">
+        <span class="type-icon">📚</span>Carousel educativo
       </button>
-      <button class="type-btn" data-type="carousel" onclick="setType('carousel',this)">
-        <span class="type-icon">🎠</span>Carousel
+      <button class="type-btn" data-type="pain_hook" onclick="setType('pain_hook',this)">
+        <span class="type-icon">🎯</span>Pain hook
+      </button>
+      <button class="type-btn" data-type="aspiration_post" onclick="setType('aspiration_post',this)">
+        <span class="type-icon">⭐</span>Aspiración
+      </button>
+      <button class="type-btn" data-type="ai_curiosity" onclick="setType('ai_curiosity',this)">
+        <span class="type-icon">🤖</span>AI curiosity
+      </button>
+
+      <div style="font-size:.56rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;padding:.6rem .5rem .4rem;opacity:.6">Conversión (raro)</div>
+      <button class="type-btn" data-type="transformation" onclick="setType('transformation',this)">
+        <span class="type-icon">🔥</span>Transformación
       </button>
       <button class="type-btn" data-type="founder" onclick="setType('founder',this)">
         <span class="type-icon">✍️</span>Founder post
       </button>
       <button class="type-btn" data-type="ad" onclick="setType('ad',this)">
         <span class="type-icon">📣</span>Ad copy
-      </button>
-      <button class="type-btn" data-type="caption" onclick="setType('caption',this)">
-        <span class="type-icon">💬</span>Caption
       </button>
       <button class="type-btn" data-type="campaign" onclick="setType('campaign',this)">
         <span class="type-icon">📊</span>Campaña Meta
@@ -244,22 +254,25 @@ header{
       <div>
         <span class="tone-chip active" data-tone="premium" onclick="setTone('premium',this)">Premium</span>
         <span class="tone-chip" data-tone="founder" onclick="setTone('founder',this)">Founder</span>
-        <span class="tone-chip" data-tone="emocional" onclick="setTone('emocional',this)">Emocional</span>
-        <span class="tone-chip" data-tone="antelegacy" onclick="setTone('antelegacy',this)">Anti-legacy</span>
+        <span class="tone-chip" data-tone="cercano" onclick="setTone('cercano',this)">Cercano</span>
+        <span class="tone-chip" data-tone="transformador" onclick="setTone('transformador',this)">Transformador</span>
       </div>
 
       <div class="sidebar-section">Ángulo narrativo</div>
-      <button class="angle-item active" data-angle="agenda" onclick="setAngle('agenda',this)">
-        <span class="angle-dot"></span>La agenda y el tiempo
+      <button class="angle-item active" data-angle="reputacion" onclick="setAngle('reputacion',this)">
+        <span class="angle-dot"></span>Reputación digital
       </button>
-      <button class="angle-item" data-angle="experiencia" onclick="setAngle('experiencia',this)">
-        <span class="angle-dot"></span>Experiencia del paciente
+      <button class="angle-item" data-angle="tiempo" onclick="setAngle('tiempo',this)">
+        <span class="angle-dot"></span>Tiempo en admin vs medicina
       </button>
-      <button class="angle-item" data-angle="prestigio" onclick="setAngle('prestigio',this)">
-        <span class="angle-dot"></span>Prestigio digital
+      <button class="angle-item" data-angle="percepcion" onclick="setAngle('percepcion',this)">
+        <span class="angle-dot"></span>Cómo te percibe el paciente
       </button>
-      <button class="angle-item" data-angle="eficiencia" onclick="setAngle('eficiencia',this)">
-        <span class="angle-dot"></span>Eficiencia clínica AI
+      <button class="angle-item" data-angle="competencia" onclick="setAngle('competencia',this)">
+        <span class="angle-dot"></span>Médicos que ya se adaptaron
+      </button>
+      <button class="angle-item" data-angle="futuro" onclick="setAngle('futuro',this)">
+        <span class="angle-dot"></span>El futuro de tu práctica
       </button>
       <button class="angle-item" data-angle="custom" onclick="setAngle('custom',this)">
         <span class="angle-dot"></span>Ángulo propio →
@@ -271,8 +284,9 @@ header{
     <!-- CONTENT AREA -->
     <main class="content">
       <div class="content-header">
-        <h1 class="content-title" id="pageTitle">Reel</h1>
-        <p class="content-sub" id="pageSub">Guión + caption para Instagram o TikTok. 30-45 segundos de impacto real.</p>
+        <h1 class="content-title" id="pageTitle">Carousel educativo</h1>
+        <p class="content-sub" id="pageSub">Educación médica premium. El médico aprende algo valioso. CitaDoc aparece al final sutilmente.</p>
+        <div id="rotationWarn" style="margin-top:.5rem;font-size:.75rem;color:#b45309;font-weight:500"></div>
       </div>
 
       <div class="platform-row" id="platformRow">
@@ -334,15 +348,50 @@ header{
 var GROWTH_KEY = '';
 var EDGE_URL = 'https://qxoomcqaafogczrvsyhg.functions.supabase.co/generate-citadoc-content';
 
-var state = { type:'reel', tone:'premium', angle:'agenda', platform:'instagram', customAngle:'' };
+var state = { type:'carousel_edu', tone:'premium', angle:'reputacion', platform:'instagram', customAngle:'' };
+
+// Sistema de rotación — evita repetir tipo consecutivo
+var _lastTypes = [];
+function trackRotation(type) {
+  _lastTypes.push(type);
+  if (_lastTypes.length > 3) _lastTypes.shift();
+}
+function warnRotation(type) {
+  if (_lastTypes.length >= 2 && _lastTypes[_lastTypes.length-1] === type) {
+    return '⚠️ Mismo tipo dos veces seguidas. Considerá variar para que el feed no se sienta generado.';
+  }
+  return null;
+}
 
 var TYPE_META = {
-  reel:     { title:'Reel', sub:'Guión + caption para Instagram o TikTok. 30-45 segundos de impacto real.' },
-  carousel: { title:'Carousel', sub:'6 slides listos para diseñar. LinkedIn e Instagram.' },
-  founder:  { title:'Founder post', sub:'Voz auténtica. LinkedIn-style. Propósito y visión.' },
-  ad:       { title:'Ad copy', sub:'Headline, cuerpo y CTA para Facebook/Instagram Ads.' },
-  caption:  { title:'Caption', sub:'Caption standalone para Instagram y versión LinkedIn.' },
-  campaign: { title:'Campaña Meta', sub:'Campaña completa lista para Meta Ads Manager. 3 variantes A/B/C + targeting + presupuesto.' }
+  carousel_edu: {
+    title: 'Carousel educativo',
+    sub:   'Educación médica premium. El médico aprende algo valioso. CitaDoc aparece al final sutilmente.',
+    ratio: '5:1 — pieza de autoridad'
+  },
+  pain_hook: {
+    title: 'Pain hook',
+    sub:   'Identifica un dolor real del médico sin vender nada. El médico debe pensar "exactamente eso me pasa".',
+    ratio: '5:1 — pieza de atención'
+  },
+  aspiration_post: {
+    title: 'Aspiración',
+    sub:   'Muestra cómo se ve la práctica médica del futuro que el médico quiere tener.',
+    ratio: '5:1 — pieza de deseo'
+  },
+  ai_curiosity: {
+    title: 'AI curiosity',
+    sub:   'Despierta curiosidad sobre cómo la AI ya está cambiando la medicina. No técnico, sí posible.',
+    ratio: '5:1 — pieza de modernidad'
+  },
+  transformation: {
+    title: 'Transformación',
+    sub:   'RARO. Solo con casos reales o muy específicos. Conversión directa. No abusar.',
+    ratio: '1:5 — pieza de conversión'
+  },
+  founder:  { title:'Founder post', sub:'Voz auténtica. LinkedIn. El fundador habla de los médicos, no del software.', ratio:'' },
+  ad:       { title:'Ad copy', sub:'Copy para Facebook/Instagram. Centrado en el médico, no en features.', ratio:'' },
+  campaign: { title:'Campaña Meta', sub:'Campaña completa. 3 variantes A/B/C + targeting + presupuesto.', ratio:'' }
 };
 
 // ── AUTH ──
@@ -374,9 +423,20 @@ function setType(type, btn) {
   state.type = type;
   document.querySelectorAll('.type-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
-  var meta = TYPE_META[type] || TYPE_META.caption;
+  var meta = TYPE_META[type] || TYPE_META.carousel_edu;
   document.getElementById('pageTitle').textContent = meta.title;
-  document.getElementById('pageSub').textContent = meta.sub;
+  var subEl = document.getElementById('pageSub');
+  subEl.textContent = meta.sub;
+  if (meta.ratio) {
+    var ratioSpan = document.createElement('span');
+    ratioSpan.style.cssText = 'display:inline-block;margin-left:.5rem;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:50px;background:rgba(11,124,110,.1);color:var(--teal)';
+    ratioSpan.textContent = meta.ratio;
+    subEl.appendChild(ratioSpan);
+  }
+  // Advertencia de rotación
+  var warn = warnRotation(type);
+  var warnEl = document.getElementById('rotationWarn');
+  if (warnEl) warnEl.textContent = warn || '';
   document.getElementById('campaignInputs').style.display = type === 'campaign' ? 'block' : 'none';
 }
 function setTone(tone, chip) {
@@ -443,6 +503,7 @@ async function generateContent() {
       throw new Error(data.error || 'Error desconocido');
     }
 
+    trackRotation(state.type);
     renderOutput(data.type, data.content);
 
   } catch(e) {
