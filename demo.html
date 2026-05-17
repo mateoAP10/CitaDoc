@@ -2289,6 +2289,12 @@ var _DI={lun:1,mar:2,mie:3,'mié':3,jue:4,vie:5,sab:6,'sáb':6,dom:0};
 
 function abrirBooking(){
   if(!_M)return;
+  // DEMO MODE — botones de acción deshabilitados, redirige a compra
+  if(window._demoMode){
+    var demoBanner=document.getElementById('demoBanner');
+    if(demoBanner){demoBanner.style.transform='translateY(0)';demoBanner.style.opacity='1';setTimeout(function(){demoBanner.scrollIntoView({behavior:'smooth',block:'nearest'});},100);}
+    return;
+  }
   var ov=el('bkOverlay');if(!ov)return;
   ov.style.display='flex';document.body.style.overflow='hidden';
   setText('bkDrName',(_M.titulo||'Dr.')+' '+_M.nombre+' '+_M.apellido);
@@ -2846,6 +2852,110 @@ function mnavActive(item){
   var _demoStyle = document.createElement('style');
   _demoStyle.textContent = '@keyframes demoPulse{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}';
   document.head.appendChild(_demoStyle);
+
+  // ── ACTIVACIÓN POST-PAGO ─────────────────────────────────────────────────
+  // Llamado desde payphone-webhook o manualmente después de pago confirmado
+  // Convierte el demo en el médico real: mismo slug, misma config, status active
+  window.activarDemoComoSitioReal = async function(demoSlug, medicoEmail) {
+    try {
+      // 1. Cargar demo completo
+      var dr = await _sb.from('generated_demos').select('*').eq('slug', demoSlug).single();
+      if (dr.error || !dr.data) throw new Error('Demo no encontrado');
+      var demo = dr.data;
+
+      // 2. Construir nombre del médico
+      var nameParts = (demo.doctor_name||'').replace(/^(dra?\.?\s+)/i,'').trim().split(' ');
+      var titulo = /dra\./i.test(demo.doctor_name||'') ? 'Dra.' : 'Dr.';
+      var nombre  = nameParts[0]||'';
+      var apellido = nameParts.slice(1).join(' ')||'';
+
+      // 3. web_config final = demo config + selected_layout
+      var wc = demo.web_config_jsonb || {};
+      wc.selected_layout = demo.selected_layout || 'surgical-authority';
+      wc.visual_dna      = demo.dna || 'surgical-authority';
+      wc.web_status      = 'active';
+
+      // 4. Crear o actualizar médico en tabla medicos
+      var medicoData = {
+        slug:           demoSlug,
+        titulo:         titulo,
+        nombre:         nombre,
+        apellido:       apellido,
+        especialidades: [demo.specialty],
+        ciudad:         demo.city || null,
+        foto_url:       demo.photo_url || null,
+        logo_url:       demo.logo_url || null,
+        email:          medicoEmail || null,
+        web_config:     wc,
+        web_status:     'active',
+        plan:           'pro_web',
+        plan_activo:    true,
+        activo:         true,
+      };
+
+      // Verificar si ya existe el médico con este slug
+      var existing = await _sb.from('medicos').select('id').eq('slug', demoSlug).maybeSingle();
+      var medicoId;
+      if (existing.data) {
+        // Actualizar
+        await _sb.from('medicos').update(medicoData).eq('slug', demoSlug);
+        medicoId = existing.data.id;
+      } else {
+        // Crear nuevo
+        var ins = await _sb.from('medicos').insert(medicoData).select('id').single();
+        if (ins.error) throw ins.error;
+        medicoId = ins.data.id;
+      }
+
+      // 5. Actualizar demo: payment_status=paid, status=active, medico_id
+      await _sb.from('generated_demos').update({
+        payment_status: 'paid',
+        status:         'active',
+        medico_id:      medicoId,
+        activated_at:   new Date().toISOString(),
+      }).eq('slug', demoSlug);
+
+      // 6. Mostrar pantalla de activación premium
+      var url  = 'https://'+demoSlug+'.citadoc.lat';
+      var name = demo.doctor_name || 'Tu médico';
+      _mostrarActivacionPremium(url, name, demo.specialty);
+
+      return { ok: true, slug: demoSlug, url };
+    } catch(err) {
+      console.error('[Activación]', err);
+      return { ok: false, error: err.message };
+    }
+  };
+
+  // Pantalla de activación premium (Apple moment)
+  function _mostrarActivacionPremium(url, nombre, especialidad) {
+    var el = document.getElementById('demoActivationScreen');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'demoActivationScreen';
+      el.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#060d18;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;animation:fadeInAct .5s cubic-bezier(.16,1,.3,1)';
+      el.innerHTML =
+        '<style>@keyframes fadeInAct{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}@keyframes glowAct{0%,100%{box-shadow:0 0 0 0 rgba(11,124,110,.3)}50%{box-shadow:0 0 0 24px rgba(11,124,110,0)}}</style>'
+        +'<div style="width:72px;height:72px;border-radius:50%;background:rgba(11,124,110,.15);display:flex;align-items:center;justify-content:center;animation:glowAct 2.5s infinite;margin-bottom:2rem">'
+        +'<div style="width:48px;height:48px;border-radius:50%;background:rgba(11,124,110,.2);border:1.5px solid rgba(11,124,110,.4);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#34d399">✓</div>'
+        +'</div>'
+        +'<div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.2em;margin-bottom:.8rem">Publicado</div>'
+        +'<h1 style="font-family:\'Fraunces\',serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:700;color:#fff;line-height:1.1;letter-spacing:-.03em;text-align:center;margin-bottom:.8rem">Tu identidad médica<br><em style="font-style:italic;font-weight:300;color:rgba(255,255,255,.6)">ya está online.</em></h1>'
+        +'<p style="font-size:.9rem;color:rgba(255,255,255,.5);text-align:center;margin-bottom:2.5rem;max-width:340px;line-height:1.65">'+nombre+(especialidad?' · '+especialidad:'')+'. Tu sitio ya está activo para tus pacientes.</p>'
+        +'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;max-width:380px;margin-bottom:1.2rem">'
+        +'<span style="font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+url+'</span>'
+        +'<button onclick="navigator.clipboard.writeText(\''+url+'\').then(function(){this.textContent=\'✓\';}.bind(this))" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.4rem .8rem;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer;white-space:nowrap">Copiar</button>'
+        +'</div>'
+        +'<div style="display:flex;flex-direction:column;gap:.75rem;width:100%;max-width:380px;margin-bottom:2rem">'
+        +'<a href="'+url+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:.5rem;height:52px;border-radius:14px;background:linear-gradient(135deg,#0b7c6e,#0d9b8a);color:#fff;font-family:\'DM Sans\',sans-serif;font-size:.9rem;font-weight:700;text-decoration:none">↗ Ver mi sitio</a>'
+        +'<a href="https://wa.me/?text='+encodeURIComponent('¡Mi sitio médico ya está online!\n\n'+nombre+'\n\n🌐 '+url+'\n\nPowered by CitaDoc')+'" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:.5rem;height:48px;border-radius:14px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:#4ade80;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:600;text-decoration:none">💬 Compartir por WhatsApp</a>'
+        +'</div>'
+        +'<button onclick="document.getElementById(\'demoActivationScreen\').remove()" style="font-size:.75rem;color:rgba(255,255,255,.28);background:none;border:none;cursor:pointer;font-family:\'DM Sans\',sans-serif">Ir al dashboard →</button>';
+      document.body.appendChild(el);
+    }
+    el.style.display='flex';
+    document.body.style.overflow='hidden';
+  }
 })();
 </script>
 </body>
