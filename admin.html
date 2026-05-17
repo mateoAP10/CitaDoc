@@ -3,205 +3,252 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>CitaDoc Growth — Admin</title>
+<title>CitaDoc Growth</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html{-webkit-font-smoothing:antialiased}
-body{background:#050d08;color:#fff;font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:4rem}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:100vh}
 
-/* Auth gate */
+/* ── Auth gate ── */
 #gate{
-  position:fixed;inset:0;background:#050d08;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:1rem;z-index:999;padding:2rem;
+  position:fixed;inset:0;background:#0a0f0d;z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.9rem;padding:2rem;
 }
-#gate h1{font-family:'Fraunces',serif;font-style:italic;font-size:1.5rem;color:rgba(255,255,255,.8)}
+#gate .brand{font-size:1.1rem;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.01em}
+#gate .brand span{color:#3d9970}
 #gate input{
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-  border-radius:12px;color:#fff;font-family:'DM Sans',sans-serif;font-size:1rem;
-  padding:.75rem 1rem;outline:none;width:260px;text-align:center;letter-spacing:.1em;
+  width:240px;padding:.7rem 1rem;text-align:center;letter-spacing:.08em;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;
+  color:#fff;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;
 }
 #gate button{
-  padding:.65rem 1.5rem;background:#1e4d34;border:none;border-radius:10px;
-  color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;
+  padding:.6rem 1.4rem;background:#1e5c3a;border:none;border-radius:9px;
+  color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;
 }
-#gate .err{font-size:.8rem;color:rgba(255,80,80,.8);min-height:1rem}
+#gate .err{font-size:.75rem;color:rgba(248,113,113,.8);min-height:1rem}
 
-/* Layout */
-.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1.25rem}
+/* ── Layout ── */
+#app{display:none}
+.page{max-width:680px;margin:0 auto;padding:0 1.1rem 5rem}
 
-/* Header */
-.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
-.hdr-brand{font-family:'Fraunces',serif;font-style:italic;font-size:1.1rem;color:rgba(255,255,255,.7)}
-.hdr-brand span{color:#2d7a55}
-.hdr-refresh{
-  font-size:.72rem;color:rgba(255,255,255,.3);cursor:pointer;
-  border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:.3rem .6rem;
-  background:none;font-family:'DM Sans',sans-serif;
-}
-.hdr-refresh:hover{color:rgba(255,255,255,.6)}
-
-/* Today pills */
-.today{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem}
-.pill{
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
-  border-radius:14px;padding:1rem 1.1rem;
-}
-.pill-val{font-size:1.6rem;font-weight:600;line-height:1;margin-bottom:.2rem}
-.pill-lbl{font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em}
-.pill.green .pill-val{color:#4ade80}
-.pill.teal  .pill-val{color:#2dd4bf}
-
-/* Section header */
-.sec-hdr{
-  font-size:.68rem;color:rgba(255,255,255,.3);
-  text-transform:uppercase;letter-spacing:.1em;
-  margin-bottom:.75rem;margin-top:1.75rem;
-}
-
-/* Demos table */
-.demo-row{
-  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
-  border-radius:12px;padding:.9rem 1rem;margin-bottom:.5rem;
-  display:flex;align-items:center;gap:.75rem;
-}
-.demo-row:last-child{margin-bottom:0}
-.demo-dot{
-  width:8px;height:8px;border-radius:50%;flex-shrink:0;
-  background:rgba(255,255,255,.15);
-}
-.demo-dot.has-showcase{background:#2d7a55}
-.demo-dot.has-views{background:#f59e0b}
-.demo-info{flex:1;min-width:0}
-.demo-name{font-size:.88rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.demo-spec{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:.1rem}
-.demo-stats{display:flex;gap:.85rem;flex-shrink:0;font-size:.75rem;color:rgba(255,255,255,.3)}
-.demo-stats span{display:flex;align-items:center;gap:.2rem}
-.demo-actions{display:flex;gap:.4rem;flex-shrink:0}
-.btn-xs{
-  font-size:.68rem;padding:.25rem .5rem;border-radius:6px;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-weight:500;
-}
-.btn-open{background:rgba(255,255,255,.07);color:rgba(255,255,255,.6)}
-.btn-copy{background:rgba(45,122,85,.2);color:#4ade80}
-.btn-copy.copied{background:rgba(45,122,85,.4);color:#fff}
-
-/* Publish queue */
-.queue-card{
-  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
-  border-radius:12px;padding:1rem;margin-bottom:.6rem;
-}
-.queue-card.published{
-  opacity:.5;border-color:rgba(45,122,85,.2);
-  background:rgba(45,122,85,.04);
-}
-.queue-doctor{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
-.queue-badge{
-  font-size:.6rem;padding:.15rem .45rem;border-radius:4px;font-weight:600;letter-spacing:.04em;
-  background:rgba(45,122,85,.2);color:#4ade80;
-}
-.queue-badge.pending{background:rgba(251,191,36,.15);color:#fbbf24}
-.queue-caption{
-  font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.55;
-  background:rgba(0,0,0,.2);border-radius:8px;padding:.65rem .75rem;
-  white-space:pre-wrap;word-break:break-word;
-}
-.queue-footer{display:flex;gap:.5rem;margin-top:.65rem;align-items:center;flex-wrap:wrap}
-.queue-tags{font-size:.66rem;color:rgba(255,255,255,.2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.queue-published-at{font-size:.65rem;color:rgba(45,122,85,.6);margin-top:.35rem}
-
-/* Channel selector */
-.chan-select{
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-  border-radius:6px;color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;
-  font-size:.68rem;padding:.22rem .4rem;outline:none;cursor:pointer;
-}
-.chan-select option{background:#0a1a10}
-
-/* Signals */
-.signal-row{
+/* ── Header ── */
+.hdr{
   display:flex;align-items:center;justify-content:space-between;
-  padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.05);
-  font-size:.82rem;
+  padding:1.4rem 0 1rem;
 }
-.signal-row:last-child{border-bottom:none}
-.signal-lbl{color:rgba(255,255,255,.4)}
-.signal-val{font-weight:600;color:rgba(255,255,255,.85)}
+.hdr-brand{font-size:1rem;font-weight:600;color:rgba(255,255,255,.8)}
+.hdr-brand span{color:#3d9970}
+.btn-sync{
+  display:flex;align-items:center;gap:.35rem;
+  padding:.4rem .85rem;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);border-radius:8px;
+  color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:500;
+  cursor:pointer;transition:all .15s;
+}
+.btn-sync:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
+.btn-sync.loading{opacity:.5;pointer-events:none}
 
-/* Loading */
-.loading{
-  text-align:center;padding:3rem 1rem;
-  font-size:.82rem;color:rgba(255,255,255,.25);
+/* ── Section title ── */
+.sec-title{
+  font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.3);margin-bottom:.25rem;
+}
+.sec-sub{font-size:.75rem;color:rgba(255,255,255,.2);margin-bottom:1.1rem}
+
+/* ── Stats row ── */
+.stats-row{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1.5rem;
+}
+.stat{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;padding:.7rem .8rem;text-align:center;
+}
+.stat-val{font-size:1.25rem;font-weight:600;line-height:1}
+.stat-lbl{font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem}
+
+/* ── Filter tabs ── */
+.tabs{
+  display:flex;gap:.4rem;margin-bottom:1.1rem;overflow-x:auto;
+  scrollbar-width:none;padding-bottom:.1rem;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  display:flex;align-items:center;gap:.35rem;white-space:nowrap;
+  padding:.38rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);color:rgba(255,255,255,.45);
+  font-size:.75rem;font-weight:500;cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.tab .count{
+  background:rgba(255,255,255,.1);border-radius:4px;
+  padding:.05rem .3rem;font-size:.65rem;color:rgba(255,255,255,.4);
+}
+.tab.active{
+  background:rgba(61,153,112,.15);border-color:rgba(61,153,112,.35);color:#5dba8a;
+}
+.tab.active .count{background:rgba(61,153,112,.2);color:#5dba8a}
+
+/* ── Content cards ── */
+.card{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  border-radius:13px;padding:.95rem 1rem;margin-bottom:.55rem;
+  transition:border-color .15s;
+}
+.card:hover{border-color:rgba(255,255,255,.12)}
+.card.published{opacity:.45}
+.card.quality-warn{border-color:rgba(251,191,36,.15)}
+
+.card-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem}
+.card-icon{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;
+}
+.card-icon.reel_hook   {background:rgba(139,92,246,.15)}
+.card-icon.carousel    {background:rgba(59,130,246,.15)}
+.card-icon.ad_copy     {background:rgba(245,158,11,.15)}
+.card-icon.cta_caption {background:rgba(16,185,129,.15)}
+.card-icon.showcase    {background:rgba(61,153,112,.15)}
+
+.card-meta{flex:1;min-width:0}
+.card-type{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.5)}
+.card-date{font-size:.65rem;color:rgba(255,255,255,.2)}
+
+.badge{
+  font-size:.6rem;font-weight:600;padding:.18rem .45rem;border-radius:5px;
+  letter-spacing:.03em;flex-shrink:0;
+}
+.badge.pending  {background:rgba(251,191,36,.15);color:#fbbf24}
+.badge.published{background:rgba(61,153,112,.15);color:#5dba8a}
+.badge.warn     {background:rgba(248,113,113,.15);color:#f87171}
+
+.card-body{
+  font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.55;
+  margin-bottom:.7rem;white-space:pre-wrap;word-break:break-word;
+}
+.card-body-sub{font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.3rem}
+
+.card-footer{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.btn-copy{
+  padding:.35rem .75rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:7px;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;
+  font-size:.72rem;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.btn-copy:hover{background:rgba(255,255,255,.12)}
+.btn-copy.done{background:rgba(61,153,112,.2);border-color:rgba(61,153,112,.3);color:#5dba8a}
+
+.chan-sel{
+  padding:.33rem .55rem;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);border-radius:7px;
+  color:rgba(255,255,255,.5);font-family:'DM Sans',sans-serif;font-size:.72rem;
+  outline:none;cursor:pointer;
+}
+.chan-sel option{background:#0f1a14}
+
+.btn-pub{
+  padding:.35rem .8rem;background:#1e5c3a;border:none;border-radius:7px;
+  color:#fff;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.btn-pub:hover{background:#236b44}
+.btn-pub:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Demos section ── */
+.demo-row{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.75rem .85rem;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);border-radius:11px;margin-bottom:.45rem;
+}
+.demo-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.12);flex-shrink:0}
+.demo-dot.v{background:#f59e0b}
+.demo-dot.s{background:#3d9970}
+.demo-info{flex:1;min-width:0}
+.demo-name{font-size:.84rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.demo-spec{font-size:.68rem;color:rgba(255,255,255,.3);margin-top:.1rem}
+.demo-nums{display:flex;gap:.7rem;font-size:.72rem;color:rgba(255,255,255,.3);flex-shrink:0}
+.btn-sm{
+  padding:.28rem .6rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);
+  border-radius:6px;color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;
+  font-size:.68rem;cursor:pointer;flex-shrink:0;
 }
 
-/* Empty */
-.empty{
-  text-align:center;padding:1.5rem;
-  font-size:.8rem;color:rgba(255,255,255,.2);
-  background:rgba(255,255,255,.02);border-radius:10px;
+/* ── Signals ── */
+.signal{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.8rem;
 }
+.signal:last-child{border:none}
+.signal-l{color:rgba(255,255,255,.35)}
+.signal-r{font-weight:600;color:rgba(255,255,255,.8)}
+
+/* ── Empty / loading ── */
+.empty{text-align:center;padding:2rem;font-size:.78rem;color:rgba(255,255,255,.2)}
+.loading{text-align:center;padding:2rem;font-size:.78rem;color:rgba(255,255,255,.2)}
+
+/* ── Divider ── */
+.divider{height:1px;background:rgba(255,255,255,.06);margin:1.5rem 0}
 </style>
 </head>
 <body>
 
-<!-- Auth Gate -->
+<!-- Auth gate -->
 <div id="gate">
-  <h1>CitaDoc <span style="color:#2d7a55">Growth</span></h1>
+  <div class="brand">Cita<span>Doc</span> Growth</div>
   <input id="keyInput" type="password" placeholder="Access key" autocomplete="off">
   <button onclick="checkKey()">Entrar</button>
   <div class="err" id="keyErr"></div>
 </div>
 
-<!-- Dashboard -->
-<div id="app" style="display:none">
-  <div class="wrap">
+<!-- App -->
+<div id="app">
+<div class="page">
 
-    <div class="hdr">
-      <div class="hdr-brand">Cita<span>Doc</span> Growth</div>
-      <button class="hdr-refresh" onclick="loadData()">↻ Actualizar</button>
-    </div>
-
-    <!-- Today -->
-    <div class="today">
-      <div class="pill green">
-        <div class="pill-val" id="statDemos">—</div>
-        <div class="pill-lbl">Demos generados</div>
-      </div>
-      <div class="pill">
-        <div class="pill-val" id="statViews">—</div>
-        <div class="pill-lbl">Vistas totales</div>
-      </div>
-      <div class="pill teal">
-        <div class="pill-val" id="statClicks">—</div>
-        <div class="pill-lbl">WhatsApp clicks</div>
-      </div>
-      <div class="pill">
-        <div class="pill-val" id="statShowcase">—</div>
-        <div class="pill-lbl">Showcases listos</div>
-      </div>
-    </div>
-
-    <!-- Recent Demos -->
-    <div class="sec-hdr">Demos recientes</div>
-    <div id="demosContainer"><div class="loading">Cargando...</div></div>
-
-    <!-- Publish Queue -->
-    <div class="sec-hdr">Cola de publicación</div>
-    <div id="queueContainer"><div class="loading">Cargando...</div></div>
-
-    <!-- Growth Content Queue -->
-    <div class="sec-hdr">Contenido para publicar</div>
-    <div id="contentContainer"><div class="loading">Cargando...</div></div>
-
-    <!-- Top Signals -->
-    <div class="sec-hdr">Señales</div>
-    <div id="signalsContainer"><div class="loading">Cargando...</div></div>
-
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-brand">Cita<span>Doc</span> Growth</div>
+    <button class="btn-sync" id="syncBtn" onclick="loadData()">
+      <span>↻</span> Sincronizar
+    </button>
   </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val" id="sD">—</div><div class="stat-lbl">Demos</div></div>
+    <div class="stat"><div class="stat-val" id="sV">—</div><div class="stat-lbl">Vistas</div></div>
+    <div class="stat"><div class="stat-val" id="sC" style="color:#5dba8a">—</div><div class="stat-lbl">WhatsApp</div></div>
+    <div class="stat"><div class="stat-val" id="sS">—</div><div class="stat-lbl">Listos</div></div>
+  </div>
+
+  <!-- Content queue -->
+  <div class="sec-title">Contenido para publicar</div>
+  <div class="sec-sub">Generado automáticamente cada día a las 9:00 UTC.</div>
+
+  <!-- Filter tabs -->
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-filter="all" onclick="setFilter('all')">Todo <span class="count" id="cnt-all">0</span></div>
+    <div class="tab" data-filter="reel_hook"   onclick="setFilter('reel_hook')">🎬 Reel Hook <span class="count" id="cnt-reel_hook">0</span></div>
+    <div class="tab" data-filter="carousel"    onclick="setFilter('carousel')">📋 Carousel <span class="count" id="cnt-carousel">0</span></div>
+    <div class="tab" data-filter="ad_copy"     onclick="setFilter('ad_copy')">📣 Ad Copy <span class="count" id="cnt-ad_copy">0</span></div>
+    <div class="tab" data-filter="cta_caption" onclick="setFilter('cta_caption')">✍️ Caption CTA <span class="count" id="cnt-cta_caption">0</span></div>
+  </div>
+
+  <div id="contentList"><div class="loading">Cargando contenido...</div></div>
+
+  <div class="divider"></div>
+
+  <!-- Demos -->
+  <div class="sec-title" style="margin-bottom:.75rem">Demos recientes</div>
+  <div id="demosList"><div class="loading">Cargando...</div></div>
+
+  <div class="divider"></div>
+
+  <!-- Signals -->
+  <div class="sec-title" style="margin-bottom:.75rem">Señales</div>
+  <div id="signalsList"><div class="loading">Cargando...</div></div>
+
+</div>
 </div>
 
 <script>
@@ -210,11 +257,21 @@ var SB_URL    = 'https://qxoomcqaafogczrvsyhg.supabase.co';
 var SB_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
 var sb        = supabase.createClient(SB_URL, SB_ANON);
 
-// ── Auth ────────────────────────────────────────────────────────────────────
+var _allContent = [];
+var _currentFilter = 'all';
+
+var TYPE_META = {
+  reel_hook:   { icon: '🎬', label: 'Reel Hook',   cls: 'reel_hook'   },
+  carousel:    { icon: '📋', label: 'Carousel',     cls: 'carousel'    },
+  ad_copy:     { icon: '📣', label: 'Ad Copy',      cls: 'ad_copy'     },
+  cta_caption: { icon: '✍️', label: 'Caption CTA',  cls: 'cta_caption' },
+  showcase:    { icon: '🩺', label: 'Showcase',     cls: 'showcase'    },
+};
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
 
 function checkKey() {
-  var val = document.getElementById('keyInput').value.trim();
-  // Check URL param first, then manual input
+  var val    = document.getElementById('keyInput').value.trim();
   var urlKey = new URLSearchParams(window.location.search).get('key');
   if (val === ADMIN_KEY || urlKey === ADMIN_KEY) {
     document.getElementById('gate').style.display = 'none';
@@ -225,7 +282,6 @@ function checkKey() {
   }
 }
 
-// Check URL key on load
 window.addEventListener('DOMContentLoaded', function() {
   var urlKey = new URLSearchParams(window.location.search).get('key');
   if (urlKey === ADMIN_KEY) {
@@ -238,301 +294,265 @@ window.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// ── Data ────────────────────────────────────────────────────────────────────
+// ── Data ──────────────────────────────────────────────────────────────────────
 
 async function loadData() {
+  var btn = document.getElementById('syncBtn');
+  btn.classList.add('loading');
+
   try {
-    // Leer analytics
-    var analyticsRes = await fetch(SB_URL + '/functions/v1/analytics-reader', {
+    // Analytics
+    var ar = await fetch(SB_URL + '/functions/v1/analytics-reader', {
       headers: { 'Authorization': 'Bearer ' + SB_ANON }
     });
-    var analytics = await analyticsRes.json();
+    var analytics = await ar.json();
 
-    // Leer demos con showcase_content
-    var { data: demos } = await sb
-      .from('generated_demos')
-      .select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,status,showcase_content,created_at,published_at,publish_channel')
-      .order('created_at', { ascending: false })
-      .limit(20);
-
+    // Growth content
     var { data: growthContent } = await sb
       .from('growth_content_queue')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(40);
+
+    // Demos with showcase
+    var { data: demos } = await sb
+      .from('generated_demos')
+      .select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel')
+      .order('created_at', { ascending: false })
+      .limit(15);
+
+    // Merge showcase content into content list
+    var showcaseItems = (demos || [])
+      .filter(function(d) { return d.showcase_content; })
+      .map(function(d) {
+        var sc = d.showcase_content || {};
+        return {
+          id:           'sc-' + d.slug,
+          type:         'showcase',
+          content_jsonb: {
+            caption:   sc.caption || '',
+            headline:  sc.headline || '',
+            hashtags:  sc.hashtags || '',
+            story_text: sc.story_text || '',
+            _quality_ok: 'true',
+          },
+          status:         d.published_at ? 'published' : 'pending',
+          published_at:   d.published_at,
+          publish_channel: d.publish_channel,
+          created_at:     d.created_at,
+          _doctor:        d.doctor_name,
+          _slug:          d.slug,
+        };
+      });
+
+    _allContent = [...(growthContent || []), ...showcaseItems];
+    _allContent.sort(function(a,b) {
+      if (a.status === 'pending' && b.status !== 'pending') return -1;
+      if (a.status !== 'pending' && b.status === 'pending') return 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
     renderStats(analytics);
+    updateCounts();
+    renderContent();
     renderDemos(demos || []);
-    renderQueue(demos || []);
-    renderGrowthContent(growthContent || []);
     renderSignals(analytics);
 
   } catch(e) {
     console.error(e);
   }
+
+  btn.classList.remove('loading');
 }
 
-// ── Renders ─────────────────────────────────────────────────────────────────
+// ── Filters ───────────────────────────────────────────────────────────────────
+
+function setFilter(f) {
+  _currentFilter = f;
+  document.querySelectorAll('.tab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.filter === f);
+  });
+  renderContent();
+}
+
+function updateCounts() {
+  var all = _allContent.filter(function(i){ return i.status === 'pending'; }).length;
+  document.getElementById('cnt-all').textContent = all;
+  ['reel_hook','carousel','ad_copy','cta_caption'].forEach(function(type) {
+    var cnt = _allContent.filter(function(i){ return i.type === type && i.status === 'pending'; }).length;
+    document.getElementById('cnt-' + type).textContent = cnt;
+  });
+}
+
+// ── Renders ───────────────────────────────────────────────────────────────────
 
 function renderStats(a) {
   var o = a.overview || {};
-  document.getElementById('statDemos').textContent    = o.demos_total || 0;
-  document.getElementById('statViews').textContent    = o.total_views || 0;
-  document.getElementById('statClicks').textContent   = o.total_wa_clicks || 0;
-  document.getElementById('statShowcase').textContent = o.showcases_ready || 0;
+  setText('sD', o.demos_total || 0);
+  setText('sV', o.total_views || 0);
+  setText('sC', o.total_wa_clicks || 0);
+  setText('sS', o.showcases_ready || 0);
+}
+
+function renderContent() {
+  var el   = document.getElementById('contentList');
+  var list = _currentFilter === 'all'
+    ? _allContent
+    : _allContent.filter(function(i) { return i.type === _currentFilter; });
+
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">No hay contenido' + (_currentFilter !== 'all' ? ' de este tipo' : '') + ' aún.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(function(item) {
+    var c       = item.content_jsonb || {};
+    var meta    = TYPE_META[item.type] || { icon: '📄', label: item.type, cls: 'showcase' };
+    var isPubl  = item.status === 'published';
+    var qualOk  = c._quality_ok !== 'false';
+    var uid     = ('id-' + item.id).replace(/[^a-z0-9\-]/gi,'').slice(0,20);
+
+    // Main text to display
+    var mainText = c.caption || c.hook || c.primary_text || c.headline || '';
+    var subText  = '';
+    if (item.type === 'carousel' && c.slides) {
+      subText = Array.isArray(c.slides) ? c.slides.length + ' slides' : '';
+    } else if (item.type === 'reel_hook' && c.script) {
+      subText = String(c.script).slice(0, 90) + (c.script.length > 90 ? '...' : '');
+    }
+
+    var doctor = item._doctor ? '<span style="color:rgba(255,255,255,.3);font-weight:400"> · ' + esc(item._doctor) + '</span>' : '';
+
+    var badges =
+      '<span class="badge ' + (isPubl ? 'published' : 'pending') + '">' + (isPubl ? '✓ ' + (item.publish_channel || 'publicado') : 'Pendiente') + '</span>' +
+      (!qualOk ? '<span class="badge warn">⚠ revisar</span>' : '');
+
+    var footer = isPubl
+      ? '<span style="font-size:.68rem;color:rgba(255,255,255,.2)">Publicado ' + fmtDate(item.published_at) + '</span>'
+      : '<button class="btn-copy" id="cp-' + uid + '" onclick="copyText(\'' + uid + '\',\'' + esc(mainText.replace(/'/g,"\\'")) + '\')">Copiar</button>' +
+        '<select class="chan-sel" id="ch-' + uid + '">' +
+          '<option value="instagram">Instagram</option>' +
+          '<option value="facebook">Facebook</option>' +
+          '<option value="linkedin">LinkedIn</option>' +
+          '<option value="whatsapp">WhatsApp</option>' +
+        '</select>' +
+        '<button class="btn-pub" onclick="publish(\'' + item.id + '\',\'' + uid + '\',\'' + (item._slug || '') + '\')">Publicar</button>';
+
+    return '<div class="card ' + (isPubl ? 'published' : '') + (!qualOk ? ' quality-warn' : '') + '" id="card-' + uid + '">' +
+      '<div class="card-header">' +
+        '<div class="card-icon ' + meta.cls + '">' + meta.icon + '</div>' +
+        '<div class="card-meta">' +
+          '<div class="card-type">' + meta.label + doctor + '</div>' +
+          '<div class="card-date">' + fmtDate(item.created_at) + '</div>' +
+        '</div>' +
+        badges +
+      '</div>' +
+      '<div class="card-body">' + esc(mainText) + '</div>' +
+      (subText ? '<div class="card-body-sub">' + esc(subText) + '</div>' : '') +
+      '<div class="card-footer">' + footer + '</div>' +
+    '</div>';
+  }).join('');
 }
 
 function renderDemos(demos) {
-  var el = document.getElementById('demosContainer');
+  var el = document.getElementById('demosList');
   if (!demos.length) { el.innerHTML = '<div class="empty">No hay demos aún</div>'; return; }
-
   el.innerHTML = demos.map(function(d) {
-    var hasShowcase = !!d.showcase_content;
-    var hasViews    = d.views > 0;
-    var dotClass    = hasViews ? 'has-views' : (hasShowcase ? 'has-showcase' : '');
+    var hasV = d.views > 0;
+    var hasS = !!d.showcase_content;
     return '<div class="demo-row">' +
-      '<div class="demo-dot ' + dotClass + '"></div>' +
+      '<div class="demo-dot ' + (hasV ? 'v' : hasS ? 's' : '') + '"></div>' +
       '<div class="demo-info">' +
         '<div class="demo-name">' + esc(d.doctor_name) + '</div>' +
         '<div class="demo-spec">' + esc(d.specialty) + ' · ' + (d.dna || '') + '</div>' +
       '</div>' +
-      '<div class="demo-stats">' +
-        '<span>👁 ' + (d.views || 0) + '</span>' +
-        '<span>💬 ' + (d.whatsapp_clicks || 0) + '</span>' +
-      '</div>' +
-      '<div class="demo-actions">' +
-        '<button class="btn-xs btn-open" onclick="window.open(\'https://citadoc.lat/demo/' + d.slug + '\',\'_blank\')">Ver</button>' +
-      '</div>' +
+      '<div class="demo-nums"><span>👁 ' + (d.views||0) + '</span><span>💬 ' + (d.whatsapp_clicks||0) + '</span></div>' +
+      '<button class="btn-sm" onclick="window.open(\'https://citadoc.lat/demo/' + d.slug + '\',\'_blank\')">Ver</button>' +
     '</div>';
   }).join('');
-}
-
-function renderQueue(demos) {
-  var el    = document.getElementById('queueContainer');
-  var ready = demos.filter(function(d) { return d.showcase_content; });
-
-  if (!ready.length) { el.innerHTML = '<div class="empty">No hay showcases listos aún</div>'; return; }
-
-  // Pendientes primero, publicados al final
-  ready.sort(function(a,b) {
-    if (a.published_at && !b.published_at) return 1;
-    if (!a.published_at && b.published_at) return -1;
-    return 0;
-  });
-
-  el.innerHTML = ready.map(function(d) {
-    var sc         = d.showcase_content || {};
-    var caption    = sc.caption || '';
-    var tags       = sc.hashtags || '';
-    var id         = 'cp-' + d.slug.replace(/[^a-z0-9]/gi, '');
-    var isPublished = !!d.published_at;
-    var badgeClass  = isPublished ? '' : 'pending';
-    var badgeText   = isPublished ? '✓ ' + (d.publish_channel || 'publicado') : 'pendiente';
-    var pubDate     = isPublished ? '<div class="queue-published-at">Publicado ' + formatDate(d.published_at) + ' · ' + (d.publish_channel || '') + '</div>' : '';
-
-    var publishBtn  = isPublished ? '' :
-      '<select class="chan-select" id="chan-' + id + '">' +
-        '<option value="instagram">Instagram</option>' +
-        '<option value="whatsapp">WhatsApp</option>' +
-        '<option value="linkedin">LinkedIn</option>' +
-        '<option value="otro">Otro</option>' +
-      '</select>' +
-      '<button class="btn-xs btn-copy" id="pub-' + id + '" onclick="markPublished(\'' + d.slug + '\',\'' + id + '\')">Publicar ✓</button>';
-
-    return '<div class="queue-card ' + (isPublished ? 'published' : '') + '" id="card-' + id + '">' +
-      '<div class="queue-doctor">' +
-        esc(d.doctor_name) + ' · ' + esc(d.specialty) +
-        '<span class="queue-badge ' + badgeClass + '">' + badgeText + '</span>' +
-      '</div>' +
-      '<div class="queue-caption" id="cap-' + id + '">' + esc(caption) + '</div>' +
-      pubDate +
-      '<div class="queue-footer">' +
-        '<div class="queue-tags">' + esc(tags) + '</div>' +
-        '<button class="btn-xs btn-copy" id="' + id + '" onclick="copyCaption(\'' + id + '\')">Copiar</button>' +
-        publishBtn +
-        '<button class="btn-xs btn-open" onclick="window.open(\'https://citadoc.lat/demo/' + d.slug + '\',\'_blank\')">Demo</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
-
-var TYPE_LABELS = {
-  reel_hook:   '🎬 Reel Hook',
-  carousel:    '📋 Carousel',
-  ad_copy:     '📣 Ad Copy',
-  cta_caption: '✍️ Caption CTA',
-};
-
-function renderGrowthContent(items) {
-  var el = document.getElementById('contentContainer');
-  if (!items.length) { el.innerHTML = '<div class="empty">No hay contenido generado aún</div>'; return; }
-
-  // Pendientes primero
-  items.sort(function(a,b) {
-    if (a.status === 'pending' && b.status !== 'pending') return -1;
-    if (a.status !== 'pending' && b.status === 'pending') return 1;
-    return 0;
-  });
-
-  el.innerHTML = items.map(function(item) {
-    var c       = item.content_jsonb || {};
-    var isPubl  = item.status === 'published';
-    var lbl      = TYPE_LABELS[item.type] || item.type;
-    var id       = 'gc-' + item.id.replace(/[^a-z0-9]/gi,'').slice(0,12);
-    var qualityOk = (c._quality_ok !== 'false');
-    var qualityBadge = qualityOk ? '' : '<span style="font-size:.6rem;background:rgba(239,68,68,.15);color:#f87171;border-radius:4px;padding:.15rem .4rem;margin-left:.4rem">⚠ revisar</span>';
-
-    // Extract main text to show based on type
-    var mainText = c.hook || c.caption || c.primary_text || c.headline || '';
-    var subText  = c.script || (c.slides ? c.slides.length + ' slides' : '') || c.description || '';
-
-    var publishControls = isPubl ? '' :
-      '<select class="chan-select" id="gcchan-' + id + '">' +
-        '<option value="instagram">Instagram</option>' +
-        '<option value="facebook">Facebook</option>' +
-        '<option value="linkedin">LinkedIn</option>' +
-      '</select>' +
-      '<button class="btn-xs btn-copy" onclick="publishGrowthContent(\'' + item.id + '\',\'' + id + '\')">Publicar ✓</button>';
-
-    var badgeText  = isPubl ? '✓ ' + (item.publish_channel || 'publicado') : 'pendiente';
-    var badgeClass = isPubl ? '' : 'pending';
-
-    return '<div class="queue-card ' + (isPubl ? 'published' : '') + '" id="gccard-' + id + '">' +
-      '<div class="queue-doctor">' + lbl + qualityBadge +
-        '<span class="queue-badge ' + badgeClass + '">' + badgeText + '</span>' +
-        '<span style="font-size:.65rem;color:rgba(255,255,255,.2);margin-left:auto">' + formatDate(item.created_at) + '</span>' +
-      '</div>' +
-      (mainText ? '<div class="queue-caption" id="gcap-' + id + '">' + esc(mainText) + '</div>' : '') +
-      (subText  ? '<div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.35rem">' + esc(String(subText).slice(0,100)) + '</div>' : '') +
-      '<div class="queue-footer">' +
-        '<button class="btn-xs btn-copy" onclick="copyGrowthContent(\'' + id + '\',\'' + item.id + '\')">Copiar</button>' +
-        publishControls +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
-
-async function copyGrowthContent(id, itemId) {
-  var el = document.getElementById('gcap-' + id);
-  if (!el) return;
-  try {
-    await navigator.clipboard.writeText(el.textContent);
-  } catch(_) {
-    var ta = document.createElement('textarea');
-    ta.value = el.textContent;
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-  }
-  var btns = document.querySelectorAll('#gccard-' + id + ' .btn-copy');
-  btns.forEach(function(b) {
-    if (b.textContent === 'Copiar') { b.textContent = 'Copiado ✓'; setTimeout(function(){ b.textContent = 'Copiar'; }, 2000); }
-  });
-}
-
-async function publishGrowthContent(itemId, id) {
-  var chanEl  = document.getElementById('gcchan-' + id);
-  var channel = chanEl ? chanEl.value : 'instagram';
-
-  var { error } = await sb.from('growth_content_queue')
-    .update({ status: 'published', published_at: new Date().toISOString(), publish_channel: channel })
-    .eq('id', itemId);
-
-  if (!error) {
-    var card = document.getElementById('gccard-' + id);
-    if (card) card.classList.add('published');
-  }
-}
-
-function formatDate(iso) {
-  if (!iso) return '';
-  var d = new Date(iso);
-  return d.toLocaleDateString('es', { day:'numeric', month:'short' });
-}
-
-async function markPublished(slug, id) {
-  var chanEl   = document.getElementById('chan-' + id);
-  var channel  = chanEl ? chanEl.value : 'instagram';
-  var btn      = document.getElementById('pub-' + id);
-  if (btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
-
-  var { error } = await sb.from('generated_demos')
-    .update({ published_at: new Date().toISOString(), publish_channel: channel })
-    .eq('slug', slug);
-
-  if (!error) {
-    var card = document.getElementById('card-' + id);
-    if (card) {
-      card.classList.add('published');
-      card.querySelector('.queue-badge').textContent = '✓ ' + channel;
-      card.querySelector('.queue-badge').classList.remove('pending');
-      // Remove publish controls
-      if (btn) btn.parentElement.removeChild(btn);
-      if (chanEl) chanEl.parentElement.removeChild(chanEl);
-    }
-  }
 }
 
 function renderSignals(a) {
-  var el = document.getElementById('signalsContainer');
-  var tp = (a.top_patterns || {});
-  var o  = (a.overview || {});
-  var bd = tp.dna_breakdown || {};
+  var el = document.getElementById('signalsList');
+  var o  = a.overview || {};
+  var tp = a.top_patterns || {};
   var bs = tp.specialty_breakdown || {};
-
-  var dnaStr = Object.entries(bd)
-    .sort(function(x,y){ return y[1].demos - x[1].demos; })
-    .map(function(e){ return e[0] + ' (' + e[1].demos + ')'; })
-    .join(', ') || '—';
-
-  var specStr = Object.entries(bs)
-    .sort(function(x,y){ return y[1].demos - x[1].demos; })
-    .slice(0,3)
-    .map(function(e){ return e[0].split('/')[0].trim() + ' (' + e[1].demos + ')'; })
-    .join(' · ') || '—';
+  var specTop = Object.entries(bs).sort(function(x,y){ return y[1].demos-x[1].demos; }).slice(0,2)
+    .map(function(e){ return e[0].split('/')[0].trim(); }).join(' · ') || '—';
+  var bd = tp.dna_breakdown || {};
+  var dnaTop = Object.entries(bd).sort(function(x,y){ return y[1].demos-x[1].demos; })[0]?.[0] || '—';
 
   el.innerHTML = [
-    ['Top specialty', specStr],
-    ['DNA más común', dnaStr],
-    ['CTR global', o.overall_ctr || '0%'],
-    ['Tasa de activación', o.conversion_rate || '0%'],
+    ['Top specialties', specTop],
+    ['DNA dominante', dnaTop],
+    ['CTR general', o.overall_ctr || '0%'],
+    ['Activaciones', (o.demos_activated||0) + ' / ' + (o.demos_total||0)],
   ].map(function(r) {
-    return '<div class="signal-row"><span class="signal-lbl">' + r[0] + '</span><span class="signal-val">' + r[1] + '</span></div>';
+    return '<div class="signal"><span class="signal-l">' + r[0] + '</span><span class="signal-r">' + esc(String(r[1])) + '</span></div>';
   }).join('');
 }
 
-// ── Utils ────────────────────────────────────────────────────────────────────
+// ── Actions ───────────────────────────────────────────────────────────────────
 
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function copyText(uid, text) {
+  var btn = document.getElementById('cp-' + uid);
+  navigator.clipboard.writeText(text).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }).finally(function() {
+    btn.textContent = 'Copiado ✓'; btn.classList.add('done');
+    setTimeout(function(){ btn.textContent = 'Copiar'; btn.classList.remove('done'); }, 2200);
+  });
 }
 
-function copyCaption(id, slug) {
-  var cap  = document.getElementById('cap-' + id);
-  var btn  = document.getElementById(id);
-  if (!cap) return;
+async function publish(itemId, uid, demoSlug) {
+  var chanEl  = document.getElementById('ch-' + uid);
+  var channel = chanEl ? chanEl.value : 'instagram';
+  var btn     = document.querySelector('#card-' + uid + ' .btn-pub');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
 
-  // Get full caption + tags
-  var sc   = {}; // will grab from DOM
-  var text = cap.textContent;
+  var now = new Date().toISOString();
 
-  navigator.clipboard.writeText(text).then(function() {
-    btn.textContent = 'Copiado ✓';
-    btn.classList.add('copied');
-    setTimeout(function() {
-      btn.textContent = 'Copiar';
-      btn.classList.remove('copied');
-    }, 2000);
-  }).catch(function() {
-    // Fallback
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    btn.textContent = 'Copiado ✓';
-    setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+  // Update growth_content_queue or generated_demos
+  if (demoSlug) {
+    await sb.from('generated_demos').update({ published_at: now, publish_channel: channel }).eq('slug', demoSlug);
+  } else {
+    await sb.from('growth_content_queue').update({ status: 'published', published_at: now, publish_channel: channel }).eq('id', itemId);
+  }
+
+  // Update UI
+  var card = document.getElementById('card-' + uid);
+  if (card) {
+    card.classList.add('published');
+    var footer = card.querySelector('.card-footer');
+    if (footer) footer.innerHTML = '<span style="font-size:.68rem;color:rgba(255,255,255,.2)">Publicado ' + fmtDate(now) + ' · ' + channel + '</span>';
+    var badge = card.querySelector('.badge.pending');
+    if (badge) { badge.className = 'badge published'; badge.textContent = '✓ ' + channel; }
+  }
+
+  // Update local state
+  _allContent = _allContent.map(function(i) {
+    if (i.id === itemId || (demoSlug && i._slug === demoSlug)) {
+      return Object.assign({}, i, { status: 'published', published_at: now, publish_channel: channel });
+    }
+    return i;
   });
+  updateCounts();
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+
+function setText(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  return d.toLocaleDateString('es', { day:'numeric', month:'short' });
 }
 </script>
 </body>
