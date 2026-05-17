@@ -11,130 +11,227 @@
 var SCENE_CSS = `
 
 /* ═══════════════════════════════════════════
-   SCENE: ATHLETIC HERO v2
-   Foto fullscreen · overlay cinematográfico
-   Texto flotando · CTA en thumb zone
+   SCENE: HERO PREMIUM v3
+   Carrusel cinematográfico · Logo flotante
+   Headline corto · 2 CTAs thumb zone
 ═══════════════════════════════════════════ */
 
-.scene-athletic-v2 {
+.scene-hero-v3 {
   position: relative;
-  min-height: 100svh;
+  height: 100svh;
+  min-height: 600px;
   overflow: hidden;
-  background: #050816;
+  background: #060a12;
   font-family: 'DM Sans', sans-serif;
   color: #fff;
 }
 
-.scene-athletic-v2-image {
+/* ── CARRUSEL DE FOTOS ── */
+.hero-carousel {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-slide {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 72% center;
-  transform: scale(1.04);
-  display: block;
-  z-index: 0;
+  object-position: center 15%;
+  opacity: 0;
+  transform: scale(1.08);
 }
 
-.scene-athletic-v2-overlay {
+/* 1 foto: Ken Burns */
+.hero-slide.solo {
+  opacity: 1;
+  animation: kenBurns 12s ease-in-out infinite alternate;
+}
+
+@keyframes kenBurns {
+  from { transform: scale(1.0);  }
+  to   { transform: scale(1.08); }
+}
+
+/* 2-3 fotos: fade cycle */
+.hero-slide.s1 { animation: slideIn 18s infinite 0s;  }
+.hero-slide.s2 { animation: slideIn 18s infinite 6s;  }
+.hero-slide.s3 { animation: slideIn 18s infinite 12s; }
+
+@keyframes slideIn {
+  0%   { opacity: 0; transform: scale(1.0);  }
+  8%   { opacity: 1; transform: scale(1.0);  }
+  30%  { opacity: 1; transform: scale(1.06); }
+  38%  { opacity: 0; transform: scale(1.08); }
+  100% { opacity: 0; transform: scale(1.0);  }
+}
+
+/* ── OVERLAY CINEMÁTICO ── */
+.hero-overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
   background:
     linear-gradient(
       180deg,
-      rgba(5,8,22,.10) 0%,
-      rgba(5,8,22,.20) 38%,
-      rgba(5,8,22,.92) 100%
+      rgba(6,10,18,.18) 0%,
+      rgba(6,10,18,.08) 30%,
+      rgba(6,10,18,.72) 65%,
+      rgba(6,10,18,.97) 100%
     ),
     linear-gradient(
       90deg,
-      rgba(5,8,22,.78) 0%,
-      rgba(5,8,22,.16) 52%,
-      rgba(5,8,22,0) 100%
+      rgba(6,10,18,.55) 0%,
+      rgba(6,10,18,.10) 50%,
+      rgba(6,10,18,.0)  100%
     );
 }
 
-.scene-athletic-v2-content {
-  position: relative;
-  z-index: 20;
-  padding: 112px 24px 0;
-}
-
-.scene-athletic-v2-kicker {
-  display: block;
-  color: #60a5fa;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-}
-
-.scene-athletic-v2-title {
-  font-family: 'Fraunces', serif;
-  margin-top: 18px;
-  font-size: clamp(62px, 16vw, 108px);
-  line-height: .90;
-  letter-spacing: -.07em;
-  font-weight: 900;
-  color: #fff;
-  max-width: 320px;
-}
-
-.scene-athletic-v2-title span {
-  color: var(--scene-accent, #2563eb);
-  display: block;
-}
-
-.scene-athletic-v2-description {
-  margin-top: 22px;
-  max-width: 280px;
-  color: rgba(255,255,255,.72);
-  font-size: 17px;
-  line-height: 1.7;
-  font-weight: 400;
-}
-
-.scene-athletic-v2-bottom {
+/* ── LOGO FLOTANTE ── */
+.hero-logo {
   position: absolute;
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 30;
+  z-index: 20;
+  padding: 24px 22px 0;
   display: flex;
-  gap: 14px;
-  padding: 24px 20px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  align-items: center;
+  justify-content: space-between;
 }
 
-.scene-athletic-v2-primary,
-.scene-athletic-v2-secondary {
-  flex: 1;
-  text-align: center;
-  padding: 18px;
-  border-radius: 18px;
+.hero-logo-img {
+  height: 36px;
+  max-width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: .9;
+}
+
+.hero-logo-wordmark {
+  font-family: 'Fraunces', serif;
+  font-size: .95rem;
   font-weight: 700;
+  color: #fff;
+  letter-spacing: -.01em;
+  line-height: 1;
+}
+
+.hero-logo-esp {
   font-family: 'DM Sans', sans-serif;
-  font-size: 1rem;
-  text-decoration: none;
+  font-size: .52rem;
+  color: rgba(255,255,255,.45);
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  margin-top: 2px;
+}
+
+/* ── CONTENIDO — flotando sobre la escena ── */
+.hero-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 0 22px 130px;
+}
+
+.hero-kicker {
+  display: inline-block;
+  color: rgba(255,255,255,.55);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.hero-h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(42px, 11vw, 68px);
+  line-height: .94;
+  letter-spacing: -.05em;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.hero-h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(255,255,255,.75);
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,.6);
+  line-height: 1.55;
+  font-weight: 400;
+  max-width: 300px;
+}
+
+/* ── CTAs — fijos en thumb zone ── */
+.hero-ctas {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  gap: 12px;
+  padding: 16px 22px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  background: linear-gradient(to top, rgba(6,10,18,.8) 0%, transparent 100%);
+}
+
+.hero-cta-book {
+  flex: 1;
+  height: 54px;
+  background: var(--scene-accent, #2563eb);
+  color: #fff;
   border: none;
+  border-radius: 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .92rem;
+  font-weight: 700;
   cursor: pointer;
+  letter-spacing: .01em;
+  transition: opacity .2s;
+}
+.hero-cta-book:hover { opacity: .9; }
+
+.hero-cta-wa {
+  flex: 0 0 54px;
+  height: 54px;
+  background: rgba(255,255,255,.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.scene-athletic-v2-primary {
-  background: var(--scene-accent, #2563eb);
+  text-decoration: none;
   color: #fff;
+  font-size: 1.2rem;
+  transition: background .2s;
 }
+.hero-cta-wa:hover { background: rgba(255,255,255,.16); }
 
-.scene-athletic-v2-secondary {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.08);
-  color: #fff;
+/* Desktop: layout horizontal */
+@media (min-width: 900px) {
+  .hero-content {
+    padding: 0 64px 200px;
+    max-width: 600px;
+  }
+  .hero-h1 { font-size: clamp(52px, 6vw, 88px); }
+  .hero-ctas {
+    padding: 20px 64px calc(env(safe-area-inset-bottom, 0px) + 20px);
+    max-width: 440px;
+  }
+  .hero-cta-wa { flex: 0 0 auto; padding: 0 20px; font-size: .88rem; }
+  .hero-cta-wa::before { content: 'WhatsApp'; }
 }
 
 `;
@@ -194,28 +291,66 @@ function _sPillars(wc, esp) {
 window.renderSceneHeroAthletic = function(sc, wc, m, locs) {
   var nombre = _sNombre(m);
   var esp = (m.especialidades||[])[0]||'';
-  var photo = wc.doctor_photo_url || m.foto_url || '';
   var pc = wc.primary_color || m.primary_color || '#2563eb';
+  var logo = wc.logo_url || null;
   var wa = _sWa(m, nombre);
   var kicker = (esp+(m.ciudad?' · '+m.ciudad:'')).toUpperCase();
-  var hl = wc.headline || 'Recupera tu movimiento';
-  var hlParts = hl.split(/[,\n]/).map(function(s){return s.trim();}).filter(Boolean);
-  var hl1 = hlParts[0]||hl;
-  var hl2 = hlParts[1]||null;
-  var sub = wc.subheadline || ('Rehabilitación avanzada para atletas, lesiones deportivas y recuperación funcional.');
 
-  return '<section class="scene-athletic-v2" id="inicio" style="--scene-accent:'+_se(pc)+'">'
-    + '<img src="'+_se(photo)+'" class="scene-athletic-v2-image" alt="'+_se(nombre)+'">'
-    + '<div class="scene-athletic-v2-overlay"></div>'
-    + '<div class="scene-athletic-v2-content">'
-    + '<span class="scene-athletic-v2-kicker">'+_se(kicker)+'</span>'
-    + '<h1 class="scene-athletic-v2-title">'+_se(hl1)+(hl2?'<span>'+_se(hl2)+'</span>':'')+'</h1>'
-    + '<p class="scene-athletic-v2-description">'+_se(sub)+'</p>'
+  // Fotos para el carrusel
+  var photos = [];
+  if (wc.doctor_photo_url) photos.push(wc.doctor_photo_url);
+  else if (m.foto_url) photos.push(m.foto_url);
+  // Fotos adicionales si el médico las tiene en gallery
+  if (wc.gallery && Array.isArray(wc.gallery)) photos = photos.concat(wc.gallery);
+  photos = photos.slice(0,3);
+
+  // Carrusel HTML
+  var carouselHtml = '';
+  if (photos.length === 1) {
+    carouselHtml = '<img class="hero-slide solo" src="'+_se(photos[0])+'" alt="'+_se(nombre)+'">';
+  } else {
+    carouselHtml = photos.map(function(p, i) {
+      return '<img class="hero-slide s'+(i+1)+'" src="'+_se(p)+'" alt="'+_se(nombre)+'">';
+    }).join('');
+  }
+
+  // Headline
+  var hl = wc.headline || 'Recupera tu movimiento.';
+  var hlParts = hl.split(/[,\.]\s*/).filter(Boolean);
+  var hl1 = hlParts[0] || hl;
+  var hl2 = hlParts[1] || null;
+
+  var sub = wc.subheadline || (esp + (m.ciudad ? ' · ' + m.ciudad : ''));
+
+  // Logo / wordmark
+  var logoHtml = logo
+    ? '<img class="hero-logo-img" src="'+_se(logo)+'" alt="'+_se(nombre)+'">'
+    : '<div><div class="hero-logo-wordmark">'+_se(nombre)+'</div><div class="hero-logo-esp">'+_se(esp)+'</div></div>';
+
+  return '<section class="scene-hero-v3" id="inicio" style="--scene-accent:'+_se(pc)+'">'
+
+    // Carrusel
+    + '<div class="hero-carousel">'+carouselHtml+'</div>'
+
+    // Overlay cinemático
+    + '<div class="hero-overlay"></div>'
+
+    // Logo flotante top
+    + '<div class="hero-logo">'+logoHtml+'</div>'
+
+    // Headline corto sobre el overlay
+    + '<div class="hero-content">'
+    + '<span class="hero-kicker">'+_se(kicker)+'</span>'
+    + '<h1 class="hero-h1">'+_se(hl1)+(hl2?'<br><em>'+_se(hl2)+'</em>':'')+'</h1>'
+    + '<p class="hero-sub">'+_se(sub)+'</p>'
     + '</div>'
-    + '<div class="scene-athletic-v2-bottom">'
-    + '<button class="scene-athletic-v2-primary" onclick="abrirBooking()">Agendar cita</button>'
-    + (wa?'<a class="scene-athletic-v2-secondary" href="'+wa+'" target="_blank" rel="noopener">WhatsApp</a>':'')
+
+    // CTAs fijos en thumb zone
+    + '<div class="hero-ctas">'
+    + '<button class="hero-cta-book" onclick="abrirBooking()">Agendar cita</button>'
+    + (wa?'<a class="hero-cta-wa" href="'+wa+'" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>':'')
     + '</div>'
+
     + '</section>';
 };
 
