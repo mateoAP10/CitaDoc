@@ -185,7 +185,16 @@ window.renderWebsite = function(doctor, locs, wc, isPreview) {
   // Quitar padding-top del body que el nav fijo agrega
   document.body.style.paddingTop = '0';
 
-  // ── 7. Materializar el plan ─────────────────────────────────────
+  // ── 7. Layout renderer directo si existe para este DNA ──────────
+  // Prioridad sobre el composition plan — el layout define toda la página
+  var dnaKey = config.dna || config.visual_dna || '';
+  if (window.LAYOUT_RENDERERS && window.LAYOUT_RENDERERS[dnaKey]) {
+    window.LAYOUT_RENDERERS[dnaKey](config, doctor, locs, main);
+    console.log('[Renderer] Layout directo:', dnaKey);
+    return;
+  }
+
+  // ── 8. Materializar el plan (fallback) ───────────────────────────
   var main = document.getElementById('dna-main');
   if (!main) {
     main = document.createElement('main');
@@ -198,6 +207,7 @@ window.renderWebsite = function(doctor, locs, wc, isPreview) {
   if (typeof window.renderByPlan === 'function') {
     window.renderByPlan(compositionPlan, config, doctor, locs, main);
   }
+  console.log('[Renderer] Plan materializado:', dnaKey);
 
   // ── 7. Preview banner ───────────────────────────────────────────
   if (isPreview) {
