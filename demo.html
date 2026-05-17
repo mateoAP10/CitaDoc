@@ -2615,6 +2615,25 @@ function mnavActive(item){
         return;
       }
 
+      // Fotos de ejemplo por especialidad — hacen el demo sentirse terminado
+      var _DEMO_PHOTOS = {
+        traumatol: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?fit=crop&w=800&h=960&q=85',
+        ortoped:   'https://images.unsplash.com/photo-1576091160550-2173dba999ef?fit=crop&w=800&h=960&q=85',
+        cirug:     'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?fit=crop&w=800&h=960&q=85',
+        dermatol:  'https://images.unsplash.com/photo-1594824476967-48c8b964273f?fit=crop&w=800&h=960&q=85',
+        ginecol:   'https://images.unsplash.com/photo-1551884170-09fb70a3a2ed?fit=crop&w=800&h=960&q=85',
+        odontol:   'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?fit=crop&w=800&h=960&q=85',
+        cardiol:   'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?fit=crop&w=800&h=960&q=85',
+        pediatr:   'https://images.unsplash.com/photo-1623170216611-a898ee78a4a5?fit=crop&w=800&h=960&q=85',
+        default:   'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?fit=crop&w=800&h=960&q=85',
+      };
+
+      function _getDemoPhoto(specialty) {
+        var s = (specialty || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        var key = Object.keys(_DEMO_PHOTOS).find(function(k) { return s.includes(k); });
+        return _DEMO_PHOTOS[key || 'default'];
+      }
+
       // Construir objeto médico compatible con renderWeb()
       var nameParts = (demo.doctor_name || '').replace(/^(dra?\.?\s+)/i, '').trim().split(' ');
       var fakeMedico = {
@@ -2625,7 +2644,7 @@ function mnavActive(item){
         apellido:        nameParts.slice(1).join(' ') || '',
         especialidades:  [demo.specialty],
         ciudad:          demo.city || '',
-        foto_url:        demo.photo_url || null,
+        foto_url:        demo.photo_url || _getDemoPhoto(demo.specialty),
         logo_url:        demo.logo_url || null,
         telefono:        null,
         anos_experiencia: null,
