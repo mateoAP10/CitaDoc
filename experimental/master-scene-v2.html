@@ -3,371 +3,240 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-  <title>Dr. Mateo Alarcón — CitaDoc</title>
+  <title>Performance Athletic — CitaDoc</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{
-      width:100%;height:100%;
-      background:#111827;
-      font-family:'Inter',sans-serif;
-      color:#fff;
-      overflow-x:hidden;
-    }
+    html,body{width:100%;background:#111827;font-family:'DM Sans',sans-serif;color:#fff;overflow-x:hidden}
 
-    /* ── PAGE ── */
-    .page{
-      min-height:100svh;
-      background:#111827;
-      display:flex;
-      flex-direction:column;
-      padding-bottom:calc(72px + env(safe-area-inset-bottom));
-    }
+    .page{min-height:100svh;background:#111827;display:flex;flex-direction:column;padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+
+    /* ── HERO ── */
+    .hero{position:relative;height:62svh;min-height:360px;overflow:hidden;background:#060d18}
+    .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:72% center;display:block;animation:zoom 14s ease-in-out infinite alternate}
+    @keyframes zoom{from{transform:scale(1.02)}to{transform:scale(1.08)}}
+    .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,13,24,.08) 0%,rgba(6,13,24,.18) 34%,rgba(6,13,24,.92) 100%),linear-gradient(90deg,rgba(6,13,24,.82) 0%,rgba(6,13,24,.48) 34%,rgba(6,13,24,.12) 70%,rgba(6,13,24,0) 100%)}
 
     /* ── NAV ── */
-    .top-nav{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:calc(env(safe-area-inset-top,0px) + 16px) 20px 16px;
-    }
-    .nav-logo{
-      font-size:.88rem;
-      font-weight:700;
-      color:rgba(255,255,255,.9);
-      letter-spacing:.02em;
-      display:flex;
-      align-items:center;
-      gap:.4rem;
-    }
-    .nav-logo-mono{
-      font-family:'Inter',sans-serif;
-      font-size:1.1rem;
-      font-weight:900;
-      letter-spacing:-.04em;
-    }
-    .nav-menu{
-      width:40px;height:40px;
-      border-radius:12px;
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.08);
-      display:flex;align-items:center;justify-content:center;
-      color:rgba(255,255,255,.7);
-      font-size:18px;
-      cursor:pointer;
-    }
-
-    /* ── PHOTO CARD ── */
-    .photo-card{
-      margin:0 16px;
-      border-radius:20px;
-      overflow:hidden;
-      aspect-ratio:4/3;
-      position:relative;
-      background:#1a2235;
-    }
-    .photo-card img{
-      width:100%;height:100%;
-      object-fit:cover;
-      object-position:center 12%;
-      display:block;
-    }
+    .nav{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px)+18px) 20px 0}
+    .nav-name{font-family:'Fraunces',serif;font-size:.88rem;font-weight:400;color:#fff;letter-spacing:-.01em;line-height:1}
+    .nav-esp{font-size:.5rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.12em}
+    .nav-logo{height:30px;max-width:100px;object-fit:contain}
 
     /* ── CONTENT ── */
-    .content{
-      padding:22px 20px 0;
-      flex:1;
-    }
+    .content{padding:22px 20px 0;flex:1}
+    .doctor-name{font-family:'Fraunces',serif;font-size:clamp(20px,5.5vw,26px);font-weight:400;color:#fff;letter-spacing:-.02em;line-height:1;margin-bottom:3px}
+    .doctor-title{font-size:.58rem;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}
+    .kicker{display:inline-flex;align-items:center;gap:.4rem;font-size:.55rem;font-weight:700;color:var(--accent,#60a5fa);text-transform:uppercase;letter-spacing:.2em;margin-bottom:10px}
+    .headline{font-family:'Fraunces',serif;font-size:clamp(26px,8vw,34px);font-weight:700;line-height:.95;letter-spacing:-.05em;color:#fff;margin-bottom:12px}
+    .headline em{color:var(--accent,#2563eb);font-style:normal;display:block}
+    .subtext{font-size:13.5px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:20px;max-width:320px;font-weight:400}
 
-    /* Badge */
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:.4rem;
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:50px;
-      padding:.35rem .9rem;
-      font-size:.6rem;
-      font-weight:700;
-      color:rgba(255,255,255,.7);
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      margin-bottom:14px;
-    }
-    .badge-dot{
-      width:6px;height:6px;
-      border-radius:50%;
-      background:#3b82f6;
-    }
-
-    /* Headline */
-    .headline{
-      font-size:clamp(28px,8vw,38px);
-      font-weight:800;
-      line-height:1.1;
-      letter-spacing:-.04em;
-      color:#fff;
-      margin-bottom:12px;
-    }
-
-    /* Subtext */
-    .subtext{
-      font-size:14px;
-      color:rgba(255,255,255,.55);
-      line-height:1.65;
-      margin-bottom:22px;
-      max-width:340px;
-    }
+    /* Precio */
+    .precio-tag{display:none;align-items:center;gap:.5rem;margin-bottom:18px;font-size:12px;color:rgba(255,255,255,.2);font-weight:500}
+    .precio-dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.2);flex-shrink:0}
+    .precio-val{color:rgba(255,255,255,.4);font-weight:600}
 
     /* ── CTAs ── */
-    .cta-group{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      margin-bottom:22px;
-    }
-
-    .btn-book{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:9px;
-      height:54px;
-      border-radius:16px;
-      background:#1d3a72;
-      border:1px solid rgba(37,99,235,.3);
-      color:#fff;
-      font-family:'Inter',sans-serif;
-      font-size:15px;
-      font-weight:700;
-      cursor:pointer;
-      letter-spacing:-.01em;
-      transition:opacity .2s;
-    }
+    .cta-group{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+    .btn-book{display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;background:var(--accent,#2563eb);border:none;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;width:100%}
     .btn-book:hover{opacity:.88}
+    .btn-wa{display:flex;align-items:center;justify-content:center;gap:8px;height:50px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:background .2s;width:100%}
+    .btn-wa:hover{background:rgba(255,255,255,.12)}
 
-    .btn-wa{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:9px;
-      height:52px;
-      border-radius:16px;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.09);
-      color:rgba(255,255,255,.85);
-      font-family:'Inter',sans-serif;
-      font-size:15px;
-      font-weight:600;
-      cursor:pointer;
-      text-decoration:none;
-      transition:background .2s;
-    }
-    .btn-wa:hover{background:rgba(255,255,255,.09)}
+    /* ── SECCIONES ── */
+    .sections-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    .sec-item{border-radius:12px;overflow:hidden;background:rgba(255,255,255,.05)}
+    .sec-item summary{display:flex;align-items:center;padding:14px 16px;cursor:pointer;list-style:none;transition:background .2s}
+    .sec-item summary:hover{background:rgba(255,255,255,.08)}
+    .sec-num{font-size:.58rem;font-weight:700;color:rgba(255,255,255,.25);letter-spacing:.1em;margin-right:10px;flex-shrink:0}
+    .sec-label{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);flex:1}
+    .sec-arrow{color:rgba(255,255,255,.25);font-size:14px;flex-shrink:0;transition:transform .25s}
+    details[open] .sec-arrow{transform:rotate(90deg)}
+    .sec-body{padding:12px 16px 14px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.65;border-top:1px solid rgba(255,255,255,.06)}
+    .sec-body p{margin-bottom:5px}
 
-    /* ── TRUST ITEMS ── */
-    .trust-list{
-      display:flex;
-      flex-direction:column;
-      gap:9px;
-      margin-bottom:16px;
-    }
-    .trust-item{
-      display:flex;
-      align-items:flex-start;
-      gap:9px;
-      font-size:13px;
-      color:rgba(255,255,255,.55);
-      line-height:1.45;
-    }
-    .trust-check{
-      width:18px;height:18px;
-      border-radius:50%;
-      background:rgba(59,130,246,.15);
-      border:1px solid rgba(59,130,246,.25);
-      display:flex;align-items:center;justify-content:center;
-      flex-shrink:0;
-      margin-top:.05rem;
-    }
-    .trust-check svg{color:#60a5fa}
+    /* Credenciales */
+    .creds-list{display:flex;flex-direction:column;gap:9px;margin-bottom:18px;border-top:1px solid rgba(255,255,255,.07);padding-top:18px}
+    .cred-item{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:rgba(255,255,255,.38);line-height:1.5}
+    .cred-dot{width:4px;height:4px;border-radius:50%;background:var(--accent,#2563eb);flex-shrink:0;margin-top:.3rem;opacity:.7}
 
     /* Location */
-    .location{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      font-size:12px;
-      color:rgba(255,255,255,.35);
-      font-weight:500;
-    }
+    .location{display:flex;align-items:center;gap:5px;font-size:11.5px;color:rgba(255,255,255,.18);font-weight:500}
+
+    /* CitaDoc footer */
+    .citadoc-footer{padding:18px 0 8px;display:flex;align-items:center;justify-content:center;gap:.5rem;border-top:1px solid rgba(255,255,255,.07);margin-top:16px}
+    .cd-icon{width:18px;height:18px;border-radius:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:800;color:#fff;flex-shrink:0}
+    .cd-text{font-size:.65rem;color:rgba(255,255,255,.18);letter-spacing:.02em}
+    .cd-text a{color:rgba(255,255,255,.35);text-decoration:none;font-weight:600}
+
+    /* Edit */
+    .edit-section{margin:16px 0 0}
+    .edit-toggle{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;font-size:.68rem;font-weight:600;color:rgba(255,255,255,.18);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:none;background:none;width:100%;font-family:'DM Sans',sans-serif}
+    .edit-panel{display:none;background:rgba(255,255,255,.04);border-radius:12px;padding:16px;margin-top:8px}
+    .edit-panel.open{display:block}
+    .edit-link{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:8px;text-decoration:none;margin-bottom:8px;transition:background .2s}
+    .edit-link:hover{background:rgba(255,255,255,.07)}
+    .edit-link span:first-child{font-size:13px;font-weight:600;color:rgba(255,255,255,.55)}
+    .edit-link span:last-child{font-size:11px;color:rgba(255,255,255,.22)}
 
     /* ── BOTTOM NAV ── */
-    .bottom-nav{
-      position:fixed;
-      bottom:0;left:0;right:0;
-      z-index:50;
-      background:#111827;
-      border-top:1px solid rgba(255,255,255,.07);
-      padding:10px 0 calc(env(safe-area-inset-bottom,0px) + 8px);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-    }
-    .nav-item{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:4px;
-      padding:4px 0;
-      cursor:pointer;
-      text-decoration:none;
-    }
-    .nav-item-icon{
-      font-size:18px;
-      color:rgba(255,255,255,.35);
-      line-height:1;
-    }
-    .nav-item-label{
-      font-size:10px;
-      font-weight:500;
-      color:rgba(255,255,255,.35);
-    }
-    .nav-item.active .nav-item-icon,
-    .nav-item.active .nav-item-label{
-      color:#3b82f6;
-    }
-    .nav-item.cta-nav{
-      background:none;
-    }
-    .nav-item.cta-nav .nav-item-icon{
-      width:40px;height:40px;
-      background:#2563eb;
-      border-radius:14px;
-      display:flex;align-items:center;justify-content:center;
-      font-size:16px;
-      color:#fff;
-    }
-    .nav-item.cta-nav .nav-item-label{
-      color:#3b82f6;
-    }
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:#111827;border-top:1px solid rgba(255,255,255,.07);padding:10px 0 calc(env(safe-area-inset-bottom,0px)+8px);display:grid;grid-template-columns:repeat(5,1fr)}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;text-decoration:none;padding:4px 0}
+    .nav-icon{color:rgba(255,255,255,.22);line-height:1;display:flex;align-items:center;justify-content:center}
+    .nav-label{font-size:9.5px;font-weight:500;color:rgba(255,255,255,.22);letter-spacing:.01em}
+    .nav-item.active .nav-icon,.nav-item.active .nav-label{color:#fff}
+    .nav-cta .nav-icon{width:38px;height:38px;background:var(--accent,#2563eb);border-radius:12px;display:flex;align-items:center;justify-content:center}
+    .nav-cta .nav-label{color:var(--accent,#2563eb)}
   </style>
 </head>
 <body>
-
 <div class="page">
-
-  <!-- NAV -->
-  <nav class="top-nav">
-    <div class="nav-logo">
-      <span class="nav-logo-mono">MA</span>
-    </div>
-    <button class="nav-menu">≡</button>
-  </nav>
-
-  <!-- PHOTO CARD -->
-  <div class="photo-card">
-    <img
-      src="https://qxoomcqaafogczrvsyhg.supabase.co/storage/v1/object/public/fotos-medicos/8990d8b1-da08-406f-b186-ace12fe6b720.JPG"
-      alt="Dr. Mateo Alarcón"
-    />
+  <!-- HERO -->
+  <div class="hero">
+    <img id="heroPhoto" src="https://qxoomcqaafogczrvsyhg.supabase.co/storage/v1/object/public/fotos-medicos/8990d8b1-da08-406f-b186-ace12fe6b720.JPG" alt="Doctor">
+    <div class="hero-overlay"></div>
+    <nav class="nav" id="navBar">
+      <div id="navBrand">
+        <div class="nav-name" id="navName">Dr. Médico</div>
+        <div class="nav-esp" id="navEsp">Especialidad</div>
+      </div>
+    </nav>
   </div>
 
-  <!-- CONTENT -->
   <div class="content">
+    <div class="doctor-name" id="doctorName">Dr. Médico</div>
+    <div class="doctor-title" id="doctorTitle">Especialidad · Ciudad</div>
+    <div class="kicker" id="kicker">Especialidad</div>
+    <h1 class="headline" id="headline">Recupera tu movimiento.</h1>
+    <p class="subtext" id="subtext">Tratamiento especializado para tu retorno completo.</p>
 
-    <!-- Badge -->
-    <div class="badge">
-      <span class="badge-dot"></span>
-      TRAUMATOLOGÍA Y ORTOPEDIA
+    <div class="precio-tag" id="precioTag">
+      <span class="precio-dot"></span>Consulta<span class="precio-dot"></span>
+      <span class="precio-val" id="precioVal"></span>
     </div>
 
-    <!-- Headline -->
-    <h1 class="headline">
-      Recupera tu movimiento.<br>Vuelve a lo que amás.
-    </h1>
-
-    <!-- Subtext -->
-    <p class="subtext">
-      Traumatología y ortopedia de precisión. Desde el diagnóstico hasta tu retorno completo al deporte y la vida cotidiana.
-    </p>
-
-    <!-- CTAs -->
     <div class="cta-group">
       <button class="btn-book" onclick="alert('Booking')">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        Agendar cita
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agendar consulta
       </button>
-      <a class="btn-wa" href="https://wa.me/593" target="_blank" rel="noopener">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+      <a class="btn-wa" id="btnWa" href="#" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,.7)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
         WhatsApp
       </a>
     </div>
 
-    <!-- Trust items -->
-    <div class="trust-list">
-      <div class="trust-item">
-        <div class="trust-check">
-          <svg width="9" height="9" fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>
-        </div>
-        Fellowship en artroscopia con técnicas mínimamente invasivas de máxima precisión
-      </div>
-      <div class="trust-item">
-        <div class="trust-check">
-          <svg width="9" height="9" fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>
-        </div>
-        Máster especializado en lesiones deportivas y protocolos de retorno al deporte
-      </div>
-      <div class="trust-item">
-        <div class="trust-check">
-          <svg width="9" height="9" fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>
-        </div>
-        Protocolo de recuperación global que integra cirugía, fisioterapia clínica y seguimiento
-      </div>
+    <div class="sections-list">
+      <details class="sec-item">
+        <summary class="sec-item"><span class="sec-num">01</span><span class="sec-label">Servicios ofrecidos</span><span class="sec-arrow">›</span></summary>
+        <div class="sec-body" id="servicesList"><p>Artroscopía de rodilla y hombro</p><p>Ligamentoplastia LCA</p><p>Prótesis articular</p><p>Fijación de fracturas</p></div>
+      </details>
+      <details class="sec-item">
+        <summary class="sec-item"><span class="sec-num">02</span><span class="sec-label">Formación y logros académicos</span><span class="sec-arrow">›</span></summary>
+        <div class="sec-body" id="formacionList"><p>Fellowship en artroscopia con técnicas mínimamente invasivas</p><p>Máster en lesiones deportivas y retorno al deporte</p><p>Miembro activo AO International y AAOS</p></div>
+      </details>
+      <details class="sec-item">
+        <summary class="sec-item"><span class="sec-num">03</span><span class="sec-label">Imágenes</span><span class="sec-arrow">›</span></summary>
+        <div class="sec-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px" id="imageGrid"></div></div>
+      </details>
     </div>
 
-    <!-- Location -->
-    <div class="location">
-      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      Guayaquil
-    </div>
+    <div class="creds-list" id="credsList" style="display:none"></div>
 
+    <div class="location"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="locationCity">Ciudad</span></div>
+
+    <div class="citadoc-footer"><div class="cd-icon">C</div><span class="cd-text">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc Health Network</a></span></div>
+
+    <div class="edit-section">
+      <button class="edit-toggle" onclick="var p=document.getElementById('editPanel');p.classList.toggle('open');this.textContent=p.classList.contains('open')?'✕ Cerrar edición':'⚙ Editar manual'">⚙ Editar manual</button>
+      <div class="edit-panel" id="editPanel">
+        <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px">Editar desde Mi Sitio Web</div>
+        <a class="edit-link" href="/citadoc-dashboard.html?panel=sitio" target="_blank"><span>📋 Servicios</span><span>↗</span></a>
+        <a class="edit-link" href="/citadoc-dashboard.html?panel=sitio" target="_blank"><span>🎓 Formación</span><span>↗</span></a>
+        <a class="edit-link" href="/citadoc-dashboard.html?panel=sitio" target="_blank"><span>📸 Imágenes</span><span>↗</span></a>
+        <a class="edit-link" href="/citadoc-dashboard.html?panel=sitio" target="_blank"><span>✏️ Texto y headline</span><span>↗</span></a>
+        <a class="edit-link" href="/citadoc-dashboard.html?panel=sitio" target="_blank"><span>🎨 Colores y logo</span><span>↗</span></a>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <a class="nav-item active" href="#">
-    <div class="nav-item-icon">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-    </div>
-    <span class="nav-item-label">Inicio</span>
-  </a>
-  <a class="nav-item" href="#">
-    <div class="nav-item-icon">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-    </div>
-    <span class="nav-item-label">Servicios</span>
-  </a>
-  <a class="nav-item cta-nav" href="#" onclick="alert('Booking')">
-    <div class="nav-item-icon">
-      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    </div>
-    <span class="nav-item-label">Agendar</span>
-  </a>
-  <a class="nav-item" href="#">
-    <div class="nav-item-icon">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,.35)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
-    </div>
-    <span class="nav-item-label">WhatsApp</span>
-  </a>
-  <a class="nav-item" href="#">
-    <div class="nav-item-icon">
-      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </div>
-    <span class="nav-item-label">Sobre mí</span>
-  </a>
+  <a class="nav-item active" href="#"><div class="nav-icon"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><span class="nav-label">Inicio</span></a>
+  <a class="nav-item" href="#"><div class="nav-icon"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><span class="nav-label">Servicios</span></a>
+  <a class="nav-item nav-cta" href="#" onclick="event.preventDefault()"><div class="nav-icon"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><span class="nav-label">Agendar</span></a>
+  <a class="nav-item" id="navWa" href="#" target="_blank"><div class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,.22)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></div><span class="nav-label">WhatsApp</span></a>
+  <a class="nav-item" href="#"><div class="nav-icon"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span class="nav-label">Sobre mí</span></a>
 </nav>
 
+<script>
+var _sb=supabase.createClient('https://qxoomcqaafogczrvsyhg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs');
+var slug=new URLSearchParams(location.search).get('slug');
+function el(id){return document.getElementById(id)}
+function set(id,v){var e=el(id);if(e)e.textContent=v}
+
+if(slug){
+  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(function(r){
+    if(r.error||!r.data)return;
+    var m=r.data, wc=m.web_config||{};
+    var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+    var esp=(m.especialidades||[])[0]||'', ciudad=m.ciudad||'';
+    var photo=wc.doctor_photo_url||m.foto_url||'';
+    var logo=wc.logo_url||null;
+    var pc=wc.primary_color||m.primary_color||'#2563eb';
+    var waActive=m.whatsapp_activo&&m.whatsapp;
+    var waUrl=waActive?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.'):'';
+
+    document.title=nombre+' — CitaDoc';
+    document.documentElement.style.setProperty('--accent',pc);
+
+    // Nav
+    if(logo){el('navBrand').innerHTML='<img class="nav-logo" src="'+logo+'" alt="'+nombre+'" style="height:30px;max-width:100px;object-fit:contain">';}
+    else{set('navName',nombre);set('navEsp',esp+(ciudad?' · '+ciudad:''));}
+
+    // Hero
+    var img=el('heroPhoto');if(img&&photo)img.src=photo;
+
+    // Content
+    set('doctorName',nombre);set('doctorTitle',esp+(ciudad?' · '+ciudad:''));
+    set('kicker',(esp+(ciudad?' · '+ciudad:'')).toUpperCase());
+    set('headline',wc.headline||'Recupera tu movimiento.');
+    set('subtext',wc.subheadline||(esp+' de precisión para tu retorno completo.'));
+
+    // Precio
+    if(m.precio){var pt=el('precioTag'),pv=el('precioVal');if(pt&&pv){pv.textContent='$'+m.precio;pt.style.display='inline-flex';}}
+
+    // WA
+    var bw=el('btnWa'),nw=el('navWa');
+    if(waActive&&waUrl){if(bw)bw.href=waUrl;if(nw)nw.href=waUrl;}
+    else{if(bw)bw.style.display='none';if(nw)nw.style.display='none';}
+
+    // Servicios
+    var srvs=wc.services||[];
+    var sl=el('servicesList');
+    if(sl&&srvs.length)sl.innerHTML=srvs.slice(0,6).map(function(s){return'<p>'+(s.t||s.titulo||s.name||String(s))+'</p>';}).join('');
+
+    // Formación
+    var diffs=wc.differentiators||[];
+    var fl=el('formacionList');
+    if(fl&&diffs.length)fl.innerHTML=diffs.slice(0,5).map(function(d){return'<p>'+d+'</p>';}).join('');
+
+    // Credenciales
+    var cl=el('credsList');
+    if(cl&&diffs.length){cl.style.display='flex';cl.innerHTML=diffs.slice(0,3).map(function(d){return'<div class="cred-item"><span class="cred-dot"></span>'+d+'</div>';}).join('');}
+
+    // Imágenes
+    var ig=el('imageGrid');
+    if(ig&&photo){ig.innerHTML='<img src="'+photo+'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px"><img src="'+photo+'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;filter:contrast(1.1) brightness(.85) grayscale(20%)">';}
+
+    // Location
+    set('locationCity',ciudad||'Ecuador');
+  });
+}
+</script>
 </body>
 </html>
