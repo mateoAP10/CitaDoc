@@ -219,6 +219,19 @@
     }
     .btn-wa:hover{background:#EDE8DF}
 
+    /* ── PRECIO — sutil, difuminado con el layout ── */
+    .precio-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      margin-bottom:20px;
+      font-size:12.5px;
+      color:#C4B9A8;
+      font-weight:500;
+    }
+    .precio-dot{width:3px;height:3px;border-radius:50%;background:#C4B9A8;flex-shrink:0}
+    .precio-value{color:#9A8F82;font-weight:600}
+
     /* ── SECCIONES COLAPSABLES ── */
     .sections-list{
       display:flex;
@@ -509,6 +522,14 @@
       Cirugía ortopédica de vanguardia con protocolos de recuperación que devuelven la función y la calidad de vida.
     </p>
 
+    <!-- Precio — sutil -->
+    <div class="precio-tag" id="precioTag" style="display:none">
+      <span class="precio-dot"></span>
+      Consulta
+      <span class="precio-dot"></span>
+      <span class="precio-value" id="precioValue"></span>
+    </div>
+
     <!-- CTAs -->
     <div class="cta-group">
       <button class="btn-book">
@@ -748,6 +769,15 @@ if(slug){
       if(m.senescyt){
         var creds = document.querySelector('.nav-creds');
         if(creds) creds.innerHTML='<span class="cred-badge">SENESCYT</span>';
+      }
+
+      // Precio consulta
+      if(m.precio){
+        var pt=el('precioTag'),pv=el('precioValue');
+        if(pt&&pv){
+          pv.textContent='$'+m.precio;
+          pt.style.display='inline-flex';
+        }
       }
 
       // Location
