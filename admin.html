@@ -155,6 +155,27 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 .btn-pub:hover{background:#236b44}
 .btn-pub:disabled{opacity:.4;cursor:not-allowed}
 
+/* ── Creative upload ── */
+.creative-zone{
+  border:1.5px dashed rgba(255,255,255,.1);border-radius:10px;
+  padding:.75rem;margin-bottom:.6rem;cursor:pointer;
+  transition:border-color .15s,background .15s;
+  display:flex;align-items:center;gap:.7rem;
+}
+.creative-zone:hover{border-color:rgba(61,153,112,.4);background:rgba(61,153,112,.04)}
+.creative-zone.has-img{border-style:solid;border-color:rgba(61,153,112,.3);background:rgba(61,153,112,.06)}
+.creative-thumb{
+  width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;
+}
+.creative-placeholder{
+  width:52px;height:52px;border-radius:8px;background:rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;
+}
+.creative-info{flex:1;min-width:0}
+.creative-lbl{font-size:.72rem;color:rgba(255,255,255,.45);font-weight:500}
+.creative-sub{font-size:.65rem;color:rgba(255,255,255,.2);margin-top:.1rem}
+.creative-input{display:none}
+
 /* ── Demos section ── */
 .demo-row{
   display:flex;align-items:center;gap:.65rem;
@@ -259,6 +280,66 @@ var sb        = supabase.createClient(SB_URL, SB_ANON);
 
 var _allContent = [];
 var _currentFilter = 'all';
+
+// ── Creative upload helpers ───────────────────────────────────────────────────
+
+function _buildCreativeZone(item, uid) {
+  var hasImg = !!item.image_url;
+  var imgHtml = hasImg
+    ? '<img class="creative-thumb" src="' + esc(item.image_url) + '" alt="creative">'
+    : '<div class="creative-placeholder">🖼️</div>';
+  var lbl = hasImg ? 'Visual listo' : 'Subir visual';
+  var sub = hasImg ? 'Haz clic para reemplazar' : 'JPG, PNG, MP4 · Max 10MB';
+  return '<div class="creative-zone ' + (hasImg ? 'has-img' : '') + '" onclick="document.getElementById(\'fi-' + uid + '\').click()">' +
+    imgHtml +
+    '<div class="creative-info"><div class="creative-lbl">' + lbl + '</div><div class="creative-sub">' + sub + '</div></div>' +
+    '</div>' +
+    '<input class="creative-input" type="file" id="fi-' + uid + '" accept="image/*,video/mp4" onchange="uploadCreative(\'' + item.id + '\',\'' + uid + '\',this)">';
+}
+
+async function uploadCreative(itemId, uid, input) {
+  var file = input.files[0];
+  if (!file) return;
+
+  var zone = input.previousElementSibling;
+  zone.querySelector('.creative-lbl').textContent = 'Subiendo...';
+
+  var ext  = file.name.split('.').pop();
+  var path = itemId + '.' + ext;
+
+  var { data, error } = await sb.storage
+    .from('growth-creatives')
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (error) {
+    zone.querySelector('.creative-lbl').textContent = 'Error al subir';
+    console.error(error);
+    return;
+  }
+
+  var { data: { publicUrl } } = sb.storage.from('growth-creatives').getPublicUrl(path);
+
+  // Actualizar DB
+  await sb.from('growth_content_queue').update({ image_url: publicUrl }).eq('id', itemId);
+
+  // Actualizar UI
+  zone.classList.add('has-img');
+  zone.querySelector('.creative-lbl').textContent = 'Visual listo';
+  zone.querySelector('.creative-sub').textContent = 'Haz clic para reemplazar';
+  var old = zone.querySelector('.creative-placeholder, .creative-thumb');
+  if (old) {
+    var img = document.createElement('img');
+    img.className = 'creative-thumb';
+    img.src = publicUrl;
+    img.alt = 'creative';
+    zone.replaceChild(img, old);
+  }
+
+  // Actualizar estado local
+  _allContent = _allContent.map(function(i) {
+    return i.id === itemId ? Object.assign({}, i, { image_url: publicUrl }) : i;
+  });
+}
 
 var TYPE_META = {
   reel_hook:   { icon: '🎬', label: 'Reel Hook',   cls: 'reel_hook'   },
@@ -447,6 +528,7 @@ function renderContent() {
         '</div>' +
         badges +
       '</div>' +
+      _buildCreativeZone(item, uid) +
       '<div class="card-body">' + esc(mainText) + '</div>' +
       (subText ? '<div class="card-body-sub">' + esc(subText) + '</div>' : '') +
       '<div class="card-footer">' + footer + '</div>' +
