@@ -16,18 +16,21 @@
     }
     html,body{height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);overflow:hidden}
 
-    /* LAYOUT: sidebar + scrollable main */
-    .v3-layout{display:grid;grid-template-columns:var(--sb) 1fr;height:100svh;position:relative}
+    /* LAYOUT: sidebar oculta por defecto — main ocupa todo */
+    .v3-layout{display:block;height:100svh;position:relative}
 
-    /* SIDEBAR — hidden by default, expands on click */
+    /* SIDEBAR — completamente oculta, overlay al abrir */
     .v3-sidebar{
+      position:fixed;top:0;bottom:0;left:0;
+      width:260px;
       background:var(--surface);border-right:1px solid var(--line);
-      display:flex;flex-direction:column;align-items:center;
-      padding:calc(env(safe-area-inset-top,0px)+18px) 0 calc(env(safe-area-inset-bottom,0px)+16px);
-      z-index:50;overflow:hidden;width:var(--sb);
-      transition:width .42s cubic-bezier(.19,1,.22,1);
+      display:flex;flex-direction:column;align-items:flex-start;
+      padding:calc(env(safe-area-inset-top,0px)+18px) 20px calc(env(safe-area-inset-bottom,0px)+16px);
+      z-index:60;overflow:hidden;
+      transform:translateX(-100%);
+      transition:transform .42s cubic-bezier(.19,1,.22,1);
     }
-    .v3-sidebar.expanded{width:260px;align-items:flex-start;padding-left:20px;padding-right:20px}
+    .v3-sidebar.open{transform:translateX(0)}
     .v3-mono{width:38px;height:38px;border-radius:11px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:.82rem;font-weight:600;color:#fff;flex-shrink:0;margin-bottom:24px}
     .v3-nav{display:flex;flex-direction:column;gap:3px;width:100%;flex:1}
     .v3-nav-item{display:flex;align-items:center;gap:11px;width:40px;height:40px;border-radius:11px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-family:var(--sans);font-size:.8rem;font-weight:500;transition:background .18s,color .18s;text-decoration:none;padding:0;justify-content:center;white-space:nowrap;overflow:hidden}
@@ -39,8 +42,8 @@
     .v3-expand-btn{width:40px;height:40px;border-radius:12px;background:var(--line);border:1px solid var(--line);backdrop-filter:blur(20px);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;line-height:1;margin-top:auto;flex-shrink:0;transition:background .2s}
     .v3-expand-btn:hover{opacity:.8}
 
-    /* MAIN: scrollable column */
-    .v3-main{grid-column:2;overflow-y:auto;display:flex;flex-direction:column;height:100svh}
+    /* MAIN: ocupa toda la pantalla */
+    .v3-main{overflow-y:auto;display:flex;flex-direction:column;height:100svh}
 
     /* PHOTO SCENE — top portion */
     .v3-scene{position:relative;height:58svh;min-height:300px;flex-shrink:0}
@@ -105,27 +108,17 @@
     .v3-cd-text a{color:var(--muted);text-decoration:none;font-weight:600}
 
     /* Quick actions bottom */
-    .v3-qa{position:fixed;bottom:0;right:0;left:var(--sb);z-index:30;background:var(--surface);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+    .v3-qa{position:fixed;bottom:0;right:0;left:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
     .v3-qa-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 8px;border:none;background:transparent;cursor:pointer;border-right:1px solid var(--line);transition:background .18s}
     .v3-qa-btn:last-child{border-right:none}
     .v3-qa-btn:hover{background:var(--line)}
     .v3-qa-icon{font-size:.9rem}
     .v3-qa-label{font-size:.58rem;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 
-    /* MOBILE — sidebar off-canvas */
-    @media(max-width:680px){
-      .v3-layout{grid-template-columns:0 1fr}
-      .v3-sidebar{position:fixed;top:0;bottom:0;left:0;width:280px;transform:translateX(-100%);transition:transform .42s cubic-bezier(.19,1,.22,1);padding:calc(env(safe-area-inset-top,0px)+18px) 20px 20px;align-items:flex-start}
-      .v3-sidebar.open{transform:translateX(0)}
-      .v3-sidebar .v3-nav-item{width:100%;padding:0 10px;justify-content:flex-start}
-      .v3-sidebar .v3-nav-label{display:block}
-      .v3-main{grid-column:1/-1}
-      .v3-qa{left:0}
-      .v3-mobile-btn{position:fixed;top:calc(env(safe-area-inset-top,0px)+14px);left:14px;z-index:60;width:40px;height:40px;border-radius:12px;background:rgba(0,0,0,.5);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;line-height:1.2}
-      .v3-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;backdrop-filter:blur(2px)}
-      .v3-overlay.show{display:block}
-    }
-    @media(min-width:681px){.v3-mobile-btn{display:none}}
+    /* ≡ button — flota siempre en top-left */
+    .v3-mobile-btn{position:fixed;top:calc(env(safe-area-inset-top,0px)+14px);left:14px;z-index:65;width:40px;height:40px;border-radius:12px;background:rgba(0,0,0,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;line-height:1}
+    .v3-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:55;backdrop-filter:blur(2px)}
+    .v3-overlay.show{display:block}
   </style>
 </head>
 <body>
@@ -146,7 +139,7 @@
       <a class="v3-nav-item" href="#"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg><span class="v3-nav-label">Formación</span></a>
       <a class="v3-nav-item" href="#"><svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span class="v3-nav-label">Contacto</span></a>
     </nav>
-    <button class="v3-expand-btn" onclick="toggleExp()">&#9776;</button>
+
   </aside>
 
   <!-- MAIN SCROLLABLE -->
@@ -215,14 +208,13 @@
 
 <script>
 var expanded=false, sbOpen=false;
-function toggleExp(){
-  expanded=!expanded;
-  document.getElementById('v3Sb').classList.toggle('expanded',expanded);
-}
 function toggleSb(){
   sbOpen=!sbOpen;
   document.getElementById('v3Sb').classList.toggle('open',sbOpen);
   document.getElementById('v3Ov').classList.toggle('show',sbOpen);
+  // Cerrar al clickear nav item
+  if(!sbOpen) return;
+  document.querySelectorAll('.v3-nav-item').forEach(function(a){a.onclick=function(){toggleSb();}});
 }
 // Chips
 document.querySelectorAll('.v3-chip').forEach(function(c){
