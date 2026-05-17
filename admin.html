@@ -193,6 +193,10 @@ body{background:#050d08;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
     <div class="sec-hdr">Cola de publicación</div>
     <div id="queueContainer"><div class="loading">Cargando...</div></div>
 
+    <!-- Growth Content Queue -->
+    <div class="sec-hdr">Contenido para publicar</div>
+    <div id="contentContainer"><div class="loading">Cargando...</div></div>
+
     <!-- Top Signals -->
     <div class="sec-hdr">Señales</div>
     <div id="signalsContainer"><div class="loading">Cargando...</div></div>
@@ -251,9 +255,16 @@ async function loadData() {
       .order('created_at', { ascending: false })
       .limit(20);
 
+    var { data: growthContent } = await sb
+      .from('growth_content_queue')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
     renderStats(analytics);
     renderDemos(demos || []);
     renderQueue(demos || []);
+    renderGrowthContent(growthContent || []);
     renderSignals(analytics);
 
   } catch(e) {
@@ -343,6 +354,91 @@ function renderQueue(demos) {
       '</div>' +
     '</div>';
   }).join('');
+}
+
+var TYPE_LABELS = {
+  reel_hook:   '🎬 Reel Hook',
+  carousel:    '📋 Carousel',
+  ad_copy:     '📣 Ad Copy',
+  cta_caption: '✍️ Caption CTA',
+};
+
+function renderGrowthContent(items) {
+  var el = document.getElementById('contentContainer');
+  if (!items.length) { el.innerHTML = '<div class="empty">No hay contenido generado aún</div>'; return; }
+
+  // Pendientes primero
+  items.sort(function(a,b) {
+    if (a.status === 'pending' && b.status !== 'pending') return -1;
+    if (a.status !== 'pending' && b.status === 'pending') return 1;
+    return 0;
+  });
+
+  el.innerHTML = items.map(function(item) {
+    var c       = item.content_jsonb || {};
+    var isPubl  = item.status === 'published';
+    var lbl     = TYPE_LABELS[item.type] || item.type;
+    var id      = 'gc-' + item.id.replace(/[^a-z0-9]/gi,'').slice(0,12);
+
+    // Extract main text to show based on type
+    var mainText = c.hook || c.caption || c.primary_text || c.headline || '';
+    var subText  = c.script || (c.slides ? c.slides.length + ' slides' : '') || c.description || '';
+
+    var publishControls = isPubl ? '' :
+      '<select class="chan-select" id="gcchan-' + id + '">' +
+        '<option value="instagram">Instagram</option>' +
+        '<option value="facebook">Facebook</option>' +
+        '<option value="linkedin">LinkedIn</option>' +
+      '</select>' +
+      '<button class="btn-xs btn-copy" onclick="publishGrowthContent(\'' + item.id + '\',\'' + id + '\')">Publicar ✓</button>';
+
+    var badgeText  = isPubl ? '✓ ' + (item.publish_channel || 'publicado') : 'pendiente';
+    var badgeClass = isPubl ? '' : 'pending';
+
+    return '<div class="queue-card ' + (isPubl ? 'published' : '') + '" id="gccard-' + id + '">' +
+      '<div class="queue-doctor">' + lbl +
+        '<span class="queue-badge ' + badgeClass + '">' + badgeText + '</span>' +
+        '<span style="font-size:.65rem;color:rgba(255,255,255,.2);margin-left:auto">' + formatDate(item.created_at) + '</span>' +
+      '</div>' +
+      (mainText ? '<div class="queue-caption" id="gcap-' + id + '">' + esc(mainText) + '</div>' : '') +
+      (subText  ? '<div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.35rem">' + esc(String(subText).slice(0,100)) + '</div>' : '') +
+      '<div class="queue-footer">' +
+        '<button class="btn-xs btn-copy" onclick="copyGrowthContent(\'' + id + '\',\'' + item.id + '\')">Copiar</button>' +
+        publishControls +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function copyGrowthContent(id, itemId) {
+  var el = document.getElementById('gcap-' + id);
+  if (!el) return;
+  try {
+    await navigator.clipboard.writeText(el.textContent);
+  } catch(_) {
+    var ta = document.createElement('textarea');
+    ta.value = el.textContent;
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }
+  var btns = document.querySelectorAll('#gccard-' + id + ' .btn-copy');
+  btns.forEach(function(b) {
+    if (b.textContent === 'Copiar') { b.textContent = 'Copiado ✓'; setTimeout(function(){ b.textContent = 'Copiar'; }, 2000); }
+  });
+}
+
+async function publishGrowthContent(itemId, id) {
+  var chanEl  = document.getElementById('gcchan-' + id);
+  var channel = chanEl ? chanEl.value : 'instagram';
+
+  var { error } = await sb.from('growth_content_queue')
+    .update({ status: 'published', published_at: new Date().toISOString(), publish_channel: channel })
+    .eq('id', itemId);
+
+  if (!error) {
+    var card = document.getElementById('gccard-' + id);
+    if (card) card.classList.add('published');
+  }
 }
 
 function formatDate(iso) {
