@@ -2615,23 +2615,96 @@ function mnavActive(item){
         return;
       }
 
-      // Fotos de ejemplo por especialidad — hacen el demo sentirse terminado
-      var _DEMO_PHOTOS = {
-        traumatol: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?fit=crop&w=800&h=960&q=85',
-        ortoped:   'https://images.unsplash.com/photo-1576091160550-2173dba999ef?fit=crop&w=800&h=960&q=85',
-        cirug:     'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?fit=crop&w=800&h=960&q=85',
-        dermatol:  'https://images.unsplash.com/photo-1594824476967-48c8b964273f?fit=crop&w=800&h=960&q=85',
-        ginecol:   'https://images.unsplash.com/photo-1551884170-09fb70a3a2ed?fit=crop&w=800&h=960&q=85',
-        odontol:   'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?fit=crop&w=800&h=960&q=85',
-        cardiol:   'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?fit=crop&w=800&h=960&q=85',
-        pediatr:   'https://images.unsplash.com/photo-1623170216611-a898ee78a4a5?fit=crop&w=800&h=960&q=85',
-        default:   'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?fit=crop&w=800&h=960&q=85',
+      // Sets de fotos aspiracionales por especialidad — carrusel crossfade premium
+      var _BASE = 'https://images.unsplash.com/';
+      var _Q    = '?fit=crop&w=800&h=960&q=88&auto=format';
+      var _DEMO_SETS = {
+        traumatol: [
+          _BASE+'photo-1581595219315-a187dd40c322'+_Q,
+          _BASE+'photo-1607990281513-2c110a25bd8c'+_Q,
+          _BASE+'photo-1576091160399-112ba8d25d1d'+_Q,
+        ],
+        ortoped: [
+          _BASE+'photo-1581595219315-a187dd40c322'+_Q,
+          _BASE+'photo-1607990281513-2c110a25bd8c'+_Q,
+          _BASE+'photo-1576091160399-112ba8d25d1d'+_Q,
+        ],
+        cirug: [
+          _BASE+'photo-1570172619644-dfd03ed5d881'+_Q,
+          _BASE+'photo-1559757148-5c350d0d3c56'+_Q,
+          _BASE+'photo-1612349317150-e413f6a5b16d'+_Q,
+        ],
+        dermatol: [
+          _BASE+'photo-1594824476967-48c8b964273f'+_Q,
+          _BASE+'photo-1512290923902-8a9f81dc236c'+_Q,
+          _BASE+'photo-1616394584738-fc6e612e71b9'+_Q,
+        ],
+        ginecol: [
+          _BASE+'photo-1551884170-09fb70a3a2ed'+_Q,
+          _BASE+'photo-1594824476967-48c8b964273f'+_Q,
+          _BASE+'photo-1559839734-2b71ea197ec2'+_Q,
+        ],
+        odontol: [
+          _BASE+'photo-1607613009820-a29f7bb81c04'+_Q,
+          _BASE+'photo-1512290923902-8a9f81dc236c'+_Q,
+          _BASE+'photo-1559839734-2b71ea197ec2'+_Q,
+        ],
+        cardiol: [
+          _BASE+'photo-1559839734-2b71ea197ec2'+_Q,
+          _BASE+'photo-1612349317150-e413f6a5b16d'+_Q,
+          _BASE+'photo-1581595219315-a187dd40c322'+_Q,
+        ],
+        default: [
+          _BASE+'photo-1612349317150-e413f6a5b16d'+_Q,
+          _BASE+'photo-1551884170-09fb70a3a2ed'+_Q,
+          _BASE+'photo-1559839734-2b71ea197ec2'+_Q,
+        ],
       };
 
-      function _getDemoPhoto(specialty) {
+      function _getPhotoSet(specialty) {
         var s = (specialty || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-        var key = Object.keys(_DEMO_PHOTOS).find(function(k) { return s.includes(k); });
-        return _DEMO_PHOTOS[key || 'default'];
+        var key = Object.keys(_DEMO_SETS).find(function(k) { return k !== 'default' && s.includes(k); });
+        return _DEMO_SETS[key || 'default'];
+      }
+
+      function _getDemoPhoto(specialty) {
+        return _getPhotoSet(specialty)[0];
+      }
+
+      // Lanza el carrusel crossfade sobre el hero después de renderWeb()
+      function _launchPhotoCarousel(specialty) {
+        var photos = _getPhotoSet(specialty);
+        if (photos.length < 2) return;
+
+        var heroImg = document.getElementById('wHeroBg');
+        if (!heroImg || heroImg.style.display === 'none') return;
+
+        var panel = heroImg.parentElement;
+        if (!panel) return;
+
+        // Crear capas adicionales para crossfade
+        var layers = [heroImg];
+        for (var i = 1; i < photos.length; i++) {
+          var img = document.createElement('img');
+          img.src = photos[i];
+          img.style.cssText = heroImg.style.cssText +
+            ';position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s cubic-bezier(.4,0,.2,1);';
+          panel.style.position = 'relative';
+          panel.appendChild(img);
+          layers.push(img);
+        }
+
+        // Preload todas las imágenes
+        photos.forEach(function(src) {
+          var pre = new Image(); pre.src = src;
+        });
+
+        var current = 0;
+        setInterval(function () {
+          layers[current].style.opacity = '0';
+          current = (current + 1) % layers.length;
+          layers[current].style.opacity = '1';
+        }, 3800);
       }
 
       // Construir objeto médico compatible con renderWeb()
@@ -2659,6 +2732,9 @@ function mnavActive(item){
       window._demoMode = true;
 
       renderWeb(fakeMedico, [], demo.web_config_jsonb, false);
+
+      // Lanzar carrusel de fotos aspiracionales
+      setTimeout(function() { _launchPhotoCarousel(demo.specialty); }, 300);
 
       // Configurar banner
       _demoBannerSetup(demo);
