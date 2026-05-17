@@ -172,15 +172,28 @@ window.renderWebsite = function(doctor, locs, wc, isPreview) {
     : [];
 
   // ── 6. Ocultar UI legacy que interfiere con la escena ───────────
-  // El scene tiene su propio logo/nav y sus propios CTAs — el legacy los tapa.
-  var legacyHide = ['nav', 'stickyBar', 'stickyBookCta', 'mobileBottomNav'];
+  // El nuevo layout es self-contained: trae su propio nav, hero y footer.
+  // Todo el HTML legacy de citadoc-web.html debe ocultarse.
+  var legacyHide = [
+    'nav', 'wNav',                          // navs
+    'stickyBar', 'stickyBookCta',           // CTAs flotantes
+    'mobileBottomNav',                      // nav mobile
+    'inicio',                               // hero section
+    'servicios',                            // sección servicios
+    'wLocsSection',                         // sección sedes
+    'siteFooter',                           // footer principal
+    'bkOverlay',                            // booking modal
+    'demoBanner',                           // demo activation banner (se re-agrega si aplica)
+  ];
   legacyHide.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  // También el nav por clase (puede tener id distinto)
-  document.querySelectorAll('nav.nav, .mobile-bottom-nav, .sticky-book-cta').forEach(function(el) {
-    el.style.display = 'none';
+  // Ocultar secciones genéricas por clase
+  document.querySelectorAll(
+    'nav.nav, .mobile-bottom-nav, .sticky-book-cta, section.sec, section.hero, footer'
+  ).forEach(function(el) {
+    if (el.id !== 'dna-main') el.style.display = 'none';
   });
   // Quitar padding-top del body que el nav fijo agrega
   document.body.style.paddingTop = '0';
