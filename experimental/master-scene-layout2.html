@@ -41,10 +41,10 @@
     }
     .nav-name{
       font-family:'Fraunces',serif;
-      font-size:.88rem;
+      font-size:1rem;
       font-weight:400;
       color:#1A1A1A;
-      letter-spacing:-.01em;
+      letter-spacing:-.02em;
       line-height:1;
     }
     .nav-esp{
@@ -53,6 +53,25 @@
       text-transform:uppercase;
       letter-spacing:.12em;
       font-weight:500;
+    }
+
+    /* Nombre del médico — protagonista bajo la foto */
+    .doctor-name{
+      font-family:'Fraunces',serif;
+      font-size:clamp(20px,5.5vw,26px);
+      font-weight:400;
+      color:#1A1A1A;
+      letter-spacing:-.03em;
+      line-height:1;
+      margin-bottom:4px;
+    }
+    .doctor-title{
+      font-size:.6rem;
+      font-weight:600;
+      color:#9A8F82;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      margin-bottom:18px;
     }
 
     /* Credential badges — pequeños, elegantes */
@@ -290,8 +309,8 @@
   <!-- NAV -->
   <nav class="top-nav">
     <div class="nav-brand">
-      <span class="nav-name">Dr. Alarcon</span>
-      <span class="nav-esp">Cirugía · Ortopedia</span>
+      <span class="nav-name">Dr. Mateo Alarcón</span>
+      <span class="nav-esp">Traumatología · Ortopedia</span>
     </div>
     <div class="nav-creds">
       <span class="cred-badge">AO</span>
@@ -309,6 +328,10 @@
 
   <!-- CONTENT -->
   <div class="content">
+
+    <!-- Nombre prominente -->
+    <div class="doctor-name">Dr. Mateo Alarcón P.</div>
+    <div class="doctor-title">Traumatología · Ortopedia · Guayaquil</div>
 
     <!-- Specialty tag -->
     <div class="spec-tag">Traumatología y Ortopedia</div>
