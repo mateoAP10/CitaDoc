@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Warm Human — CitaDoc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+    :root{
+      --bg:#FEFCF8;
+      --s:#FDF6EE;
+      --bo:#EDE0D4;
+      --ink:#1C1008;
+      --ink2:#4A3020;
+      --mu:#9C7B62;
+      --accent:#7B6E5C;
+    }
+
+    html,body{
+      width:100%;
+      background:var(--bg);
+      font-family:'DM Sans',sans-serif;
+      color:var(--ink);
+      overflow-x:hidden;
+    }
+
+    .page{
+      min-height:100svh;
+      background:var(--bg);
+      display:flex;
+      flex-direction:column;
+      padding-bottom:calc(90px + env(safe-area-inset-bottom,0px));
+    }
+
+    /* ── NAV ── */
+    .top-nav{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:calc(env(safe-area-inset-top,0px)+18px) 20px 16px;
+    }
+    .nav-brand{display:flex;flex-direction:column;gap:2px}
+    .nav-name{
+      font-family:'Fraunces',serif;
+      font-size:.95rem;font-weight:400;
+      color:var(--ink);letter-spacing:-.01em;line-height:1;
+    }
+    .nav-esp{
+      font-size:.52rem;color:var(--mu);
+      text-transform:uppercase;letter-spacing:.1em;font-weight:500;
+    }
+    .nav-logo-img{height:28px;max-width:110px;object-fit:contain}
+
+    /* ── PHOTO — color completo, cálido ── */
+    .photo-wrap{
+      margin:8px 16px 0;
+      border-radius:20px;
+      overflow:hidden;
+      position:relative;
+    }
+    .photo-wrap img{
+      width:100%;
+      aspect-ratio:4/3;
+      object-fit:cover;
+      object-position:center 15%;
+      display:block;
+      filter:contrast(1.02) brightness(1.04) saturate(1.08);
+    }
+    /* Overlay sutil en gradiente cálido — no oscuro */
+    .photo-wrap::after{
+      content:'';
+      position:absolute;inset:0;
+      background:linear-gradient(
+        180deg,
+        transparent 50%,
+        rgba(254,252,248,.55) 100%
+      );
+    }
+
+    /* ── CONTENT ── */
+    .content{padding:22px 20px 0;flex:1}
+
+    /* Nombre */
+    .doctor-name{
+      font-family:'Fraunces',serif;
+      font-size:clamp(19px,5vw,24px);
+      font-weight:400;color:var(--ink);
+      letter-spacing:-.02em;line-height:1;margin-bottom:3px;
+    }
+    .doctor-title{
+      font-size:.58rem;font-weight:600;color:var(--mu);
+      text-transform:uppercase;letter-spacing:.12em;margin-bottom:18px;
+    }
+
+    /* Badge — suave, sin bordes duros */
+    .spec-tag{
+      display:inline-flex;align-items:center;gap:.4rem;
+      font-size:.58rem;font-weight:600;color:var(--mu);
+      letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;
+    }
+    .spec-tag-dot{
+      width:5px;height:5px;border-radius:50%;
+      background:var(--accent);flex-shrink:0;
+    }
+
+    /* Headline — más suave, más humano */
+    .headline{
+      font-family:'Fraunces',serif;
+      font-size:clamp(24px,7vw,32px);
+      font-weight:400;line-height:1.18;
+      letter-spacing:-.025em;color:var(--ink);
+      margin-bottom:12px;
+    }
+    .headline em{font-style:italic;font-weight:300;color:var(--mu)}
+
+    .subtext{
+      font-size:13.5px;color:var(--mu);
+      line-height:1.72;margin-bottom:20px;
+      max-width:320px;font-weight:400;
+    }
+
+    /* Precio */
+    .precio-tag{
+      display:none;align-items:center;gap:.5rem;
+      margin-bottom:18px;font-size:12px;color:var(--bo);font-weight:500;
+    }
+    .precio-dot{width:3px;height:3px;border-radius:50%;background:var(--bo);flex-shrink:0}
+    .precio-val{color:var(--mu);font-weight:600}
+
+    /* ── CTAs — WhatsApp igual de prominente ── */
+    .cta-group{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+
+    .btn-book{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      height:52px;border-radius:14px;
+      background:var(--ink);border:none;
+      color:var(--bg);font-family:'DM Sans',sans-serif;
+      font-size:14px;font-weight:600;cursor:pointer;
+      letter-spacing:.01em;transition:opacity .2s;width:100%;
+    }
+    .btn-book:hover{opacity:.88}
+
+    .btn-wa{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      height:52px;border-radius:14px;
+      background:rgba(107,144,77,.1);
+      border:1px solid rgba(107,144,77,.22);
+      color:#4a7030;font-family:'DM Sans',sans-serif;
+      font-size:14px;font-weight:600;cursor:pointer;
+      text-decoration:none;transition:background .2s;width:100%;
+    }
+    .btn-wa:hover{background:rgba(107,144,77,.16)}
+
+    /* ── PRIMERA CONSULTA — sección signature ── */
+    .first-visit{
+      background:var(--s);
+      border-radius:16px;
+      padding:18px;margin-bottom:16px;
+    }
+    .fv-title{
+      font-size:.6rem;font-weight:700;color:var(--mu);
+      text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;
+    }
+    .fv-steps{display:flex;flex-direction:column;gap:12px}
+    .fv-step{display:flex;align-items:flex-start;gap:12px}
+    .fv-num{
+      width:28px;height:28px;border-radius:50%;
+      background:var(--accent);color:var(--bg);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Fraunces',serif;font-size:.82rem;font-weight:600;
+      flex-shrink:0;
+    }
+    .fv-text{font-size:13px;color:var(--ink2);line-height:1.5;padding-top:.15rem}
+    .fv-text strong{display:block;font-weight:600;color:var(--ink);margin-bottom:.15rem}
+
+    /* ── SECCIONES COLAPSABLES — estilo cálido ── */
+    .sections-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+    .sec-item{border-radius:12px;overflow:hidden;background:var(--s)}
+    .sec-item summary{
+      display:flex;align-items:center;padding:13px 16px;
+      cursor:pointer;list-style:none;transition:background .2s;
+    }
+    .sec-item summary:hover{background:var(--bo)}
+    .sec-num{font-size:.58rem;font-weight:700;color:var(--mu);letter-spacing:.1em;margin-right:10px;flex-shrink:0}
+    .sec-label{font-size:13px;font-weight:600;color:var(--ink2);flex:1}
+    .sec-arrow{color:var(--mu);font-size:14px;flex-shrink:0;transition:transform .25s}
+    details[open] .sec-arrow{transform:rotate(90deg)}
+    .sec-body{
+      padding:12px 16px 14px;font-size:13px;
+      color:var(--mu);line-height:1.65;
+      border-top:1px solid var(--bo);
+    }
+    .sec-body p{margin-bottom:5px}
+    .sec-body p:last-child{margin-bottom:0}
+
+    /* ── TESTIMONIOS — solo warm human ── */
+    .testimonials{margin-bottom:16px}
+    .testi-title{
+      font-size:.58rem;font-weight:700;color:var(--mu);
+      text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;
+    }
+    .testi-card{
+      background:var(--s);border-radius:14px;
+      padding:14px 16px;margin-bottom:8px;
+    }
+    .testi-text{
+      font-family:'Fraunces',serif;
+      font-size:.9rem;font-style:italic;font-weight:300;
+      color:var(--ink);line-height:1.6;margin-bottom:8px;
+    }
+    .testi-author{font-size:.7rem;font-weight:600;color:var(--mu)}
+
+    /* Location */
+    .location{
+      display:flex;align-items:center;gap:5px;
+      font-size:11.5px;color:var(--bo);font-weight:500;margin-bottom:0;
+    }
+
+    /* CitaDoc footer */
+    .citadoc-footer{
+      padding:18px 0 8px;display:flex;align-items:center;
+      justify-content:center;gap:.5rem;
+      border-top:1px solid var(--bo);margin-top:16px;
+    }
+    .cd-icon{
+      width:18px;height:18px;border-radius:5px;
+      background:var(--ink);display:flex;align-items:center;
+      justify-content:center;font-size:.55rem;font-weight:800;
+      color:var(--bg);flex-shrink:0;
+    }
+    .cd-text{font-size:.65rem;color:var(--bo);letter-spacing:.02em}
+    .cd-text a{color:var(--mu);text-decoration:none;font-weight:600}
+
+    /* Edit section */
+    .edit-section{margin:16px 0 0}
+    .edit-toggle{
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      padding:10px;font-size:.68rem;font-weight:600;color:var(--bo);
+      letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+      border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;
+    }
+    .edit-panel{display:none;background:var(--s);border-radius:12px;padding:16px;margin-top:8px}
+    .edit-panel.open{display:block}
+    .edit-title{font-size:.6rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+    .edit-links{display:flex;flex-direction:column;gap:8px}
+    .edit-link{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 14px;background:var(--bg);border-radius:8px;
+      text-decoration:none;transition:background .2s;
+    }
+    .edit-link:hover{background:var(--bo)}
+    .edit-link span:first-child{font-size:13px;font-weight:600;color:var(--ink2)}
+    .edit-link span:last-child{font-size:11px;color:var(--mu)}
+
+    /* ── BOTTOM NAV — versión cálida ── */
+    .bottom-nav{
+      position:fixed;bottom:0;left:0;right:0;z-index:50;
+      background:var(--bg);border-top:1px solid var(--bo);
+      padding:10px 0 calc(env(safe-area-inset-bottom,0px)+8px);
+      display:grid;grid-template-columns:repeat(5,1fr);
+    }
+    .nav-item{
+      display:flex;flex-direction:column;align-items:center;
+      gap:4px;cursor:pointer;text-decoration:none;padding:4px 0;
+    }
+    .nav-icon{font-size:17px;color:var(--bo);line-height:1;display:flex;align-items:center;justify-content:center}
+    .nav-label{font-size:9.5px;font-weight:500;color:var(--bo);letter-spacing:.01em}
+    .nav-item.active .nav-icon,.nav-item.active .nav-label{color:var(--ink)}
+    .nav-cta .nav-icon{
+      width:38px;height:38px;background:var(--ink);border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .nav-cta .nav-icon svg{color:var(--bg)}
+    .nav-cta .nav-label{color:var(--ink)}
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- NAV -->
+  <nav class="top-nav">
+    <div class="nav-brand" id="navBrand">
+      <span class="nav-name" id="navName">Dr. Médico</span>
+      <span class="nav-esp" id="navEsp">Especialidad</span>
+    </div>
+  </nav>
+
+  <!-- PHOTO — color completo, cálido -->
+  <div class="photo-wrap">
+    <img
+      src="https://qxoomcqaafogczrvsyhg.supabase.co/storage/v1/object/public/fotos-medicos/8990d8b1-da08-406f-b186-ace12fe6b720.JPG"
+      alt="Doctor"
+      id="doctorPhoto"
+    />
+  </div>
+
+  <div class="content">
+
+    <div class="doctor-name" id="doctorName">Dr. Médico</div>
+    <div class="doctor-title" id="doctorTitle">Especialidad · Ciudad</div>
+
+    <div class="spec-tag"><span class="spec-tag-dot"></span><span id="specTag">Especialidad</span></div>
+
+    <h1 class="headline" id="headline">Tu bienestar,<br><em>en buenas manos.</em></h1>
+    <p class="subtext" id="subtext">Atención médica personalizada con calidez y dedicación en cada consulta.</p>
+
+    <!-- Precio -->
+    <div class="precio-tag" id="precioTag">
+      <span class="precio-dot"></span>Consulta
+      <span class="precio-dot"></span>
+      <span class="precio-val" id="precioVal"></span>
+    </div>
+
+    <!-- CTAs — WhatsApp igual de importante -->
+    <div class="cta-group">
+      <button class="btn-book" onclick="alert('Booking')">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agendar consulta
+      </button>
+      <a class="btn-wa" id="btnWa" href="#" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#4a7030"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        Escribir por WhatsApp
+      </a>
+    </div>
+
+    <!-- Primera consulta — sección signature -->
+    <div class="first-visit">
+      <div class="fv-title">Tu primera consulta</div>
+      <div class="fv-steps">
+        <div class="fv-step">
+          <div class="fv-num">1</div>
+          <div class="fv-text"><strong>Agendá tu turno</strong>Online, en minutos. Confirmación inmediata.</div>
+        </div>
+        <div class="fv-step">
+          <div class="fv-num">2</div>
+          <div class="fv-text"><strong>Tu consulta</strong>Escucho tu historia completa antes de cualquier diagnóstico.</div>
+        </div>
+        <div class="fv-step">
+          <div class="fv-num">3</div>
+          <div class="fv-text"><strong>Tu plan</strong>Recibís un plan diseñado específicamente para vos.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 Secciones colapsables -->
+    <div class="sections-list">
+      <details class="sec-item">
+        <summary class="sec-item">
+          <span class="sec-num">01</span>
+          <span class="sec-label">Servicios ofrecidos</span>
+          <span class="sec-arrow">›</span>
+        </summary>
+        <div class="sec-body" id="servicesList">
+          <p>Consulta integral y diagnóstico</p>
+          <p>Seguimiento continuo</p>
+          <p>Plan de tratamiento personalizado</p>
+          <p>Atención preventiva</p>
+        </div>
+      </details>
+
+      <details class="sec-item">
+        <summary class="sec-item">
+          <span class="sec-num">02</span>
+          <span class="sec-label">Formación y logros</span>
+          <span class="sec-arrow">›</span>
+        </summary>
+        <div class="sec-body" id="formacionList">
+          <p>Especialización con sólida formación clínica</p>
+          <p>Comprometido con la actualización continua</p>
+          <p>Atención basada en evidencia</p>
+        </div>
+      </details>
+
+      <details class="sec-item">
+        <summary class="sec-item">
+          <span class="sec-num">03</span>
+          <span class="sec-label">Imágenes</span>
+          <span class="sec-arrow">›</span>
+        </summary>
+        <div class="sec-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px" id="imageGrid"></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- Testimonios (solo warm human) -->
+    <div class="testimonials" id="testimoniosSection" style="display:none">
+      <div class="testi-title">Lo que dicen mis pacientes</div>
+      <div id="testimoniosList"></div>
+    </div>
+
+    <!-- Location -->
+    <div class="location">
+      <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span id="locationCity">Ciudad</span>
+    </div>
+
+    <!-- CitaDoc -->
+    <div class="citadoc-footer">
+      <div class="cd-icon">C</div>
+      <span class="cd-text">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc Health Network</a></span>
+    </div>
+
+    <!-- Editar manual -->
+    <div class="edit-section">
+      <button class="edit-toggle" onclick="var p=document.getElementById('editPanel3');p.classList.toggle('open');this.textContent=p.classList.contains('open')?'✕ Cerrar edición':'⚙ Editar manual'">⚙ Editar manual</button>
+      <div class="edit-panel" id="editPanel3">
+        <div class="edit-title">Editar desde Mi Sitio Web</div>
+        <div class="edit-links">
+          <a class="edit-link" href="/citadoc-dashboard.html" target="_blank"><span>📋 Servicios</span><span>↗</span></a>
+          <a class="edit-link" href="/citadoc-dashboard.html" target="_blank"><span>🎓 Formación</span><span>↗</span></a>
+          <a class="edit-link" href="/citadoc-dashboard.html" target="_blank"><span>📸 Imágenes</span><span>↗</span></a>
+          <a class="edit-link" href="/citadoc-dashboard.html" target="_blank"><span>✏️ Texto y headline</span><span>↗</span></a>
+          <a class="edit-link" href="/citadoc-dashboard.html" target="_blank"><span>💬 Testimonios</span><span>↗</span></a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item active" href="#">
+    <div class="nav-icon"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    <span class="nav-label">Inicio</span>
+  </a>
+  <a class="nav-item" href="#">
+    <div class="nav-icon"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+    <span class="nav-label">Servicios</span>
+  </a>
+  <a class="nav-item nav-cta" href="#" onclick="event.preventDefault();alert('Booking')">
+    <div class="nav-icon"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+    <span class="nav-label">Agendar</span>
+  </a>
+  <a class="nav-item" id="navWa" href="#" target="_blank">
+    <div class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="var(--bo)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></div>
+    <span class="nav-label">WhatsApp</span>
+  </a>
+  <a class="nav-item" href="#">
+    <div class="nav-icon"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    <span class="nav-label">Sobre mí</span>
+  </a>
+</nav>
+
+<script>
+var _sb = supabase.createClient(
+  'https://qxoomcqaafogczrvsyhg.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
+);
+
+var slug = new URLSearchParams(location.search).get('slug');
+function el(id){return document.getElementById(id)}
+function set(id,v){var e=el(id);if(e)e.textContent=v}
+
+if(slug){
+  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single()
+    .then(function(r){
+      if(r.error||!r.data)return;
+      var m=r.data, wc=m.web_config||{};
+      var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+      var esp=(m.especialidades||[])[0]||'';
+      var ciudad=m.ciudad||'';
+      var photo=wc.doctor_photo_url||m.foto_url||'';
+      var logo=wc.logo_url||null;
+      var waActive=m.whatsapp_activo&&m.whatsapp;
+      var waUrl=waActive?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.'):'';
+
+      document.title=nombre+' — CitaDoc';
+
+      // Nav
+      if(logo){el('navBrand').innerHTML='<img src="'+logo+'" class="nav-logo-img" alt="'+nombre+'">';}
+      else{set('navName',nombre);set('navEsp',esp+(ciudad?' · '+ciudad:''));}
+
+      // Foto
+      var img=el('doctorPhoto');if(img&&photo)img.src=photo;
+
+      // Nombre
+      set('doctorName',nombre);
+      set('doctorTitle',esp+(ciudad?' · '+ciudad:''));
+      set('specTag',esp);
+
+      // Headline
+      set('headline',wc.headline||'Tu bienestar, en buenas manos.');
+      set('subtext',wc.subheadline||'Atención médica personalizada con calidez y dedicación.');
+
+      // Precio
+      if(m.precio){
+        var pt=el('precioTag'),pv=el('precioVal');
+        if(pt&&pv){pv.textContent='$'+m.precio;pt.style.display='inline-flex';}
+      }
+
+      // WA
+      if(waActive&&waUrl){
+        var bw=el('btnWa');if(bw)bw.href=waUrl;
+        var nw=el('navWa');if(nw)nw.href=waUrl;
+      } else {
+        var bw=el('btnWa');if(bw)bw.style.display='none';
+        var nw=el('navWa');if(nw)nw.style.display='none';
+      }
+
+      // Color primario
+      var pc=wc.primary_color||m.primary_color||'';
+      if(pc){
+        document.documentElement.style.setProperty('--accent',pc);
+        document.documentElement.style.setProperty('--ink',pc);
+      }
+
+      // Servicios
+      var srvs=wc.services||[];
+      var sl=el('servicesList');
+      if(sl&&srvs.length)sl.innerHTML=srvs.slice(0,6).map(function(s){return'<p>'+(s.t||s.titulo||s.name||String(s))+'</p>';}).join('');
+
+      // Formación
+      var diffs=wc.differentiators||[];
+      var fl=el('formacionList');
+      if(fl&&diffs.length)fl.innerHTML=diffs.slice(0,5).map(function(d){return'<p>'+d+'</p>';}).join('');
+
+      // Imágenes
+      var ig=el('imageGrid');
+      if(ig&&photo){ig.innerHTML='<img src="'+photo+'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px"><img src="'+photo+'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;filter:contrast(1.05) brightness(.95) saturate(.85)">';}
+
+      // Testimonios
+      var testis=wc.testimonials||[];
+      var ts=el('testimoniosSection'),tl=el('testimoniosList');
+      if(ts&&tl&&testis.length){
+        ts.style.display='block';
+        tl.innerHTML=testis.slice(0,3).map(function(t){
+          return'<div class="testi-card"><div class="testi-text">"'+t.text+'"</div><div class="testi-author">'+t.name+'</div></div>';
+        }).join('');
+      }
+
+      // Location
+      set('locationCity',ciudad||'Ecuador');
+    });
+}
+</script>
+</body>
+</html>
