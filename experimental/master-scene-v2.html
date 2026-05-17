@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Dr. Mateo Alarcón — CitaDoc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{
+      width:100%;height:100%;
+      background:#111827;
+      font-family:'Inter',sans-serif;
+      color:#fff;
+      overflow-x:hidden;
+    }
+
+    /* ── PAGE ── */
+    .page{
+      min-height:100svh;
+      background:#111827;
+      display:flex;
+      flex-direction:column;
+      padding-bottom:calc(72px + env(safe-area-inset-bottom));
+    }
+
+    /* ── NAV ── */
+    .top-nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:calc(env(safe-area-inset-top,0px) + 16px) 20px 16px;
+    }
+    .nav-logo{
+      font-size:.88rem;
+      font-weight:700;
+      color:rgba(255,255,255,.9);
+      letter-spacing:.02em;
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+    }
+    .nav-logo-mono{
+      font-family:'Inter',sans-serif;
+      font-size:1.1rem;
+      font-weight:900;
+      letter-spacing:-.04em;
+    }
+    .nav-menu{
+      width:40px;height:40px;
+      border-radius:12px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:center;justify-content:center;
+      color:rgba(255,255,255,.7);
+      font-size:18px;
+      cursor:pointer;
+    }
+
+    /* ── PHOTO CARD ── */
+    .photo-card{
+      margin:0 16px;
+      border-radius:20px;
+      overflow:hidden;
+      aspect-ratio:4/3;
+      position:relative;
+      background:#1a2235;
+    }
+    .photo-card img{
+      width:100%;height:100%;
+      object-fit:cover;
+      object-position:center 12%;
+      display:block;
+    }
+
+    /* ── CONTENT ── */
+    .content{
+      padding:22px 20px 0;
+      flex:1;
+    }
+
+    /* Badge */
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:50px;
+      padding:.35rem .9rem;
+      font-size:.6rem;
+      font-weight:700;
+      color:rgba(255,255,255,.7);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:14px;
+    }
+    .badge-dot{
+      width:6px;height:6px;
+      border-radius:50%;
+      background:#3b82f6;
+    }
+
+    /* Headline */
+    .headline{
+      font-size:clamp(28px,8vw,38px);
+      font-weight:800;
+      line-height:1.1;
+      letter-spacing:-.04em;
+      color:#fff;
+      margin-bottom:12px;
+    }
+
+    /* Subtext */
+    .subtext{
+      font-size:14px;
+      color:rgba(255,255,255,.55);
+      line-height:1.65;
+      margin-bottom:22px;
+      max-width:340px;
+    }
+
+    /* ── CTAs ── */
+    .cta-group{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:22px;
+    }
+
+    .btn-book{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      height:54px;
+      border-radius:16px;
+      background:#1d3a72;
+      border:1px solid rgba(37,99,235,.3);
+      color:#fff;
+      font-family:'Inter',sans-serif;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      letter-spacing:-.01em;
+      transition:opacity .2s;
+    }
+    .btn-book:hover{opacity:.88}
+
+    .btn-wa{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      height:52px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.09);
+      color:rgba(255,255,255,.85);
+      font-family:'Inter',sans-serif;
+      font-size:15px;
+      font-weight:600;
+      cursor:pointer;
+      text-decoration:none;
+      transition:background .2s;
+    }
+    .btn-wa:hover{background:rgba(255,255,255,.09)}
+
+    /* ── TRUST ITEMS ── */
+    .trust-list{
+      display:flex;
+      flex-direction:column;
+      gap:9px;
+      margin-bottom:16px;
+    }
+    .trust-item{
+      display:flex;
+      align-items:flex-start;
+      gap:9px;
+      font-size:13px;
+      color:rgba(255,255,255,.55);
+      line-height:1.45;
+    }
+    .trust-check{
+      width:18px;height:18px;
+      border-radius:50%;
+      background:rgba(59,130,246,.15);
+      border:1px solid rgba(59,130,246,.25);
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+      margin-top:.05rem;
+    }
+    .trust-check svg{color:#60a5fa}
+
+    /* Location */
+    .location{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      color:rgba(255,255,255,.35);
+      font-weight:500;
+    }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav{
+      position:fixed;
+      bottom:0;left:0;right:0;
+      z-index:50;
+      background:#111827;
+      border-top:1px solid rgba(255,255,255,.07);
+      padding:10px 0 calc(env(safe-area-inset-bottom,0px) + 8px);
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+    }
+    .nav-item{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      padding:4px 0;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .nav-item-icon{
+      font-size:18px;
+      color:rgba(255,255,255,.35);
+      line-height:1;
+    }
+    .nav-item-label{
+      font-size:10px;
+      font-weight:500;
+      color:rgba(255,255,255,.35);
+    }
+    .nav-item.active .nav-item-icon,
+    .nav-item.active .nav-item-label{
+      color:#3b82f6;
+    }
+    .nav-item.cta-nav{
+      background:none;
+    }
+    .nav-item.cta-nav .nav-item-icon{
+      width:40px;height:40px;
+      background:#2563eb;
+      border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:16px;
+      color:#fff;
+    }
+    .nav-item.cta-nav .nav-item-label{
+      color:#3b82f6;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- NAV -->
+  <nav class="top-nav">
+    <div class="nav-logo">
+      <span class="nav-logo-mono">MA</span>
+    </div>
+    <button class="nav-menu">≡</button>
+  </nav>
+
+  <!-- PHOTO CARD -->
+  <div class="photo-card">
+    <img
+      src="https://qxoomcqaafogczrvsyhg.supabase.co/storage/v1/object/public/fotos-medicos/8990d8b1-da08-406f-b186-ace12fe6b720.JPG"
+      alt="Dr. Mateo Alarcón"
+    />
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- Badge -->
+    <div class="badge">
+      <span class="badge-dot"></span>
+      TRAUMATOLOGÍA Y ORTOPEDIA
+    </div>
+
+    <!-- Headline -->
+    <h1 class="headline">
+      Recupera tu movimiento.<br>Vuelve a lo que amás.
+    </h1>
+
+    <!-- Subtext -->
+    <p class="subtext">
+      Traumatología y ortopedia de precisión. Desde el diagnóstico hasta tu retorno completo al deporte y la vida cotidiana.
+    </p>
+
+    <!-- CTAs -->
+    <div class="cta-group">
+      <button class="btn-book" onclick="alert('Booking')">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agendar cita
+      </button>
+      <a class="btn-wa" href="https://wa.me/593" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+
+    <!-- Trust items -->
+    <div class="trust-list">
+      <div class="trust-item">
+        <div class="trust-check">
+          <svg width="9" height="9" fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>
+        </div>
+        Fellowship en artroscopia con técnicas mínimamente invasivas de máxima precisión
+      </div>
+      <div class="trust-item">
+        <div class="trust-check">
+          <svg width="9" height="9" fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>
+        </div>
+        Máster especializado en lesiones deportivas y protocolos de retorno al deporte
+      </div>
+      <div class="trust-item">
+        <div class="trust-check">
+          <svg width="9" height="9" fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2.5"><polyline points="2,6 5,9 10,3"/></svg>
+        </div>
+        Protocolo de recuperación global que integra cirugía, fisioterapia clínica y seguimiento
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="location">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Guayaquil
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item active" href="#">
+    <div class="nav-item-icon">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    </div>
+    <span class="nav-item-label">Inicio</span>
+  </a>
+  <a class="nav-item" href="#">
+    <div class="nav-item-icon">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    </div>
+    <span class="nav-item-label">Servicios</span>
+  </a>
+  <a class="nav-item cta-nav" href="#" onclick="alert('Booking')">
+    <div class="nav-item-icon">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    </div>
+    <span class="nav-item-label">Agendar</span>
+  </a>
+  <a class="nav-item" href="#">
+    <div class="nav-item-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,.35)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+    </div>
+    <span class="nav-item-label">WhatsApp</span>
+  </a>
+  <a class="nav-item" href="#">
+    <div class="nav-item-icon">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <span class="nav-item-label">Sobre mí</span>
+  </a>
+</nav>
+
+</body>
+</html>
