@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CitaDoc Growth — Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{background:#050d08;color:#fff;font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:4rem}
+
+/* Auth gate */
+#gate{
+  position:fixed;inset:0;background:#050d08;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1rem;z-index:999;padding:2rem;
+}
+#gate h1{font-family:'Fraunces',serif;font-style:italic;font-size:1.5rem;color:rgba(255,255,255,.8)}
+#gate input{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;color:#fff;font-family:'DM Sans',sans-serif;font-size:1rem;
+  padding:.75rem 1rem;outline:none;width:260px;text-align:center;letter-spacing:.1em;
+}
+#gate button{
+  padding:.65rem 1.5rem;background:#1e4d34;border:none;border-radius:10px;
+  color:#fff;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;
+}
+#gate .err{font-size:.8rem;color:rgba(255,80,80,.8);min-height:1rem}
+
+/* Layout */
+.wrap{max-width:640px;margin:0 auto;padding:1.5rem 1.25rem}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.hdr-brand{font-family:'Fraunces',serif;font-style:italic;font-size:1.1rem;color:rgba(255,255,255,.7)}
+.hdr-brand span{color:#2d7a55}
+.hdr-refresh{
+  font-size:.72rem;color:rgba(255,255,255,.3);cursor:pointer;
+  border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:.3rem .6rem;
+  background:none;font-family:'DM Sans',sans-serif;
+}
+.hdr-refresh:hover{color:rgba(255,255,255,.6)}
+
+/* Today pills */
+.today{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem}
+.pill{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;padding:1rem 1.1rem;
+}
+.pill-val{font-size:1.6rem;font-weight:600;line-height:1;margin-bottom:.2rem}
+.pill-lbl{font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em}
+.pill.green .pill-val{color:#4ade80}
+.pill.teal  .pill-val{color:#2dd4bf}
+
+/* Section header */
+.sec-hdr{
+  font-size:.68rem;color:rgba(255,255,255,.3);
+  text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:.75rem;margin-top:1.75rem;
+}
+
+/* Demos table */
+.demo-row{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;padding:.9rem 1rem;margin-bottom:.5rem;
+  display:flex;align-items:center;gap:.75rem;
+}
+.demo-row:last-child{margin-bottom:0}
+.demo-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,.15);
+}
+.demo-dot.has-showcase{background:#2d7a55}
+.demo-dot.has-views{background:#f59e0b}
+.demo-info{flex:1;min-width:0}
+.demo-name{font-size:.88rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.demo-spec{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:.1rem}
+.demo-stats{display:flex;gap:.85rem;flex-shrink:0;font-size:.75rem;color:rgba(255,255,255,.3)}
+.demo-stats span{display:flex;align-items:center;gap:.2rem}
+.demo-actions{display:flex;gap:.4rem;flex-shrink:0}
+.btn-xs{
+  font-size:.68rem;padding:.25rem .5rem;border-radius:6px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-weight:500;
+}
+.btn-open{background:rgba(255,255,255,.07);color:rgba(255,255,255,.6)}
+.btn-copy{background:rgba(45,122,85,.2);color:#4ade80}
+.btn-copy.copied{background:rgba(45,122,85,.4);color:#fff}
+
+/* Publish queue */
+.queue-card{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;padding:1rem;margin-bottom:.6rem;
+}
+.queue-doctor{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:.5rem}
+.queue-caption{
+  font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.55;
+  background:rgba(0,0,0,.2);border-radius:8px;padding:.65rem .75rem;
+  white-space:pre-wrap;word-break:break-word;
+}
+.queue-cta{font-size:.7rem;color:#2d7a55;font-weight:600}
+.queue-footer{display:flex;gap:.5rem;margin-top:.65rem;align-items:center;flex-wrap:wrap}
+.queue-tags{font-size:.66rem;color:rgba(255,255,255,.2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Signals */
+.signal-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:.82rem;
+}
+.signal-row:last-child{border-bottom:none}
+.signal-lbl{color:rgba(255,255,255,.4)}
+.signal-val{font-weight:600;color:rgba(255,255,255,.85)}
+
+/* Loading */
+.loading{
+  text-align:center;padding:3rem 1rem;
+  font-size:.82rem;color:rgba(255,255,255,.25);
+}
+
+/* Empty */
+.empty{
+  text-align:center;padding:1.5rem;
+  font-size:.8rem;color:rgba(255,255,255,.2);
+  background:rgba(255,255,255,.02);border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<!-- Auth Gate -->
+<div id="gate">
+  <h1>CitaDoc <span style="color:#2d7a55">Growth</span></h1>
+  <input id="keyInput" type="password" placeholder="Access key" autocomplete="off">
+  <button onclick="checkKey()">Entrar</button>
+  <div class="err" id="keyErr"></div>
+</div>
+
+<!-- Dashboard -->
+<div id="app" style="display:none">
+  <div class="wrap">
+
+    <div class="hdr">
+      <div class="hdr-brand">Cita<span>Doc</span> Growth</div>
+      <button class="hdr-refresh" onclick="loadData()">↻ Actualizar</button>
+    </div>
+
+    <!-- Today -->
+    <div class="today">
+      <div class="pill green">
+        <div class="pill-val" id="statDemos">—</div>
+        <div class="pill-lbl">Demos generados</div>
+      </div>
+      <div class="pill">
+        <div class="pill-val" id="statViews">—</div>
+        <div class="pill-lbl">Vistas totales</div>
+      </div>
+      <div class="pill teal">
+        <div class="pill-val" id="statClicks">—</div>
+        <div class="pill-lbl">WhatsApp clicks</div>
+      </div>
+      <div class="pill">
+        <div class="pill-val" id="statShowcase">—</div>
+        <div class="pill-lbl">Showcases listos</div>
+      </div>
+    </div>
+
+    <!-- Recent Demos -->
+    <div class="sec-hdr">Demos recientes</div>
+    <div id="demosContainer"><div class="loading">Cargando...</div></div>
+
+    <!-- Publish Queue -->
+    <div class="sec-hdr">Cola de publicación</div>
+    <div id="queueContainer"><div class="loading">Cargando...</div></div>
+
+    <!-- Top Signals -->
+    <div class="sec-hdr">Señales</div>
+    <div id="signalsContainer"><div class="loading">Cargando...</div></div>
+
+  </div>
+</div>
+
+<script>
+var ADMIN_KEY = 'citadoc-growth-2026';
+var SB_URL    = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+var SB_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
+var sb        = supabase.createClient(SB_URL, SB_ANON);
+
+// ── Auth ────────────────────────────────────────────────────────────────────
+
+function checkKey() {
+  var val = document.getElementById('keyInput').value.trim();
+  // Check URL param first, then manual input
+  var urlKey = new URLSearchParams(window.location.search).get('key');
+  if (val === ADMIN_KEY || urlKey === ADMIN_KEY) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display  = 'block';
+    loadData();
+  } else {
+    document.getElementById('keyErr').textContent = 'Clave incorrecta';
+  }
+}
+
+// Check URL key on load
+window.addEventListener('DOMContentLoaded', function() {
+  var urlKey = new URLSearchParams(window.location.search).get('key');
+  if (urlKey === ADMIN_KEY) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display  = 'block';
+    loadData();
+  }
+  document.getElementById('keyInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkKey();
+  });
+});
+
+// ── Data ────────────────────────────────────────────────────────────────────
+
+async function loadData() {
+  try {
+    // Leer analytics
+    var analyticsRes = await fetch(SB_URL + '/functions/v1/analytics-reader', {
+      headers: { 'Authorization': 'Bearer ' + SB_ANON }
+    });
+    var analytics = await analyticsRes.json();
+
+    // Leer demos con showcase_content
+    var { data: demos } = await sb
+      .from('generated_demos')
+      .select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,status,showcase_content,created_at')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    renderStats(analytics);
+    renderDemos(demos || []);
+    renderQueue(demos || []);
+    renderSignals(analytics);
+
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ── Renders ─────────────────────────────────────────────────────────────────
+
+function renderStats(a) {
+  var o = a.overview || {};
+  document.getElementById('statDemos').textContent    = o.demos_total || 0;
+  document.getElementById('statViews').textContent    = o.total_views || 0;
+  document.getElementById('statClicks').textContent   = o.total_wa_clicks || 0;
+  document.getElementById('statShowcase').textContent = o.showcases_ready || 0;
+}
+
+function renderDemos(demos) {
+  var el = document.getElementById('demosContainer');
+  if (!demos.length) { el.innerHTML = '<div class="empty">No hay demos aún</div>'; return; }
+
+  el.innerHTML = demos.map(function(d) {
+    var hasShowcase = !!d.showcase_content;
+    var hasViews    = d.views > 0;
+    var dotClass    = hasViews ? 'has-views' : (hasShowcase ? 'has-showcase' : '');
+    return '<div class="demo-row">' +
+      '<div class="demo-dot ' + dotClass + '"></div>' +
+      '<div class="demo-info">' +
+        '<div class="demo-name">' + esc(d.doctor_name) + '</div>' +
+        '<div class="demo-spec">' + esc(d.specialty) + ' · ' + (d.dna || '') + '</div>' +
+      '</div>' +
+      '<div class="demo-stats">' +
+        '<span>👁 ' + (d.views || 0) + '</span>' +
+        '<span>💬 ' + (d.whatsapp_clicks || 0) + '</span>' +
+      '</div>' +
+      '<div class="demo-actions">' +
+        '<button class="btn-xs btn-open" onclick="window.open(\'https://citadoc.lat/demo/' + d.slug + '\',\'_blank\')">Ver</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderQueue(demos) {
+  var el    = document.getElementById('queueContainer');
+  var ready = demos.filter(function(d) { return d.showcase_content; });
+
+  if (!ready.length) { el.innerHTML = '<div class="empty">No hay showcases listos aún</div>'; return; }
+
+  el.innerHTML = ready.map(function(d) {
+    var sc      = d.showcase_content || {};
+    var caption = (sc.caption || '').replace(/\n/g, '\n');
+    var tags    = sc.hashtags || '';
+    var id      = 'cp-' + d.slug.replace(/[^a-z0-9]/gi, '');
+    return '<div class="queue-card">' +
+      '<div class="queue-doctor">' + esc(d.doctor_name) + ' · ' + esc(d.specialty) + '</div>' +
+      '<div class="queue-caption" id="cap-' + id + '">' + esc(caption) + '</div>' +
+      '<div class="queue-footer">' +
+        '<div class="queue-tags">' + esc(tags) + '</div>' +
+        '<button class="btn-xs btn-copy" id="' + id + '" onclick="copyCaption(\'' + id + '\',\'' + d.slug + '\')">Copiar</button>' +
+        '<button class="btn-xs btn-open" onclick="window.open(\'https://citadoc.lat/demo/' + d.slug + '\',\'_blank\')">Demo</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderSignals(a) {
+  var el = document.getElementById('signalsContainer');
+  var tp = (a.top_patterns || {});
+  var o  = (a.overview || {});
+  var bd = tp.dna_breakdown || {};
+  var bs = tp.specialty_breakdown || {};
+
+  var dnaStr = Object.entries(bd)
+    .sort(function(x,y){ return y[1].demos - x[1].demos; })
+    .map(function(e){ return e[0] + ' (' + e[1].demos + ')'; })
+    .join(', ') || '—';
+
+  var specStr = Object.entries(bs)
+    .sort(function(x,y){ return y[1].demos - x[1].demos; })
+    .slice(0,3)
+    .map(function(e){ return e[0].split('/')[0].trim() + ' (' + e[1].demos + ')'; })
+    .join(' · ') || '—';
+
+  el.innerHTML = [
+    ['Top specialty', specStr],
+    ['DNA más común', dnaStr],
+    ['CTR global', o.overall_ctr || '0%'],
+    ['Tasa de activación', o.conversion_rate || '0%'],
+  ].map(function(r) {
+    return '<div class="signal-row"><span class="signal-lbl">' + r[0] + '</span><span class="signal-val">' + r[1] + '</span></div>';
+  }).join('');
+}
+
+// ── Utils ────────────────────────────────────────────────────────────────────
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copyCaption(id, slug) {
+  var cap  = document.getElementById('cap-' + id);
+  var btn  = document.getElementById(id);
+  if (!cap) return;
+
+  // Get full caption + tags
+  var sc   = {}; // will grab from DOM
+  var text = cap.textContent;
+
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copiado ✓';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Copiar';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(function() {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Copiado ✓';
+    setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
