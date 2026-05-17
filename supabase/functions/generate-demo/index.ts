@@ -62,11 +62,24 @@ Reglas:
 
 // ── Fallback config ──────────────────────────────────────────────────────────
 
+// ── Legacy DNA → nuevo sistema de layouts ────────────────────────────────────
+// dna: qué tipo visual es (mood, tone, emotion)
+// selected_layout: qué renderer usar (surgical-authority, warm-human-care, performance-athletic)
 const DNA_BY_SPECIALTY: Record<string, string> = {
-  traumatol: 'authority', ortoped: 'authority', cirug: 'authority',
-  cardiol: 'clinic',      dermatol: 'luxury',    ginecol: 'warm',
-  neurol: 'modern',       pediatr: 'warm',        rehabilit: 'sports',
-  fisio: 'sports',        oncol: 'authority',     urol: 'clinic',
+  traumatol: 'performance-athletic', ortoped: 'performance-athletic',
+  cirug: 'surgical-authority',       cardiol: 'surgical-authority',
+  dermatol: 'surgical-authority',    ginecol: 'warm-human-care',
+  neurol: 'surgical-authority',      pediatr: 'warm-human-care',
+  rehabilit: 'performance-athletic', fisio: 'performance-athletic',
+  oncol: 'surgical-authority',       urol: 'surgical-authority',
+  psicol: 'warm-human-care',         famili: 'warm-human-care',
+}
+
+// selected_layout: el renderer exacto del nuevo engine
+const LAYOUT_BY_DNA: Record<string, string> = {
+  'surgical-authority':   'surgical-authority',
+  'performance-athletic': 'performance-athletic',
+  'warm-human-care':      'warm-human-care',
 }
 
 function buildFallback(name: string, specialty: string, city: string): Record<string, unknown> {
@@ -189,9 +202,14 @@ serve(async (req) => {
     web_config.generated_at = new Date().toISOString()
     web_config.source       = source
 
-    const dna        = String(web_config.visual_dna)
-    const hero_title = String(web_config.headline || '')
+    const dna             = String(web_config.visual_dna || 'surgical-authority')
+    const selected_layout = LAYOUT_BY_DNA[dna] || 'surgical-authority'
+    const hero_title      = String(web_config.headline || '')
     const generation_time_ms = Date.now() - t0
+
+    // Inyectar selected_layout en web_config para que el renderer lo use
+    web_config.selected_layout = selected_layout
+    web_config.visual_dna      = dna
 
     // ── Insertar en DB ──────────────────────────────────────────────────────
     const slug = buildSlug(name, spec)
@@ -200,15 +218,17 @@ serve(async (req) => {
       .from('generated_demos')
       .insert({
         slug,
-        doctor_name:    name,
-        specialty:      spec,
-        city:           cityStr || null,
-        logo_url:       logo_url || null,
-        photo_url:      photo_url || null,
+        doctor_name:      name,
+        specialty:        spec,
+        city:             cityStr || null,
+        logo_url:         logo_url || null,
+        photo_url:        photo_url || null,
         web_config_jsonb: web_config,
         dna,
+        selected_layout,
         hero_title,
         generation_time_ms,
+        payment_status:   'pending',
       })
       .select('id, slug, created_at')
       .single()

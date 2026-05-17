@@ -134,6 +134,23 @@ function applyInfrastructure(config, doctor, locs) {
  */
 window.renderWebsite = function(doctor, locs, wc, isPreview) {
 
+  // ── 0. Forzar ocultado de HTML legacy con CSS ────────────────────
+  // Corre ANTES de todo lo demás para garantizar que el nav y secciones
+  // antiguas desaparezcan independientemente de cualquier error posterior.
+  if (!document.getElementById('_cd-legacy-hide')) {
+    var s = document.createElement('style');
+    s.id = '_cd-legacy-hide';
+    s.textContent = [
+      '#wNav, nav.nav',
+      '#inicio, #servicios, #sobre-mi, #testimonios',
+      '#contacto, #wLocsSection, #siteFooter',
+      '#stickyBar, #stickyBookCta, .sticky-book-cta',
+      '#mobileBottomNav, .mobile-bottom-nav',
+    ].join(',') + '{ display: none !important; }';
+    document.head.appendChild(s);
+  }
+  document.body.style.paddingTop = '0';
+
   // ── 1. Construir config desde DNA spec ─────────────────────────
   var webConfig;
   if (typeof window.buildWebsiteConfig === 'function') {
@@ -206,11 +223,29 @@ window.renderWebsite = function(doctor, locs, wc, isPreview) {
   }
 
   // ── 8. Layout renderer directo si existe para este DNA ──────────
-  // Prioridad sobre el composition plan — el layout define toda la página
+  // Mapeo de DNA legacy → nuevo sistema de layouts
+  var DNA_LEGACY_MAP = {
+    'clinic':    'surgical-authority',
+    'sports':    'performance-athletic',
+    'luxury':    'surgical-authority',
+    'authority': 'surgical-authority',
+    'warm':      'warm-human-care',
+    'modern':    'performance-athletic',
+    // layout_id legacy
+    'clinic-editorial':   'surgical-authority',
+    'performance-clinic': 'performance-athletic',
+    'academic-prestige':  'surgical-authority',
+    'soft-clinic-luxury': 'warm-human-care',
+    'future-minimal':     'performance-athletic',
+  };
   var dnaKey = config.dna || config.visual_dna || '';
-  if (window.LAYOUT_RENDERERS && window.LAYOUT_RENDERERS[dnaKey]) {
-    window.LAYOUT_RENDERERS[dnaKey](config, doctor, locs, main);
-    console.log('[Renderer] Layout directo:', dnaKey);
+  var resolvedKey = (window.LAYOUT_RENDERERS && window.LAYOUT_RENDERERS[dnaKey])
+    ? dnaKey
+    : DNA_LEGACY_MAP[dnaKey] || DNA_LEGACY_MAP[config.layout_id] || 'surgical-authority';
+
+  if (window.LAYOUT_RENDERERS && window.LAYOUT_RENDERERS[resolvedKey]) {
+    window.LAYOUT_RENDERERS[resolvedKey](config, doctor, locs, main);
+    console.log('[Renderer] Layout:', dnaKey, '→', resolvedKey);
     return;
   }
 
