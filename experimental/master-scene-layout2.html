@@ -6,6 +6,7 @@
   <title>Surgical Authority — CitaDoc</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
@@ -353,6 +354,69 @@
       font-weight:500;
     }
 
+    /* ── EDITAR MANUAL — colapsado al fondo ── */
+    .edit-section{
+      margin:16px 20px 0;
+    }
+    .edit-toggle{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      padding:10px;
+      font-size:.68rem;
+      font-weight:600;
+      color:#B0A898;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      cursor:pointer;
+      border:none;
+      background:none;
+      width:100%;
+      font-family:'DM Sans',sans-serif;
+    }
+    .edit-panel{
+      display:none;
+      background:#EDE8DF;
+      border-radius:12px;
+      padding:16px;
+      margin-top:8px;
+    }
+    .edit-panel.open{display:block}
+    .edit-title{
+      font-size:.6rem;
+      font-weight:700;
+      color:#9A8F82;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:12px;
+    }
+    .edit-links{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .edit-link{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 14px;
+      background:#F5F0E8;
+      border-radius:8px;
+      text-decoration:none;
+      transition:background .2s;
+    }
+    .edit-link:hover{background:#EDE8DF}
+    .edit-link-label{
+      font-size:13px;
+      font-weight:600;
+      color:#5C5248;
+    }
+    .edit-link-arrow{
+      font-size:11px;
+      color:#B0A898;
+    }
+
     /* ── BOTTOM NAV — versión clara ── */
     .bottom-nav{
       position:fixed;
@@ -408,8 +472,8 @@
   <!-- NAV -->
   <nav class="top-nav">
     <div class="nav-brand">
-      <span class="nav-name">Dr. Mateo Alarcón</span>
-      <span class="nav-esp">Traumatología · Ortopedia</span>
+      <span class="nav-name" id="navName">Dr. Mateo Alarcón</span>
+      <span class="nav-esp" id="navEsp">Traumatología · Ortopedia</span>
     </div>
     <div class="nav-creds">
       <span class="cred-badge">AO</span>
@@ -429,19 +493,19 @@
   <div class="content">
 
     <!-- Nombre prominente -->
-    <div class="doctor-name">Dr. Mateo Alarcón P.</div>
-    <div class="doctor-title">Traumatología · Ortopedia · Guayaquil</div>
+    <div class="doctor-name" id="doctorName">Dr. Mateo Alarcón P.</div>
+    <div class="doctor-title" id="doctorTitle">Traumatología · Ortopedia · Guayaquil</div>
 
     <!-- Specialty tag -->
     <div class="spec-tag">Traumatología y Ortopedia</div>
 
     <!-- Headline — serif elegante -->
-    <h1 class="headline">
+    <h1 class="headline" id="headline">
       Precisión que <em>cambia vidas.</em>
     </h1>
 
     <!-- Subtext -->
-    <p class="subtext">
+    <p class="subtext" id="subtext">
       Cirugía ortopédica de vanguardia con protocolos de recuperación que devuelven la función y la calidad de vida.
     </p>
 
@@ -467,11 +531,13 @@
           <span class="sec-arrow">›</span>
         </summary>
         <div class="sec-body">
-          <p>Artroscopía de rodilla y hombro</p>
-          <p>Ligamentoplastia LCA</p>
-          <p>Prótesis de cadera y rodilla</p>
-          <p>Cirugía de columna lumbar</p>
-          <p>Fracturas y trauma de alta complejidad</p>
+          <div id="servicesList">
+            <p>Artroscopía de rodilla y hombro</p>
+            <p>Ligamentoplastia LCA</p>
+            <p>Prótesis de cadera y rodilla</p>
+            <p>Cirugía de columna lumbar</p>
+            <p>Fracturas y trauma de alta complejidad</p>
+          </div>
         </div>
       </details>
 
@@ -482,10 +548,12 @@
           <span class="sec-arrow">›</span>
         </summary>
         <div class="sec-body">
-          <p>Fellowship en artroscopia con técnicas mínimamente invasivas</p>
-          <p>Máster especializado en lesiones deportivas y retorno al deporte</p>
-          <p>Miembro activo AO International y AAOS</p>
-          <p>Protocolo integral de recuperación quirúrgica y fisioterapia</p>
+          <div id="formacionList">
+            <p>Fellowship en artroscopia con técnicas mínimamente invasivas</p>
+            <p>Máster especializado en lesiones deportivas y retorno al deporte</p>
+            <p>Miembro activo AO International y AAOS</p>
+            <p>Protocolo integral de recuperación quirúrgica y fisioterapia</p>
+          </div>
         </div>
       </details>
 
@@ -524,7 +592,7 @@
     <!-- Location -->
     <div class="location">
       <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      Guayaquil, Ecuador
+      <span id="locationCity">Guayaquil, Ecuador</span>
     </div>
 
     <!-- CitaDoc Health Network -->
@@ -535,6 +603,38 @@
       </span>
     </div>
 
+  </div>
+</div>
+
+<!-- EDITAR MANUAL — colapsado, siempre al fondo -->
+<div class="edit-section">
+  <button class="edit-toggle" onclick="var p=document.getElementById('editPanel');p.classList.toggle('open');this.innerHTML=p.classList.contains('open')?'✕ Cerrar edición':'⚙ Editar manual'">
+    ⚙ Editar manual
+  </button>
+  <div class="edit-panel" id="editPanel">
+    <div class="edit-title">Editar desde el dashboard</div>
+    <div class="edit-links">
+      <a class="edit-link" href="/citadoc-dashboard.html#sitio" target="_blank">
+        <span class="edit-link-label">📋 Servicios ofrecidos</span>
+        <span class="edit-link-arrow">↗</span>
+      </a>
+      <a class="edit-link" href="/citadoc-dashboard.html#sitio" target="_blank">
+        <span class="edit-link-label">🎓 Formación y logros</span>
+        <span class="edit-link-arrow">↗</span>
+      </a>
+      <a class="edit-link" href="/citadoc-dashboard.html#sitio" target="_blank">
+        <span class="edit-link-label">📸 Imágenes</span>
+        <span class="edit-link-arrow">↗</span>
+      </a>
+      <a class="edit-link" href="/citadoc-dashboard.html#sitio" target="_blank">
+        <span class="edit-link-label">✏️ Texto y headline</span>
+        <span class="edit-link-arrow">↗</span>
+      </a>
+      <a class="edit-link" href="/citadoc-dashboard.html#sitio" target="_blank">
+        <span class="edit-link-label">🎨 Colores y logo</span>
+        <span class="edit-link-arrow">↗</span>
+      </a>
+    </div>
   </div>
 </div>
 
@@ -572,5 +672,93 @@
   </a>
 </nav>
 
+<script>
+var _sb = supabase.createClient(
+  'https://qxoomcqaafogczrvsyhg.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
+);
+
+var slug = new URLSearchParams(location.search).get('slug');
+
+function el(id){return document.getElementById(id)}
+function set(id,v){var e=el(id);if(e)e.textContent=v}
+
+if(slug){
+  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single()
+    .then(function(r){
+      if(r.error||!r.data)return;
+      var m = r.data;
+      var wc = m.web_config || {};
+      var nombre = (m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+      var esp = (m.especialidades||[])[0]||'';
+      var ciudad = m.ciudad||'';
+
+      // Título página
+      document.title = nombre + ' — CitaDoc';
+
+      // Nav
+      set('navName', nombre);
+      set('navEsp', esp + (ciudad?' · '+ciudad:''));
+
+      // Doctor name block
+      set('doctorName', nombre+(m.apellido_paterno?'':' P.'));
+      set('doctorTitle', esp + (ciudad?' · '+ciudad:''));
+
+      // Foto
+      var photo = wc.doctor_photo_url||m.foto_url||'';
+      var img = document.querySelector('.photo-wrap img');
+      if(img&&photo) img.src = photo;
+
+      // Logo
+      if(wc.logo_url){
+        var logoWrap = document.querySelector('.nav-brand');
+        if(logoWrap) logoWrap.innerHTML='<img src="'+wc.logo_url+'" style="height:28px;max-width:110px;object-fit:contain">';
+      }
+
+      // Headline
+      set('headline', wc.headline||('Precisión que cambia vidas.'));
+      set('subtext', wc.subheadline||('Cirugía ortopédica de vanguardia con protocolos de recuperación que devuelven la función y la calidad de vida.'));
+
+      // Color primario
+      var pc = wc.primary_color||m.primary_color||'#1A1A1A';
+      document.documentElement.style.setProperty('--brand',pc);
+      document.querySelectorAll('.btn-book,.cta-center .nav-icon,.citadoc-footer-icon').forEach(function(e){e.style.background=pc});
+
+      // Servicios
+      var srvs = wc.services||[];
+      var srvList = document.getElementById('servicesList');
+      if(srvList&&srvs.length){
+        srvList.innerHTML = srvs.map(function(s){return'<p>'+(s.t||s.titulo||s)+'</p>';}).join('');
+      }
+
+      // Formación
+      var diffs = wc.differentiators||[];
+      var formList = document.getElementById('formacionList');
+      if(formList&&diffs.length){
+        formList.innerHTML = diffs.map(function(d){return'<p>'+d+'</p>';}).join('');
+      }
+
+      // WhatsApp
+      if(m.whatsapp_activo&&m.whatsapp){
+        var waUrl='https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.');
+        document.querySelectorAll('.btn-wa,.nav-wa').forEach(function(a){if(a)a.href=waUrl;});
+      }
+
+      // Credenciales AO/AAOS — mostrar si hay senescyt
+      if(m.senescyt){
+        var creds = document.querySelector('.nav-creds');
+        if(creds) creds.innerHTML='<span class="cred-badge">SENESCYT</span>';
+      }
+
+      // Location
+      set('locationCity', ciudad||'Ecuador');
+
+      // Links dashboard con slug correcto
+      document.querySelectorAll('.edit-link').forEach(function(a){
+        a.href='/citadoc-dashboard.html';
+      });
+    });
+}
+</script>
 </body>
 </html>
