@@ -164,7 +164,7 @@ window.renderLayoutSurgical = function(config, doctor, locs, container) {
     + '<div class="sa2-edit-title">Editar desde Mi Sitio Web</div>'
     + '<div class="sa2-edit-links">'
     + ['📋 Servicios ofrecidos','🎓 Formación y logros','📸 Imágenes','✏️ Texto y headline','🎨 Colores y logo'].map(function(label){
-        return '<a class="sa2-edit-link" href="'+dashUrl+'" target="_blank"><span>'+label+'</span><span>↗</span></a>';
+        return '<a class="sa2-edit-link" href="'+dashUrl+'?panel=sitio" target="_blank" rel="noopener"><span>'+label+'</span><span>↗</span></a>';
       }).join('')
     + '</div></div></div>' : '';
 

@@ -3451,6 +3451,18 @@ async function aplicarMedico(m) {
 // ══ INIT ══
 document.addEventListener('DOMContentLoaded', async () => {
   if (typeof emailjs !== 'undefined') emailjs.init('HwpQ3DPRMmtcVZVt1');
+
+  // Deep link: ?panel=sitio abre Mi Sitio Web directamente
+  (function(){
+    var p = new URLSearchParams(location.search).get('panel');
+    if (p === 'sitio') {
+      setTimeout(function(){
+        var navBtn = document.querySelector('[onclick*="showPanel(\'sitio\'"]') || document.querySelector('[data-panel="sitio"]');
+        if (typeof showPanel === 'function') showPanel('sitio', navBtn);
+      }, 400);
+    }
+  })();
+
   // Fecha
   const now=new Date();
   const DS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
