@@ -427,6 +427,43 @@ _mr['specialties-grid'] = function(sc, wc, m, locs) {
     + '</section>';
 };
 
+_mr['recovery-philosophy'] = function(sc, wc, m, locs) {
+  var nombre = _nombre(m);
+  var photo = wc.doctor_photo_url || m.foto_url || '';
+  var bio = wc.about_text || wc.doctor_story || m.bio || '';
+  var q = wc.philosophy || wc.sobre_quote || '"Recuperar el movimiento es recuperar la vida."';
+  return '<section style="padding:4rem 6%;background:var(--s,#EEF3FF);border-bottom:1px solid var(--bo,#DBEAFE)" id="filosofia">'
+    + '<div style="display:grid;grid-template-columns:1fr;gap:2.5rem;max-width:1000px;margin:0 auto">'
+    + (photo ? '<div style="aspect-ratio:16/9;overflow:hidden;border-radius:16px"><img src="'+_e(photo)+'" alt="'+_e(nombre)+'" style="width:100%;height:100%;object-fit:cover;object-position:center 15%"></div>' : '')
+    + '<div style="display:flex;flex-direction:column;gap:1.2rem">'
+    + '<p style="font-family:\'Fraunces\',serif;font-size:clamp(1.2rem,3vw,1.6rem);font-style:italic;font-weight:400;color:var(--ink,#0D1B2A);line-height:1.5;border-left:3px solid var(--p,#0E3B99);padding-left:1rem">'+_e(q)+'</p>'
+    + (bio ? '<p style="font-size:.88rem;color:var(--mu,#4B5563);line-height:1.82">'+_e(bio.slice(0,280)+(bio.length>280?'…':''))+'</p>' : '')
+    + '</div>'
+    + '</div>'
+    + '</section>';
+};
+
+_mr['about-performance'] = function(sc, wc, m, locs) {
+  var nombre = _nombre(m);
+  var esp = (m.especialidades||[])[0]||'';
+  var photo = wc.doctor_photo_url || m.foto_url || '';
+  var bio = wc.about_text || wc.doctor_story || m.bio || ('Especialista en '+esp+' con sólida trayectoria clínica y deportiva.');
+  var diffs = wc.differentiators || [];
+  if (!diffs.length && m.anos_experiencia) diffs.push(m.anos_experiencia+' años de experiencia clínica');
+  if (!diffs.length && esp) diffs.push('Especialista en '+esp);
+  return '<section style="padding:4rem 6%;border-bottom:1px solid var(--bo,#DBEAFE)" id="sobre-mi">'
+    + '<div style="display:grid;grid-template-columns:1fr;gap:2rem;max-width:900px;margin:0 auto">'
+    + (photo ? '<img src="'+_e(photo)+'" alt="'+_e(nombre)+'" style="width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center 10%;border-radius:16px">' : '')
+    + '<div>'
+    + '<div style="font-size:.55rem;font-weight:700;color:var(--p,#0E3B99);text-transform:uppercase;letter-spacing:.2em;margin-bottom:.5rem;opacity:.7">El especialista</div>'
+    + '<h2 style="font-family:\'Fraunces\',serif;font-size:clamp(1.5rem,4vw,2rem);font-weight:900;color:var(--ink,#0D1B2A);line-height:.9;letter-spacing:-.06em;margin-bottom:1rem">'+_e(nombre)+'</h2>'
+    + '<p style="font-size:.88rem;color:var(--mu,#4B5563);line-height:1.82;margin-bottom:1.2rem">'+_e(bio)+'</p>'
+    + diffs.slice(0,4).map(function(d){return'<div style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--ink,#0D1B2A);margin-bottom:.35rem"><span style="color:var(--p,#0E3B99);font-weight:700">✓</span>'+_e(d)+'</div>';}).join('')
+    + '</div>'
+    + '</div>'
+    + '</section>';
+};
+
 _mr['booking-cta-strong'] = function(sc, wc, m, locs) {
   var h2 = wc.cta_final || 'Recuperate hoy';
   var sub = wc.patient_experience || 'Diagnóstico especializado y plan de recuperación personalizado.';
