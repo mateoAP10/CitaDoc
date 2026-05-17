@@ -3,6 +3,72 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const PAYPHONE_TOKEN = Deno.env.get('PAYPHONE_TOKEN') || ''
 
+// ── Demo activation ──────────────────────────────────────────────────────────
+// clientTransactionId format: "cd-demo-{slug}-{timestamp}"
+async function activateDemoSite(slug: string, email: string | undefined, sb: ReturnType<typeof createClient>) {
+  // 1. Load demo
+  const { data: demo, error: dErr } = await sb
+    .from('generated_demos')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+  if (dErr || !demo) throw new Error('Demo not found: ' + slug)
+
+  // 2. Idempotency: already paid
+  if (demo.payment_status === 'paid') {
+    console.log('[webhook-demo] Already paid, skipping:', slug)
+    return { note: 'already_paid', slug }
+  }
+
+  // 3. Build medico data
+  const nameParts = (demo.doctor_name || '').replace(/^(dra?\.?\s+)/i, '').trim().split(' ')
+  const titulo   = /dra\./i.test(demo.doctor_name || '') ? 'Dra.' : 'Dr.'
+  const nombre   = nameParts[0] || ''
+  const apellido = nameParts.slice(1).join(' ') || ''
+  const wc       = { ...(demo.web_config_jsonb || {}), selected_layout: demo.selected_layout || 'surgical-authority', web_status: 'active' }
+
+  const medicoData = {
+    slug, titulo, nombre, apellido,
+    especialidades: [demo.specialty],
+    ciudad:         demo.city || null,
+    foto_url:       demo.photo_url || null,
+    logo_url:       demo.logo_url || null,
+    email:          email || null,
+    web_config:     wc,
+    web_status:     'active',
+    plan:           'pro_web',
+    plan_activo:    true,
+    activo:         true,
+  }
+
+  // 4. Upsert medico
+  let medicoId = demo.medico_id
+  if (!medicoId) {
+    const existing = await sb.from('medicos').select('id').eq('slug', slug).maybeSingle()
+    if (existing.data) {
+      await sb.from('medicos').update(medicoData).eq('slug', slug)
+      medicoId = existing.data.id
+    } else {
+      const ins = await sb.from('medicos').insert(medicoData).select('id').single()
+      if (ins.error) throw ins.error
+      medicoId = ins.data.id
+    }
+  } else {
+    await sb.from('medicos').update({ web_status: 'active', plan: 'pro_web', plan_activo: true }).eq('id', medicoId)
+  }
+
+  // 5. Update demo status
+  await sb.from('generated_demos').update({
+    payment_status: 'paid',
+    status:         'active',
+    medico_id:      medicoId,
+    activated_at:   new Date().toISOString(),
+  }).eq('slug', slug)
+
+  console.log('[webhook-demo] Activated:', slug, '→ medico:', medicoId)
+  return { ok: true, slug, medicoId, url: `https://${slug}.citadoc.lat` }
+}
+
 // Extract medico UUID from clientTransactionId or reference
 // clientTransactionId format: "cd-pro_web-{uuid}-{timestamp}"
 // reference format: "CitaDoc PRO+WEB | {uuid}"
@@ -78,7 +144,16 @@ serve(async (req) => {
       }
     }
 
-    // ── EXTRACT medico ID ──
+    // ── DEMO ACTIVATION (cd-demo-{slug}-{timestamp}) ──
+    const demoMatch = (clientTransactionId || '').match(/^cd-demo-(.+)-\d+$/)
+    if (demoMatch) {
+      const slug = demoMatch[1]
+      console.log('[webhook] Demo activation for slug:', slug)
+      const result = await activateDemoSite(slug, email, sb)
+      return new Response(JSON.stringify(result), { headers: { 'Content-Type': 'application/json' } })
+    }
+
+    // ── EXTRACT medico ID (existing flow) ──
     const { medicoId, plan } = extractMedicoId(clientTransactionId || '', reference || '')
 
     if (!medicoId) {

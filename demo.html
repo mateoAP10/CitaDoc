@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
 <script src="js/shared.js"></script>
 <script src="js/booking.js"></script>
 <!-- Website Engine — mismo que citadoc-web.html -->
@@ -1567,35 +1568,29 @@ body[data-layout="future-minimal"] .h-trust-icon{width:38px;height:38px;border-r
 </div>
 
 <!-- ── DEMO ACTIVATION BANNER ── -->
-<div id="demoBanner" style="
-  position:fixed;bottom:0;left:0;right:0;z-index:9999;
-  background:linear-gradient(135deg,#0d2318 0%,#1e4d34 100%);
-  border-top:1px solid rgba(45,122,85,.35);
-  padding:1rem 1.25rem;
-  display:flex;align-items:center;justify-content:space-between;gap:1rem;
-  box-shadow:0 -8px 32px rgba(0,0,0,.25);
-  font-family:'DM Sans',sans-serif;
-">
-  <div style="flex:1;min-width:0">
-    <div style="font-size:.78rem;color:rgba(255,255,255,.5);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.15rem">
-      Vista previa AI · <span id="demoExpiry" style="color:#4ade80"></span>
+<!-- DEMO BANNER — fixed bottom, pago real -->
+<div id="demoBanner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#060d18 0%,#0d1b2e 100%);border-top:1px solid rgba(47,107,255,.25);padding:1rem 1.25rem;box-shadow:0 -8px 32px rgba(0,0,0,.4);font-family:'DM Sans',sans-serif">
+
+  <!-- Info row -->
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.2rem">Vista previa · <span id="demoExpiry" style="color:#4ade80"></span></div>
+      <div style="font-size:.88rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">¿Te identificas? Publicá tu sitio ahora.</div>
+      <div id="demoSubdomain" style="display:none;font-size:.65rem;color:rgba(74,222,128,.65);margin-top:.15rem;letter-spacing:.01em"></div>
     </div>
-    <div style="font-size:.92rem;color:#fff;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-      ¿Te identificas con este sitio?
-    </div>
-    <div id="demoSubdomain" style="display:none;font-size:.68rem;color:rgba(74,222,128,.7);margin-top:.2rem;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+    <a id="demoWaBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:#4ade80;padding:.5rem .9rem;border-radius:50px;font-size:.78rem;font-weight:600;white-space:nowrap;text-decoration:none;flex-shrink:0">
+      💬 Preguntar
+    </a>
   </div>
-  <a id="demoWaBtn" href="#" target="_blank" rel="noopener" style="
-    display:inline-flex;align-items:center;gap:.5rem;
-    background:#25d366;color:#fff;
-    padding:.6rem 1.1rem;border-radius:50px;
-    font-size:.85rem;font-weight:700;
-    white-space:nowrap;text-decoration:none;
-    flex-shrink:0;
-    box-shadow:0 4px 14px rgba(37,211,102,.35);
-  ">
-    💬 Activar sitio
-  </a>
+
+  <!-- PayPhone container -->
+  <div id="pp-button-demo" style="width:100%"></div>
+
+  <!-- Fallback si PayPhone no carga -->
+  <button id="demoPagoFallback" onclick="window._initDemoPayPhone()" style="display:none;width:100%;height:52px;border-radius:14px;border:none;background:linear-gradient(180deg,#3478FF 0%,#2157D8 100%);color:#fff;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(47,107,255,.35)">
+    Publicar mi sitio — $150
+  </button>
+
 </div>
 <!-- ── END DEMO BANNER ── -->
 <script>
@@ -2827,8 +2822,14 @@ function mnavActive(item){
       waBtn.href = 'https://wa.me/' + _CITADOC_WA + '?text=' + msg;
     });
 
+    // Guardar demo para PayPhone
+    window._currentDemo = demo;
+
+    // Inicializar PayPhone (con delay para que el SDK cargue)
+    setTimeout(function() { window._initDemoPayPhone(demo); }, 800);
+
     // Agregar padding-bottom al body para que el banner no tape contenido
-    document.body.style.paddingBottom = '90px';
+    document.body.style.paddingBottom = '160px';
 
     // Interceptar clicks de booking en demo → scroll al banner
     document.addEventListener('click', function (e) {
@@ -2848,6 +2849,48 @@ function mnavActive(item){
       }
     }, true);
   }
+  // ── PAYPHONE DEMO — pago real $150 ─────────────────────────────────────────
+  window._initDemoPayPhone = function(demoData) {
+    var d = demoData || window._currentDemo;
+    if (!d || !d.slug) return;
+
+    var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
+    var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef';
+
+    // clientTransactionId: cd-demo-{slug}-{timestamp}
+    var txId = 'cd-demo-' + d.slug + '-' + Date.now();
+    var container = document.getElementById('pp-button-demo');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (typeof PPaymentButtonBox === 'undefined') {
+      var fb = document.getElementById('demoPagoFallback');
+      if (fb) fb.style.display = 'block';
+      return;
+    }
+
+    try {
+      var ppb = new PPaymentButtonBox({
+        token:               PAYPHONE_TOKEN,
+        storeId:             PAYPHONE_STOREID,
+        clientTransactionId: txId,
+        amount:              15000,    // $150 en centavos
+        amountWithoutTax:    15000,
+        currency:            'USD',
+        reference:           'CitaDoc Web Premium | ' + d.slug,
+        lang:                'es',
+        defaultMethod:       'card',
+        email:               d.email || '',
+      });
+      ppb.render('pp-button-demo');
+      window._ppDemoTx = { id: txId, slug: d.slug, startedAt: Date.now() };
+    } catch(e) {
+      console.error('[PayPhone Demo]', e);
+      var fb = document.getElementById('demoPagoFallback');
+      if (fb) fb.style.display = 'block';
+    }
+  };
+
   // Inject demo animation
   var _demoStyle = document.createElement('style');
   _demoStyle.textContent = '@keyframes demoPulse{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}';
