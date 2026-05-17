@@ -287,6 +287,15 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 
   <div class="divider"></div>
 
+  <!-- Leads (Scout Agent) -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+    <div class="sec-title">Leads detectados</div>
+    <button class="btn-sync" style="font-size:.68rem" onclick="runScout()">⚡ Scoutear ahora</button>
+  </div>
+  <div id="leadsList"><div class="empty">Sin leads aún — el Scout corre diariamente a las 8am UTC</div></div>
+
+  <div class="divider"></div>
+
   <!-- Signals -->
   <div class="sec-title" style="margin-bottom:.75rem">Señales</div>
   <div id="signalsList"><div class="loading">Cargando...</div></div>
@@ -361,6 +370,88 @@ async function uploadCreative(itemId, uid, input) {
   _allContent = _allContent.map(function(i) {
     return i.id === itemId ? Object.assign({}, i, { image_url: publicUrl }) : i;
   });
+}
+
+// ── Scout Leads ──────────────────────────────────────────────────────────────
+
+var SCORE_COLORS = ['','','','','#f59e0b','#f59e0b','#fb923c','#fb923c','#4ade80','#4ade80','#22c55e'];
+
+function renderLeads(leads) {
+  var el = document.getElementById('leadsList');
+  if (!leads.length) { el.innerHTML = '<div class="empty">Sin leads — el Scout corre diariamente a las 8am UTC</div>'; return; }
+
+  el.innerHTML = leads.map(function(lead) {
+    var scoreColor = SCORE_COLORS[lead.premium_score] || '#6b7280';
+    var haDemo     = !!lead.demo_slug;
+    var igUrl      = lead.instagram_handle
+      ? 'https://instagram.com/' + lead.instagram_handle
+      : (lead.profile_url || '#');
+
+    return '<div class="demo-row">' +
+      '<div style="font-size:.95rem;font-weight:700;color:' + scoreColor + ';flex-shrink:0;width:24px;text-align:center">' + lead.premium_score + '</div>' +
+      '<div class="demo-info">' +
+        '<div class="demo-name">' + esc(lead.doctor_name || lead.instagram_handle || 'Médico') + '</div>' +
+        '<div class="demo-spec">' + esc(lead.specialty) + ' · ' + esc(lead.city) +
+          (lead.score_reason ? ' · <span style="color:rgba(255,255,255,.2)">' + esc(lead.score_reason) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:.35rem;flex-shrink:0">' +
+        '<button class="btn-sm" onclick="window.open(\'' + igUrl + '\',\'_blank\')">IG</button>' +
+        (haDemo
+          ? '<button class="btn-sm" style="color:#4ade80" onclick="window.open(\'https://citadoc.lat/demo/' + lead.demo_slug + '\',\'_blank\')">Demo ↗</button>'
+          : '<button class="btn-sm" style="background:rgba(61,153,112,.2);color:#4ade80" onclick="generateLeadDemo(\'' + lead.id + '\',\'' + esc(lead.doctor_name||'') + '\',\'' + esc(lead.specialty) + '\',\'' + esc(lead.city||'') + '\')">→ Demo</button>'
+        ) +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function generateLeadDemo(leadId, name, specialty, city) {
+  var btn = event.target;
+  btn.textContent = '...';
+  btn.disabled = true;
+
+  try {
+    var res = await fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/generate-demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_ANON },
+      body: JSON.stringify({ doctor_name: name, specialty, city }),
+    });
+    var data = await res.json();
+    if (data.slug) {
+      // Guardar el demo_slug en el lead
+      await sb.from('doctor_leads').update({ demo_slug: data.slug, status: 'demo_generated' }).eq('id', leadId);
+      btn.textContent = 'Demo ↗';
+      btn.onclick = function(){ window.open('https://citadoc.lat/demo/' + data.slug, '_blank'); };
+      btn.style.color = '#4ade80';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = '→ Demo';
+    btn.disabled = false;
+  }
+}
+
+async function runScout() {
+  var btn = document.getElementById('syncBtn');
+  btn.classList.add('loading');
+  try {
+    var res = await fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/scout-leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_ANON },
+      body: JSON.stringify({}),
+    });
+    var data = await res.json();
+    if (data.error) {
+      alert('Scout error: ' + data.error);
+    } else {
+      alert('Scout completado: ' + data.qualified + ' leads calificados, ' + data.inserted + ' nuevos.');
+      loadData();
+    }
+  } catch(e) {
+    alert('Error conectando con Scout Agent');
+  }
+  btn.classList.remove('loading');
 }
 
 // ── Scheduling ───────────────────────────────────────────────────────────────
@@ -517,11 +608,18 @@ async function loadData() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
+    var { data: leads } = await sb
+      .from('doctor_leads')
+      .select('id,instagram_handle,doctor_name,specialty,city,premium_score,score_reason,website_detected,status,demo_slug,created_at')
+      .order('premium_score', { ascending: false })
+      .limit(20);
+
     renderStats(analytics);
     updateCounts();
     renderContent();
     renderScheduled(scheduled || []);
     renderDemos(demos || []);
+    renderLeads(leads || []);
     renderSignals(analytics);
 
   } catch(e) {
