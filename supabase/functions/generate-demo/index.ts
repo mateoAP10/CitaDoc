@@ -217,6 +217,8 @@ serve(async (req) => {
 
     const demo_url = `https://citadoc.lat/demo/${demo.slug}`
 
+    // Showcase se genera vía pg_cron cada 5 min para demos sin showcase_content
+
     return json({
       slug: demo.slug,
       demo_url,
