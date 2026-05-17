@@ -95,15 +95,32 @@ body{background:#050d08;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
   background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
   border-radius:12px;padding:1rem;margin-bottom:.6rem;
 }
-.queue-doctor{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:.5rem}
+.queue-card.published{
+  opacity:.5;border-color:rgba(45,122,85,.2);
+  background:rgba(45,122,85,.04);
+}
+.queue-doctor{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.queue-badge{
+  font-size:.6rem;padding:.15rem .45rem;border-radius:4px;font-weight:600;letter-spacing:.04em;
+  background:rgba(45,122,85,.2);color:#4ade80;
+}
+.queue-badge.pending{background:rgba(251,191,36,.15);color:#fbbf24}
 .queue-caption{
   font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.55;
   background:rgba(0,0,0,.2);border-radius:8px;padding:.65rem .75rem;
   white-space:pre-wrap;word-break:break-word;
 }
-.queue-cta{font-size:.7rem;color:#2d7a55;font-weight:600}
 .queue-footer{display:flex;gap:.5rem;margin-top:.65rem;align-items:center;flex-wrap:wrap}
 .queue-tags{font-size:.66rem;color:rgba(255,255,255,.2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.queue-published-at{font-size:.65rem;color:rgba(45,122,85,.6);margin-top:.35rem}
+
+/* Channel selector */
+.chan-select{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;
+  font-size:.68rem;padding:.22rem .4rem;outline:none;cursor:pointer;
+}
+.chan-select option{background:#0a1a10}
 
 /* Signals */
 .signal-row{
@@ -230,7 +247,7 @@ async function loadData() {
     // Leer demos con showcase_content
     var { data: demos } = await sb
       .from('generated_demos')
-      .select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,status,showcase_content,created_at')
+      .select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,status,showcase_content,created_at,published_at,publish_channel')
       .order('created_at', { ascending: false })
       .limit(20);
 
@@ -285,21 +302,76 @@ function renderQueue(demos) {
 
   if (!ready.length) { el.innerHTML = '<div class="empty">No hay showcases listos aún</div>'; return; }
 
+  // Pendientes primero, publicados al final
+  ready.sort(function(a,b) {
+    if (a.published_at && !b.published_at) return 1;
+    if (!a.published_at && b.published_at) return -1;
+    return 0;
+  });
+
   el.innerHTML = ready.map(function(d) {
-    var sc      = d.showcase_content || {};
-    var caption = (sc.caption || '').replace(/\n/g, '\n');
-    var tags    = sc.hashtags || '';
-    var id      = 'cp-' + d.slug.replace(/[^a-z0-9]/gi, '');
-    return '<div class="queue-card">' +
-      '<div class="queue-doctor">' + esc(d.doctor_name) + ' · ' + esc(d.specialty) + '</div>' +
+    var sc         = d.showcase_content || {};
+    var caption    = sc.caption || '';
+    var tags       = sc.hashtags || '';
+    var id         = 'cp-' + d.slug.replace(/[^a-z0-9]/gi, '');
+    var isPublished = !!d.published_at;
+    var badgeClass  = isPublished ? '' : 'pending';
+    var badgeText   = isPublished ? '✓ ' + (d.publish_channel || 'publicado') : 'pendiente';
+    var pubDate     = isPublished ? '<div class="queue-published-at">Publicado ' + formatDate(d.published_at) + ' · ' + (d.publish_channel || '') + '</div>' : '';
+
+    var publishBtn  = isPublished ? '' :
+      '<select class="chan-select" id="chan-' + id + '">' +
+        '<option value="instagram">Instagram</option>' +
+        '<option value="whatsapp">WhatsApp</option>' +
+        '<option value="linkedin">LinkedIn</option>' +
+        '<option value="otro">Otro</option>' +
+      '</select>' +
+      '<button class="btn-xs btn-copy" id="pub-' + id + '" onclick="markPublished(\'' + d.slug + '\',\'' + id + '\')">Publicar ✓</button>';
+
+    return '<div class="queue-card ' + (isPublished ? 'published' : '') + '" id="card-' + id + '">' +
+      '<div class="queue-doctor">' +
+        esc(d.doctor_name) + ' · ' + esc(d.specialty) +
+        '<span class="queue-badge ' + badgeClass + '">' + badgeText + '</span>' +
+      '</div>' +
       '<div class="queue-caption" id="cap-' + id + '">' + esc(caption) + '</div>' +
+      pubDate +
       '<div class="queue-footer">' +
         '<div class="queue-tags">' + esc(tags) + '</div>' +
-        '<button class="btn-xs btn-copy" id="' + id + '" onclick="copyCaption(\'' + id + '\',\'' + d.slug + '\')">Copiar</button>' +
+        '<button class="btn-xs btn-copy" id="' + id + '" onclick="copyCaption(\'' + id + '\')">Copiar</button>' +
+        publishBtn +
         '<button class="btn-xs btn-open" onclick="window.open(\'https://citadoc.lat/demo/' + d.slug + '\',\'_blank\')">Demo</button>' +
       '</div>' +
     '</div>';
   }).join('');
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  return d.toLocaleDateString('es', { day:'numeric', month:'short' });
+}
+
+async function markPublished(slug, id) {
+  var chanEl   = document.getElementById('chan-' + id);
+  var channel  = chanEl ? chanEl.value : 'instagram';
+  var btn      = document.getElementById('pub-' + id);
+  if (btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
+
+  var { error } = await sb.from('generated_demos')
+    .update({ published_at: new Date().toISOString(), publish_channel: channel })
+    .eq('slug', slug);
+
+  if (!error) {
+    var card = document.getElementById('card-' + id);
+    if (card) {
+      card.classList.add('published');
+      card.querySelector('.queue-badge').textContent = '✓ ' + channel;
+      card.querySelector('.queue-badge').classList.remove('pending');
+      // Remove publish controls
+      if (btn) btn.parentElement.removeChild(btn);
+      if (chanEl) chanEl.parentElement.removeChild(chanEl);
+    }
+  }
 }
 
 function renderSignals(a) {
