@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CitaDoc Master Scene</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: #050816;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      position: relative;
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+      min-height: 100svh;
+      overflow: hidden;
+      background: #050816;
+    }
+
+    .scene-media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 68% center;
+      transform: scale(1.04);
+      animation: zoom 14s ease-in-out infinite alternate;
+    }
+
+    @keyframes zoom {
+      from { transform: scale(1.02); }
+      to   { transform: scale(1.08); }
+    }
+
+    .scene-overlay {
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(5,8,22,.08) 0%,
+          rgba(5,8,22,.18) 34%,
+          rgba(5,8,22,.92) 100%
+        ),
+        linear-gradient(
+          90deg,
+          rgba(5,8,22,.82) 0%,
+          rgba(5,8,22,.48) 34%,
+          rgba(5,8,22,.12) 70%,
+          rgba(5,8,22,0) 100%
+        );
+    }
+
+    .scene-nav {
+      position: relative;
+      z-index: 20;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding:
+        calc(env(safe-area-inset-top, 0px) + 22px)
+        24px
+        0;
+    }
+
+    .scene-logo-img {
+      height: 36px;
+      max-width: 132px;
+      object-fit: contain;
+      opacity: .92;
+    }
+
+    .scene-logo-text {
+      font-size: .9rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.9);
+      letter-spacing: -.01em;
+      line-height: 1;
+    }
+
+    .scene-logo-sub {
+      font-size: .52rem;
+      color: rgba(255,255,255,.4);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin-top: 2px;
+    }
+
+    .scene-menu {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .scene-content {
+      position: relative;
+      z-index: 20;
+      padding: 140px 28px 0;
+    }
+
+    .scene-kicker {
+      display: inline-block;
+      color: #3b82f6;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+
+    .scene-title {
+      margin-top: 18px;
+      font-size: clamp(54px, 15vw, 88px);
+      line-height: .92;
+      letter-spacing: -.07em;
+      font-weight: 900;
+      color: white;
+      max-width: 320px;
+    }
+
+    .scene-title span {
+      color: #2563eb;
+    }
+
+    .scene-description {
+      margin-top: 22px;
+      max-width: 290px;
+      color: rgba(255,255,255,.78);
+      font-size: 19px;
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    .scene-actions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      padding:
+        24px
+        24px
+        calc(env(safe-area-inset-bottom, 0px) + 20px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
+      border: none;
+      outline: none;
+      border-radius: 22px;
+      padding: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 18px 60px rgba(37,99,235,.34);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.08);
+      color: white;
+    }
+
+  </style>
+</head>
+<body>
+
+  <main class="scene">
+
+    <!-- REEMPLAZAR src con foto real del médico -->
+    <img
+      class="scene-media"
+      src="https://qxoomcqaafogczrvsyhg.supabase.co/storage/v1/object/public/fotos-medicos/8990d8b1-da08-406f-b186-ace12fe6b720.JPG"
+      alt="Doctor"
+    />
+
+    <div class="scene-overlay"></div>
+
+    <header class="scene-nav">
+
+      <!-- REEMPLAZAR con logo real — img o texto -->
+      <div>
+        <div class="scene-logo-text">Dr. Mateo Alarcón</div>
+        <div class="scene-logo-sub">Traumatología · Ortopedia</div>
+      </div>
+
+      <button class="scene-menu">≡</button>
+
+    </header>
+
+    <section class="scene-content">
+
+      <span class="scene-kicker">
+        TRAUMATOLOGÍA Y REHABILITACIÓN
+      </span>
+
+      <h1 class="scene-title">
+        Recupera tu movimiento.
+        <span>Supera tus límites.</span>
+      </h1>
+
+      <p class="scene-description">
+        Recuperación avanzada para lesiones deportivas y rehabilitación funcional premium.
+      </p>
+
+    </section>
+
+    <div class="scene-actions">
+
+      <button class="btn-primary">
+        Agendar cita
+      </button>
+
+      <button class="btn-secondary">
+        WhatsApp
+      </button>
+
+    </div>
+
+  </main>
+
+</body>
+</html>
