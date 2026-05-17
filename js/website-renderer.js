@@ -171,31 +171,28 @@ window.renderWebsite = function(doctor, locs, wc, isPreview) {
     ? window.planWebsiteComposition(config, doctor)
     : [];
 
-  // ── 6. Ocultar UI legacy que interfiere con la escena ───────────
-  // El nuevo layout es self-contained: trae su propio nav, hero y footer.
-  // Todo el HTML legacy de citadoc-web.html debe ocultarse.
-  var legacyHide = [
-    'nav', 'wNav',                          // navs
-    'stickyBar', 'stickyBookCta',           // CTAs flotantes
-    'mobileBottomNav',                      // nav mobile
-    'inicio',                               // hero section
-    'servicios',                            // sección servicios
-    'wLocsSection',                         // sección sedes
-    'siteFooter',                           // footer principal
-    'bkOverlay',                            // booking modal
-    'demoBanner',                           // demo activation banner (se re-agrega si aplica)
+  // ── 6. Ocultar TODO el HTML legacy ──────────────────────────────
+  // El nuevo layout es self-contained. Ocultar agresivamente todo
+  // lo que no sea #dna-main o el banner de demo.
+  var KEEP_IDS = { 'dna-main': true, 'demoBanner': true, 'bkOverlay': true };
+
+  // Por ID explícito
+  var legacyIds = [
+    'wNav', 'nav',
+    'inicio', 'servicios', 'sobre-mi', 'testimonios',
+    'contacto', 'wLocsSection', 'siteFooter',
+    'stickyBar', 'stickyBookCta', 'mobileBottomNav',
   ];
-  legacyHide.forEach(function(id) {
+  legacyIds.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  // Ocultar secciones genéricas por clase
-  document.querySelectorAll(
-    'nav.nav, .mobile-bottom-nav, .sticky-book-cta, section.sec, section.hero, footer'
-  ).forEach(function(el) {
-    if (el.id !== 'dna-main') el.style.display = 'none';
+
+  // Por selector — todos los hijos directos del body que no están en KEEP_IDS
+  Array.prototype.forEach.call(document.body.children, function(el) {
+    if (!KEEP_IDS[el.id]) el.style.display = 'none';
   });
-  // Quitar padding-top del body que el nav fijo agrega
+
   document.body.style.paddingTop = '0';
 
   // ── 7. Resolver container #dna-main ─────────────────────────────
