@@ -13,7 +13,7 @@
       "has": [
         {
           "type": "host",
-          "value": ".+\\.citadoc\\.lat"
+          "value": "(?!www\\.)((?!citadoc\\.lat$).+)\\.citadoc\\.lat"
         }
       ],
       "destination": "/citadoc-web.html"
