@@ -171,10 +171,23 @@ window.renderWebsite = function(doctor, locs, wc, isPreview) {
     ? window.planWebsiteComposition(config, doctor)
     : [];
 
-  // ── 6. Materializar el plan ─────────────────────────────────────
+  // ── 6. Ocultar UI legacy que interfiere con la escena ───────────
+  // El scene tiene su propio logo/nav y sus propios CTAs — el legacy los tapa.
+  var legacyHide = ['nav', 'stickyBar', 'stickyBookCta', 'mobileBottomNav'];
+  legacyHide.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  // También el nav por clase (puede tener id distinto)
+  document.querySelectorAll('nav.nav, .mobile-bottom-nav, .sticky-book-cta').forEach(function(el) {
+    el.style.display = 'none';
+  });
+  // Quitar padding-top del body que el nav fijo agrega
+  document.body.style.paddingTop = '0';
+
+  // ── 7. Materializar el plan ─────────────────────────────────────
   var main = document.getElementById('dna-main');
   if (!main) {
-    // Fallback: si no hay contenedor dna-main, crear uno
     main = document.createElement('main');
     main.id = 'dna-main';
     var footer = document.getElementById('siteFooter') || document.querySelector('footer');

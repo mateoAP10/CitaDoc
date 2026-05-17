@@ -202,36 +202,31 @@ var SCENE_CSS = `
 .hero-cta-book:hover { opacity: .9; }
 
 .hero-cta-wa {
-  flex: 0 0 54px;
+  flex: 0 0 140px;
   height: 54px;
   background: rgba(255,255,255,.1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.14);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   text-decoration: none;
   color: #fff;
-  font-size: 1.2rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .88rem;
+  font-weight: 600;
   transition: background .2s;
 }
 .hero-cta-wa:hover { background: rgba(255,255,255,.16); }
 
-/* Desktop: layout horizontal */
+/* Desktop */
 @media (min-width: 900px) {
-  .hero-content {
-    padding: 0 64px 200px;
-    max-width: 600px;
-  }
+  .hero-content { padding: 0 64px 200px; max-width: 600px; }
   .hero-h1 { font-size: clamp(52px, 6vw, 88px); }
-  .hero-ctas {
-    padding: 20px 64px calc(env(safe-area-inset-bottom, 0px) + 20px);
-    max-width: 440px;
-  }
-  .hero-cta-wa { flex: 0 0 auto; padding: 0 20px; font-size: .88rem; }
-  .hero-cta-wa::before { content: 'WhatsApp'; }
+  .hero-ctas { padding: 20px 64px calc(env(safe-area-inset-bottom, 0px) + 20px); max-width: 480px; }
 }
 
 `;
@@ -348,7 +343,7 @@ window.renderSceneHeroAthletic = function(sc, wc, m, locs) {
     // CTAs fijos en thumb zone
     + '<div class="hero-ctas">'
     + '<button class="hero-cta-book" onclick="abrirBooking()">Agendar cita</button>'
-    + (wa?'<a class="hero-cta-wa" href="'+wa+'" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>':'')
+    + (wa?'<a class="hero-cta-wa" href="'+wa+'" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>WhatsApp</a>':'')
     + '</div>'
 
     + '</section>';
