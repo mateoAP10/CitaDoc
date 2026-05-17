@@ -146,6 +146,7 @@ window.renderLayoutPerformance = function(config, doctor, locs, container){
     +'</div>'
     +credsHTML
     +(ciudad?'<div class="pa2-location"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span>'+e(ciudad)+'</span></div>':'')
+    +(locs&&locs.length?'<div style="margin-bottom:18px;border-top:1px solid rgba(255,255,255,.07);padding-top:18px"><div style="font-size:.52rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.18em;margin-bottom:12px">Consultorio</div>'+locs.map(function(l){return'<div style="margin-bottom:10px"><div style="font-size:.88rem;font-weight:700;color:#fff;margin-bottom:2px">'+(l.nombre||'Consultorio')+'</div><div style="font-size:.75rem;color:rgba(255,255,255,.4);line-height:1.5">'+(l.direccion||'')+(l.ciudad?', '+l.ciudad:'')+'</div>'+(l.maps_url?'<a href="'+l.maps_url+'" target="_blank" rel="noopener" style="font-size:.68rem;color:rgba(255,255,255,.35);font-weight:600;text-decoration:none;display:inline-block;margin-top:.25rem">Ver en mapa →</a>':'')+'</div>';}).join('')+'</div>':'')
     +'<div class="pa2-cd-footer"><div class="pa2-cd-icon">C</div><span class="pa2-cd-text">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc Health Network</a></span></div>'
     +editHTML
     +'</div>'

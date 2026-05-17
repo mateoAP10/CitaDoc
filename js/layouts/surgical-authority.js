@@ -214,6 +214,7 @@ window.renderLayoutSurgical = function(config, doctor, locs, container) {
     + (ciudad?'<div class="sa2-location">'+SVG_LOC+'<span>'+e(ciudad)+'</span></div>':'')
 
     // CitaDoc
+    + (locs&&locs.length?'<div style="margin-bottom:18px;border-top:1px solid #DDD5C8;padding-top:18px"><div class="sa2-citadoc-text" style="font-size:.52rem;font-weight:700;color:#9A8F82;text-transform:uppercase;letter-spacing:.18em;margin-bottom:12px">Consultorio</div>'+locs.map(function(l){return'<div style="margin-bottom:10px"><div style="font-size:.88rem;font-weight:700;color:#1A1A1A;margin-bottom:2px">'+(l.nombre||'Consultorio')+'</div><div style="font-size:.75rem;color:#7A7268;line-height:1.5">'+(l.direccion||'')+(l.ciudad?', '+l.ciudad:'')+'</div>'+(l.maps_url?'<a href="'+l.maps_url+'" target="_blank" rel="noopener" style="font-size:.68rem;color:#9A8F82;font-weight:600;text-decoration:none;display:inline-block;margin-top:.25rem">Ver en mapa →</a>':'')+'</div>';}).join('')+'</div>':'')
     + '<div class="sa2-citadoc-footer"><div class="sa2-citadoc-icon">C</div><span class="sa2-citadoc-text">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc Health Network</a></span></div>'
 
     // Editar manual (solo en draft)

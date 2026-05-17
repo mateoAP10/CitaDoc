@@ -91,6 +91,7 @@
     <button class="v2-chip" data-panel="pForm">Formación</button>
     <button class="v2-chip" data-panel="pConsulta">Consulta</button>
     <button class="v2-chip" data-panel="pGal">Galería</button>
+    <button class="v2-chip" data-panel="pUbic">Ubicación</button>
   </div>
 
   <div id="pSobre" class="v2-panel">
@@ -113,6 +114,7 @@
     <div class="v2-consult-row"><span class="v2-consult-label">Ciudad</span><span class="v2-consult-value" id="v2PCi">—</span></div>
   </div>
   <div id="pGal" class="v2-panel" hidden><div class="v2-gallery" id="v2Gal"></div></div>
+  <div id="pUbic" class="v2-panel" hidden><div id="v2LocList" style="display:flex;flex-direction:column;gap:12px"></div></div>
 
   <div class="v2-footer"><div class="v2-footer-icon">C</div><span class="v2-footer-text">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc Health Network</a></span></div>
   <div id="v2Edit" style="display:none">
@@ -144,6 +146,7 @@ if(slug){_sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).singl
   document.title=n+' — CitaDoc';
   if(logo){el('v2NavBrand').innerHTML='<img src="'+logo+'" class="v2-logo" alt="'+n+'">';}else{var ini=((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase();set('v2Monogram',ini);}
   var img=el('v2Photo');if(img&&photo)img.src=photo;
+  _sb.from('doctor_locations').select('nombre,direccion,ciudad,maps_url').eq('medico_id',m.id).order('created_at').then(function(lr){var ll=el('v2LocList');if(!ll||!lr.data||!lr.data.length)return;ll.innerHTML=lr.data.map(function(l){return'<div style="padding:12px 0;border-bottom:.5px solid var(--bo)"><div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:2px">'+(l.nombre||'Consultorio')+'</div><div style="font-size:.75rem;color:var(--mu);line-height:1.5">'+(l.direccion||'')+(l.ciudad?', '+l.ciudad:'')+'</div>'+(l.maps_url?'<a href="'+l.maps_url+'" target="_blank" rel="noopener" style="font-size:.68rem;color:var(--mu);font-weight:600;text-decoration:none;display:inline-block;margin-top:.25rem">Ver en mapa →</a>':'')+'</div>';}).join('');});
   set('v2Name',n);set('v2Esp',(esp+(ciudad?' · '+ciudad:'')).toUpperCase());
   set('v2Bio',wc.about_text||wc.doctor_story||m.bio||('Especialista en '+esp+(ciudad?' en '+ciudad:'')+'. Comprometido con la excelencia clínica y la atención de cada paciente.'));
   if(m.precio){var pt=el('v2Precio'),pv=el('v2PVal');if(pt&&pv){pv.textContent='$'+m.precio;pt.style.display='inline-flex';}}
