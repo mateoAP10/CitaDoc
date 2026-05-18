@@ -1722,111 +1722,237 @@ display:flex;
     <a id="aiVerSitioBtn" href="#" style="display:none"></a>
 
     <!-- AI WEB MODAL -->
-    <div id="aiWebModal" style="display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;padding:1.5rem">
-      <div onclick="cerrarAiWebModal()" style="position:absolute;inset:0;background:rgba(5,3,12,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)"></div>
-      <div onclick="event.stopPropagation()" style="position:relative;width:min(680px,94vw);max-height:92vh;overflow-y:auto;background:radial-gradient(circle at 80% 10%,rgba(122,58,255,.18),transparent 40%),radial-gradient(circle at 10% 90%,rgba(0,180,120,.06),transparent 40%),#08060e;border:1px solid rgba(167,139,250,.16);border-radius:26px;padding:2.2rem 2.4rem;box-shadow:0 40px 100px rgba(0,0,0,.6);animation:aiModalIn .35s cubic-bezier(.16,1,.3,1)">
+    <div id="aiWebModal" style="display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;padding:1rem">
+      <div onclick="cerrarAiWebModal()" style="position:absolute;inset:0;background:rgba(4,6,16,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)"></div>
+      <div onclick="event.stopPropagation()" style="position:relative;width:min(560px,96vw);max-height:94svh;overflow-y:auto;background:#07111F;border:1px solid rgba(255,255,255,.08);border-radius:24px;box-shadow:0 40px 120px rgba(0,0,0,.7);animation:aiModalIn .35s cubic-bezier(.16,1,.3,1)">
+      <style>
+        @keyframes aiModalIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes brainPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.06);filter:brightness(1.2)}}
+        @keyframes spark{0%{opacity:0;transform:translate(0,0) scale(0)}30%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+        @keyframes stepIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes styleSlide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+        .ai-step-indicator{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:1.6rem}
+        .ai-step-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+        .ai-step-dot.active{width:20px;border-radius:3px;background:rgba(255,255,255,.6)}
+        .ai-upload-card{border:1.5px dashed rgba(255,255,255,.12);border-radius:16px;padding:1.2rem;text-align:center;cursor:pointer;transition:all .22s;background:rgba(255,255,255,.02)}
+        .ai-upload-card:hover{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.04)}
+        .ai-style-card{border:1.5px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s;flex-shrink:0;width:130px;position:relative}
+        .ai-style-card:hover{border-color:rgba(255,255,255,.25);transform:translateY(-2px)}
+        .ai-style-card.selected{border-color:rgba(167,139,250,.8);box-shadow:0 0 0 2px rgba(124,58,237,.35),0 8px 32px rgba(0,0,0,.3)}
+        .ai-brain-spark{position:absolute;width:4px;height:4px;border-radius:50%;background:#a78bfa;animation:spark 1.2s ease-out infinite}
+        .ai-inp{width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:.75rem 1rem;font-family:'DM Sans',sans-serif;font-size:.88rem;color:#fff;outline:none;transition:border-color .2s;box-sizing:border-box}
+        .ai-inp:focus{border-color:rgba(255,255,255,.3)}
+        .ai-inp::placeholder{color:rgba(255,255,255,.25)}
+        .ai-btn-primary{width:100%;padding:.9rem;background:linear-gradient(135deg,rgba(167,139,250,.25),rgba(124,58,237,.35));border:1px solid rgba(167,139,250,.3);border-radius:14px;color:#e9d5ff;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.01em}
+        .ai-btn-primary:hover{background:linear-gradient(135deg,rgba(167,139,250,.35),rgba(124,58,237,.45));border-color:rgba(167,139,250,.55)}
+        .ai-btn-primary:disabled{opacity:.4;cursor:default}
+      </style>
 
-        <button onclick="cerrarAiWebModal()" style="position:absolute;top:1.2rem;right:1.2rem;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.45);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseenter="this.style.background='rgba(255,255,255,.12)'" onmouseleave="this.style.background='rgba(255,255,255,.06)'">✕</button>
+        <button onclick="cerrarAiWebModal()" style="position:absolute;top:1rem;right:1rem;z-index:10;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:background .15s">✕</button>
 
-        <!-- FORM STATE -->
-        <div id="aiModalForm">
-          <div style="font-size:.6rem;font-weight:700;color:rgba(167,139,250,.65);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.8rem">CitaDoc AI · PRO+WEB</div>
-          <h3 style="font-family:Fraunces,serif;font-size:1.7rem;font-weight:700;color:#fff;line-height:1.1;margin-bottom:.3rem">Tu identidad médica<br><em style="font-style:italic;font-weight:300;opacity:.75">generada con AI</em></h3>
-          <p style="font-size:.83rem;color:rgba(255,255,255,.36);margin-bottom:1.8rem;line-height:1.65">Sube tus assets. La IA analiza tu marca y construye una presencia premium única para ti.</p>
+        <!-- STEP 1: IDENTIDAD -->
+        <div id="aiModalForm" style="padding:2rem 2rem 1.6rem">
+          <!-- Step dots -->
+          <div class="ai-step-indicator"><div class="ai-step-dot active" id="aiDot1"></div><div class="ai-step-dot" id="aiDot2"></div></div>
+
+          <div style="font-size:.55rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.16em;margin-bottom:.7rem">Paso 1 de 2</div>
+          <h3 style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;color:#fff;line-height:1.12;margin-bottom:.4rem">Construyamos tu<br><em style="font-style:italic;font-weight:300;color:rgba(255,255,255,.6)">identidad médica.</em></h3>
+          <p style="font-size:.8rem;color:rgba(255,255,255,.32);margin-bottom:1.4rem;line-height:1.65">Sube una foto y tu logo. La IA creará una identidad premium para ti.</p>
 
           <!-- Uploads -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.3rem">
-            <label id="webPhotoCard" style="border:1.5px dashed rgba(255,255,255,.13);border-radius:16px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .22s;background:rgba(255,255,255,.025);display:block" onmouseenter="this.style.borderColor='rgba(167,139,250,.38)';this.style.background='rgba(167,139,250,.04)'" onmouseleave="webPhotoCardLeave()">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
+            <label class="ai-upload-card" id="webPhotoCard" onmouseenter="this.style.borderColor='rgba(255,255,255,.28)'" onmouseleave="webPhotoCardLeave()">
               <input type="file" id="webPhotoInput" accept="image/*" style="display:none" onchange="webOnPhotoSelected(this)">
-              <div id="webPhotoThumb" style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;margin:0 auto .55rem;font-size:1.4rem;overflow:hidden">🖼</div>
-              <div id="webPhotoLbl" style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6)">Foto profesional</div>
-              <div style="font-size:.65rem;color:rgba(255,255,255,.26);margin-top:.15rem">Click para subir</div>
+              <div id="webPhotoThumb" style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.3rem;overflow:hidden">📷</div>
+              <div id="webPhotoLbl" style="font-size:.76rem;font-weight:600;color:rgba(255,255,255,.55)">Tu foto profesional</div>
+              <div style="font-size:.62rem;color:rgba(255,255,255,.2);margin-top:.1rem">Click para subir</div>
             </label>
-            <label id="webLogoCard" style="border:1.5px dashed rgba(255,255,255,.13);border-radius:16px;padding:1.4rem 1rem;text-align:center;cursor:pointer;transition:all .22s;background:rgba(255,255,255,.025);display:block" onmouseenter="this.style.borderColor='rgba(167,139,250,.38)';this.style.background='rgba(167,139,250,.04)'" onmouseleave="webLogoCardLeave()">
+            <label class="ai-upload-card" id="webLogoCard" onmouseenter="this.style.borderColor='rgba(255,255,255,.28)'" onmouseleave="webLogoCardLeave()">
               <input type="file" id="webLogoInput" accept="image/*" style="display:none" onchange="webOnLogoSelected(this)">
-              <div id="webLogoThumb" style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;margin:0 auto .55rem;font-size:1.4rem;overflow:hidden">⬡</div>
-              <div id="webLogoLbl" style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.6)">Logo / Isotipo</div>
-              <div style="font-size:.65rem;color:rgba(255,255,255,.26);margin-top:.15rem">PNG o SVG</div>
+              <div id="webLogoThumb" style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;font-size:1.3rem;overflow:hidden">⬡</div>
+              <div id="webLogoLbl" style="font-size:.76rem;font-weight:600;color:rgba(255,255,255,.55)">Tu logo</div>
+              <div style="font-size:.62rem;color:rgba(255,255,255,.2);margin-top:.1rem">PNG, SVG</div>
             </label>
           </div>
 
-          <!-- Prompt -->
-          <textarea id="webAiPrompt" rows="2" placeholder="Opcional: cuéntame algo específico tuyo. Ej: me especializo en cirugía artroscópica de hombro, atiendo deportistas, mi clínica es moderna y premium. Mientras más específico, más único el resultado." style="width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:.9rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:.88rem;color:#fff;resize:none;line-height:1.65;box-sizing:border-box;outline:none;transition:border-color .2s;margin-bottom:1rem" onfocus="this.style.borderColor='rgba(167,139,250,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
-
-          <!-- Perception chips -->
-          <div style="margin-bottom:1.4rem">
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem">Tono de comunicación</div>
-            <div style="display:flex;flex-wrap:wrap;gap:.45rem" id="webPerceptionChips"></div>
+          <!-- Nombre + especialidad -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.7rem">
+            <input class="ai-inp" id="aiNombreInput" placeholder="Tu nombre completo" value="">
+            <input class="ai-inp" id="aiEspInput" placeholder="Tu especialidad" value="">
           </div>
+          <!-- Bio corta -->
+          <textarea class="ai-inp" id="webAiPrompt" rows="2" placeholder="Cuéntame brevemente tu práctica..." style="resize:none;line-height:1.6;margin-bottom:1.2rem"></textarea>
 
-          <!-- Layout selector — 6 sistemas editoriales -->
-          <div style="margin-bottom:1.4rem">
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem">Sistema visual del sitio</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem" id="webLayoutChips"></div>
-          </div>
+          <!-- Continuar -->
+          <button onclick="aiModalContinuar()" id="webGenerarBtn" class="ai-btn-primary">Continuar →</button>
 
-          <div id="webRegenCounter" style="display:none;text-align:center;font-size:.72rem;margin-bottom:.6rem;font-family:DM Sans,sans-serif;transition:color .2s"></div>
-          <button onclick="webAiGenerar()" id="webGenerarBtn" style="width:100%;padding:.95rem;background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 10px 36px rgba(124,58,237,.42);transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 16px 50px rgba(124,58,237,.6)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 10px 36px rgba(124,58,237,.42)'">✨ Generar identidad médica con AI</button>
+          <!-- Hidden legacy fields -->
+          <div id="webPerceptionChips" style="display:none"></div>
+          <div id="webLayoutChips" style="display:none"></div>
+          <div id="webRegenCounter" style="display:none"></div>
         </div>
 
-        <!-- LOADING STATE -->
-        <div id="aiModalLoading" style="display:none;text-align:center;padding:2rem 0">
-          <div id="aiLoadOrb" style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#6d28d9,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 1.2rem;box-shadow:0 0 40px rgba(124,58,237,.55);animation:aiOrbPulse 1.4s ease-in-out infinite">✨</div>
-          <div id="aiLoadStatus" style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:1.1rem">Analizando identidad médica...</div>
-          <div style="display:flex;flex-direction:column;gap:.45rem;max-width:300px;margin:0 auto" id="aiLoadSteps"></div>
+        <!-- BRAIN LOADING 1 — micro, entre step 1 y step 2 -->
+        <div id="aiModalBrain1" style="display:none;text-align:center;padding:2.5rem 2rem">
+          <div style="position:relative;width:100px;height:100px;margin:0 auto 1.5rem">
+            <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.3) 0%,transparent 70%);animation:brainPulse 1.8s ease-in-out infinite"></div>
+            <div style="position:absolute;inset:10px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.2) 0%,transparent 60%);animation:brainPulse 1.8s ease-in-out infinite;animation-delay:.3s"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.8rem;animation:brainPulse 1.4s ease-in-out infinite">🧠</div>
+            <div class="ai-brain-spark" style="top:10%;left:75%;--dx:18px;--dy:-14px;animation-delay:0s"></div>
+            <div class="ai-brain-spark" style="top:70%;left:85%;--dx:14px;--dy:12px;animation-delay:.3s;background:#60a5fa"></div>
+            <div class="ai-brain-spark" style="top:20%;left:10%;--dx:-16px;--dy:-10px;animation-delay:.6s;background:#f472b6"></div>
+            <div class="ai-brain-spark" style="top:75%;left:15%;--dx:-12px;--dy:14px;animation-delay:.9s"></div>
+          </div>
+          <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:.5rem">Analizando tu especialidad...</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.3);line-height:1.6">Preparando estilos que mejor<br>representan tu práctica médica.</div>
         </div>
 
-        <!-- REVIEW STATE -->
-        <div id="aiModalReview" style="display:none;text-align:center;padding:2rem 0">
-          <div style="font-size:.6rem;font-weight:700;color:rgba(167,139,250,.65);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.6rem" id="aiReviewSource">CitaDoc AI · PRO+WEB</div>
-          <div style="width:58px;height:58px;border-radius:50%;background:rgba(52,211,153,.12);border:1.5px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto .8rem;color:#34d399">✦</div>
-          <div style="font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:.3rem">Tu identidad médica está lista</div>
-          <div style="font-size:.78rem;color:rgba(255,255,255,.38);margin-bottom:1.1rem;line-height:1.5">Esta web fue creada <strong style="color:rgba(255,255,255,.65)">para ti</strong>. Revisa y ajusta antes de publicar.</div>
+        <!-- STEP 2: ELIGE TU ESTILO -->
+        <div id="aiModalStep2" style="display:none;padding:2rem 2rem 1.6rem">
+          <div class="ai-step-indicator"><div class="ai-step-dot" id="aiDot1b"></div><div class="ai-step-dot active" id="aiDot2b"></div></div>
+          <div style="font-size:.55rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.16em;margin-bottom:.7rem">Paso 2 de 2</div>
+          <h3 style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#fff;line-height:1.12;margin-bottom:.35rem">¿Qué presencia representa<br><em style="font-style:italic;font-weight:300;color:rgba(255,255,255,.55)">mejor tu práctica?</em></h3>
+          <p style="font-size:.78rem;color:rgba(255,255,255,.28);margin-bottom:1.3rem">Elige el estilo que mejor refleje tu esencia.</p>
 
-          <div id="aiReviewSourceBadge" style="display:inline-block;padding:.25rem .7rem;border-radius:20px;font-size:.68rem;font-weight:700;margin-bottom:1.2rem"></div>
+          <!-- Carousel de estilos -->
+          <div style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;margin:0 -2rem;padding-left:2rem;padding-right:2rem;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+            <style>.ai-style-scroll::-webkit-scrollbar{display:none}</style>
+            <div style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;-webkit-overflow-scrolling:touch;scrollbar-width:none" id="aiStyleCarousel">
 
-          <div style="text-align:left;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.2rem">
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Headline</div>
-            <div id="aiReviewHeadline" style="font-family:Fraunces,serif;font-size:1.05rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:.6rem"></div>
+              <!-- 1: Editorial Signature -->
+              <div class="ai-style-card" onclick="aiSelectStyle(this,'surgical-authority')" style="width:130px">
+                <div style="height:160px;overflow:hidden;position:relative;background:#1A1A1A">
+                  <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=260&q=80&auto=format&fit=crop" style="width:100%;height:100%;object-fit:cover;filter:grayscale(60%) brightness(.75)">
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(26,26,26,.95) 100%)"></div>
+                  <div style="position:absolute;bottom:.6rem;left:.6rem;right:.6rem">
+                    <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em">Editorial</div>
+                  </div>
+                </div>
+                <div style="padding:.65rem .75rem;background:#1A1A1A">
+                  <div style="font-size:.75rem;font-weight:700;color:#fff;margin-bottom:.15rem">Editorial Signature</div>
+                  <div style="font-size:.62rem;color:rgba(255,255,255,.35)">Elegancia clínica</div>
+                </div>
+              </div>
 
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Subheadline</div>
-            <div id="aiReviewSubheadline" style="font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.5;margin-bottom:.8rem"></div>
+              <!-- 2: Clínica Premium -->
+              <div class="ai-style-card" onclick="aiSelectStyle(this,'performance-athletic')" style="width:130px">
+                <div style="height:160px;overflow:hidden;position:relative;background:#0A0A0F">
+                  <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=260&q=80&auto=format&fit=crop" style="width:100%;height:100%;object-fit:cover;filter:brightness(.7) contrast(1.1)">
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,59,153,.3) 0%,rgba(10,10,15,.9) 100%)"></div>
+                  <div style="position:absolute;bottom:.6rem;left:.6rem;right:.6rem">
+                    <div style="font-size:.6rem;font-weight:700;color:rgba(96,165,250,.8);text-transform:uppercase;letter-spacing:.08em">Performance</div>
+                  </div>
+                </div>
+                <div style="padding:.65rem .75rem;background:#0A0A0F">
+                  <div style="font-size:.75rem;font-weight:700;color:#fff;margin-bottom:.15rem">Performance Clinic</div>
+                  <div style="font-size:.62rem;color:rgba(255,255,255,.35)">Energía y resultado</div>
+                </div>
+              </div>
 
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Tono</div>
-            <div id="aiReviewTone" style="font-size:.82rem;color:rgba(255,255,255,.7);margin-bottom:.8rem"></div>
+              <!-- 3: Cálida y Humana -->
+              <div class="ai-style-card" onclick="aiSelectStyle(this,'warm-human-care')" style="width:130px">
+                <div style="height:160px;overflow:hidden;position:relative;background:#FEFCF8">
+                  <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=260&q=80&auto=format&fit=crop" style="width:100%;height:100%;object-fit:cover;filter:contrast(1.02) saturate(1.08)">
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(254,252,248,.95) 100%)"></div>
+                  <div style="position:absolute;bottom:.6rem;left:.6rem;right:.6rem">
+                    <div style="font-size:.6rem;font-weight:700;color:rgba(194,65,12,.8);text-transform:uppercase;letter-spacing:.08em">Warm</div>
+                  </div>
+                </div>
+                <div style="padding:.65rem .75rem;background:#FEFCF8">
+                  <div style="font-size:.75rem;font-weight:700;color:#1C1008;margin-bottom:.15rem">Cálida y Humana</div>
+                  <div style="font-size:.62rem;color:#9C7B62">Cercana y emocional</div>
+                </div>
+              </div>
 
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Filosofía</div>
-            <div id="aiReviewPhilosophy" style="font-size:.82rem;color:rgba(255,255,255,.55);font-style:italic;line-height:1.55;margin-bottom:.8rem"></div>
+              <!-- 4: Autoridad Clásica -->
+              <div class="ai-style-card" onclick="aiSelectStyle(this,'v3-1')" style="width:130px">
+                <div style="height:160px;overflow:hidden;position:relative;background:#07111F">
+                  <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=260&q=80&auto=format&fit=crop" style="width:100%;height:100%;object-fit:cover;filter:brightness(.65) contrast(1.1)">
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(7,17,31,.95) 100%)"></div>
+                  <div style="position:absolute;bottom:.6rem;left:.6rem;right:.6rem">
+                    <div style="font-size:.6rem;font-weight:700;color:rgba(141,178,255,.7);text-transform:uppercase;letter-spacing:.08em">Premium</div>
+                  </div>
+                </div>
+                <div style="padding:.65rem .75rem;background:#07111F">
+                  <div style="font-size:.75rem;font-weight:700;color:#fff;margin-bottom:.15rem">Autoridad Clásica</div>
+                  <div style="font-size:.62rem;color:rgba(255,255,255,.35)">Dashboard premium</div>
+                </div>
+              </div>
 
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Diferenciadores</div>
-            <div id="aiReviewDiffs" style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.8rem"></div>
+              <!-- 5: Arena Esencia -->
+              <div class="ai-style-card" onclick="aiSelectStyle(this,'v3-3')" style="width:130px">
+                <div style="height:160px;overflow:hidden;position:relative;background:#EDE4D8">
+                  <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=260&q=80&auto=format&fit=crop" style="width:100%;height:100%;object-fit:cover;filter:saturate(.8) brightness(.82)">
+                  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(237,228,216,.95) 100%)"></div>
+                  <div style="position:absolute;bottom:.6rem;left:.6rem;right:.6rem">
+                    <div style="font-size:.6rem;font-weight:700;color:rgba(140,132,107,.9);text-transform:uppercase;letter-spacing:.08em">Essence</div>
+                  </div>
+                </div>
+                <div style="padding:.65rem .75rem;background:#EDE4D8">
+                  <div style="font-size:.75rem;font-weight:700;color:#4C4339;margin-bottom:.15rem">Arena Esencia</div>
+                  <div style="font-size:.62rem;color:#8D8478">Editorial minimal</div>
+                </div>
+              </div>
 
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">CTA Principal</div>
-            <div id="aiReviewCta" style="display:inline-block;padding:.3rem .7rem;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:8px;font-size:.78rem;color:#34d399;font-weight:600;margin-bottom:.8rem"></div>
-
-            <div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">SEO Preview</div>
-            <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:.7rem .85rem">
-              <div id="aiReviewSeoTitle" style="font-size:.75rem;color:#8ab4f8;font-weight:500;margin-bottom:.15rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"></div>
-              <div id="aiReviewSeoDesc" style="font-size:.68rem;color:rgba(255,255,255,.4);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"></div>
             </div>
           </div>
 
-          <div style="display:flex;gap:.55rem;justify-content:center;flex-wrap:wrap">
-            <button onclick="aiModalState('form')" style="padding:.6rem 1.1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.6);cursor:pointer">↻ Generar otra versión</button>
-            <button onclick="activarSitioWeb()" style="padding:.7rem 1.6rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(11,124,110,.35)">⚡ Publicar este sitio — $150</button>
+          <div style="font-size:.68rem;color:rgba(255,255,255,.22);text-align:center;margin:.8rem 0 1.2rem;line-height:1.55">La IA adaptará el contenido y la estructura al estilo que elijas.</div>
+
+          <button onclick="aiModalGenerarDemo()" id="aiGenerarDemoBtn" class="ai-btn-primary" disabled>Generar mi demo →</button>
+          <div id="aiStyleError" style="display:none;font-size:.7rem;color:rgba(255,255,255,.3);text-align:center;margin-top:.6rem">Seleccioná un estilo para continuar</div>
+        </div>
+
+        <!-- BRAIN LOADING 2 — generación completa -->
+        <div id="aiModalLoading" style="display:none;text-align:center;padding:2.8rem 2rem">
+          <div style="position:relative;width:120px;height:120px;margin:0 auto 1.6rem">
+            <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.4) 0%,transparent 70%);animation:brainPulse 1.5s ease-in-out infinite"></div>
+            <div style="position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.25) 0%,transparent 65%);animation:brainPulse 1.5s ease-in-out infinite;animation-delay:.25s"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3.2rem;animation:brainPulse 1.2s ease-in-out infinite">🧠</div>
+            <div class="ai-brain-spark" style="top:5%;left:80%;--dx:20px;--dy:-18px;animation-delay:0s;width:5px;height:5px"></div>
+            <div class="ai-brain-spark" style="top:80%;left:88%;--dx:16px;--dy:14px;animation-delay:.25s;background:#60a5fa;width:5px;height:5px"></div>
+            <div class="ai-brain-spark" style="top:15%;left:5%;--dx:-18px;--dy:-12px;animation-delay:.5s;background:#f472b6;width:5px;height:5px"></div>
+            <div class="ai-brain-spark" style="top:82%;left:8%;--dx:-14px;--dy:18px;animation-delay:.75s;width:5px;height:5px"></div>
+            <div class="ai-brain-spark" style="top:50%;left:95%;--dx:20px;--dy:0px;animation-delay:1s;background:#34d399;width:4px;height:4px"></div>
+            <div class="ai-brain-spark" style="top:50%;left:0%;--dx:-20px;--dy:0px;animation-delay:1.25s;background:#fbbf24;width:4px;height:4px"></div>
+          </div>
+          <div id="aiLoadStatus" style="font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:#fff;margin-bottom:.5rem;line-height:1.3">La IA está construyendo<br>tu identidad médica…</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.28);line-height:1.65;margin-bottom:1.4rem">Creando una presencia premium única para ti.</div>
+          <div style="display:flex;flex-direction:column;gap:.4rem;max-width:280px;margin:0 auto" id="aiLoadSteps"></div>
+        </div>
+
+        <!-- REVIEW / DONE STATE — heredados, simplificados -->
+        <div id="aiModalReview" style="display:none;padding:2rem">
+          <div id="aiReviewSource" style="display:none"></div>
+          <div style="text-align:center;margin-bottom:1rem">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(52,211,153,.12);border:1.5px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin:0 auto .7rem;color:#34d399">✦</div>
+            <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:.25rem">Tu identidad está lista</div>
+            <div style="font-size:.78rem;color:rgba(255,255,255,.35);line-height:1.5">Revisa y publica tu sitio médico.</div>
+          </div>
+          <div id="aiReviewHeadline" style="font-family:'Fraunces',serif;font-size:.95rem;font-weight:600;color:#fff;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:.8rem 1rem;margin-bottom:.8rem;line-height:1.35"></div>
+          <div id="aiReviewSubheadline" style="font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.55;margin-bottom:1rem"></div>
+          <div id="aiReviewTone" style="display:none"></div>
+          <div id="aiReviewPhilosophy" style="display:none"></div>
+          <div id="aiReviewDiffs" style="display:none"></div>
+          <div id="aiReviewCta" style="display:none"></div>
+          <div id="aiReviewSeoTitle" style="display:none"></div>
+          <div id="aiReviewSeoDesc" style="display:none"></div>
+          <div id="aiReviewSourceBadge" style="display:none"></div>
+          <div style="display:flex;gap:.55rem">
+            <button onclick="aiModalState('form')" style="flex:1;padding:.75rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.5);cursor:pointer">↻ Otro estilo</button>
+            <button onclick="activarSitioWeb()" style="flex:2;padding:.75rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">⚡ Publicar — $150</button>
           </div>
         </div>
 
-        <!-- DONE STATE -->
-        <div id="aiModalDone" style="display:none;text-align:center;padding:2rem 0">
-          <div style="width:58px;height:58px;border-radius:50%;background:rgba(52,211,153,.12);border:1.5px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 1rem;color:#34d399">✦</div>
-          <div style="font-family:Fraunces,serif;font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:.3rem">Tu sitio está listo</div>
-          <div style="font-size:.82rem;color:rgba(255,255,255,.38);margin-bottom:1.6rem;line-height:1.6">Draft generado con tu identidad médica real.<br>El preview se actualizó en el panel.</div>
-          <div style="display:flex;gap:.65rem;justify-content:center;flex-wrap:wrap">
-            <button onclick="aiModalState('form')" style="padding:.65rem 1.2rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:rgba(255,255,255,.6);cursor:pointer">↻ Generar otra versión</button>
-            <button onclick="activarSitioWeb()" id="aiActivarBtnModal" style="padding:.7rem 1.8rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 8px 28px rgba(11,124,110,.35)">⚡ Publicar este sitio — $150</button>
+        <div id="aiModalDone" style="display:none;padding:2rem;text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:.5rem">Tu sitio está listo</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.35);margin-bottom:1.4rem;line-height:1.6">El preview se actualizó. Publicá para que vaya al aire.</div>
+          <div style="display:flex;gap:.55rem;justify-content:center">
+            <button onclick="aiModalState('form')" style="padding:.65rem 1.1rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:rgba(255,255,255,.5);cursor:pointer">↻ Otro estilo</button>
+            <button onclick="activarSitioWeb()" id="aiActivarBtnModal" style="padding:.65rem 1.4rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">⚡ Publicar — $150</button>
           </div>
         </div>
+
       </div>
     </div>
     <style>
@@ -3748,32 +3874,105 @@ var _PERCEPTION_MAP = {
   'recuperacion-dep': {label:'Recuperación deportiva',dna:'sport',    energy:'high', headlines:['Vuelve a moverte sin límites.','Recupera tu rendimiento deportivo.','De la lesión al podio.']}
 };
 
+// ── NUEVO MODAL FLOW ─────────────────────────────────────────────────────────
+var _aiSelectedStyle = null;
+
+function aiSelectStyle(card, layoutId) {
+  _aiSelectedStyle = layoutId;
+  document.querySelectorAll('.ai-style-card').forEach(function(c){ c.classList.remove('selected'); });
+  card.classList.add('selected');
+  var btn = document.getElementById('aiGenerarDemoBtn');
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  var err = document.getElementById('aiStyleError');
+  if (err) err.style.display = 'none';
+  // Guardar en legacy variable para webAiGenerar
+  _webLayoutId = layoutId;
+}
+
+function aiModalContinuar() {
+  // Pre-fill médico fields from modal inputs
+  var nombre = (document.getElementById('aiNombreInput')||{}).value || '';
+  var esp    = (document.getElementById('aiEspInput')||{}).value || '';
+  if (nombre && M) {
+    var parts = nombre.replace(/^(dra?\.?\s+)/i,'').trim().split(' ');
+    if (!M.nombre) M.nombre = parts[0]||'';
+    if (!M.apellido) M.apellido = parts.slice(1).join(' ')||'';
+  }
+  if (esp && M && (!M.especialidades||!M.especialidades.length)) {
+    M.especialidades = [esp];
+  }
+
+  // Show brain1 (micro)
+  aiShowState('brain1');
+  setTimeout(function() {
+    aiShowState('step2');
+    // Pre-select style based on specialty
+    if (!_aiSelectedStyle && M) {
+      var espLow = ((M.especialidades||[])[0]||'').toLowerCase();
+      var autoStyle = 'surgical-authority';
+      if (/pediatr|psicol|famili|ginecol/.test(espLow)) autoStyle = 'warm-human-care';
+      else if (/deport|rehabilit|fisio|traumat|ortop/.test(espLow)) autoStyle = 'performance-athletic';
+      var cards = document.querySelectorAll('.ai-style-card');
+      cards.forEach(function(c){ if(c.getAttribute('onclick') && c.getAttribute('onclick').indexOf(autoStyle)>-1) { c.click(); } });
+    }
+  }, 1600);
+}
+
+function aiModalGenerarDemo() {
+  if (!_aiSelectedStyle) {
+    var err = document.getElementById('aiStyleError');
+    if (err) err.style.display = 'block';
+    return;
+  }
+  // Show brain2 and generate
+  aiShowState('loading');
+  webAiGenerar();
+}
+
+function aiShowState(state) {
+  var states = ['aiModalForm','aiModalBrain1','aiModalStep2','aiModalLoading','aiModalReview','aiModalDone'];
+  states.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  var stateMap = {
+    'form':'aiModalForm','brain1':'aiModalBrain1','step2':'aiModalStep2',
+    'loading':'aiModalLoading','review':'aiModalReview','done':'aiModalDone'
+  };
+  var el = document.getElementById(stateMap[state] || state);
+  if (el) el.style.display = (state==='form'||state==='step2'||state==='review'||state==='done') ? 'block' : (state==='brain1'||state==='loading') ? 'block' : 'block';
+  // Sync dots
+  if (state==='form') { aiSetDots(1); }
+  if (state==='step2') { aiSetDots(2); }
+}
+
+function aiSetDots(step) {
+  ['aiDot1','aiDot1b'].forEach(function(id){ var d=document.getElementById(id); if(d){d.className='ai-step-dot'+(step===1?' active':'');} });
+  ['aiDot2','aiDot2b'].forEach(function(id){ var d=document.getElementById(id); if(d){d.className='ai-step-dot'+(step===2?' active':'');} });
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function abrirAiWebModal() {
-  // Cerrar modales conflictivos para evitar overlays bloqueantes
   var pm=document.getElementById('proModal'); if(pm)pm.style.display='none';
   var pwm=document.getElementById('proWebModal'); if(pwm)pwm.style.display='none';
   var ro=document.getElementById('aiRevealOverlay'); if(ro)ro.style.display='none';
   document.body.style.overflow='';
   var m=document.getElementById('aiWebModal'); if(m){m.style.display='flex';document.body.style.overflow='hidden';}
-  webInitPerceptionChips();
-  webInitLayoutChips();
-  aiModalState('form');
+  // Pre-fill nombre y especialidad del médico
+  var ni=document.getElementById('aiNombreInput');
+  var ei=document.getElementById('aiEspInput');
+  if(ni&&M){ni.value=((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido).trim();}
+  if(ei&&M){ei.value=(M.especialidades||[])[0]||'';}
+  _aiSelectedStyle=null;
+  document.querySelectorAll('.ai-style-card').forEach(function(c){c.classList.remove('selected');});
+  var btn=document.getElementById('aiGenerarDemoBtn');if(btn){btn.disabled=true;}
+  aiShowState('form');
   webActualizarRegenUI();
-  console.log('[AI] aiWebModal opened');
 }
 function cerrarAiWebModal() {
   var m=document.getElementById('aiWebModal'); if(m){m.style.display='none';document.body.style.overflow='';}
 }
 
 function aiModalState(state) {
-  var form=document.getElementById('aiModalForm');
-  var load=document.getElementById('aiModalLoading');
-  var review=document.getElementById('aiModalReview');
-  var done=document.getElementById('aiModalDone');
-  if(form) form.style.display = state==='form'    ? 'block':'none';
-  if(load) load.style.display = state==='loading' ? 'block':'none';
-  if(review) review.style.display = state==='review' ? 'block':'none';
-  if(done) done.style.display = state==='done'    ? 'block':'none';
+  // Legacy bridge → nuevo sistema
+  aiShowState(state);
 }
 
 function abrirAiReveal() {
