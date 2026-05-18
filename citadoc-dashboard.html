@@ -5177,56 +5177,8 @@ async function guardarTelefonoDesdeModal() {
   }
 }
 
-function initPayPhone(planType, containerId) {
-  if (!M) return;
-
-  // Validar teléfono antes de renderizar PayPhone
-  var telefonoValido = validarTelefonoAntesDePago(planType, containerId);
-  if (!telefonoValido) return; // modal abierto, esperar a que complete
-
-  planType = planType || 'pro';
-  var container = document.getElementById(containerId || 'pp-button');
-  if (!container) return;
-  container.innerHTML = '';
-
-  if (typeof PPaymentButtonBox === 'undefined') {
-    showProFallback();
-    return;
-  }
-
-  try {
-    var isWeb = planType === 'pro_web';
-    var transactionId = 'citadoc-' + planType + '-' + Date.now();
-    var amount = isWeb ? 15000 : 1999;
-    var ppb = new PPaymentButtonBox({
-      token:               PAYPHONE_TOKEN,
-      storeId:             PAYPHONE_STOREID,
-      clientTransactionId: transactionId,
-      amount:              amount,
-      amountWithoutTax:    amount,
-      currency:            'USD',
-      reference:           'CitaDoc Health Network — ' + (isWeb ? 'PRO+WEB' : 'PRO'),
-      lang:                'es',
-      defaultMethod:       'card',
-      email:               M.email     || '',
-      phoneNumber:         telefonoValido
-    });
-    ppb.render(containerId || 'pp-button');
-
-    // Ocultar fallback CTA y mostrar contenedor PayPhone del modal correspondiente
-    var fallbackId = (containerId === 'pp-button-web') ? 'btnProWebFallback' : 'btnUpgradePro';
-    var fallbackBtn = document.getElementById(fallbackId);
-    if (fallbackBtn) fallbackBtn.style.display = 'none';
-    var ppContainer = document.getElementById(containerId || 'pp-button');
-    if (ppContainer) ppContainer.style.display = 'block';
-
-    // Guardar transactionId para validar callback
-    window._ppPendingTx = { id: transactionId, plan: planType, startedAt: Date.now() };
-
-  } catch(e) {
-    console.error('PayPhone error:', e);
-    showProFallback();
-  }
+function initPayPhone(planType) {
+  iniciarPagoRedirect(planType || 'pro');
 }
 
 // ── PAYPHONE MANTENIMIENTO $29/mes ────────────────────────────────────────
