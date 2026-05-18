@@ -260,28 +260,32 @@ body {
 .pay-modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
 
 .pay-modal-body {
-  padding: 1.25rem;
+  padding: 1rem 1.1rem 1.1rem;
   background: var(--dark);
 }
 
-/* PayPhone container inside dark modal */
-#pp-pay-container {
-  border-radius: 16px;
-  overflow: hidden;
+/* White surface that frames the PayPhone widget */
+.pp-surface {
   background: #fff;
-  min-height: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 22px 24px 24px;
+}
+
+/* PayPhone render target — no extra styling, widget fills this */
+#pp-pay-container {
+  min-height: 180px;
+  width: 100%;
 }
 
 .pp-loading {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: .75rem; padding: 2.5rem 1.5rem;
-  color: rgba(255,255,255,.4); font-size: .8rem;
+  gap: .75rem; padding: 2rem 1rem;
+  color: #9CA3AF; font-size: .8rem;
 }
 .pp-loading-wrap {
-  border-radius: 16px; overflow: hidden;
-  background: rgba(255,255,255,.04);
-  min-height: 220px;
+  min-height: 180px;
   display: flex; align-items: center; justify-content: center;
 }
 .spinner {
@@ -417,11 +421,13 @@ body {
       <button class="pay-modal-close" onclick="cerrarPago()" aria-label="Cerrar">✕</button>
     </div>
     <div class="pay-modal-body">
-      <div id="pp-pay-container">
-        <div class="pp-loading-wrap">
-          <div class="pp-loading">
-            <div class="spinner"></div>
-            Cargando pasarela…
+      <div class="pp-surface">
+        <div id="pp-pay-container">
+          <div class="pp-loading-wrap">
+            <div class="pp-loading">
+              <div class="spinner"></div>
+              Cargando pasarela…
+            </div>
           </div>
         </div>
       </div>
