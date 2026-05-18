@@ -27,9 +27,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ════════════════════════════════
-   STEP 1 — REVIEW
-════════════════════════════════ */
 #stepReview {
   min-height: 100svh;
   display: flex;
@@ -207,9 +204,6 @@ body {
   line-height: 1.6;
 }
 
-/* ════════════════════════════════
-   STEP 2 — PAYMENT OVERLAY
-════════════════════════════════ */
 #payOverlay {
   display: none;
   position: fixed; inset: 0; z-index: 1000;
@@ -304,9 +298,6 @@ body {
   font-size: .78rem; color: #FCA5A5;
 }
 
-/* ════════════════════════════════
-   STEP 3 — SUCCESS
-════════════════════════════════ */
 #stepSuccess {
   display: none;
   min-height: 100svh;
@@ -539,11 +530,11 @@ body {
 
   var base      = 'https://citadoc.lat/citadoc-dashboard.html';
   var returnUrl = base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId);
-  var cancelUrl = 'javascript:cerrarPago()';
+  var overlay   = document.getElementById('payOverlay');
+  var ppErr     = document.getElementById('ppError');
 
   var _widgetInit = false;
 
-  // ── Render widget ──
   function tryInitWidget() {
     if (_widgetInit) return;
     if (typeof PPaymentButtonBox === 'undefined') { setTimeout(tryInitWidget, 150); return; }
@@ -566,42 +557,37 @@ body {
         defaultMethod:       'card'
       }).render('pp-pay-container');
     } catch(e) {
-      document.getElementById('ppError').style.display = 'block';
-      document.getElementById('ppError').textContent = 'Error: ' + (e.message || 'Widget error') + '. Cierra e intenta nuevamente.';
+      ppErr.style.display = 'block';
+      ppErr.textContent   = 'Error: ' + (e.message || 'Widget error') + '. Cierra e intenta nuevamente.';
       document.getElementById('pp-pay-container').innerHTML = '';
     }
   }
 
-  // ── Open / close overlay ──
+  function mostrarSuccess() {
+    document.getElementById('stepReview').style.display = 'none';
+    overlay.classList.remove('active');
+    document.getElementById('stepSuccess').classList.add('active');
+  }
+
   window.abrirPago = function() {
-    document.getElementById('payOverlay').classList.add('active');
+    overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
     tryInitWidget();
   };
 
   window.cerrarPago = function() {
-    document.getElementById('payOverlay').classList.remove('active');
+    overlay.classList.remove('active');
     document.body.style.overflow = '';
   };
 
-  // Close on backdrop click
-  document.getElementById('payOverlay').addEventListener('click', function(e) {
+  overlay.addEventListener('click', function(e) {
     if (e.target === this) cerrarPago();
   });
 
-  // ── Handle return from PayPhone (pp_return in URL) ──
-  if (new URLSearchParams(location.search).get('pp_return')) {
-    mostrarSuccess();
-  }
-
-  function mostrarSuccess() {
-    document.getElementById('stepReview').style.display  = 'none';
-    document.getElementById('payOverlay').classList.remove('active');
-    document.getElementById('stepSuccess').classList.add('active');
-  }
+  if (sp.get('pp_return')) mostrarSuccess();
 
   window.irDashboard = function() {
-    window.location.href = base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId);
+    window.location.href = returnUrl;
   };
 })();
 </script>
