@@ -1992,7 +1992,8 @@ display:flex;
             <div style="font-family:Fraunces,serif;font-size:.82rem;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Publica tu identidad médica premium</div>
           </div>
           <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0;margin-left:auto">
-            <button onclick="aiModalState('form');cerrarAiReveal();" style="padding:.48rem .85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.74rem;color:rgba(255,255,255,.48);font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='rgba(255,255,255,.1)';this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.14)'" onmouseleave="this.style.background='rgba(255,255,255,.04)';this.style.color='rgba(255,255,255,.48)';this.style.borderColor='rgba(255,255,255,.07)'">↻ Regenerar</button>
+            <button onclick="aiCambiarEstilo()" style="padding:.48rem .85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.74rem;color:rgba(255,255,255,.48);font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='rgba(255,255,255,.1)';this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.14)'" onmouseleave="this.style.background='rgba(255,255,255,.04)';this.style.color='rgba(255,255,255,.48)';this.style.borderColor='rgba(255,255,255,.07)'">🎨 Cambiar estilo</button>
+            <button onclick="aiModalState('form');cerrarAiReveal();" style="padding:.48rem .85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.74rem;color:rgba(255,255,255,.48);font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='rgba(255,255,255,.1)';this.style.color='#fff'" onmouseleave="this.style.background='rgba(255,255,255,.04)';this.style.color='rgba(255,255,255,.48)'">↻ Nuevo</button>
             <button onclick="activarSitioWeb()" style="padding:.55rem 1.05rem;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(168,85,247,.32);transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:.3rem" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 10px 36px rgba(168,85,247,.48)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 6px 24px rgba(168,85,247,.32)'">✨ Publicar mi sitio <span style="opacity:.6;font-weight:500;font-size:.68rem">— $150</span></button>
           </div>
         </div>
@@ -3966,7 +3967,16 @@ function aiSelectStyle(pill, layoutId) {
 
   // Habilitar botón
   var btn = document.getElementById('aiGenerarDemoBtn');
-  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  if (btn) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    // Si ya hay un draft generado, el botón aplica el estilo directamente
+    var hasDraft = M && (M.web_config_draft || M.web_config);
+    btn.textContent = hasDraft ? 'Aplicar este estilo →' : 'Generar mi demo →';
+    btn.onclick = hasDraft
+      ? function(){ aiAplicarLayout(_aiSelectedStyle); }
+      : function(){ aiModalGenerarDemo(); };
+  }
   var err = document.getElementById('aiStyleError');
   if (err) err.style.display = 'none';
 }
@@ -3992,6 +4002,32 @@ function aiModalContinuar() {
     _aiSelectedStyle = null;
     renderStyleCarousel();
   }, 1600);
+}
+
+// Cambiar estilo sin re-generar — reutiliza el web_config_draft existente
+function aiCambiarEstilo() {
+  cerrarAiReveal();
+  // Abrir el modal directo en Step 2
+  var m = document.getElementById('aiWebModal');
+  if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  _aiSelectedStyle = null;
+  renderStyleCarousel();
+  aiShowState('step2');
+}
+
+// Aplicar layout sin re-generar — solo cambia selected_layout en el draft
+async function aiAplicarLayout(layoutId) {
+  if (!M || !M.id) return;
+  var draft = M.web_config_draft || M.web_config || {};
+  draft.selected_layout = layoutId;
+  draft.visual_dna = layoutId;
+  var res = await _sb.from('medicos').update({ web_config_draft: draft }).eq('id', M.id);
+  if (!res.error) {
+    M.web_config_draft = draft;
+    _aiSelectedStyle = layoutId;
+    cerrarAiWebModal();
+    setTimeout(function() { abrirAiReveal(); }, 100);
+  }
 }
 
 function aiModalGenerarDemo() {
@@ -4080,10 +4116,9 @@ function abrirAiReveal() {
       'v3-3': 'experimental/v3/v3-3-sand-essence.html'
     };
     if (V3_MAP[layout]) {
-      url = V3_MAP[layout] + '?slug=' + slug + '&_cb=' + cb;
+      url = V3_MAP[layout] + '?slug=' + slug + '&preview=draft&_cb=' + cb;
     } else {
-      // V1/V2: citadoc-web.html con LAYOUT_RENDERERS
-      url = 'citadoc-web.html?slug=' + slug + '&preview=clean&_cb=' + cb;
+      url = 'citadoc-web.html?slug=' + slug + '&preview=draft&_cb=' + cb;
     }
 
     frame.src = url;
