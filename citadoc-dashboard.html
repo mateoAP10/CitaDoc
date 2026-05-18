@@ -5811,9 +5811,10 @@ function iniciarPagoRedirect(planType) {
   var nombre = ((M.titulo||'') + ' ' + (M.nombre||'') + ' ' + (M.apellido||'')).trim();
   var params = new URLSearchParams({
     plan:   planType,
-    medico: M.id || '',
+    medico: M.id   || '',
     email:  M.email || '',
-    name:   nombre
+    name:   nombre,
+    slug:   M.slug || ''
   });
   window.open('https://citadoc.lat/citadoc-pay.html?' + params.toString(), '_blank');
   mostrarToast('Abriendo pago seguro...', 'info');

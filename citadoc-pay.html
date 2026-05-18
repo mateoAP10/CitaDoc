@@ -2,412 +2,601 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CitaDoc — Activar Plan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CitaDoc — Activar sitio web</title>
 <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:     #F5F3EF;
-  --card:   #FFFFFF;
-  --ink:    #111827;
-  --sub:    #6B7280;
-  --line:   #E8E4DC;
-  --green:  #1B5E42;
-  --green2: #E6F2EC;
-  --r:      16px;
+  --bg:      #F4F1EC;
+  --ink:     #0D1117;
+  --muted:   #6B7280;
+  --line:    #E2DDD5;
+  --green:   #1A5C3F;
+  --green-l: #EAF4EF;
+  --dark:    #07111F;
 }
 
-html, body { height: 100%; }
-
+html { height: 100%; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--ink);
-  min-height: 100vh;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════════════════════════════
+   STEP 1 — REVIEW
+════════════════════════════════ */
+#stepReview {
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
 }
 
-/* ─── TOPBAR ─── */
-.topbar {
-  width: 100%;
-  padding: 1.1rem 2rem;
+/* top bar */
+.r-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 1.1rem 1.5rem;
   border-bottom: 1px solid var(--line);
-  background: var(--card);
-  flex-shrink: 0;
+  background: #fff;
 }
-.logo { font-size: 1rem; font-weight: 800; letter-spacing: -.03em; }
-.logo em { color: var(--green); font-style: normal; }
-.secure {
-  display: flex; align-items: center; gap: .4rem;
-  font-size: .72rem; color: var(--sub); font-weight: 500;
+.r-logo { font-size: .95rem; font-weight: 800; letter-spacing: -.03em; }
+.r-logo em { color: var(--green); font-style: normal; }
+.r-lock {
+  display: flex; align-items: center; gap: .35rem;
+  font-size: .68rem; font-weight: 600;
+  color: var(--muted); letter-spacing: .02em;
 }
-.secure svg { width: 13px; height: 13px; fill: var(--green); opacity: .7; }
+.r-lock svg { width: 11px; height: 11px; fill: var(--green); }
 
-/* ─── MAIN ─── */
-.main {
+/* hero */
+.r-hero {
   flex: 1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 3rem 1.5rem 4rem;
-  gap: 2rem;
-}
-
-/* ─── LEFT: plan summary ─── */
-.plan-col {
-  width: 340px;
-  flex-shrink: 0;
-}
-
-.plan-card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0,0,0,.05);
-}
-
-.plan-top {
-  background: var(--green);
-  padding: 1.6rem 1.75rem 1.4rem;
-}
-.plan-badge {
-  display: inline-block;
-  background: rgba(255,255,255,.15);
-  color: #fff;
-  font-size: .65rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  padding: .25rem .65rem;
-  border-radius: 999px;
-  margin-bottom: .85rem;
-}
-.plan-label {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -.02em;
-  margin-bottom: .2rem;
-}
-.plan-sub {
-  font-size: .8rem;
-  color: rgba(255,255,255,.7);
-  line-height: 1.45;
-}
-
-.plan-bottom {
-  padding: 1.4rem 1.75rem;
-}
-.price-row {
-  display: flex;
-  align-items: baseline;
-  gap: .5rem;
-  padding-bottom: 1.1rem;
-  margin-bottom: 1.1rem;
-  border-bottom: 1px solid var(--line);
-}
-.price-amount {
-  font-size: 2.2rem;
-  font-weight: 800;
-  letter-spacing: -.04em;
-  color: var(--ink);
-}
-.price-note {
-  font-size: .78rem;
-  color: var(--sub);
-  line-height: 1.4;
-}
-
-.features { display: flex; flex-direction: column; gap: .55rem; }
-.feat {
-  display: flex;
-  align-items: flex-start;
-  gap: .6rem;
-  font-size: .8rem;
-  color: #374151;
-  line-height: 1.4;
-}
-.feat-check {
-  width: 16px; height: 16px;
-  background: var(--green2);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  margin-top: .05rem;
-}
-.feat-check svg { width: 9px; height: 9px; stroke: var(--green); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
-.plan-name-tag {
-  margin-top: 1.1rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--line);
-  font-size: .75rem;
-  color: var(--sub);
-  font-style: italic;
-}
-.plan-name-tag strong { color: var(--ink); font-style: normal; font-weight: 600; }
-
-/* ─── RIGHT: widget ─── */
-.widget-col {
-  flex: 1;
-  min-width: 0;
-  max-width: 520px;
-}
-
-.widget-card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0,0,0,.05);
-}
-.widget-head {
-  padding: 1.25rem 1.75rem;
-  border-bottom: 1px solid var(--line);
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--sub);
-}
-.widget-body {
-  padding: 0;
-}
-#pp-pay-container {
-  min-height: 260px;
-}
-
-/* Loading */
-.pp-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 2.5rem 1.25rem 2rem;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.r-badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--green-l);
+  color: var(--green);
+  font-size: .65rem; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: .3rem .75rem;
+  border-radius: 999px;
+  margin-bottom: 1.4rem;
+}
+
+.r-title {
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: .6rem;
+}
+
+.r-subtitle {
+  font-size: .88rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.55;
+  margin-bottom: 1.8rem;
+}
+
+/* domain pill */
+.r-domain {
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--dark);
+  color: #9FC9B0;
+  font-size: .78rem; font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: .01em;
+  padding: .6rem 1.1rem;
+  border-radius: 10px;
+  margin-bottom: 1.8rem;
+}
+.r-domain-dot {
+  width: 7px; height: 7px;
+  background: #34D399;
+  border-radius: 50%;
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+/* price block */
+.r-price-block {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 1.4rem;
+  box-shadow: 0 2px 16px rgba(0,0,0,.05);
+}
+.r-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+}
+.r-price-row + .r-price-row {
+  border-top: 1px solid var(--line);
+}
+.r-price-label { font-size: .82rem; color: var(--muted); }
+.r-price-val {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -.01em;
+}
+.r-price-val.big {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -.025em;
+}
+.r-price-note {
+  font-size: .72rem;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: .3rem;
+}
+
+/* features */
+.r-feats {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: 2rem;
+}
+.r-feat {
+  display: flex; align-items: flex-start; gap: .65rem;
+  font-size: .8rem; color: #374151; line-height: 1.45;
+}
+.r-feat-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--green-l);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: .05rem;
+}
+.r-feat-icon svg {
+  width: 10px; height: 10px;
+  stroke: var(--green); fill: none;
+  stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* CTA */
+.r-cta {
+  width: 100%;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 1rem 1.5rem;
+  font-size: .92rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  transition: opacity .15s, transform .15s;
+  margin-bottom: .9rem;
+}
+.r-cta:hover { opacity: .88; }
+.r-cta:active { transform: scale(.98); }
+.r-cta-arrow { font-size: 1rem; transition: transform .2s; }
+.r-cta:hover .r-cta-arrow { transform: translateX(3px); }
+
+.r-micro {
+  font-size: .7rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ════════════════════════════════
+   STEP 2 — PAYMENT OVERLAY
+════════════════════════════════ */
+#payOverlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(4, 8, 18, .82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center;
   justify-content: center;
-  gap: .85rem;
-  padding: 3rem 2rem;
-  color: var(--sub);
-  font-size: .82rem;
+  padding: 1rem;
+  overflow-y: auto;
+}
+#payOverlay.active { display: flex; }
+
+.pay-modal {
+  background: var(--dark);
+  border-radius: 28px;
+  padding: 0;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 40px 120px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06);
+  overflow: hidden;
+  animation: modalIn .28s cubic-bezier(.22,1,.36,1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(18px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pay-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.4rem .9rem;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.pay-modal-title {
+  font-size: .72rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+}
+.pay-modal-close {
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,.08);
+  border: none; border-radius: 50%;
+  color: rgba(255,255,255,.5);
+  font-size: .9rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.pay-modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+.pay-modal-body {
+  padding: 1.25rem;
+  background: var(--dark);
+}
+
+/* PayPhone container inside dark modal */
+#pp-pay-container {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  min-height: 220px;
+}
+
+.pp-loading {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: .75rem; padding: 2.5rem 1.5rem;
+  color: rgba(255,255,255,.4); font-size: .8rem;
+}
+.pp-loading-wrap {
+  border-radius: 16px; overflow: hidden;
+  background: rgba(255,255,255,.04);
+  min-height: 220px;
+  display: flex; align-items: center; justify-content: center;
 }
 .spinner {
   width: 22px; height: 22px;
-  border: 2px solid var(--line);
-  border-top-color: var(--green);
+  border: 2px solid rgba(255,255,255,.1);
+  border-top-color: #34D399;
   border-radius: 50%;
   animation: spin .75s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Error */
 .pp-error {
-  display: none;
-  margin: 1rem 1.5rem;
-  background: #FEF2F2;
-  border: 1px solid #FEE2E2;
-  border-radius: 10px;
-  padding: .9rem 1.1rem;
-  font-size: .8rem;
-  color: #991B1B;
+  display: none; margin-top: .75rem;
+  background: #3B0F0F; border: 1px solid #7F1D1D;
+  border-radius: 10px; padding: .8rem 1rem;
+  font-size: .78rem; color: #FCA5A5;
 }
 
-/* ─── FOOTER ─── */
-.pay-footer {
-  flex-shrink: 0;
-  padding: 1.25rem 2rem;
-  border-top: 1px solid var(--line);
-  background: var(--card);
-  display: flex;
+/* ════════════════════════════════
+   STEP 3 — SUCCESS
+════════════════════════════════ */
+#stepSuccess {
+  display: none;
+  min-height: 100svh;
+  background: var(--dark);
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  font-size: .7rem;
-  color: var(--sub);
+  padding: 2rem 1.5rem;
+  text-align: center;
 }
-.pay-footer span { display: flex; align-items: center; gap: .3rem; }
+#stepSuccess.active { display: flex; }
 
-/* ─── MOBILE ─── */
-@media (max-width: 760px) {
-  .topbar { padding: .9rem 1.1rem; }
-  .main {
-    flex-direction: column;
-    padding: 1.5rem 1rem 3rem;
-    gap: 1rem;
-    align-items: stretch;
-  }
-  .plan-col { width: 100%; }
-  .widget-col { max-width: 100%; }
-  .pay-footer { flex-wrap: wrap; gap: .75rem; padding: 1rem; }
+.s-ring {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(52,211,153,.12);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.5rem;
 }
+.s-check {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+  animation: drawCheck .5s .1s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+.s-title {
+  font-size: 1.5rem; font-weight: 800;
+  color: #fff; letter-spacing: -.03em;
+  margin-bottom: .5rem;
+}
+.s-sub {
+  font-size: .85rem; color: rgba(255,255,255,.5);
+  line-height: 1.55; margin-bottom: 1.75rem;
+  max-width: 320px;
+}
+.s-domain {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  color: #9FC9B0;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: .82rem; font-weight: 600;
+  padding: .6rem 1.1rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  text-decoration: none;
+  transition: background .15s;
+}
+.s-domain:hover { background: rgba(255,255,255,.1); }
+.s-domain-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #34D399;
+}
+.s-btn {
+  background: #fff; color: var(--dark);
+  border: none; border-radius: 12px;
+  padding: .9rem 1.75rem;
+  font-size: .88rem; font-weight: 700;
+  cursor: pointer; letter-spacing: -.01em;
+  transition: opacity .15s;
+}
+.s-btn:hover { opacity: .88; }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo">Cita<em>Doc</em></div>
-  <div class="secure">
-    <svg viewBox="0 0 16 16"><path d="M8 1L2 3.5V8c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V3.5L8 1z"/></svg>
-    Pago seguro · SSL
-  </div>
-</div>
-
-<div class="main">
-
-  <!-- Plan summary -->
-  <div class="plan-col">
-    <div class="plan-card">
-      <div class="plan-top">
-        <div class="plan-badge" id="planBadge">PRO+WEB</div>
-        <div class="plan-label" id="planLabel">CitaDoc PRO+WEB</div>
-        <div class="plan-sub" id="planSub">Sitio web médico con IA + agenda + gestión de pacientes</div>
-      </div>
-      <div class="plan-bottom">
-        <div class="price-row">
-          <div class="price-amount" id="priceAmount">$150</div>
-          <div class="price-note" id="priceNote">activación<br>del sitio web</div>
-        </div>
-        <div class="features" id="featureList"></div>
-        <div class="plan-name-tag" id="planNameTag" style="display:none">
-          Para: <strong id="doctorName"></strong>
-        </div>
-      </div>
+<!-- ── STEP 1: REVIEW ── -->
+<div id="stepReview">
+  <div class="r-top">
+    <div class="r-logo">Cita<em>Doc</em></div>
+    <div class="r-lock">
+      <svg viewBox="0 0 16 16"><path d="M8 1L2 3.5V8c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V3.5L8 1z"/></svg>
+      PAGO SEGURO
     </div>
   </div>
 
-  <!-- Payment widget -->
-  <div class="widget-col">
-    <div class="widget-card">
-      <div class="widget-head">Método de pago</div>
-      <div class="widget-body">
-        <div id="pp-pay-container">
+  <div class="r-hero">
+    <div class="r-badge" id="rBadge">✦ PRO+WEB</div>
+
+    <h1 class="r-title" id="rTitle">Activa tu sitio<br>web médico</h1>
+    <p class="r-subtitle" id="rSub">Tu presencia digital generada con IA, lista en minutos.</p>
+
+    <div class="r-domain" id="rDomain" style="display:none">
+      <div class="r-domain-dot"></div>
+      <span id="rDomainText">tu-nombre.citadoc.lat</span>
+    </div>
+
+    <!-- Price breakdown -->
+    <div class="r-price-block" id="rPriceBlock"></div>
+
+    <!-- Features -->
+    <div class="r-feats" id="rFeats"></div>
+
+    <button class="r-cta" id="rCtaBtn" onclick="abrirPago()">
+      Continuar con el pago seguro
+      <span class="r-cta-arrow">→</span>
+    </button>
+
+    <p class="r-micro">
+      Tu sitio quedará activo inmediatamente tras el pago.<br>
+      Procesado por PayPhone · Encriptado SSL · PCI DSS
+    </p>
+  </div>
+</div>
+
+<!-- ── STEP 2: PAYMENT OVERLAY ── -->
+<div id="payOverlay">
+  <div class="pay-modal">
+    <div class="pay-modal-head">
+      <span class="pay-modal-title">Completar pago</span>
+      <button class="pay-modal-close" onclick="cerrarPago()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="pay-modal-body">
+      <div id="pp-pay-container">
+        <div class="pp-loading-wrap">
           <div class="pp-loading">
             <div class="spinner"></div>
-            Iniciando pasarela de pago…
+            Cargando pasarela…
           </div>
         </div>
-        <div class="pp-error" id="ppError"></div>
       </div>
+      <div class="pp-error" id="ppError"></div>
     </div>
   </div>
-
 </div>
 
-<div class="pay-footer">
-  <span>
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L2 3.5V8c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V3.5L8 1z"/></svg>
-    Procesado por PayPhone
-  </span>
-  <span>Datos encriptados · PCI DSS</span>
-  <span><a href="https://citadoc.lat" style="color:inherit">citadoc.lat</a></span>
+<!-- ── STEP 3: SUCCESS ── -->
+<div id="stepSuccess">
+  <div class="s-ring">
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+      <polyline class="s-check" points="7,18 14,25 27,10"
+        stroke="#34D399" stroke-width="3"
+        stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h2 class="s-title">¡Tu sitio está activo!</h2>
+  <p class="s-sub">Accede a tu web médica y compártela con tus pacientes.</p>
+  <a class="s-domain" id="sDomainLink" href="#" target="_blank">
+    <span class="s-domain-dot"></span>
+    <span id="sDomainText">tu-nombre.citadoc.lat</span>
+  </a>
+  <button class="s-btn" onclick="irDashboard()">Ir al dashboard →</button>
 </div>
 
 <script>
 (function () {
-  var PAYPHONE_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
-  var PAYPHONE_STOREID = '86e91007-666b-48c0-a752-3e62aa85b1ef';
+  var PP_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
+  var PP_STORE   = '86e91007-666b-48c0-a752-3e62aa85b1ef';
 
   var sp       = new URLSearchParams(location.search);
   var plan     = sp.get('plan')   || 'pro_web';
   var medicoId = sp.get('medico') || '';
   var email    = sp.get('email')  || '';
   var name     = sp.get('name')   || '';
+  var slug     = sp.get('slug')   || '';
 
-  var isWeb  = plan === 'pro_web';
-  var amount = isWeb ? 15000 : 1999;
+  var isWeb    = plan === 'pro_web';
+  var amount   = isWeb ? 15000 : 1999;
 
+  // ── Domain ──
+  var domain = slug ? slug + '.citadoc.lat' : 'tu-sitio.citadoc.lat';
+  if (slug) {
+    document.getElementById('rDomain').style.display = '';
+    document.getElementById('rDomainText').textContent = domain;
+  }
+  document.getElementById('sDomainText').textContent = domain;
+  document.getElementById('sDomainLink').href = 'https://' + domain;
+
+  // ── Plan texts ──
   var PLANS = {
     pro_web: {
-      badge:    'PRO+WEB',
-      label:    'CitaDoc PRO+WEB',
-      sub:      'Sitio web médico con IA + agenda inteligente + gestión de pacientes',
-      price:    '$150',
-      note:     'activación\ndel sitio web',
+      badge:    '✦ PRO+WEB',
+      title:    'Activa tu sitio<br>web médico',
+      sub:      'Tu presencia digital generada con IA, lista en minutos.',
+      prices: [
+        { label: 'Activación del sitio web', val: '$150', cls: 'big' },
+        { label: 'Mantenimiento mensual',    val: '$29', note: '/mes' }
+      ],
       features: [
         'Sitio web médico generado con IA',
-        'Dominio propio: tu-nombre.citadoc.lat',
+        'Dominio propio: ' + domain,
         'Agenda online 24/7 para pacientes',
         'Recordatorios automáticos',
         'Panel de pacientes e historial'
       ]
     },
     pro: {
-      badge:    'PRO',
-      label:    'CitaDoc PRO',
-      sub:      'Agenda inteligente + recordatorios + gestión de pacientes',
-      price:    '$19.99',
-      note:     'por mes',
+      badge:    '✦ PRO',
+      title:    'Activa CitaDoc<br>PRO',
+      sub:      'Agenda inteligente y gestión de pacientes premium.',
+      prices: [
+        { label: 'Plan mensual', val: '$19.99', note: '/mes', cls: 'big' }
+      ],
       features: [
-        'Agenda online 24/7 para pacientes',
+        'Agenda online 24/7',
         'Recordatorios automáticos por WhatsApp',
         'Panel de pacientes e historial clínico',
         'Reportes de citas'
       ]
     }
   };
-
   var p = PLANS[plan] || PLANS.pro_web;
 
-  document.getElementById('planBadge').textContent   = p.badge;
-  document.getElementById('planLabel').textContent   = p.label;
-  document.getElementById('planSub').textContent     = p.sub;
-  document.getElementById('priceAmount').textContent = p.price;
-  document.getElementById('priceNote').innerHTML     = p.note.replace('\n', '<br>');
+  document.getElementById('rBadge').textContent    = p.badge;
+  document.getElementById('rTitle').innerHTML      = p.title;
+  document.getElementById('rSub').textContent      = p.sub;
 
+  // Price block
   var checkSvg = '<svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>';
-  document.getElementById('featureList').innerHTML = p.features.map(function(f) {
-    return '<div class="feat"><div class="feat-check">' + checkSvg + '</div>' + f + '</div>';
+  document.getElementById('rPriceBlock').innerHTML = p.prices.map(function(pr) {
+    var noteHtml = pr.note ? '<span class="r-price-note">' + pr.note + '</span>' : '';
+    return '<div class="r-price-row">' +
+      '<span class="r-price-label">' + pr.label + '</span>' +
+      '<span class="r-price-val' + (pr.cls ? ' ' + pr.cls : '') + '">' + pr.val + noteHtml + '</span>' +
+    '</div>';
   }).join('');
 
-  if (name) {
-    document.getElementById('planNameTag').style.display = '';
-    document.getElementById('doctorName').textContent = name;
-  }
+  // Features
+  document.getElementById('rFeats').innerHTML = p.features.map(function(f) {
+    return '<div class="r-feat"><div class="r-feat-icon">' + checkSvg + '</div>' + f + '</div>';
+  }).join('');
 
-  // txId
-  var shortId   = (medicoId || '').replace(/-/g, '').slice(0, 12);
+  // ── txId ──
+  var shortId   = medicoId.replace(/-/g,'').slice(0,12);
   var shortPlan = isWeb ? 'pw' : 'pr';
-  var txId      = ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0, 50);
+  var txId      = ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0,50);
 
   var base      = 'https://citadoc.lat/citadoc-dashboard.html';
   var returnUrl = base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId);
-  var cancelUrl = base + '?pp_cancel=1';
+  var cancelUrl = 'javascript:cerrarPago()';
 
-  function showError(msg) {
-    document.getElementById('ppError').style.display = 'block';
-    document.getElementById('ppError').textContent   = 'Error: ' + msg + '. Cierra esta ventana e intenta nuevamente.';
-    document.getElementById('pp-pay-container').innerHTML = '';
-  }
+  var _widgetInit = false;
 
-  function initWidget() {
-    if (typeof PPaymentButtonBox === 'undefined') { setTimeout(initWidget, 150); return; }
+  // ── Render widget ──
+  function tryInitWidget() {
+    if (_widgetInit) return;
+    if (typeof PPaymentButtonBox === 'undefined') { setTimeout(tryInitWidget, 150); return; }
+    _widgetInit = true;
     try {
       new PPaymentButtonBox({
-        token:               PAYPHONE_TOKEN,
-        storeId:             PAYPHONE_STOREID,
+        token:               PP_TOKEN,
+        storeId:             PP_STORE,
         clientTransactionId: txId,
         amount:              amount,
         amountWithoutTax:    amount,
         amountWithTax:       0,
         tax: 0, service: 0, tip: 0,
         currency:            'USD',
-        reference:           'CitaDoc ' + p.badge + (medicoId ? ' | ' + medicoId : ''),
+        reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + (medicoId ? ' | ' + medicoId : ''),
         lang:                'es',
         email:               email || undefined,
         responseUrl:         returnUrl,
-        cancellationUrl:     cancelUrl,
+        cancellationUrl:     base + '?pp_cancel=1',
         defaultMethod:       'card'
       }).render('pp-pay-container');
     } catch(e) {
-      showError(e.message || 'Widget error');
+      document.getElementById('ppError').style.display = 'block';
+      document.getElementById('ppError').textContent = 'Error: ' + (e.message || 'Widget error') + '. Cierra e intenta nuevamente.';
+      document.getElementById('pp-pay-container').innerHTML = '';
     }
   }
 
-  initWidget();
+  // ── Open / close overlay ──
+  window.abrirPago = function() {
+    document.getElementById('payOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    tryInitWidget();
+  };
+
+  window.cerrarPago = function() {
+    document.getElementById('payOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  // Close on backdrop click
+  document.getElementById('payOverlay').addEventListener('click', function(e) {
+    if (e.target === this) cerrarPago();
+  });
+
+  // ── Handle return from PayPhone (pp_return in URL) ──
+  if (new URLSearchParams(location.search).get('pp_return')) {
+    mostrarSuccess();
+  }
+
+  function mostrarSuccess() {
+    document.getElementById('stepReview').style.display  = 'none';
+    document.getElementById('payOverlay').classList.remove('active');
+    document.getElementById('stepSuccess').classList.add('active');
+  }
+
+  window.irDashboard = function() {
+    window.location.href = base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId);
+  };
 })();
 </script>
 </body>
