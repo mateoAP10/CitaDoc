@@ -231,7 +231,7 @@ var slug=new URLSearchParams(location.search).get('slug');
 var isDraft=new URLSearchParams(location.search).get('preview')==='draft';
 function el(id){return document.getElementById(id)}function set(id,v){var e=el(id);if(e)e.textContent=v}
 
-if(slug){_sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(async function(r){
+if(slug){_sb.from('medicos').select('*').eq('slug',slug).maybeSingle().then(async function(r){
   if(r.error||!r.data)return;
   var m=r.data,wc=m.web_config||{},n=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido,esp=(m.especialidades||[])[0]||'',ciudad=m.ciudad||'',photo=wc.doctor_photo_url||m.foto_url||'',logo=wc.logo_url||null,waActive=m.whatsapp_activo&&m.whatsapp,waUrl=waActive?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+n+', quiero agendar.'):'';
   document.title=n+' — CitaDoc';

@@ -2576,9 +2576,10 @@ function mnavActive(item){
   var isSubdomain = hostname !== 'citadoc.lat' && hostname !== 'www.citadoc.lat' && hostname.endsWith('.citadoc.lat');
 
   if(!slug){setText('wH1','Médico no encontrado');return;}
-  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single()
+  _sb.from('medicos').select('*').eq('slug',slug).maybeSingle()
     .then(function(r){
       if(r.error||!r.data){setText('wH1','Médico no encontrado');return;}
+      if(!r.data.activo&&!previewDraft){setText('wH1','Médico no encontrado');return;}
       _M=r.data;
 
       // Paywall: subdomain access requires web_status = 'active'
