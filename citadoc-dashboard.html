@@ -1808,25 +1808,36 @@ display:flex;
         </div>
 
         <!-- STEP 2: ELIGE TU ESTILO -->
-        <div id="aiModalStep2" style="display:none;padding:2rem 2rem 1.6rem">
-          <div class="ai-step-indicator"><div class="ai-step-dot" id="aiDot1b"></div><div class="ai-step-dot active" id="aiDot2b"></div></div>
-          <div style="font-size:.55rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.16em;margin-bottom:.7rem">Paso 2 de 2</div>
-          <h3 style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#fff;line-height:1.12;margin-bottom:.35rem">¿Qué presencia representa<br><em style="font-style:italic;font-weight:300;color:rgba(255,255,255,.55)">mejor tu práctica?</em></h3>
-          <p style="font-size:.78rem;color:rgba(255,255,255,.28);margin-bottom:1.3rem">Elige el estilo que mejor refleje tu esencia.</p>
+        <div id="aiModalStep2" style="display:none">
+          <style>
+            @keyframes previewFade{from{opacity:0}to{opacity:1}}
+            .ai-style-pill{flex:0 0 auto;padding:.55rem 1rem;border-radius:100px;border:1.5px solid rgba(255,255,255,.1);background:transparent;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;color:rgba(255,255,255,.38);cursor:pointer;transition:all .2s;white-space:nowrap;text-align:left;display:flex;align-items:center;gap:.6rem}
+            .ai-style-pill:hover{border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.7)}
+            .ai-style-pill.active{border-color:rgba(255,255,255,.7);background:rgba(255,255,255,.08);color:#fff}
+            .ai-style-pill .pill-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:all .2s}
+          </style>
 
-          <!-- Carousel de estilos -->
-          <div style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;margin:0 -2rem;padding-left:2rem;padding-right:2rem;scrollbar-width:none;-webkit-overflow-scrolling:touch">
-            <style>.ai-style-scroll::-webkit-scrollbar{display:none}</style>
-            <!-- Carousel dinámico — renderizado por renderStyleCarousel() -->
-            <div style="display:flex;gap:.75rem;overflow-x:auto;padding-bottom:.5rem;-webkit-overflow-scrolling:touch;scrollbar-width:none" id="aiStyleCarousel">
-
+          <!-- PREVIEW INSTANTÁNEO — 100% local, sin red -->
+          <div id="aiStylePreviewWrap" style="position:relative;height:220px;overflow:hidden;background:#060d18">
+            <img id="aiStylePreviewImg" src="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 15%;transition:opacity .35s ease" loading="eager">
+            <div id="aiStylePreviewOv" style="position:absolute;inset:0;transition:background .35s ease"></div>
+            <div style="position:absolute;inset:0;padding:1.4rem 1.6rem;display:flex;flex-direction:column;justify-content:flex-end;z-index:2">
+              <div class="ai-step-indicator" style="justify-content:flex-start;margin-bottom:.8rem"><div class="ai-step-dot" id="aiDot1b"></div><div class="ai-step-dot active" id="aiDot2b"></div></div>
+              <div style="font-size:.52rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.18em;margin-bottom:.5rem">Paso 2 de 2</div>
+              <div id="aiStylePreviewName" style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:#fff;line-height:1.1;margin-bottom:.2rem;transition:opacity .2s">Editorial Signature</div>
+              <div id="aiStylePreviewMood" style="font-size:.75rem;color:rgba(255,255,255,.5);transition:opacity .2s">Elegancia clínica premium</div>
             </div>
           </div>
 
-          <div style="font-size:.68rem;color:rgba(255,255,255,.22);text-align:center;margin:.8rem 0 1.2rem;line-height:1.55">La IA adaptará el contenido y la estructura al estilo que elijas.</div>
+          <!-- PILLS de selección — horizontales, ultra rápidas -->
+          <div style="padding:1rem 1.6rem .8rem">
+            <div id="aiStyleCarousel" style="display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>
+          </div>
 
-          <button onclick="aiModalGenerarDemo()" id="aiGenerarDemoBtn" class="ai-btn-primary" disabled>Generar mi demo →</button>
-          <div id="aiStyleError" style="display:none;font-size:.7rem;color:rgba(255,255,255,.3);text-align:center;margin-top:.6rem">Seleccioná un estilo para continuar</div>
+          <div style="padding:0 1.6rem 1.4rem">
+            <button onclick="aiModalGenerarDemo()" id="aiGenerarDemoBtn" class="ai-btn-primary" disabled style="opacity:.4">Generar mi demo →</button>
+            <div id="aiStyleError" style="display:none;font-size:.7rem;color:rgba(255,255,255,.3);text-align:center;margin-top:.5rem">Seleccioná un estilo para continuar</div>
+          </div>
         </div>
 
         <!-- BRAIN LOADING 2 — generación completa -->
@@ -3800,109 +3811,74 @@ var _PERCEPTION_MAP = {
   'recuperacion-dep': {label:'Recuperación deportiva',dna:'sport',    energy:'high', headlines:['Vuelve a moverte sin límites.','Recupera tu rendimiento deportivo.','De la lesión al podio.']}
 };
 
-// ── POOL DE LAYOUTS — todos los disponibles ──────────────────────────────────
+// ── 6 LAYOUTS CURADOS — identidades muy distintas ────────────────────────────
+// 6 identidades visuales muy distintas — claridad emocional sobre cantidad
 var AI_LAYOUTS = [
   {
-    id:'surgical-authority', name:'Editorial Signature', mood:'Elegancia clínica',
-    bg:'#1A1A1A', textColor:'#fff', muteColor:'rgba(255,255,255,.35)',
-    badgeLabel:'Editorial', badgeColor:'rgba(255,255,255,.5)',
-    img:'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'grayscale(60%) brightness(.75)',
-    overlay:'linear-gradient(180deg,transparent 40%,rgba(26,26,26,.95) 100%)',
-    // Especialidades que más le cuadran
-    match:['cirug','ortoped','oncol','neurol','cardiol','vascular','hepatol'],
-    // Tono de logo que le cuadra
+    id:'surgical-authority',
+    name:'Editorial Signature',
+    mood:'Elegancia clínica premium',
+    dot:'#9A8F82',
+    img:'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&q=85&auto=format&fit=crop',
+    imgCss:'filter:grayscale(55%) contrast(1.08) brightness(.8)',
+    overlay:'linear-gradient(180deg,rgba(7,6,14,.12) 0%,rgba(7,6,14,.08) 35%,rgba(7,6,14,.82) 75%,rgba(7,6,14,.97) 100%),linear-gradient(90deg,rgba(7,6,14,.65) 0%,transparent 55%)',
+    match:['cirug','ortoped','oncol','neurol','cardiol','vascular','hepatol','especializ'],
     logoTone:['dark','neutral']
   },
   {
-    id:'performance-athletic', name:'Performance Clinic', mood:'Energía y resultado',
-    bg:'#0A0A0F', textColor:'#fff', muteColor:'rgba(255,255,255,.35)',
-    badgeLabel:'Performance', badgeColor:'rgba(96,165,250,.8)',
-    img:'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'brightness(.7) contrast(1.1)',
-    overlay:'linear-gradient(180deg,rgba(14,59,153,.3) 0%,rgba(10,10,15,.9) 100%)',
+    id:'performance-athletic',
+    name:'Motion Performance',
+    mood:'Energía y resultado deportivo',
+    dot:'#3B82F6',
+    img:'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&q=85&auto=format&fit=crop',
+    imgCss:'filter:brightness(.68) contrast(1.12) saturate(1.1)',
+    overlay:'linear-gradient(180deg,rgba(5,8,22,.08) 0%,rgba(5,8,22,.08) 28%,rgba(5,8,22,.75) 65%,rgba(5,8,22,.97) 100%),linear-gradient(90deg,rgba(14,59,153,.55) 0%,transparent 60%)',
     match:['traumatol','ortoped','deport','rehabilit','fisio','kinesi','fisiatr'],
     logoTone:['dark','blue','neutral']
   },
   {
-    id:'warm-human-care', name:'Cálida y Humana', mood:'Cercana y emocional',
-    bg:'#FEFCF8', textColor:'#1C1008', muteColor:'#9C7B62',
-    badgeLabel:'Warm', badgeColor:'rgba(194,65,12,.8)',
-    img:'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'contrast(1.02) saturate(1.08)',
-    overlay:'linear-gradient(180deg,transparent 40%,rgba(254,252,248,.95) 100%)',
+    id:'warm-human-care',
+    name:'Human Warmth',
+    mood:'Cercana, cálida y emocional',
+    dot:'#C2410C',
+    img:'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=800&q=85&auto=format&fit=crop',
+    imgCss:'filter:contrast(1.02) saturate(1.1) brightness(.95)',
+    overlay:'linear-gradient(180deg,transparent 30%,rgba(254,252,248,.88) 80%,rgba(254,252,248,.98) 100%),linear-gradient(90deg,rgba(28,16,8,.45) 0%,transparent 50%)',
     match:['pediatr','psicol','psiquiatr','famili','ginecol','geriatr','terapia','nutricion'],
     logoTone:['warm','light','neutral']
   },
   {
-    id:'v3-1', name:'Autoridad Clásica', mood:'Dashboard premium',
-    bg:'#07111F', textColor:'#fff', muteColor:'rgba(255,255,255,.35)',
-    badgeLabel:'Premium', badgeColor:'rgba(141,178,255,.7)',
-    img:'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'brightness(.65) contrast(1.1)',
-    overlay:'linear-gradient(180deg,transparent 30%,rgba(7,17,31,.95) 100%)',
-    match:['cirug','cardiol','neurol','vascular','oncol','hepatol'],
-    logoTone:['dark','blue']
-  },
-  {
-    id:'v3-3', name:'Arena Esencia', mood:'Editorial minimal',
-    bg:'#EDE4D8', textColor:'#4C4339', muteColor:'#8D8478',
-    badgeLabel:'Essence', badgeColor:'rgba(140,132,107,.9)',
-    img:'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'saturate(.8) brightness(.82)',
-    overlay:'linear-gradient(180deg,transparent 40%,rgba(237,228,216,.95) 100%)',
-    match:['dermatol','estetic','nutri','psicol','ginecol','medicina interna'],
-    logoTone:['warm','neutral','light']
-  },
-  {
-    id:'v3-2', name:'Calma Wellness', mood:'Bienestar premium',
-    bg:'#F5EFE7', textColor:'#3D342C', muteColor:'#857668',
-    badgeLabel:'Wellness', badgeColor:'rgba(185,139,92,.8)',
-    img:'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'contrast(1.0) saturate(.9) brightness(.88)',
-    overlay:'linear-gradient(180deg,rgba(61,52,44,.65) 0%,rgba(61,52,44,.35) 40%,rgba(245,239,231,.9) 100%)',
-    match:['psicol','nutricion','terapia','famili','geriatr','medicina alternativa'],
-    logoTone:['warm','earth']
-  },
-  {
-    id:'v2-1', name:'Minimal Clínico', mood:'Crema y grafito',
-    bg:'#F5F0E8', textColor:'#1A1A1A', muteColor:'#9A8F82',
-    badgeLabel:'Minimal', badgeColor:'rgba(154,143,130,.8)',
-    img:'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'grayscale(55%) contrast(1.05)',
-    overlay:'linear-gradient(180deg,transparent 40%,rgba(245,240,232,.85) 100%)',
-    match:['cirug','ortoped','traumatol','oncol','endocrinol','medicina interna'],
-    logoTone:['neutral','dark','light']
-  },
-  {
-    id:'v2-2', name:'Oscuro Premium', mood:'Navy eléctrico',
-    bg:'#0A0A0F', textColor:'#fff', muteColor:'rgba(255,255,255,.4)',
-    badgeLabel:'Dark', badgeColor:'rgba(59,130,246,.8)',
-    img:'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'saturate(.85) contrast(1.1) brightness(.9)',
-    overlay:'linear-gradient(180deg,rgba(10,10,15,.8) 0%,rgba(10,10,15,.5) 40%,rgba(10,10,15,.9) 100%)',
-    match:['cirug','traumatol','deport','ortoped','vascular','neurol'],
-    logoTone:['dark','blue','neutral']
-  },
-  {
-    id:'v2-3', name:'Humano Cálido', mood:'Arena y oliva',
-    bg:'#FEFCF8', textColor:'#1C1008', muteColor:'#9C7B62',
-    badgeLabel:'Human', badgeColor:'rgba(123,110,92,.8)',
-    img:'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'contrast(1.02) saturate(1.05)',
-    overlay:'linear-gradient(180deg,transparent 50%,rgba(254,252,248,.9) 100%)',
-    match:['pediatr','famili','psicol','ginecol','geriatr','terapia'],
-    logoTone:['warm','earth','light']
-  },
-  {
-    id:'v2-4', name:'NeoClínica', mood:'Blanco azul limpio',
-    bg:'#FAFBFF', textColor:'#0F172A', muteColor:'#64748B',
-    badgeLabel:'Neo', badgeColor:'rgba(37,99,235,.7)',
-    img:'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=260&q=80&auto=format&fit=crop',
-    imgFilter:'saturate(.95) brightness(1.02)',
-    overlay:'linear-gradient(180deg,transparent 40%,rgba(250,251,255,.9) 100%)',
-    match:['neurolog','endocrinol','medicina interna','reumatol','urol','cardiol'],
+    id:'v2-4',
+    name:'NeoClinic',
+    mood:'Limpieza clínica moderna',
+    dot:'#2563EB',
+    img:'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=800&q=85&auto=format&fit=crop',
+    imgCss:'filter:saturate(.85) brightness(.96) contrast(1.05)',
+    overlay:'linear-gradient(180deg,transparent 35%,rgba(250,251,255,.82) 75%,rgba(250,251,255,.97) 100%),linear-gradient(90deg,rgba(15,23,42,.35) 0%,transparent 55%)',
+    match:['neurolog','endocrinol','medicina interna','reumatol','urol','cardiol','internis'],
     logoTone:['light','blue','neutral']
+  },
+  {
+    id:'v3-3',
+    name:'Sand Essence',
+    mood:'Editorial japonés minimal',
+    dot:'#8C846B',
+    img:'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&q=85&auto=format&fit=crop',
+    imgCss:'filter:saturate(.72) brightness(.78) contrast(1.06)',
+    overlay:'linear-gradient(180deg,transparent 30%,rgba(237,228,216,.85) 75%,rgba(237,228,216,.97) 100%),linear-gradient(90deg,rgba(76,67,57,.72) 0%,rgba(76,67,57,.25) 45%,transparent 65%)',
+    match:['dermatol','estetic','nutri','psicol','ginecol','medicina estetica','bienestar'],
+    logoTone:['warm','neutral','light','earth']
+  },
+  {
+    id:'v3-1',
+    name:'Classic Professional',
+    mood:'Autoridad y exclusividad',
+    dot:'#8DB2FF',
+    img:'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=800&q=85&auto=format&fit=crop',
+    imgCss:'filter:brightness(.6) contrast(1.12)',
+    overlay:'linear-gradient(180deg,rgba(7,17,31,.1) 0%,rgba(7,17,31,.08) 28%,rgba(7,17,31,.78) 65%,rgba(7,17,31,.97) 100%),linear-gradient(90deg,rgba(7,17,31,.82) 0%,rgba(7,17,31,.45) 40%,rgba(7,17,31,.12) 70%,transparent 100%)',
+    match:['cirug','cardiol','neurol','vascular','oncol','hepatol','transplante'],
+    logoTone:['dark','blue']
   }
 ];
 
@@ -3941,45 +3917,58 @@ function getLayoutsForDoctor(esp, logoPalette) {
   return scored.slice(0,5).map(function(s){ return s.layout; });
 }
 
-// Renderizar el carousel dinámicamente
+// Renderizar pills + precargar imágenes
 function renderStyleCarousel() {
   var carousel = document.getElementById('aiStyleCarousel');
   if (!carousel) return;
   var esp = M ? ((M.especialidades||[])[0]||'') : '';
   var layouts = getLayoutsForDoctor(esp, _webLogoPalette);
+
+  // Precargar todas las imágenes para preview instantáneo
+  layouts.forEach(function(l){ var img=new Image(); img.src=l.img; });
+
   carousel.innerHTML = layouts.map(function(l, i) {
-    var isRec = i === 0;
-    return '<div class="ai-style-card" onclick="aiSelectStyle(this,\''+l.id+'\')" style="width:130px">'
-      + '<div style="height:160px;overflow:hidden;position:relative;background:'+l.bg+'">'
-      + '<img src="'+l.img+'" style="width:100%;height:100%;object-fit:cover;'+( l.imgFilter?'filter:'+l.imgFilter:'')+'" loading="lazy">'
-      + '<div style="position:absolute;inset:0;background:'+l.overlay+'"></div>'
-      + (isRec ? '<div style="position:absolute;top:.5rem;left:.5rem;background:rgba(167,139,250,.85);color:#fff;font-size:.5rem;font-weight:800;padding:.18rem .55rem;border-radius:50px;letter-spacing:.06em;text-transform:uppercase">⭐ Recomendado</div>' : '')
-      + '<div style="position:absolute;bottom:.6rem;left:.6rem"><div style="font-size:.58rem;font-weight:700;color:'+l.badgeColor+';text-transform:uppercase;letter-spacing:.08em">'+l.badgeLabel+'</div></div>'
-      + '</div>'
-      + '<div style="padding:.65rem .75rem;background:'+l.bg+'">'
-      + '<div style="font-size:.74rem;font-weight:700;color:'+l.textColor+';margin-bottom:.15rem">'+l.name+'</div>'
-      + '<div style="font-size:.6rem;color:'+l.muteColor+'">'+l.mood+'</div>'
-      + '</div>'
-      + '</div>';
+    return '<button class="ai-style-pill" data-lid="'+l.id+'" onclick="aiSelectStyle(this,\''+l.id+'\')">'
+      + '<span class="pill-dot" style="background:'+l.dot+'"></span>'
+      + (i===0 ? '<span>'+l.name+'</span><span style="font-size:.58rem;font-weight:700;color:rgba(167,139,250,.7);margin-left:.2rem">✦</span>' : '<span>'+l.name+'</span>')
+      + '</button>';
   }).join('');
-  // Auto-seleccionar el primero (recomendado)
-  var first = carousel.querySelector('.ai-style-card');
+
+  // Auto-seleccionar el primero
+  var first = carousel.querySelector('.ai-style-pill');
   if (first) first.click();
 }
 
 // ── NUEVO MODAL FLOW ─────────────────────────────────────────────────────────
 var _aiSelectedStyle = null;
 
-function aiSelectStyle(card, layoutId) {
+function aiSelectStyle(pill, layoutId) {
   _aiSelectedStyle = layoutId;
-  document.querySelectorAll('.ai-style-card').forEach(function(c){ c.classList.remove('selected'); });
-  card.classList.add('selected');
+  _webLayoutId = layoutId;
+
+  // Pills
+  document.querySelectorAll('.ai-style-pill').forEach(function(p){ p.classList.remove('active'); });
+  pill.classList.add('active');
+
+  // Preview instantáneo — 100% local, sin red
+  var layouts = AI_LAYOUTS;
+  var l = layouts.find(function(x){ return x.id===layoutId; });
+  if (l) {
+    var img = document.getElementById('aiStylePreviewImg');
+    var ov  = document.getElementById('aiStylePreviewOv');
+    var nm  = document.getElementById('aiStylePreviewName');
+    var md  = document.getElementById('aiStylePreviewMood');
+    if (img) { img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 15%;transition:opacity .3s ease;'+l.imgCss; img.src = l.img; }
+    if (ov)  { ov.style.cssText  = 'position:absolute;inset:0;transition:background .3s ease;background:'+l.overlay; }
+    if (nm)  { nm.style.opacity='0'; setTimeout(function(){ nm.textContent=l.name;   nm.style.opacity='1'; }, 120); }
+    if (md)  { md.style.opacity='0'; setTimeout(function(){ md.textContent=l.mood;   md.style.opacity='1'; }, 160); }
+  }
+
+  // Habilitar botón
   var btn = document.getElementById('aiGenerarDemoBtn');
   if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
   var err = document.getElementById('aiStyleError');
   if (err) err.style.display = 'none';
-  // Guardar en legacy variable para webAiGenerar
-  _webLayoutId = layoutId;
 }
 
 function aiModalContinuar() {
