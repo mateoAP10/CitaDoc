@@ -2018,7 +2018,7 @@ display:flex;
               <span style="width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.1)"></span>
             </div>
             <div style="flex:1;display:flex;justify-content:center;min-width:0">
-              <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:6px;padding:.2rem .7rem;font-size:.6rem;color:rgba(255,255,255,.28);max-width:240px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" id="aiRevealUrlBar">citadoc.com/dr-...</div>
+              <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:6px;padding:.2rem .7rem;font-size:.6rem;color:rgba(255,255,255,.28);max-width:240px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" id="aiRevealUrlBar">dr-....citadoc.lat</div>
             </div>
             <div style="width:36px;flex-shrink:0"></div>
           </div>
@@ -4012,6 +4012,8 @@ function abrirAiReveal() {
 
     frame.src = url;
     if (urlBar) urlBar.textContent = (M.slug || 'dr-...') + '.citadoc.lat';
+    var revTitle = document.getElementById('aiRevealTitle');
+    if (revTitle) revTitle.textContent = (M.slug||'dr-...') + '.citadoc.lat';
 
     // Block interactions inside iframe while keeping scroll
     frame.onload = function() {
