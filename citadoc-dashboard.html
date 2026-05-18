@@ -5805,29 +5805,43 @@ async function iniciarPagoRedirect(planType) {
   var toastId = mostrarToast('Abriendo pago seguro...', 'info');
 
   try {
+    // Limpiar teléfono — PayPhone requiere 10 dígitos formato ecuatoriano
+    var rawTel = ((M.telefono || M.whatsapp || '').replace(/\D/g,''));
+    if (rawTel.startsWith('593')) rawTel = '0' + rawTel.slice(3);
+    if (rawTel.length === 9) rawTel = '0' + rawTel;
+    rawTel = rawTel.slice(0,10);
+
+    var payload = {
+      amount: amount, amountWithoutTax: amount, tax: 0, service: 0,
+      currency: 'USD',
+      clientTransactionId: txId,
+      storeId: PAYPHONE_STOREID,
+      reference: 'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
+      lang: 'es',
+      email: M.email || '',
+      phoneNumber: rawTel || '',
+      responseUrl:     'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(txId),
+      cancellationUrl: 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1'
+    };
+    console.log('[pago] payload', JSON.stringify(payload));
+
     var res = await fetch('https://pay.payphonetodoesposible.com/api/button/Prepare', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + PAYPHONE_TOKEN, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: amount, amountWithoutTax: amount, currency: 'USD',
-        clientTransactionId: txId,
-        storeId: PAYPHONE_STOREID,
-        reference: 'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
-        lang: 'es',
-        email: M.email || '',
-        responseUrl:     'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(txId),
-        cancellationUrl: 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1'
-      })
+      body: JSON.stringify(payload)
     });
-    var data = await res.json().catch(function(){ return {}; });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var rawText = await res.text();
+    console.log('[pago] status', res.status, 'body', rawText);
+    var data = {};
+    try { data = JSON.parse(rawText); } catch(e) {}
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + rawText.slice(0,300));
     var url = data.payWithCard || data.payWithPayPhone || data.paymentUrl;
-    if (!url) throw new Error('Sin URL');
+    if (!url) throw new Error('Sin URL — ' + rawText.slice(0,200));
     localStorage.setItem('citadoc_pp_tx', JSON.stringify({ id: txId, plan: planType, medicoId: M.id, ts: Date.now() }));
     window.open(url, '_blank');
   } catch(e) {
-    console.error('[pago]', e);
-    mostrarToast('No se pudo abrir el pago. Intentá de nuevo.', 'error');
+    console.error('[pago]', e.message);
+    mostrarToast('Error al abrir pago: ' + e.message.slice(0,80), 'error');
   }
 }
 
