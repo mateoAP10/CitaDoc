@@ -204,109 +204,55 @@ body {
   line-height: 1.6;
 }
 
-/* ── STEP 2: full-page payment (no modal — PayPhone uses position:fixed internally) ── */
 #stepPay {
   display: none;
   min-height: 100svh;
-  background: var(--dark);
+  background: #fff;
   flex-direction: column;
 }
 #stepPay.active { display: flex; }
 
 .pp-topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: center; gap: .75rem;
+  padding: .85rem 1rem;
+  border-bottom: 1px solid #F0EDE8;
   flex-shrink: 0;
 }
-.pp-topbar-brand { display: flex; flex-direction: column; gap: .1rem; }
-.pp-topbar-logo { font-size: .85rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
-.pp-topbar-logo em { color: #34D399; font-style: normal; }
-.pp-topbar-amt { font-size: .65rem; color: rgba(255,255,255,.4); font-weight: 500; }
 .pp-back {
-  background: rgba(255,255,255,.08); border: none; border-radius: 50%;
-  width: 30px; height: 30px; color: rgba(255,255,255,.5); font-size: .8rem;
+  background: #F3F4F6; border: none; border-radius: 50%;
+  width: 30px; height: 30px; color: #374151; font-size: .85rem;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
 }
-.pp-back:hover { background: rgba(255,255,255,.15); color: #fff; }
+.pp-topbar-logo { font-size: .88rem; font-weight: 800; letter-spacing: -.02em; }
+.pp-topbar-logo em { color: var(--green); font-style: normal; }
+.pp-topbar-amt { font-size: .72rem; color: var(--muted); margin-left: auto; }
 
-.pp-content {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; padding: 1.25rem 1rem 2rem;
-}
-
-.pp-card {
-  background: #fff;
-  border-radius: 20px;
-  width: 100%; max-width: 480px;
-  overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,.35);
-}
-
-#pp-pay-container { width: 100%; min-height: 200px; }
-
-/* ── PayPhone form overrides — regular DOM, no shadow ── */
-#pp-pay-container input,
-#pp-pay-container select,
-#pp-pay-container textarea {
-  border-radius: 10px !important;
-  border: 1.5px solid #E5E7EB !important;
-  padding: 11px 14px !important;
-  font-size: 14px !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif !important;
-  background: #F8FAFC !important;
-  color: #111827 !important;
-  box-shadow: none !important;
-  transition: border-color .15s !important;
-}
-#pp-pay-container input:focus,
-#pp-pay-container select:focus {
-  border-color: #1A5C3F !important;
-  outline: none !important;
-  background: #fff !important;
-}
-#pp-pay-container button[type="submit"],
-#pp-pay-container [class*="pay-btn"],
-#pp-pay-container [class*="Pagar"],
-#pp-pay-container [class*="submit"],
-#pp-pay-container [class*="button"] {
-  background: #1A5C3F !important;
-  color: #fff !important;
-  border-radius: 12px !important;
-  border: none !important;
-  padding: 13px 20px !important;
-  font-weight: 700 !important;
-  font-size: 15px !important;
-  cursor: pointer !important;
-  width: 100% !important;
-  box-shadow: 0 4px 14px rgba(26,92,63,.25) !important;
-}
+#pp-pay-container { width: 100%; }
 
 .pp-loading {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: .75rem; padding: 2rem 1rem;
+  gap: .75rem; padding: 3rem 1rem;
   color: #9CA3AF; font-size: .8rem;
 }
 .pp-loading-wrap {
-  min-height: 180px;
+  min-height: 200px;
   display: flex; align-items: center; justify-content: center;
 }
 .spinner {
   width: 22px; height: 22px;
-  border: 2px solid rgba(255,255,255,.1);
-  border-top-color: #34D399;
+  border: 2px solid #E5E7EB;
+  border-top-color: var(--green);
   border-radius: 50%;
   animation: spin .75s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .pp-error {
-  display: none; margin-top: .75rem;
-  background: #3B0F0F; border: 1px solid #7F1D1D;
+  display: none; margin: .75rem 1rem 0;
+  background: #FEF2F2; border: 1px solid #FEE2E2;
   border-radius: 10px; padding: .8rem 1rem;
-  font-size: .78rem; color: #FCA5A5;
+  font-size: .78rem; color: #991B1B;
 }
 
 #stepSuccess {
@@ -418,26 +364,19 @@ body {
 <!-- ── STEP 2: PAYMENT OVERLAY ── -->
 <div id="stepPay">
   <div class="pp-topbar">
-    <button class="pp-back" onclick="cerrarPago()" aria-label="Volver">←</button>
-    <div class="pp-topbar-brand">
-      <div class="pp-topbar-logo">Cita<em>Doc</em></div>
-      <div class="pp-topbar-amt" id="modalAmt">Completar pago</div>
-    </div>
-    <div style="width:30px"></div>
+    <button class="pp-back" onclick="cerrarPago()">←</button>
+    <div class="pp-topbar-logo">Cita<em>Doc</em></div>
+    <div class="pp-topbar-amt" id="modalAmt"></div>
   </div>
-  <div class="pp-content">
-    <div class="pp-card">
-      <div id="pp-pay-container">
-        <div class="pp-loading-wrap">
-          <div class="pp-loading">
-            <div class="spinner"></div>
-            Cargando pasarela…
-          </div>
-        </div>
+  <div id="pp-pay-container">
+    <div class="pp-loading-wrap">
+      <div class="pp-loading">
+        <div class="spinner"></div>
+        Cargando pasarela…
       </div>
     </div>
-    <div class="pp-error" id="ppError"></div>
   </div>
+  <div class="pp-error" id="ppError"></div>
 </div>
 
 <!-- ── STEP 3: SUCCESS ── -->
