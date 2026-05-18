@@ -352,8 +352,9 @@ body {
   var name     = sp.get('name')   || '';
   var slug     = sp.get('slug')   || '';
 
+  var isMaint  = plan === 'maint';
   var isWeb    = plan === 'pro_web';
-  var amount   = isWeb ? 15000 : 1999;
+  var amount   = isMaint ? 2900 : isWeb ? 15000 : 1999;
 
   // ── Domain ──
   var domain = slug ? slug + '.citadoc.lat' : 'tu-sitio.citadoc.lat';
@@ -365,7 +366,20 @@ body {
   document.getElementById('sDomainLink').href = 'https://' + domain;
 
   // ── Plan texts ──
+  // maint uses medicoId directly in txId to match webhook format cd-maint-{shortId}-{ts}
   var PLANS = {
+    maint: {
+      badge:    '📅 MANTENIMIENTO',
+      title:    'Renovar sitio<br>web médico',
+      sub:      'Mantén tu sitio activo y visible para tus pacientes.',
+      prices: [{ label: 'Mantenimiento mensual', val: '$29', note: '/mes', cls: 'big' }],
+      features: [
+        'Sitio web activo y visible',
+        'Agenda online disponible 24/7',
+        'Recordatorios automáticos activos',
+        'Soporte y actualizaciones incluidas'
+      ]
+    },
     pro_web: {
       badge:    '✦ PRO+WEB',
       title:    'Activa tu sitio<br>web médico',
@@ -420,7 +434,7 @@ body {
 
   // ── txId ──
   var shortId   = medicoId.replace(/-/g,'').slice(0,12);
-  var shortPlan = isWeb ? 'pw' : 'pr';
+  var shortPlan = isMaint ? 'maint' : isWeb ? 'pw' : 'pr';
   var txId      = ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0,50);
 
   var base      = 'https://citadoc.lat/citadoc-dashboard.html';
@@ -450,7 +464,7 @@ body {
         amountWithTax:       0,
         tax: 0, service: 0, tip: 0,
         currency:            'USD',
-        reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + (medicoId ? ' | ' + medicoId : ''),
+        reference:           ('CitaDoc ' + (isMaint ? 'Maint' : isWeb ? 'PRO+WEB' : 'PRO') + (medicoId ? ' | ' + medicoId : '')).slice(0,100),
         lang:                'es',
         email:               email || undefined,
         responseUrl:         returnUrl,

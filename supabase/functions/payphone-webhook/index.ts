@@ -144,11 +144,15 @@ serve(async (req) => {
       }
     }
 
-    // ── MAINTENANCE PAYMENT $29 (cd-maint-{medicoId}-{timestamp}) ──
-    const maintMatch = (clientTransactionId || '').match(/^cd-maint-([0-9a-f-]{36})-\d+$/i)
-    if (maintMatch) {
-      const medicoId = maintMatch[1]
-      const nextDate = new Date(); nextDate.setMonth(nextDate.getMonth()+1)
+    // ── MAINTENANCE PAYMENT $29 (cd-maint-*) — medicoId comes from reference ──
+    if ((clientTransactionId || '').startsWith('cd-maint-')) {
+      const uuidMatch = (reference || '').match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i)
+      const medicoId  = uuidMatch ? uuidMatch[1] : null
+      if (!medicoId) {
+        console.error('[webhook-maint] No medicoId in reference:', reference)
+        return new Response(JSON.stringify({ error: 'missing_medico_id' }), { status: 400, headers: { 'Content-Type': 'application/json' } })
+      }
+      const nextDate = new Date(); nextDate.setMonth(nextDate.getMonth() + 1)
       await sb.from('medicos').update({
         plan_activo:       true,
         maint_paid_until:  nextDate.toISOString().split('T')[0],

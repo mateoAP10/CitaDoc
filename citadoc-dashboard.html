@@ -1135,6 +1135,12 @@ display:flex;
 
 <!-- MAIN -->
 <main class="main">
+  <!-- Banner mantenimiento -->
+  <div id="maintBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#7C3AED;color:#fff;padding:.75rem 1.25rem;display:none;align-items:center;justify-content:space-between;gap:1rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;box-shadow:0 2px 12px rgba(124,58,237,.35)">
+    <span id="maintBannerText">⚠️ Tu sitio web requiere el pago de mantenimiento mensual para seguir activo.</span>
+    <button onclick="iniciarPagoRedirect('maint')" style="background:#fff;color:#7C3AED;border:none;border-radius:8px;padding:.4rem .9rem;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">Pagar $29 →</button>
+  </div>
+
   <!-- Sidebar overlay para mobile -->
   <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;backdrop-filter:blur(2px)"></div>
 
@@ -3568,6 +3574,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await aplicarMedico(medico);
     window.medicoGlobal = medico;
     verificarRetornoPago();
+    verificarMantenimiento(medico);
     // Sidebar trigger — hover en tablet
     var sidebarTriggerEl = document.getElementById('sidebarTrigger');
     var sidebarEl = document.getElementById('sidebar');
@@ -5751,8 +5758,9 @@ var _PP_STORE   = '86e91007-666b-48c0-a752-3e62aa85b1ef';
 function iniciarPagoRedirect(planType) {
   if (!M) return;
   planType = planType || 'pro';
-  var isWeb = planType === 'pro_web';
-  var shortPlan = isWeb ? 'pw' : 'pr';
+  var isMaint = planType === 'maint';
+  var isWeb   = planType === 'pro_web';
+  var shortPlan = isMaint ? 'mt' : isWeb ? 'pw' : 'pr';
   var shortId   = (M.id||'').replace(/-/g,'').slice(0,12);
   var txId = ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0,50);
 
@@ -5836,6 +5844,43 @@ async function verificarRetornoPago() {
     mostrarToast('Error verificando pago. Si se cobró, contacta soporte.', 'error');
   } finally {
     _ppReturnProcessing = false;
+  }
+}
+
+// ── MANTENIMIENTO MENSUAL — banner si venció ──────────────────────────────
+function verificarMantenimiento(m) {
+  if (m.plan !== 'pro_web' || !m.plan_activo) return;
+
+  var hoy = new Date();
+  var vencido = false;
+  var diasRestantes = null;
+
+  if (m.maint_paid_until) {
+    var hasta = new Date(m.maint_paid_until);
+    diasRestantes = Math.ceil((hasta - hoy) / 86400000);
+    vencido = diasRestantes < 0;
+  } else if (m.plan_activated_at) {
+    // Sin pago de mantenimiento registrado: primer pago vence 30 días desde activación
+    var activado = new Date(m.plan_activated_at);
+    diasRestantes = Math.ceil((activado.getTime() + 30 * 86400000 - hoy) / 86400000);
+    vencido = diasRestantes < 0;
+  } else if (m.updated_at) {
+    // Fallback: usar updated_at como proxy de activación
+    var ref = new Date(m.updated_at);
+    diasRestantes = Math.ceil((ref.getTime() + 30 * 86400000 - hoy) / 86400000);
+    vencido = diasRestantes < 0;
+  }
+
+  var banner = document.getElementById('maintBanner');
+  var texto  = document.getElementById('maintBannerText');
+  if (!banner) return;
+
+  if (vencido) {
+    texto.textContent = '⚠️ Tu sitio web está vencido — paga el mantenimiento mensual para mantenerlo activo.';
+    banner.style.display = 'flex';
+  } else if (diasRestantes !== null && diasRestantes <= 7) {
+    texto.textContent = '📅 Tu sitio web vence en ' + diasRestantes + ' día' + (diasRestantes === 1 ? '' : 's') + ' — renueva el mantenimiento.';
+    banner.style.display = 'flex';
   }
 }
 
