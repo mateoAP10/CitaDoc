@@ -5819,33 +5819,17 @@ async function iniciarPagoRedirect(planType) {
     if (rawTel.length === 9) rawTel = '0' + rawTel;
     rawTel = rawTel.slice(0,10);
 
-    var payload = {
-      amount: amount, amountWithoutTax: amount, tax: 0, service: 0,
-      currency: 'USD',
-      clientTransactionId: txId,
-      storeId: _PP_STORE,
-      reference: 'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
-      lang: 'es',
-      email: M.email || '',
-      phoneNumber: (rawTel && rawTel.length >= 7 && rawTel.length <= 10) ? rawTel : undefined,
-      responseUrl:     'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(txId),
-      cancellationUrl: 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1'
-    };
-    console.log('[pago] payload', JSON.stringify(payload));
-
-    var res = await fetch('https://pay.payphonetodoesposible.com/api/button/Prepare', {
+    // Llamar Edge Function (server-to-server evita restricciones del browser)
+    var efRes = await fetch('https://qxoomcqaafogczrvsyhg.functions.supabase.co/payphone-prepare', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + (_PP_TOKEN || PAYPHONE_TOKEN || ''), 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs' },
+      body: JSON.stringify({ planType: planType, medicoId: M.id, email: M.email || '' })
     });
-    var rawText = await res.text();
-    console.log('[pago] status', res.status, 'body', rawText);
-    if (!res.ok) mostrarToast('PayPhone ' + res.status + ': ' + rawText.slice(0,120), 'error');
-    var data = {};
-    try { data = JSON.parse(rawText); } catch(e) {}
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + rawText.slice(0,300));
-    var url = data.payWithCard || data.payWithPayPhone || data.paymentUrl;
-    if (!url) throw new Error('Sin URL — ' + rawText.slice(0,200));
+    var efData = await efRes.json().catch(function(){ return {}; });
+    if (!efRes.ok || !efData.ok) throw new Error(efData.error || 'Error ' + efRes.status);
+    var url = efData.url;
+    var txId = efData.txId || txId;
+    if (!url) throw new Error('Sin URL de pago');
     localStorage.setItem('citadoc_pp_tx', JSON.stringify({ id: txId, plan: planType, medicoId: M.id, ts: Date.now() }));
     window.open(url, '_blank');
   } catch(e) {
