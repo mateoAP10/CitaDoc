@@ -5801,8 +5801,11 @@ async function iniciarPagoRedirect(planType) {
   planType = planType || 'pro';
   var isWeb = planType === 'pro_web';
   var amount = isWeb ? 15000 : 1999;
-  // PayPhone: clientTransactionId solo alfanumérico y guiones simples
-  var txId = 'cd-' + planType.replace('_','-') + '-' + M.id + '-' + Date.now();
+  // PayPhone: máx 50 chars — usar prefijo corto + 8 chars del UUID + timestamp base36
+  var shortPlan = isWeb ? 'pw' : 'pr';
+  var shortId   = (M.id||'').replace(/-/g,'').slice(0,12);
+  var tsShort   = Date.now().toString(36);
+  var txId = ('cd-' + shortPlan + '-' + shortId + '-' + tsShort).slice(0,50);
 
   cerrarProModal(); cerrarProWebModal();
 
@@ -5824,7 +5827,7 @@ async function iniciarPagoRedirect(planType) {
       reference: 'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
       lang: 'es',
       email: M.email || '',
-      phoneNumber: rawTel || '0999999999',
+      phoneNumber: (rawTel && rawTel.length >= 7 && rawTel.length <= 10) ? rawTel : undefined,
       responseUrl:     'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(txId),
       cancellationUrl: 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1'
     };
