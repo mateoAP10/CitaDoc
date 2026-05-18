@@ -463,10 +463,11 @@ body {
   // ── txId ──
   var shortId   = medicoId.replace(/-/g,'').slice(0,12);
   var shortPlan = isMaint ? 'maint' : isWeb ? 'pw' : 'pr';
-  var txId      = ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0,50);
+  function generarTxId() { return ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0,50); }
+  var txId = generarTxId();
 
   var base      = 'https://citadoc.lat/citadoc-dashboard.html';
-  var returnUrl = base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId);
+  function getReturnUrl() { return base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId); }
   var ppErr     = document.getElementById('ppError');
   var elSuccess = document.getElementById('stepSuccess');
 
@@ -495,7 +496,8 @@ body {
     if (row.plans && !row.plans.includes(plan)) { msg.textContent = 'Código no aplica para este plan.'; msg.className = 'promo-msg promo-err'; return; }
     _promoApplied = row;
     amount = Math.round(baseAmount * (1 - row.discount_pct / 100));
-    _widgetInit = false; // reset para reinicializar con nuevo amount
+    txId = generarTxId();
+    _widgetInit = false;
     document.getElementById('pp-pay-container').innerHTML = '<div class="pp-loading-wrap"><div class="pp-loading"><div class="spinner"></div>Aplicando descuento…</div></div>';
     msg.textContent = '✓ ' + row.discount_pct + '% de descuento aplicado.'; msg.className = 'promo-msg promo-ok';
     tryInitWidget();
@@ -519,7 +521,7 @@ body {
         reference:           ('CitaDoc ' + (isMaint ? 'Maint' : isWeb ? 'PRO+WEB' : 'PRO') + (medicoId ? ' | ' + medicoId : '')).slice(0,100),
         lang:                'es',
         email:               email || undefined,
-        responseUrl:         returnUrl,
+        responseUrl:         getReturnUrl(),
         cancellationUrl:     base + '?pp_cancel=1'
       }).render('pp-pay-container');
     } catch(e) {
@@ -530,7 +532,7 @@ body {
   }
   tryInitWidget();
 
-  window.irDashboard = function() { window.location.href = returnUrl; };
+  window.irDashboard = function() { window.location.href = getReturnUrl(); };
 })();
 </script>
 </body>
