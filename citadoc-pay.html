@@ -204,77 +204,47 @@ body {
   line-height: 1.6;
 }
 
-#payOverlay {
+/* ── STEP 2: full-page payment (no modal — PayPhone uses position:fixed internally) ── */
+#stepPay {
   display: none;
-  position: fixed; inset: 0; z-index: 1000;
-  background: rgba(4, 8, 18, .82);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  overflow-y: auto;
-}
-#payOverlay.active { display: flex; }
-
-.pay-modal {
+  min-height: 100svh;
   background: var(--dark);
-  border-radius: 24px;
-  width: 100%;
-  max-width: 520px;
-  box-shadow: 0 40px 120px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.07);
-  overflow: hidden;
-  animation: modalIn .28s cubic-bezier(.22,1,.36,1);
+  flex-direction: column;
 }
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(16px) scale(.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
+#stepPay.active { display: flex; }
 
-/* Dark header: logo + amount + close */
-.pay-modal-head {
+.pp-topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-}
-.pay-modal-brand {
-  display: flex; flex-direction: column; gap: .15rem;
-}
-.pay-modal-brand-name {
-  font-size: .72rem; font-weight: 800; letter-spacing: -.01em;
-  color: #fff;
-}
-.pay-modal-brand-name em { color: #34D399; font-style: normal; }
-.pay-modal-brand-amt {
-  font-size: .65rem; color: rgba(255,255,255,.4);
-  font-weight: 500;
-}
-.pay-modal-close {
-  width: 28px; height: 28px;
-  background: rgba(255,255,255,.08);
-  border: none; border-radius: 50%;
-  color: rgba(255,255,255,.45);
-  font-size: .85rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
+  border-bottom: 1px solid rgba(255,255,255,.08);
   flex-shrink: 0;
 }
-.pay-modal-close:hover { background: rgba(255,255,255,.15); color: #fff; }
+.pp-topbar-brand { display: flex; flex-direction: column; gap: .1rem; }
+.pp-topbar-logo { font-size: .85rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
+.pp-topbar-logo em { color: #34D399; font-style: normal; }
+.pp-topbar-amt { font-size: .65rem; color: rgba(255,255,255,.4); font-weight: 500; }
+.pp-back {
+  background: rgba(255,255,255,.08); border: none; border-radius: 50%;
+  width: 30px; height: 30px; color: rgba(255,255,255,.5); font-size: .8rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.pp-back:hover { background: rgba(255,255,255,.15); color: #fff; }
 
-/* PayPhone surface — flush, no extra side padding (form needs full width) */
-.pay-modal-body { padding: .75rem; background: var(--dark); }
+.pp-content {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; padding: 1.25rem 1rem 2rem;
+}
 
-.pp-surface {
+.pp-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 20px;
+  width: 100%; max-width: 480px;
   overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,.35);
 }
 
-/* PayPhone render target */
-#pp-pay-container {
-  width: 100%;
-  min-height: 200px;
-}
+#pp-pay-container { width: 100%; min-height: 200px; }
 
 /* ── PayPhone form overrides — regular DOM, no shadow ── */
 #pp-pay-container input,
@@ -300,7 +270,7 @@ body {
 #pp-pay-container [class*="pay-btn"],
 #pp-pay-container [class*="Pagar"],
 #pp-pay-container [class*="submit"],
-#pp-pay-container [class*="button"]:not(.pay-modal-close) {
+#pp-pay-container [class*="button"] {
   background: #1A5C3F !important;
   color: #fff !important;
   border-radius: 12px !important;
@@ -446,28 +416,27 @@ body {
 </div>
 
 <!-- ── STEP 2: PAYMENT OVERLAY ── -->
-<div id="payOverlay">
-  <div class="pay-modal">
-    <div class="pay-modal-head">
-      <div class="pay-modal-brand">
-        <div class="pay-modal-brand-name">Cita<em>Doc</em></div>
-        <div class="pay-modal-brand-amt" id="modalAmt">Completar pago</div>
-      </div>
-      <button class="pay-modal-close" onclick="cerrarPago()" aria-label="Cerrar">✕</button>
+<div id="stepPay">
+  <div class="pp-topbar">
+    <button class="pp-back" onclick="cerrarPago()" aria-label="Volver">←</button>
+    <div class="pp-topbar-brand">
+      <div class="pp-topbar-logo">Cita<em>Doc</em></div>
+      <div class="pp-topbar-amt" id="modalAmt">Completar pago</div>
     </div>
-    <div class="pay-modal-body">
-      <div class="pp-surface">
-        <div id="pp-pay-container">
-          <div class="pp-loading-wrap">
-            <div class="pp-loading">
-              <div class="spinner"></div>
-              Cargando pasarela…
-            </div>
+    <div style="width:30px"></div>
+  </div>
+  <div class="pp-content">
+    <div class="pp-card">
+      <div id="pp-pay-container">
+        <div class="pp-loading-wrap">
+          <div class="pp-loading">
+            <div class="spinner"></div>
+            Cargando pasarela…
           </div>
         </div>
       </div>
-      <div class="pp-error" id="ppError"></div>
     </div>
+    <div class="pp-error" id="ppError"></div>
   </div>
 </div>
 
@@ -575,8 +544,10 @@ body {
 
   var base      = 'https://citadoc.lat/citadoc-dashboard.html';
   var returnUrl = base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId);
-  var overlay   = document.getElementById('payOverlay');
   var ppErr     = document.getElementById('ppError');
+  var elReview  = document.getElementById('stepReview');
+  var elPay     = document.getElementById('stepPay');
+  var elSuccess = document.getElementById('stepSuccess');
 
   var _widgetInit = false;
 
@@ -609,25 +580,21 @@ body {
   }
 
   function mostrarSuccess() {
-    document.getElementById('stepReview').style.display = 'none';
-    overlay.classList.remove('active');
-    document.getElementById('stepSuccess').classList.add('active');
+    elReview.style.display = 'none';
+    elPay.classList.remove('active');
+    elSuccess.classList.add('active');
   }
 
   window.abrirPago = function() {
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    elReview.style.display = 'none';
+    elPay.classList.add('active');
     tryInitWidget();
   };
 
   window.cerrarPago = function() {
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
+    elPay.classList.remove('active');
+    elReview.style.display = '';
   };
-
-  overlay.addEventListener('click', function(e) {
-    if (e.target === this) cerrarPago();
-  });
 
   if (sp.get('pp_return')) mostrarSuccess();
 
