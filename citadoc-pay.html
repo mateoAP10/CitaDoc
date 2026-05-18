@@ -219,57 +219,98 @@ body {
 
 .pay-modal {
   background: var(--dark);
-  border-radius: 28px;
-  padding: 0;
+  border-radius: 24px;
   width: 100%;
-  max-width: 440px;
-  box-shadow: 0 40px 120px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06);
+  max-width: 520px;
+  box-shadow: 0 40px 120px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.07);
   overflow: hidden;
   animation: modalIn .28s cubic-bezier(.22,1,.36,1);
 }
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(18px) scale(.97); }
+  from { opacity: 0; transform: translateY(16px) scale(.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Dark header: logo + amount + close */
 .pay-modal-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1.1rem 1.4rem .9rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(255,255,255,.07);
 }
-.pay-modal-title {
-  font-size: .72rem; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(255,255,255,.45);
+.pay-modal-brand {
+  display: flex; flex-direction: column; gap: .15rem;
+}
+.pay-modal-brand-name {
+  font-size: .72rem; font-weight: 800; letter-spacing: -.01em;
+  color: #fff;
+}
+.pay-modal-brand-name em { color: #34D399; font-style: normal; }
+.pay-modal-brand-amt {
+  font-size: .65rem; color: rgba(255,255,255,.4);
+  font-weight: 500;
 }
 .pay-modal-close {
   width: 28px; height: 28px;
   background: rgba(255,255,255,.08);
   border: none; border-radius: 50%;
-  color: rgba(255,255,255,.5);
-  font-size: .9rem; cursor: pointer;
+  color: rgba(255,255,255,.45);
+  font-size: .85rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background .15s;
+  flex-shrink: 0;
 }
-.pay-modal-close:hover { background: rgba(255,255,255,.14); color: #fff; }
+.pay-modal-close:hover { background: rgba(255,255,255,.15); color: #fff; }
 
-.pay-modal-body {
-  padding: 1rem 1.1rem 1.1rem;
-  background: var(--dark);
-}
+/* PayPhone surface — flush, no extra side padding (form needs full width) */
+.pay-modal-body { padding: .75rem; background: var(--dark); }
 
-/* White surface that frames the PayPhone widget */
 .pp-surface {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
-  padding: 22px 24px 24px;
 }
 
-/* PayPhone render target — no extra styling, widget fills this */
+/* PayPhone render target */
 #pp-pay-container {
-  min-height: 180px;
   width: 100%;
+  min-height: 200px;
+}
+
+/* ── PayPhone form overrides — regular DOM, no shadow ── */
+#pp-pay-container input,
+#pp-pay-container select,
+#pp-pay-container textarea {
+  border-radius: 10px !important;
+  border: 1.5px solid #E5E7EB !important;
+  padding: 11px 14px !important;
+  font-size: 14px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif !important;
+  background: #F8FAFC !important;
+  color: #111827 !important;
+  box-shadow: none !important;
+  transition: border-color .15s !important;
+}
+#pp-pay-container input:focus,
+#pp-pay-container select:focus {
+  border-color: #1A5C3F !important;
+  outline: none !important;
+  background: #fff !important;
+}
+#pp-pay-container button[type="submit"],
+#pp-pay-container [class*="pay-btn"],
+#pp-pay-container [class*="Pagar"],
+#pp-pay-container [class*="submit"],
+#pp-pay-container [class*="button"]:not(.pay-modal-close) {
+  background: #1A5C3F !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  border: none !important;
+  padding: 13px 20px !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  box-shadow: 0 4px 14px rgba(26,92,63,.25) !important;
 }
 
 .pp-loading {
@@ -408,7 +449,10 @@ body {
 <div id="payOverlay">
   <div class="pay-modal">
     <div class="pay-modal-head">
-      <span class="pay-modal-title">Completar pago</span>
+      <div class="pay-modal-brand">
+        <div class="pay-modal-brand-name">Cita<em>Doc</em></div>
+        <div class="pay-modal-brand-amt" id="modalAmt">Completar pago</div>
+      </div>
       <button class="pay-modal-close" onclick="cerrarPago()" aria-label="Cerrar">✕</button>
     </div>
     <div class="pay-modal-body">
@@ -507,6 +551,7 @@ body {
   document.getElementById('rBadge').textContent    = p.badge;
   document.getElementById('rTitle').innerHTML      = p.title;
   document.getElementById('rSub').textContent      = p.sub;
+  document.getElementById('modalAmt').textContent  = p.prices[0].val + ' · ' + (isWeb ? 'PRO+WEB' : 'PRO');
 
   // Price block
   var checkSvg = '<svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>';
