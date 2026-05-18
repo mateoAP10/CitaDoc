@@ -5797,16 +5797,18 @@ async function iniciarPagoRedirect(planType) {
   planType = planType || 'pro';
   var isWeb = planType === 'pro_web';
 
-  var tel = validarTelefonoAntesDePago(planType, null);
-  if (!tel) return; // abrió modal de teléfono, esperando
+  // Limpiar teléfono — PayPhone Ecuador necesita 10 dígitos sin código de país
+  var rawTel = (M.telefono || M.whatsapp || '').replace(/\D/g,'');
+  if (rawTel.startsWith('593')) rawTel = rawTel.slice(3);
+  if (rawTel.startsWith('0')) rawTel = rawTel; // OK: 09XXXXXXXX
+  else if (rawTel.length === 9) rawTel = '0' + rawTel; // 9XXXXXXXX → 09XXXXXXXX
+  var tel = rawTel.slice(0,10); // máximo 10 dígitos
 
-  // clientTransactionId debe contener el UUID completo para que el webhook lo extraiga
   var transactionId = 'cd-' + planType + '-' + M.id + '-' + Date.now();
   var amount = isWeb ? 15000 : 1999;
   var returnUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(transactionId);
   var cancelUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1';
 
-  // Mostrar loading
   cerrarProModal(); cerrarProWebModal();
   mostrarToast('Preparando pago seguro...', 'info');
 
@@ -5826,31 +5828,48 @@ async function iniciarPagoRedirect(planType) {
         reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
         lang:                'es',
         email:               M.email || '',
-        phoneNumber:         tel,
+        phoneNumber:         tel || '0999999999',
         responseUrl:         returnUrl,
         cancellationUrl:     cancelUrl
       })
     });
 
     var rawText = await res.text();
-    console.log('[payphone] status', res.status);
-    console.log('[payphone] raw response text', rawText);
     var data = {};
-    try { data = JSON.parse(rawText); } catch(pe) { console.error('[payphone] JSON parse error', pe); }
-    console.log('[payphone] full prepare response', data);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    try { data = JSON.parse(rawText); } catch(pe) {}
+    console.log('[payphone] status', res.status, 'response', data);
+
+    if (!res.ok) throw new Error('HTTP ' + res.status + ': ' + rawText.slice(0,200));
+
     var redirectUrl = data.payWithCard || data.payWithPayPhone || data.paymentUrl;
-    if (!redirectUrl) throw new Error('No redirect URL in response');
+    if (!redirectUrl) throw new Error('No redirect URL: ' + JSON.stringify(data));
 
     localStorage.setItem('citadoc_pp_tx', JSON.stringify({
       id: transactionId, plan: planType, medicoId: M.id, ts: Date.now()
     }));
 
-    window.location.href = redirectUrl;
+    // Abrir en nuevo tab — no abandona el dashboard
+    var win = window.open(redirectUrl, '_blank');
+    if (!win) {
+      // Popup bloqueado — fallback: botón manual
+      mostrarToast('Pago listo. Hacé click para abrir.', 'info');
+      var a = document.createElement('a');
+      a.href = redirectUrl; a.target = '_blank'; a.rel = 'noopener';
+      a.style.cssText = 'position:fixed;bottom:80px;right:20px;z-index:99999;padding:.8rem 1.4rem;background:var(--teal);color:#fff;border-radius:12px;font-family:DM Sans,sans-serif;font-size:.9rem;font-weight:700;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.3)';
+      a.textContent = '💳 Ir al pago →';
+      document.body.appendChild(a);
+      setTimeout(function(){ a.remove(); }, 30000);
+    }
 
   } catch(e) {
     console.error('PayPhone Prepare error:', e);
-    mostrarToast('Error al iniciar pago. Intenta de nuevo.', 'error');
+    // Fallback directo a WhatsApp para completar el pago manualmente
+    var nombre = ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido).trim();
+    var msg = 'Hola! Quiero activar CitaDoc '+(isWeb?'PRO+WEB ($150)':'PRO ($19.99)')+'. Soy '+nombre+'. Email: '+(M.email||M.id);
+    mostrarToast('Redirigiendo a WhatsApp para completar el pago...', 'info');
+    setTimeout(function(){
+      window.open('https://wa.me/593989173062?text='+encodeURIComponent(msg),'_blank');
+    }, 1200);
   }
 }
 
