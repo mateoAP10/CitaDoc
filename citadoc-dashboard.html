@@ -5792,12 +5792,17 @@ function cerrarProWebModal() {
 }
 
 // ── PAYPHONE REDIRECT CHECKOUT (Option B) ──
+// Tokens hardcodeados — accesibles desde cualquier scope
+var _PP_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
+var _PP_STORE   = '86e91007-666b-48c0-a752-3e62aa85b1ef';
+
 async function iniciarPagoRedirect(planType) {
   if (!M) return;
   planType = planType || 'pro';
   var isWeb = planType === 'pro_web';
   var amount = isWeb ? 15000 : 1999;
-  var txId = 'cd-' + planType + '-' + M.id + '-' + Date.now();
+  // PayPhone: clientTransactionId solo alfanumérico y guiones simples
+  var txId = 'cd-' + planType.replace('_','-') + '-' + M.id + '-' + Date.now();
 
   cerrarProModal(); cerrarProWebModal();
 
@@ -5815,11 +5820,11 @@ async function iniciarPagoRedirect(planType) {
       amount: amount, amountWithoutTax: amount, tax: 0, service: 0,
       currency: 'USD',
       clientTransactionId: txId,
-      storeId: PAYPHONE_STOREID,
+      storeId: _PP_STORE,
       reference: 'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
       lang: 'es',
       email: M.email || '',
-      phoneNumber: rawTel || '',
+      phoneNumber: rawTel || '0999999999',
       responseUrl:     'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(txId),
       cancellationUrl: 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1'
     };
@@ -5827,11 +5832,12 @@ async function iniciarPagoRedirect(planType) {
 
     var res = await fetch('https://pay.payphonetodoesposible.com/api/button/Prepare', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + PAYPHONE_TOKEN, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + (_PP_TOKEN || PAYPHONE_TOKEN || ''), 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     var rawText = await res.text();
     console.log('[pago] status', res.status, 'body', rawText);
+    if (!res.ok) mostrarToast('PayPhone ' + res.status + ': ' + rawText.slice(0,120), 'error');
     var data = {};
     try { data = JSON.parse(rawText); } catch(e) {}
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + rawText.slice(0,300));
