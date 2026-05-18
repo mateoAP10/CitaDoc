@@ -1693,10 +1693,12 @@ display:flex;
       <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;padding:1.2rem">
         <div style="font-size:.62rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem">Mantenimiento mensual</div>
         <div style="display:flex;align-items:flex-end;gap:.3rem;margin-bottom:.4rem">
-          <span style="font-family:Fraunces,serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$30</span>
+          <span style="font-family:Fraunces,serif;font-size:1.8rem;font-weight:700;color:var(--teal);line-height:1">$29</span>
           <span style="font-size:.72rem;color:#9ca3af;margin-bottom:.25rem">USD/mes</span>
         </div>
-        <div style="font-size:.75rem;color:#6b7280;line-height:1.55">Asegura todas tus citas y funcionalidades. Cancela cuando quieras.</div>
+        <div style="font-size:.75rem;color:#6b7280;line-height:1.55;margin-bottom:.8rem">Hosting, actualizaciones y soporte continuo. Cancela cuando quieras.</div>
+        <div id="pp-button-maint" style="width:100%"></div>
+        <button id="maintPagoFallback" onclick="initPayPhoneMaint()" style="display:none;width:100%;padding:.6rem;background:linear-gradient(135deg,#0b7c6e,#0d9b8a);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">Pagar mantenimiento — $29</button>
       </div>
 
       <div style="background:linear-gradient(145deg,#f0fdf8,#e8faf5);border:1.5px solid rgba(11,124,110,.18);border-radius:16px;padding:1.2rem;display:flex;flex-direction:column;gap:.5rem">
@@ -2412,7 +2414,7 @@ function showPanel(id, el) {
     showPerfilTab('info', document.querySelector('#panel-perfil .ptab.active') || document.querySelector('#panel-perfil .ptab'));
     if (M && typeof cargarFormPerfil === 'function') cargarFormPerfil(M);
   }
-  if (id==='sitio' && M) { cargarMiSitio(M); if (esProWeb()) cargarAnalyticsSitio(); }
+  if (id==='sitio' && M) { cargarMiSitio(M); if (esProWeb()) { cargarAnalyticsSitio(); initMaintPayPhoneOnLoad(); } }
 }
 
 // Wrapper seguro para cualquier render
@@ -4885,6 +4887,45 @@ function initPayPhone(planType, containerId) {
     console.error('PayPhone error:', e);
     showProFallback();
   }
+}
+
+// ── PAYPHONE MANTENIMIENTO $29/mes ────────────────────────────────────────
+function initPayPhoneMaint() {
+  if (!M) return;
+  var container = document.getElementById('pp-button-maint');
+  if (!container) return;
+  container.innerHTML = '';
+  if (typeof PPaymentButtonBox === 'undefined') {
+    var fb = document.getElementById('maintPagoFallback');
+    if (fb) fb.style.display = 'block';
+    return;
+  }
+  try {
+    var txId = 'cd-maint-' + M.id + '-' + Date.now();
+    var ppb = new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: txId,
+      amount:              2900,        // $29 en centavos
+      amountWithoutTax:    2900,
+      currency:            'USD',
+      reference:           'CitaDoc Mantenimiento mensual | ' + M.id,
+      lang:                'es',
+      defaultMethod:       'card',
+      email:               M.email || '',
+    });
+    ppb.render('pp-button-maint');
+  } catch(e) {
+    console.error('[PayPhone Maint]', e);
+    var fb = document.getElementById('maintPagoFallback');
+    if (fb) fb.style.display = 'block';
+  }
+}
+
+// Inicializar mantenimiento cuando se carga Mi Sitio Web
+function initMaintPayPhoneOnLoad() {
+  if (!M || !M.plan_activo) return;
+  setTimeout(function() { initPayPhoneMaint(); }, 600);
 }
 
 function showProFallback() {

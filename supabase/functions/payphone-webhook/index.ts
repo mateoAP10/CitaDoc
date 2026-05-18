@@ -144,6 +144,20 @@ serve(async (req) => {
       }
     }
 
+    // ── MAINTENANCE PAYMENT $29 (cd-maint-{medicoId}-{timestamp}) ──
+    const maintMatch = (clientTransactionId || '').match(/^cd-maint-([0-9a-f-]{36})-\d+$/i)
+    if (maintMatch) {
+      const medicoId = maintMatch[1]
+      const nextDate = new Date(); nextDate.setMonth(nextDate.getMonth()+1)
+      await sb.from('medicos').update({
+        plan_activo:       true,
+        maint_paid_until:  nextDate.toISOString().split('T')[0],
+        updated_at:        new Date().toISOString(),
+      }).eq('id', medicoId)
+      console.log('[webhook-maint] Maintenance paid for medico:', medicoId)
+      return new Response(JSON.stringify({ ok: true, type: 'maintenance', medicoId }), { headers: { 'Content-Type': 'application/json' } })
+    }
+
     // ── DEMO ACTIVATION (cd-demo-{slug}-{timestamp}) ──
     const demoMatch = (clientTransactionId || '').match(/^cd-demo-(.+)-\d+$/)
     if (demoMatch) {
