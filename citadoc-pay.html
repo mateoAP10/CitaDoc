@@ -325,46 +325,38 @@
   function showError(msg) {
     var el = document.getElementById('errState');
     el.style.display = 'block';
-    el.textContent = 'Error al cargar el pago: ' + msg + '. Por favor, cierra esta ventana y vuelve a intentarlo.';
+    el.textContent = 'Error al cargar el pago: ' + msg + '. Cierra esta ventana y vuelve a intentarlo.';
     container.innerHTML = '';
   }
 
-  // Wait for custom element to register
+  // Poll until PPaymentButtonBox is available (module loads async)
   function initWidget() {
-    if (!customElements.get('payphone-button-box')) {
-      setTimeout(initWidget, 200);
+    if (typeof PPaymentButtonBox === 'undefined') {
+      setTimeout(initWidget, 150);
       return;
     }
-
-    container.innerHTML = '<payphone-button-box id="ppBox"></payphone-button-box>';
-    var ppBox = document.getElementById('ppBox');
-
-    ppBox.token               = PAYPHONE_TOKEN;
-    ppBox.storeId             = PAYPHONE_STOREID;
-    ppBox.amount              = amount;
-    ppBox.amountWithoutTax    = amount;
-    ppBox.amountWithTax       = 0;
-    ppBox.tax                 = 0;
-    ppBox.service             = 0;
-    ppBox.tip                 = 0;
-    ppBox.currency            = 'USD';
-    ppBox.clientTransactionId = txId;
-    ppBox.reference           = 'CitaDoc ' + label + (medicoId ? ' | ' + medicoId : '');
-    ppBox.lang                = 'es';
-    if (email) ppBox.email    = email;
-    ppBox.responseUrl         = returnUrl;
-    ppBox.cancellationUrl     = cancelUrl;
-
-    ppBox.addEventListener('pp-response', function(e) {
-      var d = e.detail || {};
-      if (d.transactionStatus === 'Approved') {
-        window.location.href = returnUrl;
-      }
-    });
-
-    ppBox.addEventListener('pp-error', function(e) {
-      showError((e.detail && e.detail.message) || 'desconocido');
-    });
+    try {
+      new PPaymentButtonBox({
+        token:               PAYPHONE_TOKEN,
+        storeId:             PAYPHONE_STOREID,
+        clientTransactionId: txId,
+        amount:              amount,
+        amountWithoutTax:    amount,
+        amountWithTax:       0,
+        tax:                 0,
+        service:             0,
+        tip:                 0,
+        currency:            'USD',
+        reference:           'CitaDoc ' + label + (medicoId ? ' | ' + medicoId : ''),
+        lang:                'es',
+        email:               email || undefined,
+        responseUrl:         returnUrl,
+        cancellationUrl:     cancelUrl,
+        defaultMethod:       'card'
+      }).render('pp-pay-container');
+    } catch(e) {
+      showError(e.message || 'Widget error');
+    }
   }
 
   initWidget();
