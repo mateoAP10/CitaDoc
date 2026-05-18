@@ -177,25 +177,6 @@ body {
 }
 
 /* CTA */
-.r-cta {
-  width: 100%;
-  background: var(--ink);
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  padding: 1rem 1.5rem;
-  font-size: .92rem;
-  font-weight: 700;
-  letter-spacing: -.01em;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: .5rem;
-  transition: opacity .15s, transform .15s;
-  margin-bottom: .9rem;
-}
-.r-cta:hover { opacity: .88; }
-.r-cta:active { transform: scale(.98); }
-.r-cta-arrow { font-size: 1rem; transition: transform .2s; }
-.r-cta:hover .r-cta-arrow { transform: translateX(3px); }
 
 .r-micro {
   font-size: .7rem;
@@ -204,30 +185,7 @@ body {
   line-height: 1.6;
 }
 
-#stepPay {
-  display: none;
-  min-height: 100svh;
-  background: #fff;
-  flex-direction: column;
-}
-#stepPay.active { display: flex; }
-
-.pp-topbar {
-  display: flex; align-items: center; gap: .75rem;
-  padding: .85rem 1rem;
-  border-bottom: 1px solid #F0EDE8;
-  flex-shrink: 0;
-}
-.pp-back {
-  background: #F3F4F6; border: none; border-radius: 50%;
-  width: 30px; height: 30px; color: #374151; font-size: .85rem;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.pp-topbar-logo { font-size: .88rem; font-weight: 800; letter-spacing: -.02em; }
-.pp-topbar-logo em { color: var(--green); font-style: normal; }
-.pp-topbar-amt { font-size: .72rem; color: var(--muted); margin-left: auto; }
-
-#pp-pay-container { width: 100%; }
+#pp-pay-container { width: 100%; margin-bottom: .9rem; }
 
 .pp-loading {
   display: flex; flex-direction: column;
@@ -349,34 +307,18 @@ body {
     <!-- Features -->
     <div class="r-feats" id="rFeats"></div>
 
-    <button class="r-cta" id="rCtaBtn" onclick="abrirPago()">
-      Continuar con el pago seguro
-      <span class="r-cta-arrow">→</span>
-    </button>
+    <div id="pp-pay-container">
+      <div class="pp-loading-wrap">
+        <div class="pp-loading"><div class="spinner"></div>Cargando pago…</div>
+      </div>
+    </div>
+    <div class="pp-error" id="ppError"></div>
 
     <p class="r-micro">
       Tu sitio quedará activo inmediatamente tras el pago.<br>
       Procesado por PayPhone · Encriptado SSL · PCI DSS
     </p>
   </div>
-</div>
-
-<!-- ── STEP 2: PAYMENT OVERLAY ── -->
-<div id="stepPay">
-  <div class="pp-topbar">
-    <button class="pp-back" onclick="cerrarPago()">←</button>
-    <div class="pp-topbar-logo">Cita<em>Doc</em></div>
-    <div class="pp-topbar-amt" id="modalAmt"></div>
-  </div>
-  <div id="pp-pay-container">
-    <div class="pp-loading-wrap">
-      <div class="pp-loading">
-        <div class="spinner"></div>
-        Cargando pasarela…
-      </div>
-    </div>
-  </div>
-  <div class="pp-error" id="ppError"></div>
 </div>
 
 <!-- ── STEP 3: SUCCESS ── -->
@@ -456,10 +398,9 @@ body {
   };
   var p = PLANS[plan] || PLANS.pro_web;
 
-  document.getElementById('rBadge').textContent    = p.badge;
-  document.getElementById('rTitle').innerHTML      = p.title;
-  document.getElementById('rSub').textContent      = p.sub;
-  document.getElementById('modalAmt').textContent  = p.prices[0].val + ' · ' + (isWeb ? 'PRO+WEB' : 'PRO');
+  document.getElementById('rBadge').textContent = p.badge;
+  document.getElementById('rTitle').innerHTML   = p.title;
+  document.getElementById('rSub').textContent   = p.sub;
 
   // Price block
   var checkSvg = '<svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>';
@@ -484,12 +425,16 @@ body {
   var base      = 'https://citadoc.lat/citadoc-dashboard.html';
   var returnUrl = base + '?pp_return=1&pp_plan=' + encodeURIComponent(plan) + '&pp_tx=' + encodeURIComponent(txId);
   var ppErr     = document.getElementById('ppError');
-  var elReview  = document.getElementById('stepReview');
-  var elPay     = document.getElementById('stepPay');
   var elSuccess = document.getElementById('stepSuccess');
 
-  var _widgetInit = false;
+  function mostrarSuccess() {
+    document.getElementById('stepReview').style.display = 'none';
+    elSuccess.classList.add('active');
+  }
 
+  if (sp.get('pp_return')) { mostrarSuccess(); }
+
+  var _widgetInit = false;
   function tryInitWidget() {
     if (_widgetInit) return;
     if (typeof PPaymentButtonBox === 'undefined') { setTimeout(tryInitWidget, 150); return; }
@@ -508,38 +453,17 @@ body {
         lang:                'es',
         email:               email || undefined,
         responseUrl:         returnUrl,
-        cancellationUrl:     base + '?pp_cancel=1',
-        defaultMethod:       'card'
+        cancellationUrl:     base + '?pp_cancel=1'
       }).render('pp-pay-container');
     } catch(e) {
       ppErr.style.display = 'block';
-      ppErr.textContent   = 'Error: ' + (e.message || 'Widget error') + '. Cierra e intenta nuevamente.';
+      ppErr.textContent   = 'Error al cargar pago: ' + (e.message || 'intenta nuevamente');
       document.getElementById('pp-pay-container').innerHTML = '';
     }
   }
+  tryInitWidget();
 
-  function mostrarSuccess() {
-    elReview.style.display = 'none';
-    elPay.classList.remove('active');
-    elSuccess.classList.add('active');
-  }
-
-  window.abrirPago = function() {
-    elReview.style.display = 'none';
-    elPay.classList.add('active');
-    tryInitWidget();
-  };
-
-  window.cerrarPago = function() {
-    elPay.classList.remove('active');
-    elReview.style.display = '';
-  };
-
-  if (sp.get('pp_return')) mostrarSuccess();
-
-  window.irDashboard = function() {
-    window.location.href = returnUrl;
-  };
+  window.irDashboard = function() { window.location.href = returnUrl; };
 })();
 </script>
 </body>
