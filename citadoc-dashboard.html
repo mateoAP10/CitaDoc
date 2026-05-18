@@ -1671,7 +1671,7 @@ display:flex;
           <div style="display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#374151"><span style="width:20px;height:20px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--teal);font-weight:700;flex-shrink:0">✓</span>Sin compromiso</div>
           <div style="display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#374151"><span style="width:20px;height:20px;border-radius:50%;background:var(--teal-lite);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--teal);font-weight:700;flex-shrink:0">✓</span>En menos de 60 segundos</div>
         </div>
-        <button id="webMainCTA" onclick="webCtaClick()" style="width:100%;padding:.9rem 1.2rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(11,124,110,.25);transition:transform .18s,box-shadow .18s;margin-bottom:.5rem" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(11,124,110,.38)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 6px 22px rgba(11,124,110,.25)'">
+        <button id="webMainCTA" onclick="webCtaClick()" style="width:100%;max-width:360px;padding:.9rem 1.2rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 6px 22px rgba(11,124,110,.25);transition:transform .18s,box-shadow .18s;margin-bottom:.5rem" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(11,124,110,.38)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 6px 22px rgba(11,124,110,.25)'">
           Ver mi sitio gratis
         </button>
         <div style="font-size:.7rem;color:#9ca3af;text-align:center">Sin riesgo de crédito</div>
@@ -4398,7 +4398,13 @@ function renderPhoneMockup() {
 
   var nombre = ((m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido).trim();
   var esp = (m.especialidades||[])[0]||'';
-  var foto = m.foto_url||'';
+  // Mockup usa foto de stock premium — la foto real va al sitio publicado
+  var MOCKUP_PHOTOS = [
+    'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&q=85&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&q=85&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=600&q=85&auto=format&fit=crop',
+  ];
+  var foto = MOCKUP_PHOTOS[Math.floor((m.id||'').charCodeAt(0)%3)] || MOCKUP_PHOTOS[0];
   var logoUrl = m.logo_url||'';
   var headline = wc.headline||('Dr. '+m.apellido+' — '+esp);
   var subline = wc.subheadline||esp;
