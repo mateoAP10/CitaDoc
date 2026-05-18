@@ -5792,85 +5792,81 @@ function cerrarProWebModal() {
 }
 
 // ── PAYPHONE REDIRECT CHECKOUT (Option B) ──
-async function iniciarPagoRedirect(planType) {
+function iniciarPagoRedirect(planType) {
   if (!M) return;
   planType = planType || 'pro';
-  var isWeb = planType === 'pro_web';
-
-  // Limpiar teléfono — PayPhone Ecuador necesita 10 dígitos sin código de país
-  var rawTel = (M.telefono || M.whatsapp || '').replace(/\D/g,'');
-  if (rawTel.startsWith('593')) rawTel = rawTel.slice(3);
-  if (rawTel.startsWith('0')) rawTel = rawTel; // OK: 09XXXXXXXX
-  else if (rawTel.length === 9) rawTel = '0' + rawTel; // 9XXXXXXXX → 09XXXXXXXX
-  var tel = rawTel.slice(0,10); // máximo 10 dígitos
-
-  var transactionId = 'cd-' + planType + '-' + M.id + '-' + Date.now();
-  var amount = isWeb ? 15000 : 1999;
-  var returnUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_return=1&pp_plan=' + planType + '&pp_tx=' + encodeURIComponent(transactionId);
-  var cancelUrl = 'https://citadoc.lat/citadoc-dashboard.html?pp_cancel=1';
-
   cerrarProModal(); cerrarProWebModal();
-  mostrarToast('Preparando pago seguro...', 'info');
+  abrirModalPago(planType);
+}
+
+function abrirModalPago(planType) {
+  if (!M) return;
+  var isWeb = planType === 'pro_web';
+  var amount = isWeb ? 15000 : 1999;
+  var txId = 'cd-' + planType + '-' + M.id + '-' + Date.now();
+
+  // Crear o reusar modal de pago
+  var modal = document.getElementById('pagoDirectoModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'pagoDirectoModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:1rem';
+    modal.innerHTML =
+      '<div onclick="event.stopPropagation()" style="background:#fff;border-radius:20px;padding:2rem;width:min(420px,96vw);box-shadow:0 32px 80px rgba(0,0,0,.35);position:relative">'
+      +'<button onclick="cerrarModalPago()" style="position:absolute;top:1rem;right:1rem;width:30px;height:30px;border-radius:50%;background:#f3f4f6;border:none;cursor:pointer;font-size:.85rem;color:#6b7280">✕</button>'
+      +'<div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:#0f1a18;margin-bottom:.3rem" id="pdmTitulo">Activa tu sitio web</div>'
+      +'<div style="font-size:.82rem;color:#6b7280;margin-bottom:1.4rem" id="pdmSub">Pago seguro con tarjeta de crédito o débito</div>'
+      +'<div id="pdmPpButton" style="width:100%"></div>'
+      +'<div style="text-align:center;margin-top:.8rem;font-size:.65rem;color:#9ca3af">🔒 Pago cifrado · PayPhone · Ecuador</div>'
+      +'</div>';
+    modal.onclick = cerrarModalPago;
+    document.body.appendChild(modal);
+  }
+
+  document.getElementById('pdmTitulo').textContent = isWeb ? 'Activa tu sitio web — $150' : 'Activa CitaDoc PRO — $19.99';
+  document.getElementById('pdmSub').textContent = isWeb
+    ? 'Setup único · Subdominio propio · Web premium + CitaDoc completo'
+    : 'Plan mensual · Agenda y gestión clínica ilimitada';
+
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // Renderizar widget PayPhone dentro del modal
+  var container = document.getElementById('pdmPpButton');
+  container.innerHTML = '';
+
+  if (typeof PPaymentButtonBox === 'undefined') {
+    container.innerHTML = '<div style="text-align:center;padding:1rem;font-size:.85rem;color:#6b7280">Cargando pasarela de pago...</div>';
+    // Reintentar en 1.5s
+    setTimeout(function(){ abrirModalPago(planType); }, 1500);
+    return;
+  }
 
   try {
-    var res = await fetch('https://pay.payphonetodoesposible.com/api/button/Prepare', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + PAYPHONE_TOKEN,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        amount:              amount,
-        amountWithoutTax:    amount,
-        currency:            'USD',
-        clientTransactionId: transactionId,
-        storeId:             PAYPHONE_STOREID,
-        reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
-        lang:                'es',
-        email:               M.email || '',
-        phoneNumber:         tel || '0999999999',
-        responseUrl:         returnUrl,
-        cancellationUrl:     cancelUrl
-      })
+    var ppb = new PPaymentButtonBox({
+      token:               PAYPHONE_TOKEN,
+      storeId:             PAYPHONE_STOREID,
+      clientTransactionId: txId,
+      amount:              amount,
+      amountWithoutTax:    amount,
+      currency:            'USD',
+      reference:           'CitaDoc ' + (isWeb ? 'PRO+WEB' : 'PRO') + ' | ' + M.id,
+      lang:                'es',
+      defaultMethod:       'card',
+      email:               M.email || '',
     });
-
-    var rawText = await res.text();
-    var data = {};
-    try { data = JSON.parse(rawText); } catch(pe) {}
-    console.log('[payphone] status', res.status, 'response', data);
-
-    if (!res.ok) throw new Error('HTTP ' + res.status + ': ' + rawText.slice(0,200));
-
-    var redirectUrl = data.payWithCard || data.payWithPayPhone || data.paymentUrl;
-    if (!redirectUrl) throw new Error('No redirect URL: ' + JSON.stringify(data));
-
-    localStorage.setItem('citadoc_pp_tx', JSON.stringify({
-      id: transactionId, plan: planType, medicoId: M.id, ts: Date.now()
-    }));
-
-    // Abrir en nuevo tab — no abandona el dashboard
-    var win = window.open(redirectUrl, '_blank');
-    if (!win) {
-      // Popup bloqueado — fallback: botón manual
-      mostrarToast('Pago listo. Hacé click para abrir.', 'info');
-      var a = document.createElement('a');
-      a.href = redirectUrl; a.target = '_blank'; a.rel = 'noopener';
-      a.style.cssText = 'position:fixed;bottom:80px;right:20px;z-index:99999;padding:.8rem 1.4rem;background:var(--teal);color:#fff;border-radius:12px;font-family:DM Sans,sans-serif;font-size:.9rem;font-weight:700;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.3)';
-      a.textContent = '💳 Ir al pago →';
-      document.body.appendChild(a);
-      setTimeout(function(){ a.remove(); }, 30000);
-    }
-
+    ppb.render('pdmPpButton');
+    window._ppPendingTx = { id: txId, plan: planType, medicoId: M.id, startedAt: Date.now() };
   } catch(e) {
-    console.error('PayPhone Prepare error:', e);
-    // Fallback directo a WhatsApp para completar el pago manualmente
-    var nombre = ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido).trim();
-    var msg = 'Hola! Quiero activar CitaDoc '+(isWeb?'PRO+WEB ($150)':'PRO ($19.99)')+'. Soy '+nombre+'. Email: '+(M.email||M.id);
-    mostrarToast('Redirigiendo a WhatsApp para completar el pago...', 'info');
-    setTimeout(function(){
-      window.open('https://wa.me/593989173062?text='+encodeURIComponent(msg),'_blank');
-    }, 1200);
+    console.error('[pago]', e);
+    container.innerHTML = '<div style="text-align:center;padding:1rem;font-size:.84rem;color:#ef4444">Error al cargar el pago. Intentá de nuevo.</div>';
   }
+}
+
+function cerrarModalPago() {
+  var modal = document.getElementById('pagoDirectoModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 // Verificar retorno de PayPhone al cargar el dashboard
