@@ -3992,10 +3992,26 @@ function abrirAiReveal() {
   var frame = document.getElementById('aiRevealFrame');
   var urlBar = document.getElementById('aiRevealUrlBar');
   if (frame && M && M.slug) {
-    // preview=clean: muestra el sitio sin banners ni watermarks — exactamente lo que verá el paciente
-    var url = 'citadoc-web.html?slug=' + encodeURIComponent(M.slug) + '&preview=clean&_cb=' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    var layout = _aiSelectedStyle || ((M.web_config_draft||{}).selected_layout) || 'surgical-authority';
+    var slug   = encodeURIComponent(M.slug);
+    var cb     = Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    var url;
+
+    // V3 layouts: archivos experimentales independientes
+    var V3_MAP = {
+      'v3-1': 'experimental/v3/v3-1-classic-professional.html',
+      'v3-2': 'experimental/v3/v3-2-warm-human.html',
+      'v3-3': 'experimental/v3/v3-3-sand-essence.html'
+    };
+    if (V3_MAP[layout]) {
+      url = V3_MAP[layout] + '?slug=' + slug + '&_cb=' + cb;
+    } else {
+      // V1/V2: citadoc-web.html con LAYOUT_RENDERERS
+      url = 'citadoc-web.html?slug=' + slug + '&preview=clean&_cb=' + cb;
+    }
+
     frame.src = url;
-    if (urlBar) urlBar.textContent = 'citadoc.com/' + (M.slug || 'dr-...');
+    if (urlBar) urlBar.textContent = (M.slug || 'dr-...') + '.citadoc.lat';
 
     // Block interactions inside iframe while keeping scroll
     frame.onload = function() {
@@ -4425,6 +4441,12 @@ async function webAiGenerar() {
   }
   var statusEl = document.getElementById('aiLoadStatus');
   if (statusEl) statusEl.textContent = useLocal ? 'Finalizando (plantilla local)...' : 'Copywriting médico generado ✦';
+
+  // Inyectar el layout elegido por el médico en el modal
+  if (_aiSelectedStyle) {
+    cfg.selected_layout = _aiSelectedStyle;
+    cfg.visual_dna      = _aiSelectedStyle;
+  }
 
   // Save draft to DB — increment regen counter inside the config
   cfg._regen_count = webRegenCount() + 1;
