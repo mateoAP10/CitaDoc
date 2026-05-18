@@ -5796,46 +5796,27 @@ function cerrarProWebModal() {
 var _PP_TOKEN   = 'qxqLAKFYxUUR8NoREmBHflZ2vLecsVPS4A79oHSV_ic4F08lj1Wyf6iQBsBNUW_oAOu5cU7XydOmnx2x21DYdpJEEst6Ro8Qp5heH1UcuFwlFrx3lqLXHCI8yJXqDd2iw8u0xE-_3JHlRNDL4Erve6mHpxkiuX8AC8FiBcWiUPci_i1kMG6oQ87p_Qh7wtx-nECVzxgSueh-eDIyEQdLgH2XlMPOqET26tHFIRE5gbVoQw7Ez9bTj758u-yIlFnGR7DGev99D4Pt-BCbEKxyJ1wxFMBIRRRaiLsMQQ4NjEpRvjVuTAPBzC0Z5DRNGUqa2YLZDg';
 var _PP_STORE   = '86e91007-666b-48c0-a752-3e62aa85b1ef';
 
-async function iniciarPagoRedirect(planType) {
+function iniciarPagoRedirect(planType) {
   if (!M) return;
   planType = planType || 'pro';
   var isWeb = planType === 'pro_web';
-  var amount = isWeb ? 15000 : 1999;
-  // PayPhone: máx 50 chars — usar prefijo corto + 8 chars del UUID + timestamp base36
   var shortPlan = isWeb ? 'pw' : 'pr';
   var shortId   = (M.id||'').replace(/-/g,'').slice(0,12);
-  var tsShort   = Date.now().toString(36);
-  var txId = ('cd-' + shortPlan + '-' + shortId + '-' + tsShort).slice(0,50);
+  var txId = ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0,50);
 
   cerrarProModal(); cerrarProWebModal();
 
-  // Toast de loading
-  var toastId = mostrarToast('Abriendo pago seguro...', 'info');
+  localStorage.setItem('citadoc_pp_tx', JSON.stringify({ id: txId, plan: planType, medicoId: M.id, ts: Date.now() }));
 
-  try {
-    // Limpiar teléfono — PayPhone requiere 10 dígitos formato ecuatoriano
-    var rawTel = ((M.telefono || M.whatsapp || '').replace(/\D/g,''));
-    if (rawTel.startsWith('593')) rawTel = '0' + rawTel.slice(3);
-    if (rawTel.length === 9) rawTel = '0' + rawTel;
-    rawTel = rawTel.slice(0,10);
-
-    // Llamar Edge Function (server-to-server evita restricciones del browser)
-    var efRes = await fetch('https://qxoomcqaafogczrvsyhg.functions.supabase.co/payphone-prepare', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs' },
-      body: JSON.stringify({ planType: planType, medicoId: M.id, email: M.email || '' })
-    });
-    var efData = await efRes.json().catch(function(){ return {}; });
-    if (!efRes.ok || !efData.ok) throw new Error(efData.error || 'Error ' + efRes.status);
-    var url = efData.url;
-    var txId = efData.txId || txId;
-    if (!url) throw new Error('Sin URL de pago');
-    localStorage.setItem('citadoc_pp_tx', JSON.stringify({ id: txId, plan: planType, medicoId: M.id, ts: Date.now() }));
-    window.open(url, '_blank');
-  } catch(e) {
-    console.error('[pago]', e.message);
-    mostrarToast('Error al abrir pago: ' + e.message.slice(0,80), 'error');
-  }
+  var nombre = ((M.titulo||'') + ' ' + (M.nombre||'') + ' ' + (M.apellido||'')).trim();
+  var params = new URLSearchParams({
+    plan:   planType,
+    medico: M.id || '',
+    email:  M.email || '',
+    name:   nombre
+  });
+  window.open('https://citadoc.lat/citadoc-pay.html?' + params.toString(), '_blank');
+  mostrarToast('Abriendo pago seguro...', 'info');
 }
 
 // Verificar retorno de PayPhone al cargar el dashboard
