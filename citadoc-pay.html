@@ -188,6 +188,25 @@ body {
 
 #pp-pay-container { width: 100%; margin-bottom: .9rem; }
 
+.promo-wrap {
+  width: 100%; display: flex; gap: .5rem; margin-bottom: 1rem;
+}
+.promo-input {
+  flex: 1; padding: .7rem .9rem; border: 1.5px solid var(--line);
+  border-radius: 10px; font-size: .85rem; font-family: inherit;
+  background: #fff; color: var(--ink); outline: none;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.promo-input:focus { border-color: var(--green); }
+.promo-btn {
+  padding: .7rem 1rem; background: var(--ink); color: #fff;
+  border: none; border-radius: 10px; font-size: .82rem;
+  font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.promo-msg { font-size: .75rem; margin-bottom: .75rem; text-align: center; }
+.promo-ok  { color: var(--green); font-weight: 600; }
+.promo-err { color: #DC2626; }
+
 .pp-loading {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
@@ -308,6 +327,12 @@ body {
     <!-- Features -->
     <div class="r-feats" id="rFeats"></div>
 
+    <div class="promo-wrap">
+      <input class="promo-input" id="promoInput" placeholder="CÓDIGO PROMO" maxlength="20">
+      <button class="promo-btn" onclick="aplicarPromo()">Aplicar</button>
+    </div>
+    <div class="promo-msg" id="promoMsg"></div>
+
     <div id="pp-pay-container">
       <div class="pp-loading-wrap">
         <div class="pp-loading"><div class="spinner"></div>Cargando pago…</div>
@@ -354,7 +379,10 @@ body {
 
   var isMaint  = plan === 'maint';
   var isWeb    = plan === 'pro_web';
-  var amount   = isMaint ? 2900 : isWeb ? 15000 : 1999;
+  var baseAmount = isMaint ? 2900 : isWeb ? 15000 : 1999;
+  var amount     = baseAmount;
+  var SB_URL     = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+  var SB_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
 
   // ── Domain ──
   var domain = slug ? slug + '.citadoc.lat' : 'tu-sitio.citadoc.lat';
@@ -448,6 +476,30 @@ body {
   }
 
   if (sp.get('pp_return')) { mostrarSuccess(); }
+
+  // ── Promo code ──
+  var _promoApplied = null;
+  window.aplicarPromo = async function() {
+    var code = (document.getElementById('promoInput').value || '').trim().toUpperCase();
+    var msg  = document.getElementById('promoMsg');
+    if (!code) return;
+    msg.textContent = 'Verificando…'; msg.className = 'promo-msg';
+    var res  = await fetch(SB_URL + '/rest/v1/promo_codes?code=eq.' + encodeURIComponent(code) + '&active=eq.true&select=*', {
+      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON }
+    });
+    var rows = await res.json().catch(function(){ return []; });
+    var row  = Array.isArray(rows) ? rows[0] : null;
+    if (!row) { msg.textContent = 'Código inválido o expirado.'; msg.className = 'promo-msg promo-err'; return; }
+    if (row.expires_at && new Date(row.expires_at) < new Date()) { msg.textContent = 'Código expirado.'; msg.className = 'promo-msg promo-err'; return; }
+    if (row.max_uses !== null && row.uses >= row.max_uses) { msg.textContent = 'Código agotado.'; msg.className = 'promo-msg promo-err'; return; }
+    if (row.plans && !row.plans.includes(plan)) { msg.textContent = 'Código no aplica para este plan.'; msg.className = 'promo-msg promo-err'; return; }
+    _promoApplied = row;
+    amount = Math.round(baseAmount * (1 - row.discount_pct / 100));
+    _widgetInit = false; // reset para reinicializar con nuevo amount
+    document.getElementById('pp-pay-container').innerHTML = '<div class="pp-loading-wrap"><div class="pp-loading"><div class="spinner"></div>Aplicando descuento…</div></div>';
+    msg.textContent = '✓ ' + row.discount_pct + '% de descuento aplicado.'; msg.className = 'promo-msg promo-ok';
+    tryInitWidget();
+  };
 
   var _widgetInit = false;
   function tryInitWidget() {
