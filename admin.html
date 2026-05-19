@@ -286,6 +286,7 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
     <button class="nav-tab" onclick="showAdminTab('verificaciones')">
       Verificaciones <span id="verNavBadge" class="nav-badge" style="display:none">!</span>
     </button>
+    <button class="nav-tab" onclick="showAdminTab('datos')">📊 Datos</button>
   </div>
 
   <!-- Panel: Contenido -->
@@ -356,6 +357,39 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
     <div id="verList"><div class="loading">Cargando...</div></div>
   </div>
 
+  <!-- Panel: Datos -->
+  <div class="panel" id="panel-datos" style="display:none">
+    <div class="sec-title" style="margin-bottom:.25rem">Mapa de datos CitaDoc</div>
+    <div class="sec-sub" style="margin-bottom:1.2rem">Población real, flujos clínicos y métricas de crecimiento.</div>
+
+    <!-- KPI strip -->
+    <div id="datosKPIs" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem"></div>
+
+    <!-- Charts row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem">
+        <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Especialidades más solicitadas</div>
+        <div id="chartEsp"></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem">
+        <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Distribución por edad</div>
+        <div id="chartEdad"></div>
+      </div>
+    </div>
+
+    <!-- Flujo conceptual -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1.5rem">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">Flujo del paciente en CitaDoc</div>
+      <div id="flujoMapa" style="display:flex;align-items:center;gap:0;overflow-x:auto;padding:.5rem 0"></div>
+    </div>
+
+    <!-- Guías clínicas cargadas -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Base de conocimiento clínico — Kimi</div>
+      <div id="chartGuias"></div>
+    </div>
+  </div>
+
 </div><!-- #app -->
 
 <script>
@@ -372,7 +406,7 @@ var _currentFilter     = 'all';
 
 // ── Nav tabs ─────────────────────────────────────────────────────────────────
 
-var _adminTabs = ['contenido','demos','promos','verificaciones'];
+var _adminTabs = ['contenido','demos','promos','verificaciones','datos'];
 
 function showAdminTab(tab) {
   _adminTabs.forEach(function(p) {
@@ -382,6 +416,7 @@ function showAdminTab(tab) {
     t.classList.toggle('active', _adminTabs[i] === tab);
   });
   if (tab === 'promos') cargarPromos();
+  if (tab === 'datos') cargarDatos();
 }
 
 // ── Creative upload helpers ───────────────────────────────────────────────────
@@ -930,6 +965,124 @@ async function verAction(medicoId, action, btn) {
     btn.disabled = false;
     btn.textContent = action === 'aprobar' ? '✓ Aprobar' : '✕';
   }
+}
+
+// ── DATOS / ANALYTICS ─────────────────────────────────────────────────────────
+var _datosLoaded = false;
+
+async function cargarDatos() {
+  if (_datosLoaded) return;
+  _datosLoaded = true;
+
+  var [rMedicos, rPacientes, rConsultas, rCitas, rGuias] = await Promise.all([
+    sb.from('medicos').select('id,especialidades,ciudad,plan,verificacion_estado,created_at'),
+    sb.from('pacientes').select('id,fecha_nacimiento,ciudad,created_at'),
+    sb.from('consultas').select('id,created_at,diagnostico'),
+    sb.from('citas').select('id,estado,created_at'),
+    sb.from('clinical_guidelines').select('id,categoria,fuente,anio'),
+  ]);
+
+  var medicos   = rMedicos.data   || [];
+  var pacientes = rPacientes.data || [];
+  var consultas = rConsultas.data || [];
+  var citas     = rCitas.data     || [];
+  var guias     = rGuias.data     || [];
+
+  // ── KPIs ──
+  var kpis = [
+    { val: medicos.length,   lbl: 'Médicos',     icon: '👨‍⚕️', color: '#0b7c6e' },
+    { val: pacientes.length, lbl: 'Pacientes',   icon: '🧑',   color: '#4f46e5' },
+    { val: consultas.length, lbl: 'Consultas',   icon: '📋',   color: '#0369a1' },
+    { val: citas.length,     lbl: 'Citas',       icon: '📅',   color: '#b45309' },
+  ];
+  var kpiEl = document.getElementById('datosKPIs');
+  kpiEl.innerHTML = kpis.map(function(k) {
+    return '<div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;display:flex;align-items:center;gap:.75rem">'
+      + '<div style="width:38px;height:38px;border-radius:10px;background:'+k.color+'18;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">'+k.icon+'</div>'
+      + '<div><div style="font-family:Fraunces,serif;font-size:1.6rem;font-weight:700;color:var(--ink);line-height:1">'+k.val+'</div>'
+      + '<div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-top:.15rem">'+k.lbl+'</div></div>'
+      + '</div>';
+  }).join('');
+
+  // ── ESPECIALIDADES chart (horizontal bar) ──
+  var espCount = {};
+  medicos.forEach(function(m) {
+    ((m.especialidades)||[]).slice(0,1).forEach(function(e) {
+      espCount[e] = (espCount[e]||0) + 1;
+    });
+  });
+  var espSorted = Object.entries(espCount).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
+  var maxEsp = espSorted[0] ? espSorted[0][1] : 1;
+  var colors = ['#0b7c6e','#0e9d8c','#4f46e5','#7c3aed','#0369a1','#b45309','#065f46'];
+  document.getElementById('chartEsp').innerHTML = espSorted.length
+    ? espSorted.map(function(e,i) {
+        var pct = Math.round((e[1]/maxEsp)*100);
+        return '<div style="margin-bottom:.55rem">'
+          + '<div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.2rem">'
+          + '<span style="color:var(--ink2);font-weight:600">'+e[0]+'</span>'
+          + '<span style="color:var(--muted);font-weight:700">'+e[1]+'</span></div>'
+          + '<div style="height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden">'
+          + '<div style="height:100%;width:'+pct+'%;background:'+colors[i%colors.length]+';border-radius:4px;transition:width .6s cubic-bezier(.16,1,.3,1)"></div>'
+          + '</div></div>';
+      }).join('')
+    : '<div style="font-size:.82rem;color:var(--muted);padding:1rem 0">Sin datos aún</div>';
+
+  // ── EDAD chart ──
+  var grupos = {'0-17':0,'18-29':0,'30-44':0,'45-59':0,'60-74':0,'75+':0};
+  pacientes.forEach(function(p) {
+    if (!p.fecha_nacimiento) return;
+    var edad = Math.floor((new Date() - new Date(p.fecha_nacimiento+'T12:00:00'))/(365.25*24*3600*1000));
+    if (edad<18) grupos['0-17']++;
+    else if (edad<30) grupos['18-29']++;
+    else if (edad<45) grupos['30-44']++;
+    else if (edad<60) grupos['45-59']++;
+    else if (edad<75) grupos['60-74']++;
+    else grupos['75+']++;
+  });
+  var maxEdad = Math.max.apply(null, Object.values(grupos)) || 1;
+  var edadColors = ['#bae6fd','#7dd3fc','#38bdf8','#0ea5e9','#0284c7','#0369a1'];
+  document.getElementById('chartEdad').innerHTML = '<div style="display:flex;align-items:flex-end;gap:.5rem;height:100px;padding-top:.5rem">'
+    + Object.entries(grupos).map(function(g,i) {
+        var h = Math.round((g[1]/maxEdad)*90);
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem">'
+          + '<div style="font-size:.7rem;font-weight:700;color:var(--ink2)">'+g[1]+'</div>'
+          + '<div style="width:100%;height:'+h+'px;background:'+edadColors[i]+';border-radius:4px 4px 0 0;min-height:4px;transition:height .6s cubic-bezier(.16,1,.3,1)"></div>'
+          + '<div style="font-size:.6rem;color:var(--muted2);font-weight:600">'+g[0]+'</div>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+
+  // ── FLUJO CONCEPTUAL ──
+  var totalPac = pacientes.length || 1;
+  var citasOk  = citas.filter(function(c){return c.estado==='confirmada'||c.estado==='atendida';}).length;
+  var nodos = [
+    { icon:'🌐', label:'Index', sub: 'Directorio público',        color:'#e0f2fe', border:'#0ea5e9' },
+    { icon:'✨', label:'Triage AI', sub: 'Orientación clínica',   color:'#f0fdf9', border:'#0b7c6e' },
+    { icon:'🔍', label:'Búsqueda', sub: medicos.length+' médicos',color:'#f5f3ff', border:'#7c3aed' },
+    { icon:'📅', label:'Citas',   sub: citas.length+' generadas', color:'#fef3c7', border:'#d97706' },
+    { icon:'📋', label:'Consultas',sub: consultas.length+' HC',   color:'#d1fae5', border:'#059669' },
+  ];
+  document.getElementById('flujoMapa').innerHTML = nodos.map(function(n,i) {
+    return (i>0?'<div style="font-size:1.2rem;color:#d1d5db;flex-shrink:0;padding:0 .3rem">→</div>':'')
+      + '<div style="background:'+n.color+';border:1.5px solid '+n.border+';border-radius:12px;padding:.75rem 1rem;min-width:110px;text-align:center;flex-shrink:0">'
+      + '<div style="font-size:1.4rem;margin-bottom:.25rem">'+n.icon+'</div>'
+      + '<div style="font-size:.78rem;font-weight:700;color:#1a1a1a">'+n.label+'</div>'
+      + '<div style="font-size:.65rem;color:#6b7c79;margin-top:.1rem">'+n.sub+'</div>'
+      + '</div>';
+  }).join('');
+
+  // ── GUÍAS CLÍNICAS ──
+  var catCount = {};
+  guias.forEach(function(g){ catCount[g.categoria]=(catCount[g.categoria]||0)+1; });
+  var catEmoji = {abdomen:'🫁',fiebre:'🌡️',cardiovascular:'❤️',neurologico:'🧠',respiratorio:'🫁',trauma:'🦴',gastroenteritis:'🤢',cefalea:'🤕',urinario:'💧',alergico:'🌸',general:'📋'};
+  var guiasHtml = Object.entries(catCount).map(function(c) {
+    return '<div style="display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;font-size:.78rem;font-weight:600;color:#374151;margin:.25rem">'
+      + (catEmoji[c[0]]||'📄') +' '+ c[0] +' <span style="background:#e2e8f0;border-radius:10px;padding:.05rem .35rem;font-size:.7rem">'+c[1]+'</span></div>';
+  }).join('');
+  document.getElementById('chartGuias').innerHTML = '<div style="margin-bottom:.6rem">'
+    + guiasHtml
+    + '</div>'
+    + '<div style="font-size:.75rem;color:var(--muted);margin-top:.5rem">Total: <strong style="color:var(--ink)">'+guias.length+' guías</strong> · Fuentes: Manchester, NICE, WHO, ACEP, ESC, ATLS, AAP · Actualización automática vía PubMed cada lunes</div>';
 }
 </script>
 </body>
