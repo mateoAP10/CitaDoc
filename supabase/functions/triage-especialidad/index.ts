@@ -114,10 +114,7 @@ ESQUEMA DE RESPUESTA (JSON estricto, sin markdown):
   "motivo": "1 frase orientativa sin diagnóstico (max 100 chars)",
   "urgencia": "baja" | "media" | "alta",
   "otras_opciones": ["especialidad2", "especialidad3"],
-  "consejo_urgencia": "acción práctica + recomendación de atención (max 120 chars)",
-  "referencias": [
-    {"titulo": "...", "fuente": "...", "anio": 2023}
-  ]
+  "consejo_urgencia": "acción práctica + recomendación de atención (max 120 chars)"
 }`
 }
 
@@ -167,9 +164,6 @@ serve(async (req) => {
       console.error('parse error:', raw)
       return new Response(JSON.stringify({ error: 'parse_error' }), { status: 500, headers: cors })
     }
-
-    // Ensure referencias is always an array
-    if (!Array.isArray(result.referencias)) result.referencias = []
 
     return new Response(JSON.stringify({ ok: true, ...result }), { headers: cors })
 
