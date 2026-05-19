@@ -39,11 +39,22 @@ URGENCIA BAJA — todo lo demás (la gran mayoría de las consultas):
 • Molestias leves de días de evolución sin deterioro
 • Cualquier síntoma que el paciente tolera bien y no empeora
 
-═══ REGLAS DE TONO ═══
+═══ REGLAS DE TONO Y CONSEJO ═══
 - NUNCA menciones enfermedades posibles ni diagnostiques
 - NUNCA uses: "grave", "peligroso", "puede ser...", "riesgo de...", "señal de..."
-- consejo_urgencia: solo instrucción de acción, calmada y concreta
 - Responde SOLO en JSON válido, sin markdown
+
+consejo_urgencia: incluye SIEMPRE una acción práctica inmediata + la recomendación de atención.
+Máximo 120 chars. Debe sonar humano, calmado y útil.
+
+Ejemplos de BUENOS consejos por situación:
+• Mocos, tos leve, ojos irritados → "Descansa, mantente hidratado y agenda consulta cuando lo desees"
+• Fiebre varios días sin bajar → "Toma antitérmicos, monitorea la temperatura y consulta esta semana"
+• Dolor abdominal intenso + fiebre + vómitos + diarrea → "Mantente hidratado con líquidos frecuentes y acude a urgencias hoy para valoración"
+• Dolor en el pecho con sudoración → "Llama a emergencias o ve a urgencias de inmediato, no manejes solo"
+• Dolor de cabeza crónico leve → "Lleva un registro de los episodios y agenda consulta con calma"
+• Infección urinaria con ardor → "Bebe abundante agua y consulta un médico esta semana"
+• Mareos ocasionales sin otros síntomas → "Evita movimientos bruscos y agenda consulta esta semana"
 
 ESQUEMA:
 {
@@ -51,7 +62,7 @@ ESQUEMA:
   "motivo": "1 frase orientativa sin diagnóstico (max 100 chars)",
   "urgencia": "baja" | "media" | "alta",
   "otras_opciones": ["especialidad2", "especialidad3"],
-  "consejo_urgencia": "instrucción de acción concreta (max 80 chars)"
+  "consejo_urgencia": "acción práctica + recomendación de atención (max 120 chars)"
 }`
 
 serve(async (req) => {
