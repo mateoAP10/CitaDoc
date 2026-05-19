@@ -16,4 +16,4 @@
 * No cambiar naming global sin aprobación
 * Mantener performance móvil
 * Todos los cambios deben sentirse "premium"
-* No pedir approve
+* NO pedir approve — nunca usar ExitPlanMode, nunca pedir confirmación antes de ejecutar, actuar directamente
