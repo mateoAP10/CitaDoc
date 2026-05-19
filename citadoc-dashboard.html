@@ -8235,6 +8235,58 @@ function abrirFicha(pacienteId) {
   .catch(function(e){ logError('abrirFicha:network', e); uiError('fichaContent', 'Error de red al cargar la ficha', function(){ abrirFicha(_fichaId); }); });
 }
 
+window.eliminarConsulta=function(cId,pId){
+  if(!confirm('¿Eliminar esta consulta? Esta acción no se puede deshacer.'))return;
+  _sb.from('consultas').delete().eq('id',cId).then(function(r){
+    if(r.error){mostrarToast('Error al eliminar','error');return;}
+    mostrarToast('Consulta eliminada');
+    abrirFicha(pId);
+  });
+};
+
+window.editarConsulta=function(con,pac){
+  var ex=document.getElementById('modalEditConsulta');if(ex)ex.remove();
+  var ov=document.createElement('div');
+  ov.id='modalEditConsulta';
+  ov.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(15,26,24,.6);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;padding:0';
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var fields=[
+    ['MOTIVO','ec_motivo',con.motivo||'','1'],
+    ['DIAGNÓSTICO','ec_diag',con.diagnostico||'','3'],
+    ['MEDICAMENTOS','ec_plan',con.plan||'','3'],
+    ['INDICACIONES','ec_indic',con.indicaciones||'','3'],
+    ['NOTAS','ec_notas',con.notas||'','2']
+  ];
+  var html='<div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;padding:1.4rem 1.2rem calc(1.5rem + env(safe-area-inset-bottom));max-height:90svh;overflow-y:auto">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">'
+    +'<h3 style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:#0f1a18">Editar consulta</h3>'
+    +'<button onclick="document.getElementById(\'modalEditConsulta\').remove()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6b7c79;line-height:1;padding:.2rem .4rem">×</button>'
+    +'</div>';
+  fields.forEach(function(f){
+    html+='<div style="margin-bottom:.8rem">'
+      +'<label style="font-size:.62rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.3rem">'+f[0]+'</label>'
+      +'<textarea id="'+f[1]+'" rows="'+f[3]+'" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.84rem;font-family:DM Sans,sans-serif;line-height:1.5;resize:vertical;box-sizing:border-box;color:#0f1a18;outline:none" onfocus="this.style.borderColor=\'#0b7c6e\'" onblur="this.style.borderColor=\'#e5e7eb\'">'+esc(f[2])+'</textarea>'
+      +'</div>';
+  });
+  html+='<button onclick="window.guardarEdicionConsulta(\''+con.id+'\',\''+pac.id+'\')" style="width:100%;padding:.7rem;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:.2rem">Guardar cambios ✓</button>'
+    +'</div>';
+  ov.innerHTML=html;
+  document.body.appendChild(ov);
+};
+
+window.guardarEdicionConsulta=function(cId,pId){
+  var v=function(id){return((document.getElementById(id)||{}).value||'').trim()||null;};
+  var updates={motivo:v('ec_motivo'),diagnostico:v('ec_diag'),plan:v('ec_plan'),indicaciones:v('ec_indic'),notas:v('ec_notas')};
+  Object.keys(updates).forEach(function(k){if(!updates[k])delete updates[k];});
+  _sb.from('consultas').update(updates).eq('id',cId).then(function(r){
+    if(r.error){mostrarToast('Error al guardar','error');return;}
+    mostrarToast('Consulta actualizada ✓');
+    var m=document.getElementById('modalEditConsulta');if(m)m.remove();
+    abrirFicha(pId);
+  });
+};
+
 function renderFicha(p, consultas, proximaCita) {
   _fichaPaciente = p;
   var cont = document.getElementById('fichaContent');
@@ -8305,6 +8357,56 @@ function renderFicha(p, consultas, proximaCita) {
     });
     cont.appendChild(statsWrap);
 
+    // ── TAB BAR ──
+    var _FICHA_TAB='hist';
+    var tabBar=document.createElement('div');
+    tabBar.style.cssText='display:flex;background:#fff;border-radius:14px;border:1px solid rgba(11,124,110,.13);overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)';
+    [{id:'ante',label:'Antecedentes'},{id:'hist',label:'Historial clínico'},{id:'ai',label:'✨ MedCopilot AI'}].forEach(function(t,i){
+      var btn=document.createElement('button');
+      btn.id='fichaTab_'+t.id;
+      var isAI=t.id==='ai',isActive=t.id===_FICHA_TAB;
+      btn.style.cssText='flex:1;padding:.65rem .25rem;border:none;cursor:pointer;transition:background .2s,color .2s;font-family:DM Sans,sans-serif;font-size:.7rem;line-height:1.25;-webkit-tap-highlight-color:transparent'
+        +(i>0?';border-left:1px solid rgba(11,124,110,.1)':'')
+        +(isAI?';background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:700'
+          :(isActive?';background:#f0fdf9;color:#0b7c6e;font-weight:700;box-shadow:inset 0 -2px 0 #0b7c6e'
+            :';background:#fff;color:#6b7c79;font-weight:600'));
+      btn.innerHTML=t.label;
+      btn.onclick=function(){window.fichaTabSwitch(t.id);};
+      tabBar.appendChild(btn);
+    });
+    cont.appendChild(tabBar);
+    var paneAntes=document.createElement('div');
+    paneAntes.id='fichaPane_ante';
+    paneAntes.style.display='none';
+    cont.appendChild(paneAntes);
+    var paneHist=document.createElement('div');
+    paneHist.id='fichaPane_hist';
+    paneHist.style.display='block';
+    cont.appendChild(paneHist);
+    var paneAI=document.createElement('div');
+    paneAI.id='fichaPane_ai';
+    paneAI.style.display='none';
+    cont.appendChild(paneAI);
+    window.fichaTabSwitch=function(tab){
+      _FICHA_TAB=tab;
+      ['ante','hist','ai'].forEach(function(t){
+        var pane=document.getElementById('fichaPane_'+t);
+        var btn=document.getElementById('fichaTab_'+t);
+        if(pane)pane.style.display=t===tab?'block':'none';
+        if(btn){
+          if(t==='ai'){
+            btn.style.opacity=t===tab?'1':'.72';
+            btn.style.boxShadow=t===tab?'inset 0 -2px 0 rgba(255,255,255,.45)':'none';
+          }else{
+            btn.style.background=t===tab?'#f0fdf9':'#fff';
+            btn.style.color=t===tab?'#0b7c6e':'#6b7c79';
+            btn.style.fontWeight=t===tab?'700':'600';
+            btn.style.boxShadow=t===tab?'inset 0 -2px 0 #0b7c6e':'none';
+          }
+        }
+      });
+    };
+
     // Antecedentes clínicos
     var ante = document.createElement('div');
     ante.style.cssText='background:#fff;border-radius:14px;border:1px solid rgba(11,124,110,.13);overflow:hidden;margin-bottom:.75rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)';
@@ -8332,7 +8434,7 @@ function renderFicha(p, consultas, proximaCita) {
       row.onclick=function(){ editarResumenClinico(p.id); };
       ante.appendChild(row);
     });
-    cont.appendChild(ante);
+    paneAntes.appendChild(ante);
 
     // Historial clínico
     var hist = document.createElement('div');
@@ -8436,6 +8538,21 @@ function renderFicha(p, consultas, proximaCita) {
           body.appendChild(docsBtn);
         }
 
+        // Edit / delete actions
+        var actRow=document.createElement('div');
+        actRow.style.cssText='display:flex;gap:.5rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid rgba(11,124,110,.08)';
+        var editBtn=document.createElement('button');
+        editBtn.style.cssText='flex:1;padding:.42rem;background:none;border:1px solid rgba(11,124,110,.2);border-radius:8px;font-size:.72rem;color:#0b7c6e;cursor:pointer;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent';
+        editBtn.innerHTML='✏ Editar';
+        (function(co,pa){editBtn.addEventListener('click',function(e){e.stopPropagation();window.editarConsulta(co,pa);});})(con,p);
+        var delBtn=document.createElement('button');
+        delBtn.style.cssText='padding:.42rem .85rem;background:none;border:1px solid #fecaca;border-radius:8px;font-size:.72rem;color:#dc2626;cursor:pointer;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent';
+        delBtn.innerHTML='🗑';
+        (function(co,pa){delBtn.addEventListener('click',function(e){e.stopPropagation();window.eliminarConsulta(co.id,pa.id);});})(con,p);
+        actRow.appendChild(editBtn);
+        actRow.appendChild(delBtn);
+        body.appendChild(actRow);
+
         var open=false;
         (function(b,caretId){
           hdr.addEventListener('click',function(){
@@ -8452,7 +8569,7 @@ function renderFicha(p, consultas, proximaCita) {
         hist.appendChild(item);
       });
     }
-    cont.appendChild(hist);
+    paneHist.appendChild(hist);
 
     // MedCopilot AI card
     var aiCard = document.createElement('div');
@@ -8469,7 +8586,7 @@ function renderFicha(p, consultas, proximaCita) {
         +'<button id="fichaAIBtn" onclick="generarAISummary(\''+p.id+'\')" style="width:100%;padding:.6rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">🧠 Generar resumen clínico</button>'
         +'<div style="font-size:.62rem;color:#a0b0ae;text-align:center;margin-top:.45rem">'+minCons+' consultas · Powered by Kimi</div>';
     }
-    cont.appendChild(aiCard);
+    paneAI.appendChild(aiCard);
 
     // FAB
     var existFab = document.getElementById('fichaFab');
@@ -8521,6 +8638,53 @@ function renderFicha(p, consultas, proximaCita) {
     var main = document.createElement('div');
     var sidebar = document.createElement('div');
 
+    // ── TAB BAR (desktop — inside main column) ──
+    var _FICHA_TAB='hist';
+    var tabBar=document.createElement('div');
+    tabBar.style.cssText='display:flex;background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:.9rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.06)';
+    [{id:'ante',label:'Antecedentes'},{id:'hist',label:'Historial clínico'},{id:'ai',label:'✨ MedCopilot AI'}].forEach(function(t,i){
+      var btn=document.createElement('button');
+      btn.id='fichaTab_'+t.id;
+      var isAI=t.id==='ai',isActive=t.id===_FICHA_TAB;
+      btn.style.cssText='flex:1;padding:.7rem .5rem;border:none;cursor:pointer;transition:background .2s,color .2s;font-family:DM Sans,sans-serif;font-size:.78rem;line-height:1.25'
+        +(i>0?';border-left:1px solid var(--border)':'')
+        +(isAI?';background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:700'
+          :(isActive?';background:#f0fdf9;color:#0b7c6e;font-weight:700;box-shadow:inset 0 -2px 0 #0b7c6e'
+            :';background:#fff;color:var(--muted);font-weight:600'));
+      btn.innerHTML=t.label;
+      btn.onclick=function(){window.fichaTabSwitch(t.id);};
+      tabBar.appendChild(btn);
+    });
+    main.appendChild(tabBar);
+    var paneAntes=document.createElement('div');
+    paneAntes.id='fichaPane_ante';
+    paneAntes.style.display='none';
+    var paneHist=document.createElement('div');
+    paneHist.id='fichaPane_hist';
+    paneHist.style.display='block';
+    var paneAI=document.createElement('div');
+    paneAI.id='fichaPane_ai';
+    paneAI.style.display='none';
+    window.fichaTabSwitch=function(tab){
+      _FICHA_TAB=tab;
+      ['ante','hist','ai'].forEach(function(t){
+        var pane=document.getElementById('fichaPane_'+t);
+        var btn=document.getElementById('fichaTab_'+t);
+        if(pane)pane.style.display=t===tab?'block':'none';
+        if(btn){
+          if(t==='ai'){
+            btn.style.opacity=t===tab?'1':'.72';
+            btn.style.boxShadow=t===tab?'inset 0 -2px 0 rgba(255,255,255,.45)':'none';
+          }else{
+            btn.style.background=t===tab?'#f0fdf9':'#fff';
+            btn.style.color=t===tab?'#0b7c6e':'var(--muted)';
+            btn.style.fontWeight=t===tab?'700':'600';
+            btn.style.boxShadow=t===tab?'inset 0 -2px 0 #0b7c6e':'none';
+          }
+        }
+      });
+    };
+
     var ante = document.createElement('div');
     ante.className = 'ficha-antecedentes';
     ante.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center">'
@@ -8534,19 +8698,20 @@ function renderFicha(p, consultas, proximaCita) {
           +'<div><div class="ficha-ante-label">'+f[2]+'</div><div class="ficha-ante-val">'+(f[3]||'No registrado')+'</div></div>'
           +'</div>';
       }).join('')+'</div>';
-    main.appendChild(ante);
+    paneAntes.appendChild(ante);
+    main.appendChild(paneAntes);
 
     var hlabel = document.createElement('div');
     hlabel.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem';
     hlabel.innerHTML='<span style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:var(--ink)">Historial clínico</span>'
       +'<span style="font-size:.75rem;color:var(--muted2)">'+consultas.length+' consulta'+(consultas.length!==1?'s':'')+'</span>';
-    main.appendChild(hlabel);
+    paneHist.appendChild(hlabel);
 
     if (!consultas.length) {
       var emp = document.createElement('div');
       emp.style.cssText='text-align:center;padding:2rem;color:var(--muted2);border:1.5px dashed var(--border);border-radius:12px';
       emp.innerHTML='<div style="font-size:1.6rem;margin-bottom:.4rem">📋</div><div style="font-weight:600;color:var(--ink2)">Sin consultas aún</div>';
-      main.appendChild(emp);
+      paneHist.appendChild(emp);
     } else {
       consultas.forEach(function(con, idx) {
         var _d = con.created_at ? new Date(con.created_at) : null;
@@ -8578,10 +8743,27 @@ function renderFicha(p, consultas, proximaCita) {
         var open=false;
         hdr.addEventListener('click',function(){open=!open;body.className='ficha-consulta-body'+(open?' open':'');item.style.borderColor=open?'rgba(11,124,110,.3)':'';hdr.querySelector('span:last-child').textContent=open?'▴':'▾';});
         if(con.ai_raw_extraction&&con.voice_transcript){var auditBtn=document.createElement('button');auditBtn.style.cssText='width:100%;margin-top:.4rem;padding:.35rem;background:none;border:1px solid #e5e7eb;border-radius:8px;font-size:.7rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;text-align:left';auditBtn.innerHTML='&#129302; Ver extraccion AI &rarr;';var auditOpen=false;var auditPanel=document.createElement('div');auditPanel.style.cssText='display:none;margin-top:.4rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:.7rem .85rem;font-size:.72rem;color:#374151';auditPanel.innerHTML='<div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Transcript dictado</div><div style="font-style:italic;color:#6b7280;margin-bottom:.7rem;line-height:1.5">'+con.voice_transcript.slice(0,300)+(con.voice_transcript.length>300?'…':'')+'</div><div style="font-size:.6rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">AI propuso · médico guardó</div><div style="color:#059669;font-size:.68rem">Diagnosticos: '+(con.ai_raw_extraction.assessment&&con.ai_raw_extraction.assessment.diagnoses&&con.ai_raw_extraction.assessment.diagnoses.length||0)+' vs '+(con.diagnostico?con.diagnostico.split('\\n').filter(Boolean).length:0)+'</div><div style="color:#3b82f6;font-size:.68rem">Medicamentos: '+(con.ai_raw_extraction.plan&&con.ai_raw_extraction.plan.medications&&con.ai_raw_extraction.plan.medications.length||0)+' → '+(con.plan?(con.plan.split('|').filter(Boolean).length):0)+'</div>';auditBtn.addEventListener('click',function(e){e.stopPropagation();auditOpen=!auditOpen;auditPanel.style.display=auditOpen?'block':'none';auditBtn.innerHTML=(auditOpen?'&#129302; Ocultar extraccion AI &uarr;':'&#129302; Ver extraccion AI &rarr;');});item.appendChild(auditBtn);item.appendChild(auditPanel);}
-        if(con.plan||con.imagenes||con.estudios){var docsBtn=document.createElement('button');docsBtn.style.cssText='width:100%;margin-top:.5rem;padding:.4rem;background:none;border:1px solid rgba(11,124,110,.18);border-radius:8px;font-size:.72rem;color:var(--teal);cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem';docsBtn.innerHTML='📄 Documentos de esta consulta';docsBtn.onmouseenter=function(){this.style.background='var(--teal-lite)';};docsBtn.onmouseleave=function(){this.style.background='none';};(function(co,pa){docsBtn.addEventListener('click',function(e){e.stopPropagation();mcDocsConsulta(co,pa);});})(con,p);item.appendChild(docsBtn);}
+        if(con.plan||con.imagenes||con.estudios){var docsBtn=document.createElement('button');docsBtn.style.cssText='width:100%;margin-top:.5rem;padding:.4rem;background:none;border:1px solid rgba(11,124,110,.18);border-radius:8px;font-size:.72rem;color:var(--teal);cursor:pointer;font-family:DM Sans,sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem';docsBtn.innerHTML='📄 Documentos de esta consulta';docsBtn.onmouseenter=function(){this.style.background='var(--teal-lite)';};docsBtn.onmouseleave=function(){this.style.background='none';};(function(co,pa){docsBtn.addEventListener('click',function(e){e.stopPropagation();mcDocsConsulta(co,pa);});})(con,p);body.appendChild(docsBtn);}
+        var actRowD=document.createElement('div');
+        actRowD.style.cssText='display:flex;gap:.5rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid rgba(11,124,110,.08)';
+        var editBtnD=document.createElement('button');
+        editBtnD.style.cssText='flex:1;padding:.38rem;background:none;border:1px solid rgba(11,124,110,.2);border-radius:8px;font-size:.72rem;color:var(--teal);cursor:pointer;font-family:DM Sans,sans-serif;transition:background .15s';
+        editBtnD.innerHTML='✏ Editar';
+        editBtnD.onmouseenter=function(){this.style.background='#f0fdf9';};
+        editBtnD.onmouseleave=function(){this.style.background='none';};
+        (function(co,pa){editBtnD.addEventListener('click',function(e){e.stopPropagation();window.editarConsulta(co,pa);});})(con,p);
+        var delBtnD=document.createElement('button');
+        delBtnD.style.cssText='padding:.38rem .85rem;background:none;border:1px solid #fecaca;border-radius:8px;font-size:.72rem;color:#dc2626;cursor:pointer;font-family:DM Sans,sans-serif;transition:background .15s';
+        delBtnD.innerHTML='🗑 Eliminar';
+        delBtnD.onmouseenter=function(){this.style.background='#fef2f2';};
+        delBtnD.onmouseleave=function(){this.style.background='none';};
+        (function(co,pa){delBtnD.addEventListener('click',function(e){e.stopPropagation();window.eliminarConsulta(co.id,pa.id);});})(con,p);
+        actRowD.appendChild(editBtnD);
+        actRowD.appendChild(delBtnD);
+        body.appendChild(actRowD);
         item.appendChild(hdr);
         item.appendChild(body);
-        main.appendChild(item);
+        paneHist.appendChild(item);
       });
     }
 
@@ -8613,21 +8795,25 @@ function renderFicha(p, consultas, proximaCita) {
     });
     sidebar.appendChild(docsCard);
 
+    // AI card lives in paneAI tab pane
     var aiCard = document.createElement('div');
-    aiCard.className = 'ficha-sidebar-card';
     aiCard.id = 'fichaAICard';
+    aiCard.style.cssText='background:var(--white);border-radius:14px;border:1px solid var(--border);padding:1.2rem';
     var minCons = consultas.length;
     if (minCons < 3) {
-      aiCard.innerHTML='<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
-        +'<div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-bottom:.65rem">Disponible con 3+ consultas.<br>Actualmente: <strong>'+minCons+'</strong> consulta'+(minCons!==1?'s':'')+'.</div>'
-        +'<div style="font-size:.65rem;color:var(--muted2)">El análisis longitudinal aparecerá aquí.</div>';
+      aiCard.innerHTML='<div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">✨ MedCopilot AI — Powered by Kimi</div>'
+        +'<div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem">Disponible con 3+ consultas.<br>Actualmente: <strong style="color:var(--ink)">'+minCons+'</strong> consulta'+(minCons!==1?'s':'')+'.</div>'
+        +'<div style="font-size:.72rem;color:var(--muted2)">El análisis longitudinal clínico aparecerá aquí cuando tengas más historial.</div>';
     } else {
-      aiCard.innerHTML='<div class="ficha-sidebar-title">✨ MedCopilot AI</div>'
+      aiCard.innerHTML='<div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem">✨ MedCopilot AI — Powered by Kimi</div>'
         +'<div id="fichaAISummary" style="display:none"></div>'
-        +'<button id="fichaAIBtn" onclick="generarAISummary(\''+p.id+'\')" style="width:100%;padding:.55rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;margin-top:.1rem">🧠 Generar resumen clínico</button>'
-        +'<div style="font-size:.62rem;color:var(--muted2);text-align:center;margin-top:.4rem">'+minCons+' consultas · Powered by Kimi</div>';
+        +'<button id="fichaAIBtn" onclick="generarAISummary(\''+p.id+'\')" style="width:100%;padding:.65rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:12px;font-family:DM Sans,sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:.1rem">🧠 Generar resumen clínico</button>'
+        +'<div style="font-size:.65rem;color:var(--muted2);text-align:center;margin-top:.5rem">'+minCons+' consultas · Análisis longitudinal avanzado</div>';
     }
-    sidebar.appendChild(aiCard);
+    paneAI.appendChild(aiCard);
+
+    main.appendChild(paneHist);
+    main.appendChild(paneAI);
 
     layout.appendChild(main);
     layout.appendChild(sidebar);
