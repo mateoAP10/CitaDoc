@@ -9922,7 +9922,8 @@ function mcEnviarDocs(conOverride, pacOverride) {
   if(!pac.email){mostrarToast('El paciente no tiene email registrado','error');return;}
   var nomMed = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
   var esp = (med.especialidades||[])[0]||'Médico';
-  var sen = med.senescyt ? 'Reg. Médico:'+med.senescyt : '';
+  var sen = med.senescyt ? 'Reg. Médico: '+med.senescyt : '';
+  var ced = med.cedula   ? 'C.I. '+med.cedula           : '';
   var fecha = new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
 
   function listaHTML(items, icono, color) {
@@ -9956,7 +9957,7 @@ function mcEnviarDocs(conOverride, pacOverride) {
         +'<div style="width:200px;border-top:1.5px solid #1a1a1a;padding-top:8px;margin:0 auto 4px">'
           +'<div style="font-size:14px;font-weight:700;color:#1a1a1a">'+nomMed+'</div>'
           +(esp?'<div style="font-size:11px;color:#6b7280">'+esp+'</div>':'')
-          +(medCedula?'<div style="font-size:11px;color:#6b7280">'+medCedula+'</div>':'')
+          +(ced?'<div style="font-size:11px;color:#6b7280">'+ced+'</div>':'')
           +(sen?'<div style="font-size:11px;color:#6b7280">'+sen+'</div>':'')
         +'</div>'
       +'</div>'
