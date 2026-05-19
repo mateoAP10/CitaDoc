@@ -70,6 +70,11 @@
         window.renderSeguros(region.country);
       }
 
+      // Fetch local currency exchange rate
+      if (region.country && typeof window.fetchExchangeRate === 'function') {
+        window.fetchExchangeRate(region.country);
+      }
+
       // Load doctors silently (not rendered until user searches)
       if (typeof window.cargarMedicos === 'function') {
         window.logEvent('directory_reload', { trigger: 'region-applied' });
