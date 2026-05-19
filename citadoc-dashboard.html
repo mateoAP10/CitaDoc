@@ -1175,6 +1175,18 @@ display:flex;
 
     <!-- INICIO -->
     <div class="panel active" id="panel-inicio">
+      <!-- Banner verificación médica -->
+      <div id="verificacionBanner" style="display:none;border-radius:16px;padding:1.1rem 1.4rem;margin-bottom:1.3rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 100%);border:1px solid rgba(139,92,246,.3)">
+        <div style="display:flex;align-items:center;gap:.9rem">
+          <div style="width:38px;height:38px;border-radius:10px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem">🛡️</div>
+          <div>
+            <div id="verBannerTitle" style="font-size:.85rem;font-weight:700;color:#e2e8f0;letter-spacing:.01em">Completa tu verificación médica</div>
+            <div id="verBannerSub" style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:.15rem">Sube tu cédula y título SENESCYT para obtener el badge de médico verificado</div>
+          </div>
+        </div>
+        <button id="verBannerBtn" onclick="showPanel('perfil',null);setTimeout(function(){var t=document.querySelector('#panel-perfil .ptab[onclick*=\'verificacion\']');showPerfilTab('verificacion',t);},120)" style="flex-shrink:0;padding:.5rem 1.1rem;background:rgba(139,92,246,.9);color:#fff;border:none;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;letter-spacing:.02em">Verificar cuenta →</button>
+      </div>
+
       <!-- Banner visible solo para plan FREE -->
       <div id="freePlanBanner" style="display:none;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.2rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
         <div>
@@ -1459,6 +1471,7 @@ display:flex;
         <button class="ptab" onclick="showPerfilTab('logros',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Logros</button>
         <button class="ptab" onclick="showPerfilTab('seguros',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Seguros</button>
         <button class="ptab" onclick="showPerfilTab('visibilidad',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap">Visibilidad</button>
+        <button class="ptab" onclick="showPerfilTab('verificacion',this)" style="padding:.55rem 1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#6b7280;cursor:pointer;white-space:nowrap;position:relative" id="verTabBtn">Verificación <span id="verTabDot" style="display:none;position:absolute;top:6px;right:2px;width:6px;height:6px;border-radius:50%;background:#8b5cf6"></span></button>
       </div>
 
       <!-- TAB: INFORMACIÓN -->
@@ -1581,6 +1594,43 @@ display:flex;
       <div id="ptab-visibilidad" class="ptab-content" style="display:none">
         <div style="display:flex;flex-direction:column;gap:1rem;max-width:480px" id="visibilidadSwitches"></div>
         <button onclick="guardarVisibilidad()" style="margin-top:1.4rem;padding:.65rem 1.4rem;background:linear-gradient(135deg,#0b7c6e,#0e9d8c);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">Guardar preferencias</button>
+      </div>
+
+      <!-- TAB: VERIFICACIÓN -->
+      <div id="ptab-verificacion" class="ptab-content" style="display:none">
+        <!-- Status card -->
+        <div id="verStatusCard" style="border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.6rem;display:flex;align-items:center;gap:.9rem;background:#f8fafc;border:1.5px solid #e2e8f0">
+          <div id="verStatusIcon" style="font-size:1.4rem">⏳</div>
+          <div>
+            <div id="verStatusTitle" style="font-size:.88rem;font-weight:700;color:#0f172a">Verificación pendiente</div>
+            <div id="verStatusSub" style="font-size:.75rem;color:#6b7280;margin-top:.1rem">Sube tus documentos para iniciar el proceso</div>
+          </div>
+        </div>
+
+        <!-- Upload: Cédula -->
+        <div style="margin-bottom:1.4rem">
+          <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.5rem;letter-spacing:.05em">CÉDULA DE IDENTIDAD</label>
+          <div id="verCedulaZone" onclick="document.getElementById('verCedulaInput').click()" style="border:2px dashed #d1d5db;border-radius:14px;padding:1.6rem 1.2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa" onmouseenter="this.style.borderColor='#8b5cf6';this.style.background='#faf5ff'" onmouseleave="this.style.borderColor='#d1d5db';this.style.background='#fafafa'">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">🪪</div>
+            <div id="verCedulaLabel" style="font-size:.82rem;font-weight:600;color:#374151">Sube una foto de tu cédula</div>
+            <div style="font-size:.72rem;color:#9ca3af;margin-top:.2rem">JPG, PNG o PDF · máx 5MB</div>
+          </div>
+          <input type="file" id="verCedulaInput" accept="image/*,application/pdf" style="display:none" onchange="verHandleUpload(this,'cedula')">
+        </div>
+
+        <!-- Upload: Título SENESCYT -->
+        <div style="margin-bottom:1.6rem">
+          <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.5rem;letter-spacing:.05em">REGISTRO SENESCYT / TÍTULO MÉDICO</label>
+          <div id="verTituloZone" onclick="document.getElementById('verTituloInput').click()" style="border:2px dashed #d1d5db;border-radius:14px;padding:1.6rem 1.2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa" onmouseenter="this.style.borderColor='#8b5cf6';this.style.background='#faf5ff'" onmouseleave="this.style.borderColor='#d1d5db';this.style.background='#fafafa'">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">📄</div>
+            <div id="verTituloLabel" style="font-size:.82rem;font-weight:600;color:#374151">Sube tu registro SENESCYT o título médico</div>
+            <div style="font-size:.72rem;color:#9ca3af;margin-top:.2rem">JPG, PNG o PDF · máx 5MB</div>
+          </div>
+          <input type="file" id="verTituloInput" accept="image/*,application/pdf" style="display:none" onchange="verHandleUpload(this,'titulo')">
+        </div>
+
+        <button id="verEnviarBtn" onclick="verEnviarDocumentos()" style="width:100%;padding:.8rem;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.4;pointer-events:none" disabled>Enviar para verificación →</button>
+        <p style="font-size:.72rem;color:#9ca3af;text-align:center;margin-top:.7rem">Revisamos los documentos en menos de 48 horas hábiles</p>
       </div>
 
     </div>
@@ -3443,6 +3493,9 @@ async function aplicarMedico(m) {
   // Banner FREE legacy — oculto
   var _freeBanner = document.getElementById('freePlanBanner');
   if (_freeBanner) _freeBanner.style.display = 'none';
+
+  // Banner verificación
+  actualizarBannerVerificacion(m);
   renderEvolucionSection(_isPro);
   // Badge PRO en nav item Pacientes
   var _navPacPro = document.getElementById('navPacientesPro');
@@ -10216,6 +10269,142 @@ function showPerfilTab(tab, btn) {
   if (tab==='logros') cargarLogros();
   if (tab==='visibilidad') renderVisibilidad();
   if (tab==='redes') cargarLandingStatus();
+  if (tab==='verificacion') renderVerificacionTab();
+}
+
+// ── VERIFICACIÓN MÉDICA ───────────────────────────────────────────────────────
+var _verCedulaFile  = null;
+var _verTituloFile  = null;
+
+function actualizarBannerVerificacion(m) {
+  var banner = document.getElementById('verificacionBanner');
+  if (!banner) return;
+  var estado = m && m.verificacion_estado;
+  if (estado === 'verificado') {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = 'flex';
+  var dot = document.getElementById('verTabDot');
+  if (dot && estado !== 'en_revision') dot.style.display = 'block';
+
+  if (estado === 'en_revision') {
+    // Docs enviados, esperando revisión — tono info
+    banner.style.background = 'linear-gradient(135deg,#0c1a2e 0%,#0f2540 100%)';
+    banner.style.borderColor = 'rgba(59,130,246,.35)';
+    document.getElementById('verBannerTitle').textContent = 'Verificación en revisión';
+    document.getElementById('verBannerSub').textContent   = 'Estamos revisando tus documentos. Te avisamos en menos de 48h.';
+    var btn = document.getElementById('verBannerBtn');
+    btn.textContent = 'Ver estado →';
+    btn.style.background = 'rgba(59,130,246,.8)';
+  }
+}
+
+function renderVerificacionTab() {
+  if (!M) return;
+  var estado = M.verificacion_estado;
+  var card   = document.getElementById('verStatusCard');
+  var icon   = document.getElementById('verStatusIcon');
+  var title  = document.getElementById('verStatusTitle');
+  var sub    = document.getElementById('verStatusSub');
+
+  if (estado === 'verificado') {
+    card.style.background = '#f0fdf4'; card.style.borderColor = '#bbf7d0';
+    icon.textContent = '✅'; title.textContent = 'Cuenta verificada';
+    sub.textContent  = 'Tu badge de médico verificado está activo en tu perfil público.';
+  } else if (estado === 'en_revision') {
+    card.style.background = '#eff6ff'; card.style.borderColor = '#bfdbfe';
+    icon.textContent = '🔍'; title.textContent = 'Documentos en revisión';
+    sub.textContent  = 'Revisamos tus documentos en menos de 48 horas hábiles.';
+  } else {
+    card.style.background = '#f8fafc'; card.style.borderColor = '#e2e8f0';
+    icon.textContent = '⏳'; title.textContent = 'Verificación pendiente';
+    sub.textContent  = 'Sube tus documentos para iniciar el proceso.';
+  }
+
+  // Mostrar preview si ya están subidos
+  if (M.cedula_doc_url) {
+    document.getElementById('verCedulaLabel').textContent = '✓ Cédula cargada';
+    document.getElementById('verCedulaZone').style.borderColor = '#10b981';
+    document.getElementById('verCedulaZone').style.background  = '#f0fdf4';
+  }
+  if (M.titulo_doc_url) {
+    document.getElementById('verTituloLabel').textContent = '✓ Título cargado';
+    document.getElementById('verTituloZone').style.borderColor = '#10b981';
+    document.getElementById('verTituloZone').style.background  = '#f0fdf4';
+  }
+
+  // Deshabilitar uploads si ya está en revisión o verificado
+  var bloqueado = (estado === 'en_revision' || estado === 'verificado');
+  ['verCedulaZone','verTituloZone','verEnviarBtn'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.pointerEvents = bloqueado ? 'none' : 'auto';
+    el.style.opacity = bloqueado ? '.6' : '1';
+  });
+}
+
+function verHandleUpload(input, tipo) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { mostrarToast('El archivo supera 5MB','error'); return; }
+
+  var zoneId  = tipo === 'cedula' ? 'verCedulaZone'  : 'verTituloZone';
+  var labelId = tipo === 'cedula' ? 'verCedulaLabel' : 'verTituloLabel';
+
+  if (tipo === 'cedula')  _verCedulaFile  = file;
+  if (tipo === 'titulo')  _verTituloFile  = file;
+
+  document.getElementById(labelId).textContent = '✓ ' + file.name;
+  document.getElementById(zoneId).style.borderColor = '#8b5cf6';
+  document.getElementById(zoneId).style.background  = '#faf5ff';
+
+  // Habilitar botón cuando ambos están listos
+  var btn = document.getElementById('verEnviarBtn');
+  if (_verCedulaFile && _verTituloFile) {
+    btn.style.opacity = '1'; btn.disabled = false; btn.style.pointerEvents = 'auto';
+  }
+}
+
+async function verEnviarDocumentos() {
+  if (!M || !_verCedulaFile || !_verTituloFile) return;
+  var btn = document.getElementById('verEnviarBtn');
+  btn.textContent = 'Subiendo...'; btn.disabled = true;
+
+  try {
+    var ext1 = _verCedulaFile.name.split('.').pop();
+    var ext2 = _verTituloFile.name.split('.').pop();
+    var path1 = M.id + '/cedula.' + ext1;
+    var path2 = M.id + '/titulo.' + ext2;
+
+    var up1 = await _sb.storage.from('verificacion-docs').upload(path1, _verCedulaFile, {upsert:true, contentType:_verCedulaFile.type});
+    if (up1.error) throw up1.error;
+    var up2 = await _sb.storage.from('verificacion-docs').upload(path2, _verTituloFile, {upsert:true, contentType:_verTituloFile.type});
+    if (up2.error) throw up2.error;
+
+    var url1 = _sb.storage.from('verificacion-docs').getPublicUrl(path1).data.publicUrl;
+    var url2 = _sb.storage.from('verificacion-docs').getPublicUrl(path2).data.publicUrl;
+
+    await _sb.from('medicos').update({
+      cedula_doc_url:       url1,
+      titulo_doc_url:       url2,
+      verificacion_estado:  'en_revision'
+    }).eq('id', M.id);
+
+    // Actualizar M local
+    M.cedula_doc_url      = url1;
+    M.titulo_doc_url      = url2;
+    M.verificacion_estado = 'en_revision';
+
+    actualizarBannerVerificacion(M);
+    renderVerificacionTab();
+    mostrarToast('✓ Documentos enviados — revisamos en 48h');
+
+  } catch(e) {
+    console.error('[verificacion]', e);
+    mostrarToast('Error al subir documentos. Intenta de nuevo.', 'error');
+    btn.textContent = 'Enviar para verificación →'; btn.disabled = false;
+  }
 }
 
 function cargarFormPerfil(m) {
