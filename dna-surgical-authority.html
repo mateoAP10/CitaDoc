@@ -437,7 +437,7 @@ function render(m,wc){
   var rows=[
     {k:'ESPECIALIDAD',v:esp},
     {k:'FORMACIÓN',v:wc.formacion||m.universidad||null},
-    {k:'REGISTRO',v:m.senescyt?'SENESCYT '+m.senescyt:null},
+    {k:'REGISTRO',v:m.senescyt?'Reg. Médico '+m.senescyt:null},
     {k:'SEDE',v:null}, // llenado en renderSedes
     {k:'ATENCIÓN',v:m.dias_atencion&&m.dias_atencion.length?(m.dias_atencion.slice(0,5).join(' · ')+' · '+(m.horario_desde||'07:00')+'–'+(m.horario_hasta||'20:00')):null}
   ];

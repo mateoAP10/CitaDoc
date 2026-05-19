@@ -1181,7 +1181,7 @@ display:flex;
           <div style="width:38px;height:38px;border-radius:10px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem">🛡️</div>
           <div>
             <div id="verBannerTitle" style="font-size:.85rem;font-weight:700;color:#e2e8f0;letter-spacing:.01em">Completa tu verificación médica</div>
-            <div id="verBannerSub" style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:.15rem">Sube tu cédula y título SENESCYT para obtener el badge de médico verificado</div>
+            <div id="verBannerSub" style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:.15rem">Sube tu documento de identidad y título médico para obtener el badge de médico verificado</div>
           </div>
         </div>
         <button id="verBannerBtn" onclick="showPanel('perfil',null);setTimeout(function(){var t=document.querySelector('#panel-perfil .ptab[onclick*=\'verificacion\']');showPerfilTab('verificacion',t);},120)" style="flex-shrink:0;padding:.5rem 1.1rem;background:rgba(139,92,246,.9);color:#fff;border:none;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;letter-spacing:.02em">Verificar cuenta →</button>
@@ -1609,21 +1609,21 @@ display:flex;
 
         <!-- Upload: Cédula -->
         <div style="margin-bottom:1.4rem">
-          <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.5rem;letter-spacing:.05em">CÉDULA DE IDENTIDAD</label>
+          <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.5rem;letter-spacing:.05em">DOCUMENTO DE IDENTIDAD</label>
           <div id="verCedulaZone" onclick="document.getElementById('verCedulaInput').click()" style="border:2px dashed #d1d5db;border-radius:14px;padding:1.6rem 1.2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa" onmouseenter="this.style.borderColor='#8b5cf6';this.style.background='#faf5ff'" onmouseleave="this.style.borderColor='#d1d5db';this.style.background='#fafafa'">
             <div style="font-size:1.5rem;margin-bottom:.4rem">🪪</div>
-            <div id="verCedulaLabel" style="font-size:.82rem;font-weight:600;color:#374151">Sube una foto de tu cédula</div>
+            <div id="verCedulaLabel" style="font-size:.82rem;font-weight:600;color:#374151">Sube tu documento de identidad</div>
             <div style="font-size:.72rem;color:#9ca3af;margin-top:.2rem">JPG, PNG o PDF · máx 5MB</div>
           </div>
           <input type="file" id="verCedulaInput" accept="image/*,application/pdf" style="display:none" onchange="verHandleUpload(this,'cedula')">
         </div>
 
-        <!-- Upload: Título SENESCYT -->
+        <!-- Upload: Título médico -->
         <div style="margin-bottom:1.6rem">
-          <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.5rem;letter-spacing:.05em">REGISTRO SENESCYT / TÍTULO MÉDICO</label>
+          <label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.5rem;letter-spacing:.05em">REGISTRO MÉDICO / TÍTULO PROFESIONAL</label>
           <div id="verTituloZone" onclick="document.getElementById('verTituloInput').click()" style="border:2px dashed #d1d5db;border-radius:14px;padding:1.6rem 1.2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa" onmouseenter="this.style.borderColor='#8b5cf6';this.style.background='#faf5ff'" onmouseleave="this.style.borderColor='#d1d5db';this.style.background='#fafafa'">
             <div style="font-size:1.5rem;margin-bottom:.4rem">📄</div>
-            <div id="verTituloLabel" style="font-size:.82rem;font-weight:600;color:#374151">Sube tu registro SENESCYT o título médico</div>
+            <div id="verTituloLabel" style="font-size:.82rem;font-weight:600;color:#374151">Sube tu registro o título médico profesional</div>
             <div style="font-size:.72rem;color:#9ca3af;margin-top:.2rem">JPG, PNG o PDF · máx 5MB</div>
           </div>
           <input type="file" id="verTituloInput" accept="image/*,application/pdf" style="display:none" onchange="verHandleUpload(this,'titulo')">
@@ -7165,7 +7165,7 @@ function generarPDF() {
   var docs       = leerDocumentos();
   var medNombre  = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico CitaDoc';
   var medEsp     = M ? ((M.especialidades||[])[0]||'') : '';
-  var medReg     = M && M.senescyt ? 'Reg. SENESCYT: '+M.senescyt : '';
+  var medReg     = M && M.senescyt ? 'Reg. Médico:'+M.senescyt : '';
   var docId      = 'CD-' + Date.now();
   var fecha      = new Date().toLocaleString('es-EC', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
@@ -9531,7 +9531,7 @@ function mcVerDoc(tipo) {
   var fecha = new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var nomMed = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
   var esp = (med.especialidades||[])[0]||'Médico';
-  var sen = med.senescyt ? 'Reg. SENESCYT: '+med.senescyt : '';
+  var sen = med.senescyt ? 'Reg. Médico:'+med.senescyt : '';
 
   var tituloDoc = tipo==='receta' ? '💊 Receta Médica' : tipo==='imagenes' ? '🩻 Orden de Imágenes' : '🔬 Orden de Laboratorio';
   var contenido = tipo==='receta' ? (con.plan||'').split(' | ').filter(Boolean) :
@@ -9586,7 +9586,7 @@ function mcEnviarDocs(conOverride, pacOverride) {
   if(!pac.email){mostrarToast('El paciente no tiene email registrado','error');return;}
   var nomMed = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
   var esp = (med.especialidades||[])[0]||'Médico';
-  var sen = med.senescyt ? 'Reg. SENESCYT: '+med.senescyt : '';
+  var sen = med.senescyt ? 'Reg. Médico:'+med.senescyt : '';
   var fecha = new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'});
 
   function listaHTML(items, icono, color) {

@@ -396,7 +396,7 @@ function render(m,wc){
   if(!q)q='"Cada paciente merece tiempo, escucha y la mejor atención médica posible."';
   set('aboutQuote',q);
   set('aboutBio',wc.about_text||wc.doctor_story||m.bio||'Especialista comprometido con la salud y el bienestar integral de cada paciente.');
-  var creds=wc.differentiators||[];if(!creds.length){if(m.anos_experiencia)creds.push(m.anos_experiencia+' años de experiencia');if(esp)creds.push('Especialista en '+esp);if(m.senescyt)creds.push('Reg. SENESCYT '+m.senescyt);if(m.ciudad)creds.push('Atención en '+m.ciudad);}
+  var creds=wc.differentiators||[];if(!creds.length){if(m.anos_experiencia)creds.push(m.anos_experiencia+' años de experiencia');if(esp)creds.push('Especialista en '+esp);if(m.senescyt)creds.push('Reg. Médico '+m.senescyt);if(m.ciudad)creds.push('Atención en '+m.ciudad);}
   var ac=el('aboutCreds');if(ac)ac.innerHTML=creds.slice(0,4).map(function(c){return'<div class="about-cred"><span class="about-cred-dot"></span><span>'+c+'</span></div>';}).join('');
   // CTA
   set('ctaH2',wc.cta_final||'Agendá tu consulta hoy');

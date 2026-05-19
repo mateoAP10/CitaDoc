@@ -1172,7 +1172,7 @@ function aplicarMedico(m, formacion, citas, locs) {
   if (badges) {
     var b = '';
     if (m.plan==='destacado') b += '<span class="badge badge-dest">⭐ Destacado</span>';
-    if (m.senescyt) b += '<span class="badge badge-reg">SENESCYT: '+m.senescyt+'</span>';
+    if (m.senescyt) b += '<span class="badge badge-reg">Reg. Médico:'+m.senescyt+'</span>';
     badges.innerHTML = b;
   }
 
@@ -1198,7 +1198,7 @@ function aplicarMedico(m, formacion, citas, locs) {
     trustEl.innerHTML = '';
     var chips = [];
     if (m.anos_experiencia) chips.push('✓ '+m.anos_experiencia+' años de experiencia');
-    if (m.senescyt) chips.push('Reg. SENESCYT '+m.senescyt);
+    if (m.senescyt) chips.push('Reg. Médico '+m.senescyt);
     var primerInst = (formacion||[]).filter(function(f){ return f.tipo==='academia' && f.institucion; })[0];
     if (primerInst) chips.push(primerInst.institucion);
     chips.forEach(function(c) {
