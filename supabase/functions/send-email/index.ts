@@ -198,6 +198,11 @@ ${labsHtml}
 ${imagenesHtml}
 ${textHtml}
 
+${(d.pdf_url as string) ? `<tr><td style="padding:0 40px 20px;">
+  <a href="${d.pdf_url}" style="display:block;background:#0f172a;color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">
+    ⬇ Descargar documentos en PDF
+  </a>
+</td></tr>` : ''}
 <tr><td style="padding:0 40px 32px;text-align:center;">
   <p style="margin:0;color:#94a3b8;font-size:12px;">${safe(d.doctor_name as string)}</p>
 </td></tr>

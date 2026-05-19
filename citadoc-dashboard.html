@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -6706,47 +6708,138 @@ function usarAIEnConsulta() {
 }
 
 // ── ENVIAR INDICACIONES AL PACIENTE ──
-function enviarIndicacionesPaciente() {
-  // Snapshot del estado actual — evita bugs si el médico edita mientras se envía
+async function generarYSubirPDF(pacNombre, docs, indicText) {
+  try {
+    var medNombre = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico';
+    var medEsp    = M ? ((M.especialidades||[])[0]||'') : '';
+    var medReg    = M && M.senescyt ? 'Reg. Médico: '+M.senescyt : '';
+    var fecha     = new Date().toLocaleString('es', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    var docId     = 'CD-' + Date.now();
+
+    // Construir HTML interno del doc
+    var recetaHTML = '';
+    if (docs.receta && docs.receta.items && docs.receta.items.length) {
+      recetaHTML = '<div class="ps"><div class="pst">RECETA MÉDICA</div>';
+      docs.receta.items.forEach(function(it, i) {
+        recetaHTML += '<div class="pi"><span class="pin">'+(i+1)+'.</span><div><strong>'+it.medicamento+'</strong>'+(it.dosis?' — '+it.dosis:'')+(it.frecuencia?', '+it.frecuencia:'')+(it.duracion?', por '+it.duracion:'')+'</div></div>';
+      });
+      if (docs.receta.notas) recetaHTML += '<div class="pn">📌 '+docs.receta.notas+'</div>';
+      recetaHTML += '</div>';
+    }
+    var labsHTML = '';
+    if (docs.laboratorios && docs.laboratorios.items && docs.laboratorios.items.length) {
+      labsHTML = '<div class="ps"><div class="pst">ORDEN DE LABORATORIO</div>';
+      docs.laboratorios.items.forEach(function(it, i) {
+        var pr = it.prioridad==='urgente'?' <span class="pu">URGENTE</span>':it.prioridad==='stat'?' <span class="ps2">STAT</span>':'';
+        labsHTML += '<div class="pi"><span class="pin">'+(i+1)+'.</span><div>'+it.nombre+pr+(it.indicacion?'<br><span class="pie">'+it.indicacion+'</span>':'')+'</div></div>';
+      });
+      labsHTML += '</div>';
+    }
+    var imgHTML = '';
+    if (docs.imagenes && docs.imagenes.items && docs.imagenes.items.length) {
+      imgHTML = '<div class="ps"><div class="pst">ORDEN DE IMÁGENES</div>';
+      docs.imagenes.items.forEach(function(it, i) {
+        imgHTML += '<div class="pi"><span class="pin">'+(i+1)+'.</span><div><strong>'+it.estudio+'</strong>'+(it.zona?' — '+it.zona:'')+(it.motivo?'<br><span class="pie">'+it.motivo+'</span>':'')+'</div></div>';
+      });
+      imgHTML += '</div>';
+    }
+    var indicHTML = indicText && indicText.trim()
+      ? '<div class="ps"><div class="pst">INDICACIONES GENERALES</div><p class="pit">'+indicText.replace(/\n/g,'<br>')+'</p></div>' : '';
+
+    var inner = '<div style="font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:32px 40px;max-width:680px;margin:0 auto">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0b7c6e;padding-bottom:14px;margin-bottom:18px">'
+        +'<div style="font-size:22px;font-weight:800;color:#0b7c6e">Cita<em style=\'font-style:italic;font-weight:400\'>Doc</em></div>'
+        +'<div style="text-align:right"><div style="font-size:14px;font-weight:700">'+medNombre+'</div>'+(medEsp?'<div style="font-size:11px;color:#6b7c79">'+medEsp+'</div>':'')+(medReg?'<div style="font-size:10px;color:#a0b0ae">'+medReg+'</div>':'')+'</div>'
+      +'</div>'
+      +'<div style="background:#f7f4ef;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap">'
+        +'<div style="font-size:11px;color:#6b7c79"><strong style="display:block;font-size:12px;color:#0f1a18">Paciente</strong>'+pacNombre+'</div>'
+        +'<div style="font-size:11px;color:#6b7c79"><strong style="display:block;font-size:12px;color:#0f1a18">Fecha</strong>'+fecha+'</div>'
+      +'</div>'
+      +'<div style="font-size:10px;color:#a0b0ae;text-align:right;margin-bottom:14px;font-family:monospace">ID: '+docId+'</div>'
+      +'<style>.ps{margin-bottom:16px;page-break-inside:avoid}.pst{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0b7c6e;border-bottom:1px solid #e0f5f2;padding-bottom:4px;margin-bottom:10px}.pi{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}.pin{font-weight:700;color:#0b7c6e;flex-shrink:0;min-width:16px}.pie{font-size:11px;color:#6b7c79;display:block;margin-top:2px}.pn{font-size:11px;color:#6b7c79;margin-top:6px;padding:6px 10px;background:#f0fff4;border-radius:5px}.pit{font-size:12px;color:#334155;line-height:1.6}.pu{background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:4px}.ps2{background:#fffbeb;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:4px}</style>'
+      + recetaHTML + labsHTML + imgHTML + indicHTML
+      +'<div style="border-top:1px solid #e5e7eb;padding-top:12px;margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end">'
+        +'<div style="font-size:10px;color:#a0b0ae;line-height:1.5">Generado por CitaDoc — citadoc.lat<br>Documento de uso clínico.</div>'
+        +'<div style="text-align:center"><div style="width:160px;border-top:1.5px solid #0f1a18;padding-top:5px;font-size:10px;color:#374151;display:inline-block">'+medNombre+'</div></div>'
+      +'</div>'
+    +'</div>';
+
+    // Montar en div off-screen
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:720px;background:#fff;z-index:-999';
+    wrap.innerHTML = inner;
+    document.body.appendChild(wrap);
+
+    var canvas = await html2canvas(wrap, { scale: 2, useCORS: true, backgroundColor: '#fff', logging: false });
+    document.body.removeChild(wrap);
+
+    var { jsPDF } = window.jspdf;
+    var pdf = new jsPDF('p', 'mm', 'a4');
+    var pw = pdf.internal.pageSize.getWidth();
+    var ph = pdf.internal.pageSize.getHeight();
+    var imgW = pw;
+    var imgH = (canvas.height * pw) / canvas.width;
+    var y = 0;
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, y, imgW, imgH);
+    var remaining = imgH - ph;
+    while (remaining > 0) {
+      y -= ph;
+      pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, y, imgW, imgH);
+      remaining -= ph;
+    }
+
+    var blob = pdf.output('blob');
+    var path = (M ? M.id : 'anon') + '/' + Date.now() + '.pdf';
+    var { data: upData, error: upErr } = await _sb.storage
+      .from('documentos-medicos')
+      .upload(path, blob, { contentType: 'application/pdf', upsert: false });
+
+    if (upErr) { console.warn('[pdf] upload error:', upErr.message); return null; }
+
+    return _sb.storage.from('documentos-medicos').getPublicUrl(path).data.publicUrl;
+
+  } catch(e) {
+    console.warn('[pdf] error:', e);
+    return null;
+  }
+}
+
+async function enviarIndicacionesPaciente() {
   var snapshot = {
     indicaciones: (document.getElementById('aiIndicaciones')||{}).value || '',
-    resumen:      (document.getElementById('aiResumen')||{}).value || '',
     docs:         JSON.parse(JSON.stringify(leerDocumentos())),
-    hcId:         _hcId,
     pacienteId:   _hcPacienteId,
-    medicoId:     M ? M.id : null,
-    timestamp:    new Date().toISOString()
   };
-  var indicaciones = {value: snapshot.indicaciones};
+  var indicaciones = snapshot.indicaciones;
   var docs = snapshot.docs;
-  var tieneContenido = (indicaciones && indicaciones.value.trim())
-    || docs.receta || docs.laboratorios || docs.imagenes;
-  if (!tieneContenido) {
-    alert('No hay documentos ni indicaciones para enviar.');
-    return;
-  }
+  var tieneContenido = indicaciones.trim() || docs.receta || docs.laboratorios || docs.imagenes;
+  if (!tieneContenido) { alert('No hay documentos ni indicaciones para enviar.'); return; }
   if (!_hcPacienteId) { alert('No hay paciente vinculado.'); return; }
 
-  // Obtener email del paciente
-  _sb.from('pacientes').select('nombre, email').eq('id', _hcPacienteId).single()
-    .then(function(r) {
-      if (!r.data || !r.data.email) {
-        alert('Este paciente no tiene email registrado.');
-        return;
-      }
-      var paciente = r.data;
-      var nombreMedico = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Tu medico';
-      citadocSendEmail('indicaciones', {
-        to_email:     paciente.email,
-        doctor_name:  nombreMedico,
-        patient_name: paciente.nombre,
-        text:         indicaciones.value.trim() || null,
-        receta:       docs.receta       || null,
-        laboratorios: docs.laboratorios || null,
-        imagenes:     docs.imagenes     || null
-      });
-      mostrarToast('Indicaciones enviadas a '+paciente.email);
-    });
+  var r = await _sb.from('pacientes').select('nombre, email').eq('id', _hcPacienteId).single();
+  if (!r.data || !r.data.email) { alert('Este paciente no tiene email registrado.'); return; }
+
+  var paciente     = r.data;
+  var nombreMedico = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Tu médico';
+
+  mostrarToast('Generando PDF y enviando...');
+
+  // Generar PDF y subir a Storage
+  var pdfUrl = await generarYSubirPDF(paciente.nombre, docs, indicaciones);
+
+  citadocSendEmail('indicaciones', {
+    to_email:     paciente.email,
+    doctor_name:  nombreMedico,
+    patient_name: paciente.nombre,
+    text:         indicaciones.trim() || null,
+    receta:       docs.receta       || null,
+    laboratorios: docs.laboratorios || null,
+    imagenes:     docs.imagenes     || null,
+    pdf_url:      pdfUrl || null,
+  });
+
+  mostrarToast('✓ Enviado a ' + paciente.email + (pdfUrl ? ' con PDF' : ''));
 }
 
 // ── MOSTRAR AI DESDE DATOS GUARDADOS ──
