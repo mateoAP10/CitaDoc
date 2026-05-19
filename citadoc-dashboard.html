@@ -683,7 +683,9 @@ display:flex;
 /* ── MÓDULO PACIENTES / HISTORIA CLÍNICA ── */
 .hc-modal-overlay{position:fixed;inset:0;z-index:700;background:rgba(15,26,24,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
 .hc-modal-overlay.open{display:flex}
-.hc-modal{background:var(--white);border-radius:20px;width:100%;max-width:680px;margin:auto;box-shadow:0 24px 64px rgba(15,26,24,.2);max-height:calc(100vh - 2rem);overflow-y:auto;flex-shrink:0}
+.hc-modal{background:var(--white);border-radius:20px;width:100%;max-width:680px;margin:auto;box-shadow:0 24px 64px rgba(15,26,24,.2);max-height:calc(100vh - 2rem);overflow-y:hidden;flex-shrink:0;display:flex;flex-direction:column}
+.hc-modal-body{overflow-y:auto;flex:1}
+.hc-modal-footer{padding:.9rem 1.8rem 1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;background:var(--white);border-radius:0 0 20px 20px;flex-shrink:0}
 .hc-modal-header{padding:1.4rem 1.8rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);z-index:10;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between}
 .hc-modal-header h3{font-family:Fraunces,serif;font-size:1.15rem;font-weight:600;color:var(--ink)}
 .hc-modal-body{padding:1.4rem 1.8rem 1.8rem}
@@ -2334,7 +2336,7 @@ display:flex;
       </div>
       <button onclick="cerrarHC()" style="width:30px;height:30px;border-radius:50%;background:var(--cream);border:none;cursor:pointer;font-size:.9rem">✕</button>
     </div>
-    <div class="hc-modal-body">
+    <div class="hc-modal-body" style="padding:1.4rem 1.8rem 1.8rem">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div class="hc-field">
           <label>Síntomas</label>
@@ -2438,11 +2440,6 @@ display:flex;
           </div>
         </div>
 
-        <!-- Firmar y enviar — sticky al fondo del scroll -->
-        <div style="position:sticky;bottom:0;z-index:10;background:#fff;padding:.75rem 0 .25rem;margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap;pointer-events:auto">
-          <button onclick="generarPDF()" style="flex:1;min-width:120px;padding:.65rem .9rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:#374151;cursor:pointer;pointer-events:auto">🖨️ Vista previa PDF</button>
-          <button onclick="enviarIndicacionesPaciente()" style="flex:2;min-width:180px;padding:.65rem 1rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em;pointer-events:auto">✍️ Firmar y enviar al paciente</button>
-        </div>
       </div>
       <!-- Historial previo -->
       <div id="historialPrevio" style="margin-top:1.4rem;display:none">
@@ -2453,6 +2450,11 @@ display:flex;
         <div class="ai-historial-box" id="aiHistorialBox"></div>
         <div id="historialList"></div>
       </div>
+    </div>
+    <!-- Footer fijo — fuera del scroll -->
+    <div class="hc-modal-footer">
+      <button onclick="generarPDF()" style="flex:1;padding:.65rem .9rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:#374151;cursor:pointer">🖨️ Vista previa PDF</button>
+      <button onclick="enviarIndicacionesPaciente()" style="flex:2;padding:.65rem 1rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em">✍️ Firmar y enviar</button>
     </div>
   </div>
 </div>
