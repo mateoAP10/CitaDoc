@@ -978,7 +978,7 @@ async function cargarDatos() {
 
   try {
     var r = await fetch(ADMIN_VERIFY_URL + '?resource=stats', {
-      headers: { 'x-admin-token': ADMIN_VERIFY_TOKEN }
+      headers: { 'x-admin-token': ADMIN_VERIFY_TOKEN, 'Authorization': 'Bearer ' + SB_ANON }
     });
     var d = await r.json();
     if (!d.ok) throw new Error('stats error');
