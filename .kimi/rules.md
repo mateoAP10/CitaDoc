@@ -16,3 +16,4 @@
 * No cambiar naming global sin aprobación
 * Mantener performance móvil
 * Todos los cambios deben sentirse "premium"
+* No pedir approve

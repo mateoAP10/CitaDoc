@@ -10,7 +10,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_SRV)
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type,x-admin-token',
+  'Access-Control-Allow-Headers': 'content-type,x-admin-token,authorization',
   'Content-Type': 'application/json',
 }
 
