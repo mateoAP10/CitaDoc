@@ -51,8 +51,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .hero h1{font-family:'Fraunces',serif;font-size:clamp(2.4rem,6vw,4.2rem);font-weight:700;color:var(--ink);line-height:1.1;letter-spacing:-.03em;margin-bottom:.6rem}
 .hero h1 em{color:var(--teal);font-style:italic;font-weight:400}
 .hero-sub{font-size:1.05rem;color:var(--muted);max-width:520px;line-height:1.65;margin-bottom:2.5rem}
-.btn-triage{display:inline-flex;align-items:center;gap:.5rem;background:var(--white);border:1.5px solid var(--teal);color:var(--teal);padding:.65rem 1.4rem;border-radius:50px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:1.8rem;transition:all .2s}
-.btn-triage:hover{background:var(--teal);color:#fff}
+.btn-triage{display:inline-flex;align-items:center;gap:.75rem;background:linear-gradient(135deg,#062e2b,#0b7c6e);color:#fff;padding:.9rem 2rem;border-radius:14px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:1.8rem;transition:all .25s cubic-bezier(.16,1,.3,1);border:none;box-shadow:0 4px 24px rgba(11,124,110,.3);letter-spacing:.01em}
+.btn-triage:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(11,124,110,.4)}
+.btn-triage:active{transform:translateY(0)}
+.btn-triage-label{display:flex;flex-direction:column;align-items:flex-start;gap:.05rem}
+.btn-triage-top{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.btn-triage-main{font-size:1rem;font-weight:700;line-height:1.2}
 /* Triage AI modal */
 .triage-overlay{position:fixed;inset:0;z-index:9000;background:rgba(15,26,24,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:none;align-items:flex-end;justify-content:center;padding:0}
 .triage-overlay.open{display:flex}
@@ -760,7 +764,13 @@ footer a{color:var(--teal-mid);text-decoration:none}
   <div class="hero-eyebrow"><div class="live-dot"></div><span id="heroCount">Médicos disponibles ahora</span></div>
   <h1>Encuentra tu médico,<br><em>agenda en minutos</em></h1>
   <p class="hero-sub">Sin llamadas. Sin intermediarios. Elige especialidad, ciudad y reserva tu cita directamente.</p>
-  <button class="btn-triage" id="btnTriage">✨ No sé qué especialidad necesito — ayúdame con IA</button>
+  <button class="btn-triage" id="btnTriage">
+    <span style="font-size:1.4rem;flex-shrink:0">✨</span>
+    <span class="btn-triage-label">
+      <span class="btn-triage-top">Triage AI</span>
+      <span class="btn-triage-main">Ayúdame con CitaDoc AI</span>
+    </span>
+  </button>
   <div class="search-box">
     <div class="search-field">
       <label>Especialidad</label>
