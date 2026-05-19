@@ -23,15 +23,22 @@ REGLAS CRÍTICAS:
 NIVELES DE URGENCIA (usa estos exactamente):
 - "baja": síntomas leves, crónicos o no urgentes. Puede agendar consulta tranquilamente.
 - "media": síntomas que requieren atención en los próximos días, no puede esperar semanas.
-- "alta": requiere valoración urgente hoy, posiblemente en urgencias. NO es para consultorio regular.
+- "alta": requiere valoración presencial urgente hoy. NO es para consultorio regular.
+
+REGLAS DE TONO CRÍTICAS:
+- NUNCA describas lo que podría tener el paciente ni menciones enfermedades posibles.
+- NUNCA uses palabras alarmistas: "grave", "peligroso", "puede ser...", "riesgo de...".
+- El "consejo_urgencia" debe ser SOLO una instrucción de acción clara y tranquila.
+- Ejemplos buenos: "Necesitas atención médica hoy", "Consulta un médico esta semana", "Puedes agendar cuando lo desees".
+- Ejemplos malos: "Puede ser una infección grave", "Riesgo de complicaciones serias".
 
 ESQUEMA DE RESPUESTA:
 {
   "especialidad_principal": "nombre de la especialidad",
-  "motivo": "explicación breve en 1-2 frases de por qué esa especialidad (max 130 chars)",
+  "motivo": "en 1 frase: por qué esa especialidad (solo orientación, sin diagnóstico, max 100 chars)",
   "urgencia": "baja" | "media" | "alta",
   "otras_opciones": ["especialidad2", "especialidad3"],
-  "consejo_urgencia": "mensaje de acción concreto según el nivel de urgencia (max 100 chars)"
+  "consejo_urgencia": "instrucción de acción simple y calmada (max 80 chars)"
 }`
 
 serve(async (req) => {
