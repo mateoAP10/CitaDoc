@@ -1639,6 +1639,46 @@ document.addEventListener('DOMContentLoaded', function() {
     currentFilter.ciudad = l||'';
   });
 
+  // Geolocalización — autocompleta país y ciudad si el paciente acepta
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      var lat = pos.coords.latitude;
+      var lon = pos.coords.longitude;
+      fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&accept-language=es')
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+          var addr    = data.address || {};
+          var pais    = addr.country_code ? addr.country_code.toLowerCase() : '';
+          var ciudad  = addr.city || addr.town || addr.municipality || addr.state || '';
+
+          // Mapeo de country_code a los valores de PAISES
+          var paisMap = {ec:'ecuador',co:'colombia',pe:'peru',ar:'argentina',cl:'chile',ve:'venezuela',bo:'bolivia',py:'paraguay',uy:'uruguay',br:'brasil',gy:'guyana',sr:'suriname'};
+          var paisVal = paisMap[pais] || '';
+
+          if (paisVal && ssPais) {
+            ssPais.setValue(paisVal);
+            currentFilter.pais = paisVal;
+            // Cargar ciudades del país
+            if (CIUDADES[paisVal]) {
+              ssCiudad.setOptions(CIUDADES[paisVal].map(function(c){return {v:c.toLowerCase(),l:c};}));
+            }
+          }
+          if (ciudad && ssCiudad && CIUDADES[paisVal]) {
+            // Buscar la ciudad más parecida en la lista
+            var ciudadLow = ciudad.toLowerCase();
+            var match = CIUDADES[paisVal].find(function(c){ return c.toLowerCase() === ciudadLow; })
+              || CIUDADES[paisVal].find(function(c){ return c.toLowerCase().includes(ciudadLow) || ciudadLow.includes(c.toLowerCase()); });
+            if (match) {
+              ssCiudad.setValue(match.toLowerCase());
+              currentFilter.ciudad = match;
+            }
+          }
+          if (paisVal || ciudad) renderDir();
+        })
+        .catch(function(){});
+    }, function(){}, { timeout: 5000 });
+  }
+
   // Quick tags
   document.querySelectorAll('.quick-tag').forEach(function(tag) {
     tag.addEventListener('click', function() {
