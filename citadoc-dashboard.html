@@ -589,11 +589,11 @@ display:flex;
 .ficha-hero{background:var(--white);border-radius:16px;padding:1.3rem 1.5rem;border:1px solid var(--border);display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;margin-bottom:1rem}
 .ficha-avatar{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--teal),var(--teal-mid));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:#fff;flex-shrink:0}
 .ficha-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:1rem}
-.ficha-stat{padding:.85rem 1rem;border-right:1px solid var(--border);text-align:center}
+.ficha-stat{padding:.75rem 1rem;border-right:1px solid var(--border);display:flex;align-items:center;gap:.55rem}
 .ficha-stat:last-child{border-right:none}
-.ficha-stat-val{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--ink);line-height:1.2}
-.ficha-stat-label{font-size:.62rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem}
-.ficha-stat-icon{display:none}
+.ficha-stat-val{font-family:'Fraunces',serif;font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.2}
+.ficha-stat-label{font-size:.58rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem}
+.ficha-stat-icon{font-size:1rem;flex-shrink:0;width:28px;height:28px;border-radius:8px;background:var(--cream);display:flex;align-items:center;justify-content:center}
 .ficha-antecedentes{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:1rem 1.2rem;margin-bottom:1rem}
 .ficha-ante-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.7rem}
 .ficha-ante-item{display:flex;align-items:flex-start;gap:.45rem;padding:.5rem .65rem;background:var(--cream);border-radius:10px}
@@ -6875,6 +6875,8 @@ async function enviarIndicacionesPaciente() {
     });
 
     mostrarToast('✓ Enviado a ' + paciente.email);
+    cerrarHC();
+    if (_fichaId) abrirFicha(_fichaId);
   } catch(e) {
     logError('enviarIndicaciones', e);
     mostrarToast('Error al enviar — intenta de nuevo', 'error');
@@ -8627,9 +8629,9 @@ function renderFicha(p, consultas, proximaCita) {
 
     var stats = document.createElement('div');
     stats.className = 'ficha-stats';
-    [{val:edad||'—',label:'Edad'},{val:ultimaConsulta,label:'Última visita'},{val:esp,label:'Especialidad'},{val:proximaFecha,label:'Próxima cita'}].forEach(function(s){
+    [{val:edad||'—',label:'Edad',icon:'📅'},{val:ultimaConsulta,label:'Última visita',icon:'🕐'},{val:esp,label:'Especialidad',icon:'🩺'},{val:proximaFecha,label:'Próxima cita',icon:'📆'}].forEach(function(s){
       var el=document.createElement('div'); el.className='ficha-stat';
-      el.innerHTML='<div class="ficha-stat-val">'+s.val+'</div><div class="ficha-stat-label">'+s.label+'</div>';
+      el.innerHTML='<div class="ficha-stat-icon">'+s.icon+'</div><div><div class="ficha-stat-val">'+s.val+'</div><div class="ficha-stat-label">'+s.label+'</div></div>';
       stats.appendChild(el);
     });
     cont.appendChild(stats);
