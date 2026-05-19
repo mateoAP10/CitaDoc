@@ -11,7 +11,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-font-smoothing:antialiased;height:100%}
-body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:100vh}
+body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:100svh}
 
 /* ── Auth gate ── */
 #gate{
@@ -31,26 +31,62 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 }
 #gate .err{font-size:.75rem;color:rgba(248,113,113,.8);min-height:1rem}
 
-/* ── Layout ── */
-#app{display:none}
-.page{max-width:680px;margin:0 auto;padding:0 1.1rem 5rem}
+/* ── App shell ── */
+#app{display:none;min-height:100svh}
 
-/* ── Header ── */
-.hdr{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:1.4rem 0 1rem;
+/* ── Top bar ── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:#0a0f0d;border-bottom:1px solid rgba(255,255,255,.07);
+  padding:.75rem 1.1rem;
+  display:flex;align-items:center;gap:.75rem;
 }
-.hdr-brand{font-size:1rem;font-weight:600;color:rgba(255,255,255,.8)}
-.hdr-brand span{color:#3d9970}
+.topbar-brand{font-size:.9rem;font-weight:600;color:rgba(255,255,255,.7);flex-shrink:0}
+.topbar-brand span{color:#3d9970}
+.stats-strip{
+  display:flex;gap:.5rem;flex:1;overflow-x:auto;scrollbar-width:none;
+}
+.stats-strip::-webkit-scrollbar{display:none}
+.stat-chip{
+  display:flex;align-items:center;gap:.35rem;padding:.28rem .65rem;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;flex-shrink:0;
+}
+.stat-chip .val{font-size:.85rem;font-weight:600;line-height:1}
+.stat-chip .lbl{font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em}
+.stat-chip.teal .val{color:#5dba8a}
 .btn-sync{
-  display:flex;align-items:center;gap:.35rem;
-  padding:.4rem .85rem;background:rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:.35rem;flex-shrink:0;
+  padding:.35rem .75rem;background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.1);border-radius:8px;
-  color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:500;
-  cursor:pointer;transition:all .15s;
+  color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
 }
 .btn-sync:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
 .btn-sync.loading{opacity:.5;pointer-events:none}
+
+/* ── Nav tabs ── */
+.nav-tabs{
+  display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.07);
+  overflow-x:auto;scrollbar-width:none;padding:0 1.1rem;
+}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{
+  padding:.65rem .9rem;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;
+  color:rgba(255,255,255,.35);background:none;border:none;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;
+  transition:color .15s,border-color .15s;display:flex;align-items:center;gap:.4rem;
+}
+.nav-tab:hover{color:rgba(255,255,255,.6)}
+.nav-tab.active{color:#5dba8a;border-bottom-color:#3d9970}
+.nav-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;font-size:.6rem;font-weight:700;
+  background:rgba(251,191,36,.2);color:#fbbf24;
+}
+
+/* ── Panels ── */
+.panel{max-width:680px;margin:0 auto;padding:1.1rem 1.1rem 5rem}
 
 /* ── Section title ── */
 .sec-title{
@@ -59,18 +95,7 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 }
 .sec-sub{font-size:.75rem;color:rgba(255,255,255,.2);margin-bottom:1.1rem}
 
-/* ── Stats row ── */
-.stats-row{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1.5rem;
-}
-.stat{
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
-  border-radius:11px;padding:.7rem .8rem;text-align:center;
-}
-.stat-val{font-size:1.25rem;font-weight:600;line-height:1}
-.stat-lbl{font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.05em;margin-top:.2rem}
-
-/* ── Filter tabs ── */
+/* ── Filter tabs (content) ── */
 .tabs{
   display:flex;gap:.4rem;margin-bottom:1.1rem;overflow-x:auto;
   scrollbar-width:none;padding-bottom:.1rem;
@@ -86,9 +111,7 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
   background:rgba(255,255,255,.1);border-radius:4px;
   padding:.05rem .3rem;font-size:.65rem;color:rgba(255,255,255,.4);
 }
-.tab.active{
-  background:rgba(61,153,112,.15);border-color:rgba(61,153,112,.35);color:#5dba8a;
-}
+.tab.active{background:rgba(61,153,112,.15);border-color:rgba(61,153,112,.35);color:#5dba8a}
 .tab.active .count{background:rgba(61,153,112,.2);color:#5dba8a}
 
 /* ── Content cards ── */
@@ -100,7 +123,6 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 .card:hover{border-color:rgba(255,255,255,.12)}
 .card.published{opacity:.45}
 .card.quality-warn{border-color:rgba(251,191,36,.15)}
-
 .card-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem}
 .card-icon{
   width:30px;height:30px;border-radius:8px;flex-shrink:0;
@@ -111,11 +133,9 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 .card-icon.ad_copy     {background:rgba(245,158,11,.15)}
 .card-icon.cta_caption {background:rgba(16,185,129,.15)}
 .card-icon.showcase    {background:rgba(61,153,112,.15)}
-
 .card-meta{flex:1;min-width:0}
 .card-type{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.5)}
 .card-date{font-size:.65rem;color:rgba(255,255,255,.2)}
-
 .badge{
   font-size:.6rem;font-weight:600;padding:.18rem .45rem;border-radius:5px;
   letter-spacing:.03em;flex-shrink:0;
@@ -123,13 +143,11 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 .badge.pending  {background:rgba(251,191,36,.15);color:#fbbf24}
 .badge.published{background:rgba(61,153,112,.15);color:#5dba8a}
 .badge.warn     {background:rgba(248,113,113,.15);color:#f87171}
-
 .card-body{
   font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.55;
   margin-bottom:.7rem;white-space:pre-wrap;word-break:break-word;
 }
 .card-body-sub{font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.3rem}
-
 .card-footer{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
 .btn-copy{
   padding:.35rem .75rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
@@ -138,7 +156,6 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 }
 .btn-copy:hover{background:rgba(255,255,255,.12)}
 .btn-copy.done{background:rgba(61,153,112,.2);border-color:rgba(61,153,112,.3);color:#5dba8a}
-
 .chan-sel{
   padding:.33rem .55rem;background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.09);border-radius:7px;
@@ -146,7 +163,6 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
   outline:none;cursor:pointer;
 }
 .chan-sel option{background:#0f1a14}
-
 .btn-pub{
   padding:.35rem .8rem;background:#1e5c3a;border:none;border-radius:7px;
   color:#fff;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;
@@ -164,9 +180,7 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 }
 .creative-zone:hover{border-color:rgba(61,153,112,.4);background:rgba(61,153,112,.04)}
 .creative-zone.has-img{border-style:solid;border-color:rgba(61,153,112,.3);background:rgba(61,153,112,.06)}
-.creative-thumb{
-  width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;
-}
+.creative-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0}
 .creative-placeholder{
   width:52px;height:52px;border-radius:8px;background:rgba(255,255,255,.06);
   display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;
@@ -176,7 +190,7 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 .creative-sub{font-size:.65rem;color:rgba(255,255,255,.2);margin-top:.1rem}
 .creative-input{display:none}
 
-/* ── Demos section ── */
+/* ── Demo / Lead rows ── */
 .demo-row{
   display:flex;align-items:center;gap:.65rem;
   padding:.75rem .85rem;background:rgba(255,255,255,.03);
@@ -204,8 +218,7 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 .schedule-input{
   padding:.3rem .5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
   border-radius:7px;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;
-  font-size:.68rem;outline:none;cursor:pointer;
-  color-scheme:dark;
+  font-size:.68rem;outline:none;cursor:pointer;color-scheme:dark;
 }
 .badge.due{background:rgba(239,68,68,.2);color:#f87171;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -214,28 +227,13 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 /* ── Signals ── */
 .signal{
   display:flex;align-items:center;justify-content:space-between;
-  padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.8rem;
+  padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem;
 }
 .signal:last-child{border:none}
 .signal-l{color:rgba(255,255,255,.35)}
 .signal-r{font-weight:600;color:rgba(255,255,255,.8)}
 
-/* ── Empty / loading ── */
-.empty{text-align:center;padding:2rem;font-size:.78rem;color:rgba(255,255,255,.2)}
-.loading{text-align:center;padding:2rem;font-size:.78rem;color:rgba(255,255,255,.2)}
-
-/* ── Divider ── */
-.divider{height:1px;background:rgba(255,255,255,.06);margin:1.5rem 0}
-
 /* ── Verificaciones ── */
-.ver-row{
-  display:flex;align-items:flex-start;gap:.65rem;
-  padding:.75rem .85rem;background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.06);border-radius:11px;margin-bottom:.45rem;
-}
-.ver-row.pending{border-color:rgba(251,191,36,.12)}
-.ver-row.approved{border-color:rgba(61,153,112,.2)}
-.ver-row.rejected{border-color:rgba(239,68,68,.12)}
 .btn-approve-sm{
   padding:.3rem .7rem;background:rgba(61,153,112,.2);border:1px solid rgba(61,153,112,.3);
   border-radius:6px;color:#5dba8a;font-family:'DM Sans',sans-serif;
@@ -246,6 +244,13 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
   border-radius:6px;color:rgba(248,113,113,.7);font-family:'DM Sans',sans-serif;
   font-size:.7rem;cursor:pointer;flex-shrink:0;
 }
+
+/* ── Divider ── */
+.divider{height:1px;background:rgba(255,255,255,.06);margin:1.3rem 0}
+
+/* ── Empty / loading ── */
+.empty{text-align:center;padding:2rem;font-size:.78rem;color:rgba(255,255,255,.2)}
+.loading{text-align:center;padding:2rem;font-size:.78rem;color:rgba(255,255,255,.2)}
 </style>
 </head>
 <body>
@@ -260,104 +265,98 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 
 <!-- App -->
 <div id="app">
-<div class="page">
 
-  <!-- Header -->
-  <div class="hdr">
-    <div class="hdr-brand">Cita<span>Doc</span> Growth</div>
-    <button class="btn-sync" id="syncBtn" onclick="loadData()">
-      <span>↻</span> Sincronizar
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-brand">Cita<span>Doc</span></div>
+    <div class="stats-strip">
+      <div class="stat-chip"><span class="val" id="sD">—</span><span class="lbl">Demos</span></div>
+      <div class="stat-chip"><span class="val" id="sV">—</span><span class="lbl">Vistas</span></div>
+      <div class="stat-chip teal"><span class="val" id="sC">—</span><span class="lbl">WhatsApp</span></div>
+      <div class="stat-chip"><span class="val" id="sS">—</span><span class="lbl">Listos</span></div>
+    </div>
+    <button class="btn-sync" id="syncBtn" onclick="loadData()">↻ Sync</button>
+  </div>
+
+  <!-- Nav tabs -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showAdminTab('contenido')">Contenido</button>
+    <button class="nav-tab" onclick="showAdminTab('demos')">Demos</button>
+    <button class="nav-tab" onclick="showAdminTab('promos')">Promos</button>
+    <button class="nav-tab" onclick="showAdminTab('verificaciones')">
+      Verificaciones <span id="verNavBadge" class="nav-badge" style="display:none">!</span>
     </button>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat"><div class="stat-val" id="sD">—</div><div class="stat-lbl">Demos</div></div>
-    <div class="stat"><div class="stat-val" id="sV">—</div><div class="stat-lbl">Vistas</div></div>
-    <div class="stat"><div class="stat-val" id="sC" style="color:#5dba8a">—</div><div class="stat-lbl">WhatsApp</div></div>
-    <div class="stat"><div class="stat-val" id="sS">—</div><div class="stat-lbl">Listos</div></div>
+  <!-- Panel: Contenido -->
+  <div class="panel" id="panel-contenido">
+    <div class="sec-title" style="margin-bottom:.3rem">Contenido para publicar</div>
+    <div class="sec-sub">Generado automáticamente cada día a las 9:00 UTC.</div>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-filter="all"        onclick="setFilter('all')">Todo <span class="count" id="cnt-all">0</span></div>
+      <div class="tab" data-filter="reel_hook"         onclick="setFilter('reel_hook')">🎬 Reel <span class="count" id="cnt-reel_hook">0</span></div>
+      <div class="tab" data-filter="carousel"          onclick="setFilter('carousel')">📋 Carousel <span class="count" id="cnt-carousel">0</span></div>
+      <div class="tab" data-filter="ad_copy"           onclick="setFilter('ad_copy')">📣 Ad <span class="count" id="cnt-ad_copy">0</span></div>
+      <div class="tab" data-filter="cta_caption"       onclick="setFilter('cta_caption')">✍️ CTA <span class="count" id="cnt-cta_caption">0</span></div>
+    </div>
+    <div id="contentList"><div class="loading">Cargando contenido...</div></div>
+
+    <div class="divider"></div>
+    <div class="sec-title" style="margin-bottom:.75rem">Programados</div>
+    <div id="scheduledList"><div class="empty">Sin posts programados</div></div>
   </div>
 
-  <!-- Content queue -->
-  <div class="sec-title">Contenido para publicar</div>
-  <div class="sec-sub">Generado automáticamente cada día a las 9:00 UTC.</div>
+  <!-- Panel: Demos -->
+  <div class="panel" id="panel-demos" style="display:none">
+    <div class="sec-title" style="margin-bottom:.75rem">Demos recientes</div>
+    <div id="demosList"><div class="loading">Cargando...</div></div>
 
-  <!-- Filter tabs -->
-  <div class="tabs" id="tabs">
-    <div class="tab active" data-filter="all" onclick="setFilter('all')">Todo <span class="count" id="cnt-all">0</span></div>
-    <div class="tab" data-filter="reel_hook"   onclick="setFilter('reel_hook')">🎬 Reel Hook <span class="count" id="cnt-reel_hook">0</span></div>
-    <div class="tab" data-filter="carousel"    onclick="setFilter('carousel')">📋 Carousel <span class="count" id="cnt-carousel">0</span></div>
-    <div class="tab" data-filter="ad_copy"     onclick="setFilter('ad_copy')">📣 Ad Copy <span class="count" id="cnt-ad_copy">0</span></div>
-    <div class="tab" data-filter="cta_caption" onclick="setFilter('cta_caption')">✍️ Caption CTA <span class="count" id="cnt-cta_caption">0</span></div>
-  </div>
+    <div class="divider"></div>
+    <div class="sec-title" style="margin-bottom:.75rem">Señales</div>
+    <div id="signalsList"><div class="loading">Cargando...</div></div>
 
-  <div id="contentList"><div class="loading">Cargando contenido...</div></div>
-
-  <div class="divider"></div>
-
-  <!-- Scheduled -->
-  <div class="sec-title" style="margin-bottom:.75rem">Programados</div>
-  <div id="scheduledList"><div class="empty">Sin posts programados</div></div>
-
-  <div class="divider"></div>
-
-  <!-- Demos -->
-  <div class="sec-title" style="margin-bottom:.75rem">Demos recientes</div>
-  <div id="demosList"><div class="loading">Cargando...</div></div>
-
-  <div class="divider"></div>
-
-  <!-- Leads (Scout Agent) -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
-    <div style="display:flex;align-items:center;gap:.6rem">
-      <div class="sec-title">Scout Agent</div>
+    <div class="divider"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <div class="sec-title" style="margin-bottom:0">Scout Agent</div>
       <span style="font-size:.6rem;padding:.18rem .5rem;border-radius:5px;background:rgba(99,102,241,.12);color:rgba(165,180,252,.6);font-weight:600;letter-spacing:.04em">EN PAUSA</span>
     </div>
-    <span style="font-size:.68rem;color:rgba(255,255,255,.2)">orgánico + pauta primero</span>
+    <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:1.1rem;text-align:center">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">🔍</div>
+      <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Buscando médicos sin website en Instagram</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.2)">Se activa cuando haya señales de mercado suficientes</div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec-title" style="margin-bottom:.75rem">Leads</div>
+    <div id="leadsList"><div class="loading">Cargando...</div></div>
   </div>
-  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:1.1rem;text-align:center">
-    <div style="font-size:1.5rem;margin-bottom:.5rem">🔍</div>
-    <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:.25rem">Buscando médicos sin website en Instagram</div>
-    <div style="font-size:.72rem;color:rgba(255,255,255,.2)">Se activa cuando haya señales de mercado suficientes</div>
+
+  <!-- Panel: Promos -->
+  <div class="panel" id="panel-promos" style="display:none">
+    <div class="sec-title" style="margin-bottom:.75rem">🎟 Códigos Promo</div>
+    <div style="display:flex;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap">
+      <input id="promoCode" placeholder="CÓDIGO" maxlength="20" style="flex:1;min-width:120px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem;text-transform:uppercase">
+      <input id="promoDiscount" type="number" min="1" max="100" placeholder="% desc." style="width:90px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem">
+      <input id="promoMaxUses" type="number" min="1" placeholder="Usos (∞)" style="width:100px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem">
+      <input id="promoExpires" type="date" style="padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem">
+      <button onclick="crearPromo()" style="padding:.55rem 1rem;background:#5dba8a;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer">Crear</button>
+      <button onclick="generarCodigoAleatorio()" style="padding:.55rem .9rem;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer">Generar</button>
+    </div>
+    <div id="promoMsg" style="font-size:.78rem;margin-bottom:.75rem;color:#5dba8a"></div>
+    <div id="promoList"><div class="loading">Cargando...</div></div>
   </div>
 
-  <div class="divider"></div>
-
-  <!-- Signals -->
-  <div class="sec-title" style="margin-bottom:.75rem">Señales</div>
-  <div id="signalsList"><div class="loading">Cargando...</div></div>
-
-  <div class="divider"></div>
-
-  <!-- Promo codes -->
-  <div class="sec-title" style="margin-bottom:.75rem">🎟 Códigos Promo</div>
-  <div style="display:flex;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap">
-    <input id="promoCode" placeholder="CÓDIGO" maxlength="20" style="flex:1;min-width:120px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem;text-transform:uppercase">
-    <input id="promoDiscount" type="number" min="1" max="100" placeholder="% desc." style="width:90px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem">
-    <input id="promoMaxUses" type="number" min="1" placeholder="Usos (∞)" style="width:100px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem">
-    <input id="promoExpires" type="date" style="padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem">
-    <button onclick="crearPromo()" style="padding:.55rem 1rem;background:#5dba8a;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer">Crear</button>
-    <button onclick="generarCodigoAleatorio()" style="padding:.55rem .9rem;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer">Generar código</button>
+  <!-- Panel: Verificaciones -->
+  <div class="panel" id="panel-verificaciones" style="display:none">
+    <div class="sec-title" style="margin-bottom:.75rem">Verificaciones médicas</div>
+    <div class="tabs" id="verTabsRow" style="margin-bottom:.75rem">
+      <div class="tab active" data-vertab="en_revision" onclick="setVerTab('en_revision')">Pendientes <span class="count" id="vcnt-en_revision">0</span></div>
+      <div class="tab" data-vertab="verificado"   onclick="setVerTab('verificado')">Aprobados <span class="count" id="vcnt-verificado">0</span></div>
+      <div class="tab" data-vertab="rechazado"    onclick="setVerTab('rechazado')">Rechazados <span class="count" id="vcnt-rechazado">0</span></div>
+    </div>
+    <div id="verList"><div class="loading">Cargando...</div></div>
   </div>
-  <div id="promoMsg" style="font-size:.78rem;margin-bottom:.75rem;color:#5dba8a"></div>
-  <div id="promoList"><div class="loading">Cargando...</div></div>
 
-  <div class="divider"></div>
-
-  <!-- Verificaciones médicas -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
-    <div class="sec-title" style="margin-bottom:0">Verificaciones médicas</div>
-    <div id="verPendingBadge" style="display:none;font-size:.6rem;padding:.18rem .5rem;border-radius:5px;background:rgba(251,191,36,.15);color:#fbbf24;font-weight:600;letter-spacing:.04em">● PENDIENTES</div>
-  </div>
-  <div class="tabs" id="verTabsRow" style="margin-bottom:.75rem">
-    <div class="tab active" data-vertab="en_revision" onclick="setVerTab('en_revision')">Pendientes <span class="count" id="vcnt-en_revision">0</span></div>
-    <div class="tab" data-vertab="verificado"   onclick="setVerTab('verificado')">Aprobados <span class="count" id="vcnt-verificado">0</span></div>
-    <div class="tab" data-vertab="rechazado"    onclick="setVerTab('rechazado')">Rechazados <span class="count" id="vcnt-rechazado">0</span></div>
-  </div>
-  <div id="verList"><div class="loading">Cargando...</div></div>
-
-</div>
-</div>
+</div><!-- #app -->
 
 <script>
 var ADMIN_KEY          = 'citadoc-growth-2026';
@@ -368,9 +367,22 @@ var ADMIN_VERIFY_URL   = SB_URL + '/functions/v1/admin-verify';
 var ADMIN_VERIFY_TOKEN = '7citadoc7';
 var _allVerifications  = [];
 var _currentVerTab     = 'en_revision';
+var _allContent        = [];
+var _currentFilter     = 'all';
 
-var _allContent = [];
-var _currentFilter = 'all';
+// ── Nav tabs ─────────────────────────────────────────────────────────────────
+
+var _adminTabs = ['contenido','demos','promos','verificaciones'];
+
+function showAdminTab(tab) {
+  _adminTabs.forEach(function(p) {
+    document.getElementById('panel-' + p).style.display = p === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.nav-tab').forEach(function(t, i) {
+    t.classList.toggle('active', _adminTabs[i] === tab);
+  });
+  if (tab === 'promos') cargarPromos();
+}
 
 // ── Creative upload helpers ───────────────────────────────────────────────────
 
@@ -391,42 +403,25 @@ function _buildCreativeZone(item, uid) {
 async function uploadCreative(itemId, uid, input) {
   var file = input.files[0];
   if (!file) return;
-
   var zone = input.previousElementSibling;
   zone.querySelector('.creative-lbl').textContent = 'Subiendo...';
-
   var ext  = file.name.split('.').pop();
   var path = itemId + '.' + ext;
-
   var { data, error } = await sb.storage
     .from('growth-creatives')
     .upload(path, file, { upsert: true, contentType: file.type });
-
-  if (error) {
-    zone.querySelector('.creative-lbl').textContent = 'Error al subir';
-    console.error(error);
-    return;
-  }
-
+  if (error) { zone.querySelector('.creative-lbl').textContent = 'Error al subir'; console.error(error); return; }
   var { data: { publicUrl } } = sb.storage.from('growth-creatives').getPublicUrl(path);
-
-  // Actualizar DB
   await sb.from('growth_content_queue').update({ image_url: publicUrl }).eq('id', itemId);
-
-  // Actualizar UI
   zone.classList.add('has-img');
   zone.querySelector('.creative-lbl').textContent = 'Visual listo';
   zone.querySelector('.creative-sub').textContent = 'Haz clic para reemplazar';
   var old = zone.querySelector('.creative-placeholder, .creative-thumb');
   if (old) {
     var img = document.createElement('img');
-    img.className = 'creative-thumb';
-    img.src = publicUrl;
-    img.alt = 'creative';
+    img.className = 'creative-thumb'; img.src = publicUrl; img.alt = 'creative';
     zone.replaceChild(img, old);
   }
-
-  // Actualizar estado local
   _allContent = _allContent.map(function(i) {
     return i.id === itemId ? Object.assign({}, i, { image_url: publicUrl }) : i;
   });
@@ -439,14 +434,12 @@ var SCORE_COLORS = ['','','','','#f59e0b','#f59e0b','#fb923c','#fb923c','#4ade80
 function renderLeads(leads) {
   var el = document.getElementById('leadsList');
   if (!leads.length) { el.innerHTML = '<div class="empty">Sin leads — el Scout corre diariamente a las 8am UTC</div>'; return; }
-
   el.innerHTML = leads.map(function(lead) {
     var scoreColor = SCORE_COLORS[lead.premium_score] || '#6b7280';
     var haDemo     = !!lead.demo_slug;
     var igUrl      = lead.instagram_handle
       ? 'https://instagram.com/' + lead.instagram_handle
       : (lead.profile_url || '#');
-
     return '<div class="demo-row">' +
       '<div style="font-size:.95rem;font-weight:700;color:' + scoreColor + ';flex-shrink:0;width:24px;text-align:center">' + lead.premium_score + '</div>' +
       '<div class="demo-info">' +
@@ -467,51 +460,21 @@ function renderLeads(leads) {
 }
 
 async function generateLeadDemo(leadId, name, specialty, city) {
-  var btn = event.target;
-  btn.textContent = '...';
-  btn.disabled = true;
-
+  var btn = event.target; btn.textContent = '...'; btn.disabled = true;
   try {
-    var res = await fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/generate-demo', {
+    var res = await fetch(SB_URL + '/functions/v1/generate-demo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_ANON },
       body: JSON.stringify({ doctor_name: name, specialty, city }),
     });
     var data = await res.json();
     if (data.slug) {
-      // Guardar el demo_slug en el lead
       await sb.from('doctor_leads').update({ demo_slug: data.slug, status: 'demo_generated' }).eq('id', leadId);
       btn.textContent = 'Demo ↗';
       btn.onclick = function(){ window.open('https://citadoc.lat/demo/' + data.slug, '_blank'); };
-      btn.style.color = '#4ade80';
-      btn.disabled = false;
+      btn.style.color = '#4ade80'; btn.disabled = false;
     }
-  } catch(e) {
-    btn.textContent = '→ Demo';
-    btn.disabled = false;
-  }
-}
-
-async function runScout() {
-  var btn = document.getElementById('syncBtn');
-  btn.classList.add('loading');
-  try {
-    var res = await fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/scout-leads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_ANON },
-      body: JSON.stringify({}),
-    });
-    var data = await res.json();
-    if (data.error) {
-      alert('Scout error: ' + data.error);
-    } else {
-      alert('Scout completado: ' + data.qualified + ' leads calificados, ' + data.inserted + ' nuevos.');
-      loadData();
-    }
-  } catch(e) {
-    alert('Error conectando con Scout Agent');
-  }
-  btn.classList.remove('loading');
+  } catch(e) { btn.textContent = '→ Demo'; btn.disabled = false; }
 }
 
 // ── Scheduling ───────────────────────────────────────────────────────────────
@@ -519,7 +482,6 @@ async function runScout() {
 function renderScheduled(items) {
   var el = document.getElementById('scheduledList');
   if (!items.length) { el.innerHTML = '<div class="empty">Sin posts programados</div>'; return; }
-
   el.innerHTML = items.map(function(sp) {
     var isDue  = sp.status === 'due';
     var dt     = new Date(sp.scheduled_for);
@@ -527,7 +489,6 @@ function renderScheduled(items) {
                + ' · ' + dt.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
     var c      = (sp.growth_content_queue && sp.growth_content_queue.content_jsonb) || {};
     var text   = (c.caption || c.hook || '').slice(0, 80);
-
     return '<div class="demo-row" style="' + (isDue ? 'border-color:rgba(239,68,68,.2)' : '') + '">' +
       '<div>' +
         '<span class="badge ' + (isDue ? 'due' : 'scheduled-time') + '">' +
@@ -546,18 +507,12 @@ function renderScheduled(items) {
 async function schedulePost(itemId, uid) {
   var dtInput = document.getElementById('dt-' + uid);
   if (!dtInput || !dtInput.value) { alert('Elige fecha y hora'); return; }
-
   var scheduledFor = new Date(dtInput.value).toISOString();
   var chanEl = document.getElementById('ch-' + uid);
   var platform = chanEl ? chanEl.value : 'instagram';
-
   var { error } = await sb.from('scheduled_posts').insert({
-    queue_item_id: itemId,
-    platform,
-    scheduled_for: scheduledFor,
-    status: 'scheduled',
+    queue_item_id: itemId, platform, scheduled_for: scheduledFor, status: 'scheduled',
   });
-
   if (!error) {
     var btn = document.querySelector('#card-' + uid + ' .btn-schedule');
     if (btn) { btn.textContent = '✓ Programado'; btn.style.color = '#5dba8a'; }
@@ -597,27 +552,23 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display  = 'block';
     loadData();
-    cargarPromos();
   }
   document.getElementById('keyInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') checkKey();
   });
 });
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Data ─────────────────────────────────────────────────────────────────────
 
 async function loadData() {
   var btn = document.getElementById('syncBtn');
   btn.classList.add('loading');
-
   try {
-    // Analytics
     var ar = await fetch(SB_URL + '/functions/v1/analytics-reader', {
       headers: { 'Authorization': 'Bearer ' + SB_ANON }
     });
     var analytics = await ar.json();
 
-    // Growth content
     var { data: scheduled } = await sb
       .from('scheduled_posts')
       .select('id, scheduled_for, status, platform, queue_item_id, growth_content_queue(content_jsonb)')
@@ -631,34 +582,22 @@ async function loadData() {
       .order('created_at', { ascending: false })
       .limit(40);
 
-    // Demos with showcase
     var { data: demos } = await sb
       .from('generated_demos')
       .select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel')
       .order('created_at', { ascending: false })
       .limit(15);
 
-    // Merge showcase content into content list
     var showcaseItems = (demos || [])
       .filter(function(d) { return d.showcase_content; })
       .map(function(d) {
         var sc = d.showcase_content || {};
         return {
-          id:           'sc-' + d.slug,
-          type:         'showcase',
-          content_jsonb: {
-            caption:   sc.caption || '',
-            headline:  sc.headline || '',
-            hashtags:  sc.hashtags || '',
-            story_text: sc.story_text || '',
-            _quality_ok: 'true',
-          },
-          status:         d.published_at ? 'published' : 'pending',
-          published_at:   d.published_at,
-          publish_channel: d.publish_channel,
-          created_at:     d.created_at,
-          _doctor:        d.doctor_name,
-          _slug:          d.slug,
+          id: 'sc-' + d.slug, type: 'showcase',
+          content_jsonb: { caption: sc.caption||'', headline: sc.headline||'', hashtags: sc.hashtags||'', story_text: sc.story_text||'', _quality_ok: 'true' },
+          status: d.published_at ? 'published' : 'pending',
+          published_at: d.published_at, publish_channel: d.publish_channel,
+          created_at: d.created_at, _doctor: d.doctor_name, _slug: d.slug,
         };
       });
 
@@ -684,10 +623,7 @@ async function loadData() {
     renderSignals(analytics);
     loadVerifications();
 
-  } catch(e) {
-    console.error(e);
-  }
-
+  } catch(e) { console.error(e); }
   btn.classList.remove('loading');
 }
 
@@ -695,7 +631,7 @@ async function loadData() {
 
 function setFilter(f) {
   _currentFilter = f;
-  document.querySelectorAll('.tab').forEach(function(t) {
+  document.querySelectorAll('[data-filter]').forEach(function(t) {
     t.classList.toggle('active', t.dataset.filter === f);
   });
   renderContent();
@@ -725,54 +661,35 @@ function renderContent() {
   var list = _currentFilter === 'all'
     ? _allContent
     : _allContent.filter(function(i) { return i.type === _currentFilter; });
-
   if (!list.length) {
     el.innerHTML = '<div class="empty">No hay contenido' + (_currentFilter !== 'all' ? ' de este tipo' : '') + ' aún.</div>';
     return;
   }
-
   el.innerHTML = list.map(function(item) {
-    var c       = item.content_jsonb || {};
-    var meta    = TYPE_META[item.type] || { icon: '📄', label: item.type, cls: 'showcase' };
-    var isPubl  = item.status === 'published';
-    var qualOk  = c._quality_ok !== 'false';
-    var uid     = ('id-' + item.id).replace(/[^a-z0-9\-]/gi,'').slice(0,20);
-
-    // Main text to display
+    var c      = item.content_jsonb || {};
+    var meta   = TYPE_META[item.type] || { icon: '📄', label: item.type, cls: 'showcase' };
+    var isPubl = item.status === 'published';
+    var qualOk = c._quality_ok !== 'false';
+    var uid    = ('id-' + item.id).replace(/[^a-z0-9\-]/gi,'').slice(0,20);
     var mainText = c.caption || c.hook || c.primary_text || c.headline || '';
     var subText  = '';
-    if (item.type === 'carousel' && c.slides) {
-      subText = Array.isArray(c.slides) ? c.slides.length + ' slides' : '';
-    } else if (item.type === 'reel_hook' && c.script) {
-      subText = String(c.script).slice(0, 90) + (c.script.length > 90 ? '...' : '');
-    }
-
+    if (item.type === 'carousel' && c.slides) subText = Array.isArray(c.slides) ? c.slides.length + ' slides' : '';
+    else if (item.type === 'reel_hook' && c.script) subText = String(c.script).slice(0,90) + (c.script.length>90?'...':'');
     var doctor = item._doctor ? '<span style="color:rgba(255,255,255,.3);font-weight:400"> · ' + esc(item._doctor) + '</span>' : '';
-
     var badges =
-      '<span class="badge ' + (isPubl ? 'published' : 'pending') + '">' + (isPubl ? '✓ ' + (item.publish_channel || 'publicado') : 'Pendiente') + '</span>' +
+      '<span class="badge ' + (isPubl ? 'published' : 'pending') + '">' + (isPubl ? '✓ ' + (item.publish_channel||'publicado') : 'Pendiente') + '</span>' +
       (!qualOk ? '<span class="badge warn">⚠ revisar</span>' : '');
-
     var footer = isPubl
       ? '<span style="font-size:.68rem;color:rgba(255,255,255,.2)">Publicado ' + fmtDate(item.published_at) + '</span>'
       : '<button class="btn-copy" id="cp-' + uid + '" onclick="copyText(\'' + uid + '\',\'' + esc(mainText.replace(/'/g,"\\'")) + '\')">Copiar</button>' +
-        '<select class="chan-sel" id="ch-' + uid + '">' +
-          '<option value="instagram">Instagram</option>' +
-          '<option value="facebook">Facebook</option>' +
-          '<option value="linkedin">LinkedIn</option>' +
-          '<option value="whatsapp">WhatsApp</option>' +
-        '</select>' +
+        '<select class="chan-sel" id="ch-' + uid + '"><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="linkedin">LinkedIn</option><option value="whatsapp">WhatsApp</option></select>' +
         '<input type="datetime-local" class="schedule-input" id="dt-' + uid + '" title="Programar">' +
         '<button class="btn-schedule" onclick="schedulePost(\'' + item.id + '\',\'' + uid + '\')">Programar</button>' +
-        '<button class="btn-pub" onclick="publish(\'' + item.id + '\',\'' + uid + '\',\'' + (item._slug || '') + '\')">Publicar</button>';
-
-    return '<div class="card ' + (isPubl ? 'published' : '') + (!qualOk ? ' quality-warn' : '') + '" id="card-' + uid + '">' +
+        '<button class="btn-pub" onclick="publish(\'' + item.id + '\',\'' + uid + '\',\'' + (item._slug||'') + '\')">Publicar</button>';
+    return '<div class="card ' + (isPubl?'published':'') + (!qualOk?' quality-warn':'') + '" id="card-' + uid + '">' +
       '<div class="card-header">' +
         '<div class="card-icon ' + meta.cls + '">' + meta.icon + '</div>' +
-        '<div class="card-meta">' +
-          '<div class="card-type">' + meta.label + doctor + '</div>' +
-          '<div class="card-date">' + fmtDate(item.created_at) + '</div>' +
-        '</div>' +
+        '<div class="card-meta"><div class="card-type">' + meta.label + doctor + '</div><div class="card-date">' + fmtDate(item.created_at) + '</div></div>' +
         badges +
       '</div>' +
       _buildCreativeZone(item, uid) +
@@ -787,14 +704,10 @@ function renderDemos(demos) {
   var el = document.getElementById('demosList');
   if (!demos.length) { el.innerHTML = '<div class="empty">No hay demos aún</div>'; return; }
   el.innerHTML = demos.map(function(d) {
-    var hasV = d.views > 0;
-    var hasS = !!d.showcase_content;
+    var hasV = d.views > 0; var hasS = !!d.showcase_content;
     return '<div class="demo-row">' +
-      '<div class="demo-dot ' + (hasV ? 'v' : hasS ? 's' : '') + '"></div>' +
-      '<div class="demo-info">' +
-        '<div class="demo-name">' + esc(d.doctor_name) + '</div>' +
-        '<div class="demo-spec">' + esc(d.specialty) + ' · ' + (d.dna || '') + '</div>' +
-      '</div>' +
+      '<div class="demo-dot ' + (hasV?'v':hasS?'s':'') + '"></div>' +
+      '<div class="demo-info"><div class="demo-name">' + esc(d.doctor_name) + '</div><div class="demo-spec">' + esc(d.specialty) + ' · ' + (d.dna||'') + '</div></div>' +
       '<div class="demo-nums"><span>👁 ' + (d.views||0) + '</span><span>💬 ' + (d.whatsapp_clicks||0) + '</span></div>' +
       '<button class="btn-sm" onclick="window.open(\'https://citadoc.lat/demo/' + d.slug + '\',\'_blank\')">Ver</button>' +
     '</div>';
@@ -810,7 +723,6 @@ function renderSignals(a) {
     .map(function(e){ return e[0].split('/')[0].trim(); }).join(' · ') || '—';
   var bd = tp.dna_breakdown || {};
   var dnaTop = Object.entries(bd).sort(function(x,y){ return y[1].demos-x[1].demos; })[0]?.[0] || '—';
-
   el.innerHTML = [
     ['Top specialties', specTop],
     ['DNA dominante', dnaTop],
@@ -840,17 +752,12 @@ async function publish(itemId, uid, demoSlug) {
   var channel = chanEl ? chanEl.value : 'instagram';
   var btn     = document.querySelector('#card-' + uid + ' .btn-pub');
   if (btn) { btn.textContent = '...'; btn.disabled = true; }
-
   var now = new Date().toISOString();
-
-  // Update growth_content_queue or generated_demos
   if (demoSlug) {
     await sb.from('generated_demos').update({ published_at: now, publish_channel: channel }).eq('slug', demoSlug);
   } else {
     await sb.from('growth_content_queue').update({ status: 'published', published_at: now, publish_channel: channel }).eq('id', itemId);
   }
-
-  // Update UI
   var card = document.getElementById('card-' + uid);
   if (card) {
     card.classList.add('published');
@@ -859,8 +766,6 @@ async function publish(itemId, uid, demoSlug) {
     var badge = card.querySelector('.badge.pending');
     if (badge) { badge.className = 'badge published'; badge.textContent = '✓ ' + channel; }
   }
-
-  // Update local state
   _allContent = _allContent.map(function(i) {
     if (i.id === itemId || (demoSlug && i._slug === demoSlug)) {
       return Object.assign({}, i, { status: 'published', published_at: now, publish_channel: channel });
@@ -873,18 +778,11 @@ async function publish(itemId, uid, demoSlug) {
 // ── Utils ─────────────────────────────────────────────────────────────────────
 
 function setText(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
-
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function fmtDate(iso) {
-  if (!iso) return '';
-  var d = new Date(iso);
-  return d.toLocaleDateString('es', { day:'numeric', month:'short' });
-}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(iso) { if (!iso) return ''; var d = new Date(iso); return d.toLocaleDateString('es', { day:'numeric', month:'short' }); }
 
 // ── PROMO CODES ──────────────────────────────────────────────────────────────
+
 function generarCodigoAleatorio() {
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   var code = '';
@@ -893,11 +791,11 @@ function generarCodigoAleatorio() {
 }
 
 async function crearPromo() {
-  var code     = (document.getElementById('promoCode').value || '').trim().toUpperCase();
-  var pct      = parseInt(document.getElementById('promoDiscount').value);
-  var maxUses  = parseInt(document.getElementById('promoMaxUses').value) || null;
-  var expires  = document.getElementById('promoExpires').value || null;
-  var msg      = document.getElementById('promoMsg');
+  var code    = (document.getElementById('promoCode').value || '').trim().toUpperCase();
+  var pct     = parseInt(document.getElementById('promoDiscount').value);
+  var maxUses = parseInt(document.getElementById('promoMaxUses').value) || null;
+  var expires = document.getElementById('promoExpires').value || null;
+  var msg     = document.getElementById('promoMsg');
   if (!code || !pct) { msg.textContent = 'Código y % son obligatorios.'; msg.style.color='#f87171'; return; }
   var res = await sb.from('promo_codes').insert({ code, discount_pct: pct, max_uses: maxUses, expires_at: expires });
   if (res.error) { msg.textContent = res.error.message; msg.style.color='#f87171'; return; }
@@ -912,6 +810,24 @@ async function crearPromo() {
 async function desactivarPromo(id) {
   await sb.from('promo_codes').update({ active: false }).eq('id', id);
   cargarPromos();
+}
+
+async function cargarPromos() {
+  var el = document.getElementById('promoList');
+  var { data, error } = await sb.from('promo_codes').select('*').order('created_at', { ascending: false }).limit(50);
+  if (error || !data || !data.length) { el.innerHTML = '<div class="empty">Sin códigos aún</div>'; return; }
+  el.innerHTML = data.map(function(r) {
+    var estado = !r.active ? 'Inactivo' : r.expires_at && new Date(r.expires_at) < new Date() ? 'Expirado' : (r.max_uses !== null && r.uses >= r.max_uses ? 'Agotado' : 'Activo');
+    var color  = estado === 'Activo' ? '#5dba8a' : '#9ca3af';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:.4rem;font-size:.8rem;gap:.5rem;flex-wrap:wrap">' +
+      '<span style="font-weight:700;letter-spacing:.04em;font-family:monospace">' + esc(r.code) + '</span>' +
+      '<span style="color:#c4b5fd">' + r.discount_pct + '% OFF</span>' +
+      '<span style="color:#9ca3af">' + r.uses + (r.max_uses ? '/' + r.max_uses : '') + ' usos</span>' +
+      '<span style="color:#9ca3af">' + (r.expires_at ? fmtDate(r.expires_at) : '∞') + '</span>' +
+      '<span style="color:' + color + '">' + estado + '</span>' +
+      (r.active ? '<button onclick="desactivarPromo(\'' + r.id + '\')" style="padding:.2rem .5rem;background:rgba(239,68,68,.15);color:#f87171;border:none;border-radius:5px;font-size:.72rem;cursor:pointer">Desactivar</button>' : '') +
+    '</div>';
+  }).join('');
 }
 
 // ── VERIFICACIONES ────────────────────────────────────────────────────────────
@@ -945,7 +861,7 @@ function renderVerTabs() {
     var el = document.getElementById('vcnt-' + k);
     if (el) el.textContent = counts[k];
   });
-  var badge = document.getElementById('verPendingBadge');
+  var badge = document.getElementById('verNavBadge');
   if (badge) badge.style.display = counts.en_revision > 0 ? '' : 'none';
 }
 
@@ -997,24 +913,6 @@ async function verAction(medicoId, action, btn) {
     btn.disabled = false;
     btn.textContent = action === 'aprobar' ? '✓ Aprobar' : '✕';
   }
-}
-
-async function cargarPromos() {
-  var el = document.getElementById('promoList');
-  var { data, error } = await sb.from('promo_codes').select('*').order('created_at', { ascending: false }).limit(50);
-  if (error || !data || !data.length) { el.innerHTML = '<div class="empty">Sin códigos aún</div>'; return; }
-  el.innerHTML = data.map(function(r) {
-    var estado = !r.active ? 'Inactivo' : r.expires_at && new Date(r.expires_at) < new Date() ? 'Expirado' : (r.max_uses !== null && r.uses >= r.max_uses ? 'Agotado' : 'Activo');
-    var color  = estado === 'Activo' ? '#5dba8a' : '#9ca3af';
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:.4rem;font-size:.8rem;gap:.5rem;flex-wrap:wrap">' +
-      '<span style="font-weight:700;letter-spacing:.04em;font-family:monospace">' + esc(r.code) + '</span>' +
-      '<span style="color:#c4b5fd">' + r.discount_pct + '% OFF</span>' +
-      '<span style="color:#9ca3af">' + r.uses + (r.max_uses ? '/' + r.max_uses : '') + ' usos</span>' +
-      '<span style="color:#9ca3af">' + (r.expires_at ? fmtDate(r.expires_at) : '∞') + '</span>' +
-      '<span style="color:' + color + '">' + estado + '</span>' +
-      (r.active ? '<button onclick="desactivarPromo(\'' + r.id + '\')" style="padding:.2rem .5rem;background:rgba(239,68,68,.15);color:#f87171;border:none;border-radius:5px;font-size:.72rem;cursor:pointer">Desactivar</button>' : '') +
-    '</div>';
-  }).join('');
 }
 </script>
 </body>
