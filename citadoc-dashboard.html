@@ -1488,6 +1488,8 @@ display:flex;
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">TELÉFONO</label><input id="inf-telefono" placeholder="+593 99 000 0000" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">IDIOMAS</label><input id="inf-idiomas" placeholder="Español, Inglés" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">PRECIO CONSULTA (USD)</label><input id="inf-precio" type="number" min="0" placeholder="50" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">CÉDULA DE IDENTIDAD</label><input id="inf-cedula" placeholder="Ej: 1712345678" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
+          <div><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">REGISTRO MÉDICO</label><input id="inf-senescyt" placeholder="Ej: 12345678" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">SLOGAN / TAGLINE</label><input id="inf-slogan" placeholder="Tu salud, mi compromiso." style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></div>
           <div style="grid-column:1/-1"><label style="font-size:.72rem;font-weight:700;color:#374151;display:block;margin-bottom:.3rem">BIO CORTA</label><textarea id="inf-bio" placeholder="Especialista en traumatología con enfoque en cirugía mínimamente invasiva..." rows="3" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;resize:vertical" onfocus="this.style.borderColor='#0b7c6e'" onblur="this.style.borderColor='#e5e7eb'"></textarea></div>
         </div>
@@ -2517,7 +2519,10 @@ function showPanel(id, el) {
   if (id === 'pacientes' && !esPro()) { mostrarProModal('pacientes'); return; }
 
   AppState.currentPanel = id;
-  if (id !== 'ficha') sessionStorage.setItem('cd_panel', id);
+  if (id !== 'ficha') {
+    sessionStorage.setItem('cd_panel', id);
+    sessionStorage.removeItem('cd_ficha');
+  }
   closeSidebarOnMobile();
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
@@ -3560,6 +3565,7 @@ async function aplicarMedico(m) {
   setVal('inf-precio',       m.precio||'');
   setVal('inf-anos',         m.anos_experiencia||'');
   setVal('inf-direccion',    m.direccion||'');
+  setVal('inf-cedula',       m.cedula||'');
   setVal('inf-senescyt',     m.senescyt||'');
   setVal('inf-telefono',     m.telefono||m.whatsapp||'');
   const bio=_el('bioTextarea'); if(bio)bio.value=m.bio||'';
@@ -3650,8 +3656,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Restaurar panel activo al recargar
     var _savedPanel = sessionStorage.getItem('cd_panel');
+    var _savedFicha = sessionStorage.getItem('cd_ficha');
     var _urlPanel   = new URLSearchParams(location.search).get('panel');
-    if (!_urlPanel && _savedPanel && _savedPanel !== 'inicio') {
+    if (!_urlPanel && _savedFicha) {
+      setTimeout(function(){ abrirFicha(_savedFicha); }, 250);
+    } else if (!_urlPanel && _savedPanel && _savedPanel !== 'inicio') {
       var _navEl = document.querySelector('[data-panel="'+_savedPanel+'"]') ||
                    document.querySelector('[onclick*="showPanel(\''+_savedPanel+'\'"]');
       setTimeout(function(){ showPanel(_savedPanel, _navEl); }, 200);
@@ -6734,7 +6743,7 @@ async function generarYSubirPDF(pacNombre, docs, indicText) {
     var medNombre = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico';
     var medEsp    = M ? ((M.especialidades||[])[0]||'') : '';
     var medReg    = M && M.senescyt ? M.senescyt : '';
-    var medCedula = '';
+    var medCedula = M && M.cedula   ? M.cedula   : '';
     var fecha     = new Date().toLocaleString('es', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
     var docId     = 'CD-' + Date.now();
 
@@ -7286,7 +7295,7 @@ function generarPDF() {
   var medNombre  = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico CitaDoc';
   var medEsp     = M ? ((M.especialidades||[])[0]||'') : '';
   var medReg     = M && M.senescyt ? M.senescyt : '';
-  var medCedula  = '';
+  var medCedula  = M && M.cedula   ? M.cedula   : '';
   var docId      = 'CD-' + Date.now();
   var fecha      = new Date().toLocaleString('es-EC', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
@@ -8202,6 +8211,8 @@ function abrirConsultaFicha() { if(_fichaId) abrirModalConsulta(_fichaId); }
 
 function abrirFicha(pacienteId) {
   _fichaId = pacienteId;
+  sessionStorage.setItem('cd_ficha', pacienteId);
+  sessionStorage.setItem('cd_panel', 'ficha');
   showPanel('ficha', null);
   var cont = document.getElementById('fichaContent');
   if (cont) uiLoading('fichaContent', 'Cargando ficha del paciente...');
@@ -9665,7 +9676,7 @@ function mcVerDoc(tipo) {
   var nomMed    = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
   var esp       = (med.especialidades||[])[0]||'Médico';
   var sen       = med.senescyt ? 'Reg. Médico: '+med.senescyt : '';
-  var medCedula = '';
+  var medCedula = med.cedula ? med.cedula : '';
 
   var tituloDoc = tipo==='receta' ? '💊 Receta Médica' : tipo==='imagenes' ? '🩻 Orden de Imágenes' : '🔬 Orden de Laboratorio';
   var contenido = tipo==='receta' ? (con.plan||'').split(' | ').filter(Boolean) :
@@ -10638,7 +10649,9 @@ async function guardarPerfil(btnArg) {
     idiomas: (document.getElementById('inf-idiomas')||{}).value||null,
     precio: parseFloat((document.getElementById('inf-precio')||{}).value||'') || null,
     slogan: (document.getElementById('inf-slogan')||{}).value||null,
-    bio: (document.getElementById('inf-bio')||{}).value||null
+    bio: (document.getElementById('inf-bio')||{}).value||null,
+    cedula: (document.getElementById('inf-cedula')||{}).value||null,
+    senescyt: (document.getElementById('inf-senescyt')||{}).value||null
   };
   if (esp) upd.especialidades = [esp];
   var res = await _sb.from('medicos').update(upd).eq('id', M.id);
