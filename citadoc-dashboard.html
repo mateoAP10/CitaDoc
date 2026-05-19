@@ -2435,6 +2435,12 @@ display:flex;
             <button class="btn-add-item" onclick="addDocItem('imagenes')">+ Agregar estudio</button>
           </div>
         </div>
+
+        <!-- Firmar y enviar — siempre visible al pie de documentos -->
+        <div style="margin-top:1.1rem;display:flex;gap:.6rem;flex-wrap:wrap">
+          <button onclick="generarPDF()" style="flex:1;min-width:120px;padding:.65rem .9rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:#374151;cursor:pointer">🖨️ Vista previa PDF</button>
+          <button onclick="enviarIndicacionesPaciente()" style="flex:2;min-width:180px;padding:.65rem 1rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em">✍️ Firmar y enviar al paciente</button>
+        </div>
       </div>
       <!-- Historial previo -->
       <div id="historialPrevio" style="margin-top:1.4rem;display:none">
@@ -6722,7 +6728,8 @@ async function generarYSubirPDF(pacNombre, docs, indicText) {
   try {
     var medNombre = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico';
     var medEsp    = M ? ((M.especialidades||[])[0]||'') : '';
-    var medReg    = M && M.senescyt ? 'Reg. Médico: '+M.senescyt : '';
+    var medReg    = M && M.senescyt ? M.senescyt : '';
+    var medCedula = M && M.cedula   ? M.cedula   : '';
     var fecha     = new Date().toLocaleString('es', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
     var docId     = 'CD-' + Date.now();
 
@@ -6768,9 +6775,14 @@ async function generarYSubirPDF(pacNombre, docs, indicText) {
       +'<div style="font-size:10px;color:#a0b0ae;text-align:right;margin-bottom:14px;font-family:monospace">ID: '+docId+'</div>'
       +'<style>.ps{margin-bottom:16px;page-break-inside:avoid}.pst{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0b7c6e;border-bottom:1px solid #e0f5f2;padding-bottom:4px;margin-bottom:10px}.pi{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}.pin{font-weight:700;color:#0b7c6e;flex-shrink:0;min-width:16px}.pie{font-size:11px;color:#6b7c79;display:block;margin-top:2px}.pn{font-size:11px;color:#6b7c79;margin-top:6px;padding:6px 10px;background:#f0fff4;border-radius:5px}.pit{font-size:12px;color:#334155;line-height:1.6}.pu{background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:4px}.ps2{background:#fffbeb;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-left:4px}</style>'
       + recetaHTML + labsHTML + imgHTML + indicHTML
-      +'<div style="border-top:1px solid #e5e7eb;padding-top:12px;margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end">'
-        +'<div style="font-size:10px;color:#a0b0ae;line-height:1.5">Generado por CitaDoc — citadoc.lat<br>Documento de uso clínico.</div>'
-        +'<div style="text-align:center"><div style="width:160px;border-top:1.5px solid #0f1a18;padding-top:5px;font-size:10px;color:#374151;display:inline-block">'+medNombre+'</div></div>'
+      +'<div style="border-top:1px solid #e5e7eb;padding-top:14px;margin-top:18px;display:flex;justify-content:space-between;align-items:flex-end">'
+        +'<div style="font-size:10px;color:#a0b0ae;line-height:1.6">Generado por CitaDoc — citadoc.lat<br>Documento de uso clínico.</div>'
+        +'<div style="text-align:center">'
+          +'<div style="width:200px;border-top:1.5px solid #0f1a18;padding-top:6px;font-size:11px;font-weight:700;color:#1a1a1a;display:inline-block;margin-bottom:3px">'+medNombre+'</div>'
+          +(medEsp?'<div style="font-size:10px;color:#6b7280">'+medEsp+'</div>':'')
+          +(medCedula?'<div style="font-size:10px;color:#6b7280">C.I. '+medCedula+'</div>':'')
+          +(medReg?'<div style="font-size:10px;color:#6b7280">Reg. Médico: '+medReg+'</div>':'')
+        +'</div>'
       +'</div>'
     +'</div>';
 
@@ -7268,7 +7280,8 @@ function generarPDF() {
   var docs       = leerDocumentos();
   var medNombre  = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico CitaDoc';
   var medEsp     = M ? ((M.especialidades||[])[0]||'') : '';
-  var medReg     = M && M.senescyt ? 'Reg. Médico:'+M.senescyt : '';
+  var medReg     = M && M.senescyt ? M.senescyt : '';
+  var medCedula  = M && M.cedula   ? M.cedula   : '';
   var docId      = 'CD-' + Date.now();
   var fecha      = new Date().toLocaleString('es-EC', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
@@ -7389,7 +7402,9 @@ function generarPDF() {
       + '</div>'
       + '<div class="firma-block">'
       + '<div class="firma-line">'+medNombre+'</div>'
-      + '<div class="firma-validado">Documento validado por el médico tratante</div>'
+      + (medEsp ? '<div class="firma-validado">'+medEsp+'</div>' : '')
+      + (medCedula ? '<div class="firma-validado">C.I. '+medCedula+'</div>' : '')
+      + (medReg ? '<div class="firma-validado">Reg. Médico: '+medReg+'</div>' : '')
     + '</div>'
     + '</div>'
     + '</div>'
@@ -9642,9 +9657,10 @@ function mcVerDoc(tipo) {
   var pac = _fichaPaciente || {};
   var med = M || {};
   var fecha = new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  var nomMed = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
-  var esp = (med.especialidades||[])[0]||'Médico';
-  var sen = med.senescyt ? 'Reg. Médico:'+med.senescyt : '';
+  var nomMed    = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
+  var esp       = (med.especialidades||[])[0]||'Médico';
+  var sen       = med.senescyt ? 'Reg. Médico: '+med.senescyt : '';
+  var medCedula = med.cedula   ? 'C.I. '+med.cedula : '';
 
   var tituloDoc = tipo==='receta' ? '💊 Receta Médica' : tipo==='imagenes' ? '🩻 Orden de Imágenes' : '🔬 Orden de Laboratorio';
   var contenido = tipo==='receta' ? (con.plan||'').split(' | ').filter(Boolean) :
@@ -9730,8 +9746,12 @@ function mcEnviarDocs(conOverride, pacOverride) {
       +listaHTML(labs,'🔬 Laboratorios','#f0fdf4')
       +(indic?'<div style="margin:16px 0;padding:14px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0"><div style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📝 Indicaciones generales</div><div style="font-size:14px;color:#374151;line-height:1.6">'+indic+'</div></div>':'')
       +'<div style="margin-top:28px;padding-top:20px;border-top:1px dashed #e5e7eb;text-align:center">'
-        +'<div style="font-size:14px;font-weight:700;color:#1a1a1a">'+nomMed+'</div>'
-        +'<div style="font-size:12px;color:#6b7280">'+esp+(sen?' · '+sen:'')+'</div>'
+        +'<div style="width:200px;border-top:1.5px solid #1a1a1a;padding-top:8px;margin:0 auto 4px">'
+          +'<div style="font-size:14px;font-weight:700;color:#1a1a1a">'+nomMed+'</div>'
+          +(esp?'<div style="font-size:11px;color:#6b7280">'+esp+'</div>':'')
+          +(medCedula?'<div style="font-size:11px;color:#6b7280">'+medCedula+'</div>':'')
+          +(sen?'<div style="font-size:11px;color:#6b7280">'+sen+'</div>':'')
+        +'</div>'
       +'</div>'
     +'</div>'
     +'<div style="background:#f8fafc;padding:14px 32px;border-radius:0 0 16px 16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center">CitaDoc Health Network · citadoc.lat</div>'
