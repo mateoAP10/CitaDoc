@@ -954,9 +954,16 @@ footer a{color:var(--teal-mid);text-decoration:none}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
+<!-- Modules: load order matters -->
+<script src="js/observability.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/feature-flags.js"></script>
+<script src="js/region.js"></script>
 <script src="js/shared.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/booking.js"></script>
+<!-- Orchestration: wires modules together, no business logic -->
+<script src="js/bootstrap/init.js"></script>
 <script>
 // ── FALLBACK — por si shared.js no carga (ej: push pendiente en server) ──
 if (typeof el === 'undefined') {
