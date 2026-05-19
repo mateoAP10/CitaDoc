@@ -6734,7 +6734,7 @@ async function generarYSubirPDF(pacNombre, docs, indicText) {
     var medNombre = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico';
     var medEsp    = M ? ((M.especialidades||[])[0]||'') : '';
     var medReg    = M && M.senescyt ? M.senescyt : '';
-    var medCedula = M && M.cedula   ? M.cedula   : '';
+    var medCedula = '';
     var fecha     = new Date().toLocaleString('es', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
     var docId     = 'CD-' + Date.now();
 
@@ -7286,7 +7286,7 @@ function generarPDF() {
   var medNombre  = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Médico CitaDoc';
   var medEsp     = M ? ((M.especialidades||[])[0]||'') : '';
   var medReg     = M && M.senescyt ? M.senescyt : '';
-  var medCedula  = M && M.cedula   ? M.cedula   : '';
+  var medCedula  = '';
   var docId      = 'CD-' + Date.now();
   var fecha      = new Date().toLocaleString('es-EC', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
@@ -9648,7 +9648,7 @@ async function guardarConsulta(pacienteId) {
         +(consData.plan?'<button onclick="mcVerDoc(\'receta\')" style="flex:1;padding:.48rem .6rem;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:9px;font-size:.78rem;font-weight:700;color:#1e40af;cursor:pointer;font-family:DM Sans,sans-serif">💊 Receta</button>':'')
         +(consData.imagenes?'<button onclick="mcVerDoc(\'imagenes\')" style="flex:1;padding:.48rem .6rem;background:#fefce8;border:1.5px solid #fde68a;border-radius:9px;font-size:.78rem;font-weight:700;color:#92400e;cursor:pointer;font-family:DM Sans,sans-serif">🩻 Imágenes</button>':'')
         +(consData.estudios?'<button onclick="mcVerDoc(\'laboratorio\')" style="flex:1;padding:.48rem .6rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:9px;font-size:.78rem;font-weight:700;color:#065f46;cursor:pointer;font-family:DM Sans,sans-serif">🔬 Laboratorios</button>':'')
-        +(pacInfo.email?'<button onclick="mcEnviarDocs()" style="flex:1;padding:.48rem .6rem;background:linear-gradient(135deg,#085f54,#0b7c6e);border:none;border-radius:9px;font-size:.78rem;font-weight:700;color:#fff;cursor:pointer;font-family:DM Sans,sans-serif">✉️ Enviar</button>':'')
+        +(pacInfo.email?'<button onclick="mcEnviarDocs()" style="flex:1;padding:.48rem .6rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:9px;font-size:.78rem;font-weight:700;color:#fff;cursor:pointer;font-family:DM Sans,sans-serif">✍️ Firmar y enviar</button>':'')
       +'</div>'
       +'<button onclick="cerrarModalConsulta();abrirFicha('+JSON.stringify(pacienteId)+')" style="width:100%;padding:.42rem;background:none;border:1px solid #e5e7eb;border-radius:9px;font-size:.76rem;color:#6b7280;cursor:pointer;font-family:DM Sans,sans-serif">Cerrar y ver ficha →</button>'
     +'</div>';
@@ -9665,7 +9665,7 @@ function mcVerDoc(tipo) {
   var nomMed    = (med.titulo||'Dr.')+' '+(med.nombre||'')+' '+(med.apellido||'');
   var esp       = (med.especialidades||[])[0]||'Médico';
   var sen       = med.senescyt ? 'Reg. Médico: '+med.senescyt : '';
-  var medCedula = med.cedula   ? 'C.I. '+med.cedula : '';
+  var medCedula = '';
 
   var tituloDoc = tipo==='receta' ? '💊 Receta Médica' : tipo==='imagenes' ? '🩻 Orden de Imágenes' : '🔬 Orden de Laboratorio';
   var contenido = tipo==='receta' ? (con.plan||'').split(' | ').filter(Boolean) :
@@ -9701,7 +9701,7 @@ function mcVerDoc(tipo) {
         +'<div class="doc-items-title">'+tituloDoc+'</div>'
         +itemsHtml
         +(con.indicaciones&&tipo==='receta'?'<div style="margin-top:1.2rem;padding:1rem;background:#f0fdf4;border-radius:10px;border-left:3px solid #0b7c6e"><div style="font-size:.65rem;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem">Indicaciones generales</div><div style="font-size:.85rem;color:#1a1a1a;line-height:1.6">'+con.indicaciones+'</div></div>':'')
-        +'<div class="doc-firma"><div style="margin-bottom:2rem"></div><div class="doc-firma-line"></div><div class="doc-firma-name">'+nomMed+'</div><div class="doc-firma-sub">'+esp+(sen?' · '+sen:'')+'</div></div>'
+        +'<div class="doc-firma"><div style="margin-bottom:2rem"></div><div class="doc-firma-line"></div><div class="doc-firma-name">'+nomMed+'</div><div class="doc-firma-sub">'+esp+'</div>'+(sen?'<div class="doc-firma-sub">'+sen+'</div>':'')+'</div>'
       +'</div>'
       +'<div class="doc-footer"><span>CitaDoc Health Network · citadoc.lat</span><span>'+fecha+'</span></div>'
     +'</div>'
@@ -9787,7 +9787,7 @@ function mcDocsConsulta(con, pac) {
       +(con.plan?'<button onclick="mcVerDoc(\'receta\')" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:9px;font-size:.8rem;font-weight:600;color:#1e40af;cursor:pointer;font-family:DM Sans,sans-serif">💊 Ver receta médica</button>':'')
       +(con.imagenes?'<button onclick="mcVerDoc(\'imagenes\')" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:#fefce8;border:1.5px solid #fde68a;border-radius:9px;font-size:.8rem;font-weight:600;color:#92400e;cursor:pointer;font-family:DM Sans,sans-serif">🩻 Ver orden imágenes</button>':'')
       +(con.estudios?'<button onclick="mcVerDoc(\'laboratorio\')" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:9px;font-size:.8rem;font-weight:600;color:#065f46;cursor:pointer;font-family:DM Sans,sans-serif">🔬 Ver orden laboratorio</button>':'')
-      +((pac&&pac.email)&&(con.plan||con.imagenes||con.estudios)?'<button onclick="mcEnviarDocs(null,'+JSON.stringify(pac).replace(/"/g,"'")+');this.parentNode.parentNode.parentNode.remove()" style="display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem .8rem;background:linear-gradient(135deg,#085f54,#0b7c6e);border:none;border-radius:9px;font-size:.8rem;font-weight:700;color:#fff;cursor:pointer;font-family:DM Sans,sans-serif;margin-top:.2rem">✉️ Enviar al paciente</button>':'')
+      +((pac&&pac.email)&&(con.plan||con.imagenes||con.estudios)?'<button onclick="mcEnviarDocs(null,'+JSON.stringify(pac).replace(/"/g,"'")+');this.parentNode.parentNode.parentNode.remove()" style="display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem .8rem;background:linear-gradient(135deg,#085f54,#0b7c6e);border:none;border-radius:9px;font-size:.8rem;font-weight:700;color:#fff;cursor:pointer;font-family:DM Sans,sans-serif;margin-top:.2rem">✍️ Firmar y enviar</button>':'')
     +'</div>'
     +'<button onclick="this.parentNode.remove()" style="position:absolute;top:.5rem;right:.6rem;background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.85rem">✕</button>';
   document.body.appendChild(panel);
