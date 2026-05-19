@@ -226,6 +226,26 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
 
 /* ── Divider ── */
 .divider{height:1px;background:rgba(255,255,255,.06);margin:1.5rem 0}
+
+/* ── Verificaciones ── */
+.ver-row{
+  display:flex;align-items:flex-start;gap:.65rem;
+  padding:.75rem .85rem;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);border-radius:11px;margin-bottom:.45rem;
+}
+.ver-row.pending{border-color:rgba(251,191,36,.12)}
+.ver-row.approved{border-color:rgba(61,153,112,.2)}
+.ver-row.rejected{border-color:rgba(239,68,68,.12)}
+.btn-approve-sm{
+  padding:.3rem .7rem;background:rgba(61,153,112,.2);border:1px solid rgba(61,153,112,.3);
+  border-radius:6px;color:#5dba8a;font-family:'DM Sans',sans-serif;
+  font-size:.7rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+.btn-reject-sm{
+  padding:.3rem .55rem;background:transparent;border:1px solid rgba(239,68,68,.2);
+  border-radius:6px;color:rgba(248,113,113,.7);font-family:'DM Sans',sans-serif;
+  font-size:.7rem;cursor:pointer;flex-shrink:0;
+}
 </style>
 </head>
 <body>
@@ -322,14 +342,32 @@ body{background:#0a0f0d;color:#fff;font-family:'DM Sans',sans-serif;min-height:1
   <div id="promoMsg" style="font-size:.78rem;margin-bottom:.75rem;color:#5dba8a"></div>
   <div id="promoList"><div class="loading">Cargando...</div></div>
 
+  <div class="divider"></div>
+
+  <!-- Verificaciones médicas -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+    <div class="sec-title" style="margin-bottom:0">Verificaciones médicas</div>
+    <div id="verPendingBadge" style="display:none;font-size:.6rem;padding:.18rem .5rem;border-radius:5px;background:rgba(251,191,36,.15);color:#fbbf24;font-weight:600;letter-spacing:.04em">● PENDIENTES</div>
+  </div>
+  <div class="tabs" id="verTabsRow" style="margin-bottom:.75rem">
+    <div class="tab active" data-vertab="en_revision" onclick="setVerTab('en_revision')">Pendientes <span class="count" id="vcnt-en_revision">0</span></div>
+    <div class="tab" data-vertab="verificado"   onclick="setVerTab('verificado')">Aprobados <span class="count" id="vcnt-verificado">0</span></div>
+    <div class="tab" data-vertab="rechazado"    onclick="setVerTab('rechazado')">Rechazados <span class="count" id="vcnt-rechazado">0</span></div>
+  </div>
+  <div id="verList"><div class="loading">Cargando...</div></div>
+
 </div>
 </div>
 
 <script>
-var ADMIN_KEY = 'citadoc-growth-2026';
-var SB_URL    = 'https://qxoomcqaafogczrvsyhg.supabase.co';
-var SB_ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
-var sb        = supabase.createClient(SB_URL, SB_ANON);
+var ADMIN_KEY          = 'citadoc-growth-2026';
+var SB_URL             = 'https://qxoomcqaafogczrvsyhg.supabase.co';
+var SB_ANON            = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
+var sb                 = supabase.createClient(SB_URL, SB_ANON);
+var ADMIN_VERIFY_URL   = SB_URL + '/functions/v1/admin-verify';
+var ADMIN_VERIFY_TOKEN = '7citadoc7';
+var _allVerifications  = [];
+var _currentVerTab     = 'en_revision';
 
 var _allContent = [];
 var _currentFilter = 'all';
@@ -644,6 +682,7 @@ async function loadData() {
     renderDemos(demos || []);
     renderLeads(leads || []);
     renderSignals(analytics);
+    loadVerifications();
 
   } catch(e) {
     console.error(e);
@@ -873,6 +912,91 @@ async function crearPromo() {
 async function desactivarPromo(id) {
   await sb.from('promo_codes').update({ active: false }).eq('id', id);
   cargarPromos();
+}
+
+// ── VERIFICACIONES ────────────────────────────────────────────────────────────
+
+async function loadVerifications() {
+  try {
+    var res = await fetch(ADMIN_VERIFY_URL, { headers: { 'x-admin-token': ADMIN_VERIFY_TOKEN } });
+    if (!res.ok) return;
+    var json = await res.json();
+    _allVerifications = json.data || [];
+    renderVerTabs();
+    renderVerList();
+  } catch(e) { console.error('[ver]', e); }
+}
+
+function setVerTab(tab) {
+  _currentVerTab = tab;
+  renderVerTabs();
+  renderVerList();
+}
+
+function renderVerTabs() {
+  var counts = { en_revision: 0, verificado: 0, rechazado: 0 };
+  _allVerifications.forEach(function(d) {
+    if (counts[d.verificacion_estado] !== undefined) counts[d.verificacion_estado]++;
+  });
+  document.querySelectorAll('[data-vertab]').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.vertab === _currentVerTab);
+  });
+  Object.keys(counts).forEach(function(k) {
+    var el = document.getElementById('vcnt-' + k);
+    if (el) el.textContent = counts[k];
+  });
+  var badge = document.getElementById('verPendingBadge');
+  if (badge) badge.style.display = counts.en_revision > 0 ? '' : 'none';
+}
+
+function renderVerList() {
+  var el   = document.getElementById('verList');
+  var list = _allVerifications.filter(function(d) { return d.verificacion_estado === _currentVerTab; });
+  if (!list.length) { el.innerHTML = '<div class="empty">Sin médicos en esta categoría</div>'; return; }
+  el.innerHTML = list.map(function(m) {
+    var esp    = (m.especialidades || [])[0] || '';
+    var estado = m.verificacion_estado;
+    var borderStyle = estado === 'verificado' ? 'border-color:rgba(61,153,112,.25)'
+                    : estado === 'rechazado'  ? 'border-color:rgba(239,68,68,.15)' : '';
+    return '<div class="demo-row" id="ver-' + m.id + '" style="align-items:center;' + borderStyle + '">' +
+      '<div class="demo-info">' +
+        '<div class="demo-name">' + esc((m.titulo||'Dr.')+' '+(m.nombre||'')+' '+(m.apellido||'')) + '</div>' +
+        '<div class="demo-spec">' + esc(m.email||'') + (esp ? ' · ' + esc(esp) : '') + '</div>' +
+        '<div style="display:flex;gap:.35rem;margin-top:.35rem;flex-wrap:wrap">' +
+          (m.cedula_doc_url  ? '<a href="' + esc(m.cedula_doc_url)  + '" target="_blank" class="btn-sm" style="text-decoration:none;font-size:.68rem">🪪 ID</a>' : '') +
+          (m.titulo_doc_url  ? '<a href="' + esc(m.titulo_doc_url)  + '" target="_blank" class="btn-sm" style="text-decoration:none;font-size:.68rem">📄 Título</a>' : '') +
+        '</div>' +
+      '</div>' +
+      (estado === 'en_revision'
+        ? '<div style="display:flex;gap:.3rem;flex-shrink:0">' +
+            '<button class="btn-approve-sm" onclick="verAction(\'' + m.id + '\',\'aprobar\',this)">✓ Aprobar</button>' +
+            '<button class="btn-reject-sm"  onclick="verAction(\'' + m.id + '\',\'rechazar\',this)">✕</button>' +
+          '</div>'
+        : '<span style="font-size:.68rem;flex-shrink:0;color:' + (estado==='verificado'?'#5dba8a':'rgba(248,113,113,.6)') + '">' +
+            (estado === 'verificado' ? '✓ Verificado' : '✕ Rechazado') + '</span>'
+      ) +
+    '</div>';
+  }).join('');
+}
+
+async function verAction(medicoId, action, btn) {
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    var res = await fetch(ADMIN_VERIFY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_VERIFY_TOKEN },
+      body: JSON.stringify({ medico_id: medicoId, action }),
+    });
+    var json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'error');
+    var idx = _allVerifications.findIndex(function(d){ return d.id === medicoId; });
+    if (idx !== -1) _allVerifications[idx].verificacion_estado = json.nuevo_estado;
+    renderVerTabs();
+    renderVerList();
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = action === 'aprobar' ? '✓ Aprobar' : '✕';
+  }
 }
 
 async function cargarPromos() {

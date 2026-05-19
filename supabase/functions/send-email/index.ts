@@ -348,7 +348,7 @@ function tplVerificationNew(d: Record<string, string>): string {
       ${d.titulo_url ? `<p style="margin:0;"><a href="${d.titulo_url}" style="color:#818cf8;font-size:13px;font-weight:600;">Ver título médico →</a></p>` : ''}
     </td></tr>
   </table>
-  <a href="https://citadoc.lat/citadoc-admin.html" style="display:block;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;margin-top:4px;">Ir al panel de verificaciones →</a>
+  <a href="https://citadoc.lat/admin.html?key=citadoc-growth-2026" style="display:block;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;margin-top:4px;">Ir al panel de verificaciones →</a>
 </td></tr>
 </table></td></tr>
 <tr><td style="padding:20px 0 0;text-align:center;">
