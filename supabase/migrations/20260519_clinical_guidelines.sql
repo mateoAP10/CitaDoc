@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS clinical_guidelines (
 
 CREATE INDEX IF NOT EXISTS clinical_guidelines_fts_idx
   ON clinical_guidelines
-  USING GIN(to_tsvector('simple', contenido || ' ' || titulo || ' ' || array_to_string(tags, ',')));
+  USING GIN(to_tsvector('simple', contenido || ' ' || titulo || ' ' || COALESCE(array_to_string(tags, ','), '')));
 
 CREATE INDEX IF NOT EXISTS clinical_guidelines_categoria_idx
   ON clinical_guidelines(categoria);
