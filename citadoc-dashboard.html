@@ -3628,9 +3628,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Cargar médico
   try {
-    const {data:{session}} = await _sb.auth.getSession();
-    if(!session){ window.location.href='index.html'; return; }
-    if(!session.user.email_confirmed_at){ window.location.href='index.html'; return; }
+    // Esperar sesión — Supabase puede demorar un tick en restaurarla del localStorage
+    let { data: { session } } = await _sb.auth.getSession();
+    if (!session) {
+      await new Promise(function(resolve) { setTimeout(resolve, 600); });
+      const retry = await _sb.auth.getSession();
+      session = retry.data.session;
+    }
+    if (!session) { window.location.href = 'index.html'; return; }
 
     const {data:medico,error} = await _sb.from('medicos').select('*').eq('user_id',session.user.id).single();
     if(error||!medico){
