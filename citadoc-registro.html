@@ -1035,8 +1035,12 @@ async function activarCuenta(){
     });
     if(medicoError){console.error(medicoError);showErrActivar('Error al guardar perfil. Intenta de nuevo.');return;}
 
-    // 6. Éxito — reemplazar form con pantalla "Check your email"
+    // 6. Éxito — welcome email + pantalla "Check your email"
     localStorage.removeItem('citadoc_pago_pro');
+    fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'welcome_free',to_email:email,nombre,titulo})
+    }).catch(function(){});
     document.querySelector('.form-side').innerHTML=`
       <div class="check-email-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:3rem 1.5rem;text-align:center">
         <div class="check-icon">✉️</div>

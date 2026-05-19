@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/shared.js"></script>
 <script src="js/booking.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('HwpQ3DPRMmtcVZVt1')"></script>
+<script>function citadocSendEmail(type,data){fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({type:type},data))}).catch(function(e){console.warn('[email]',e);});}</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -709,12 +709,8 @@ async function bkConfirmar(){
     return;
   }
 
-  // EmailJS — al médico y al paciente
-  if(typeof emailjs!=='undefined'){
-    var nota='🩺 Nueva cita\nPaciente: '+nombre+' · '+tel+(email?'\nEmail: '+email:'')+'\nFecha: '+fechaLabel+' a las '+_bkSelectedSlot+(motivo?'\nMotivo: '+motivo:'');
-    if(_bkMedico.email) emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:_bkMedico.email,doctor_name:dr,patient_name:nombre,appointment_date:fechaLabel,appointment_time:_bkSelectedSlot,location_name:nota,appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',public_profile_url:perfilUrl}).catch(function(){});
-    if(email) emailjs.send('service_63xln0n','template_e8t8qkq',{to_email:email,doctor_name:dr,patient_name:nombre,appointment_date:fechaLabel,appointment_time:_bkSelectedSlot,location_name:'Consultorio de '+dr,appointment_mode:'🏥 Presencial — confirmación de cita',public_profile_url:perfilUrl}).catch(function(){});
-  }
+  if(_bkMedico.email) citadocSendEmail('appointment',{to_email:_bkMedico.email,doctor_name:dr,patient_name:nombre,appointment_date:fechaLabel,appointment_time:_bkSelectedSlot,location_name:'Consultorio de '+dr,appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',public_profile_url:perfilUrl});
+  if(email) citadocSendEmail('appointment',{to_email:email,doctor_name:dr,patient_name:nombre,appointment_date:fechaLabel,appointment_time:_bkSelectedSlot,location_name:'Consultorio de '+dr,appointment_mode:'🏥 Presencial',public_profile_url:perfilUrl});
 
   el('bkStep2').style.display='none';el('bkStep3').style.display='block';
   var msg=el('bkConfirmMsg');

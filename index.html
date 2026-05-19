@@ -913,7 +913,6 @@ footer a{color:var(--teal-mid);text-decoration:none}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer data-domain="citadoc.lat" src="https://plausible.io/js/script.js"></script>
 <script src="js/shared.js"></script>
@@ -937,7 +936,12 @@ if (typeof el === 'undefined') {
   var BG=['#d4f0ec','#e0fff4','#e8eaff','#ffe8e8','#f0ffe8','#e8f0ff'];
 }
 // ── CONFIG ──
-emailjs.init('HwpQ3DPRMmtcVZVt1');
+function citadocSendEmail(type, data) {
+  fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ type: type }, data))
+  }).catch(function(e){ console.warn('[email]', e); });
+}
 var _sb = supabase.createClient(
   'https://qxoomcqaafogczrvsyhg.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
@@ -1532,26 +1536,28 @@ function confirmarCita() {
     motivo: motivo||'No especificado'
   };
   if (email) {
-    var tplP = JSON.parse(JSON.stringify(tpl));
-    tplP.to_name = nombre; tplP.to_email = email;
-    tplP.mensaje = 'Tu cita con '+selectedDoctor.name+' esta confirmada para el '+fechaLabel+' a las '+selectedSlot+'.';
-    emailjs.send('service_63xln0n','template_e8t8qkq',tplP).catch(function(e){console.warn('email pac:',e);});
+    citadocSendEmail('appointment', {
+      to_email:          email,
+      doctor_name:       selectedDoctor.name,
+      patient_name:      nombre,
+      appointment_date:  fechaLabel,
+      appointment_time:  selectedSlot,
+      location_name:     'Consultorio médico',
+      appointment_mode:  '🏥 Presencial',
+      public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(selectedDoctor.slug||'')
+    });
   }
   if (selectedDoctor.email) {
-    var tplM = JSON.parse(JSON.stringify(tpl));
-    tplM.to_name = selectedDoctor.name; tplM.to_email = selectedDoctor.email;
-    var waPacNumDir = tel ? limpiarNumeroWA(tel, selectedDoctor.country||'ecuador') : null;
-    tplM.mensaje = '🩺 Nueva cita agendada en CitaDoc'
-      + '\n\nPaciente: '  + nombre
-      + '\nTeléfono: '   + tel
-      + (email ? '\nEmail: ' + email : '')
-      + '\nFecha: '      + fechaLabel + ' a las ' + selectedSlot
-      + '\nMotivo: '     + (motivo||'No especificado')
-      + '\n\n👉 Ver cita en tu dashboard:'
-      + '\nhttps://citadoc.lat/citadoc-dashboard.html'
-      + (waPacNumDir ? '\n\n💬 Contactar paciente por WhatsApp:'
-        + '\nhttps://wa.me/' + waPacNumDir : '');
-    emailjs.send('service_63xln0n','template_e8t8qkq',tplM).catch(function(e){console.warn('email med:',e);});
+    citadocSendEmail('appointment', {
+      to_email:          selectedDoctor.email,
+      doctor_name:       selectedDoctor.name,
+      patient_name:      nombre,
+      appointment_date:  fechaLabel,
+      appointment_time:  selectedSlot,
+      location_name:     'Consultorio médico',
+      appointment_mode:  '📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',
+      public_profile_url:'https://citadoc.lat/citadoc-dashboard.html'
+    });
   }
   el('bookingForm').style.display = 'none';
   el('successState').style.display = 'block';

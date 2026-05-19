@@ -734,7 +734,6 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   </div>
 </div>
 
-<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer src="js/shared.js"></script>
 <script defer src="js/auth.js"></script>
@@ -1083,16 +1082,16 @@ function confirmarCita() {
       + '\nMotivo: '+(motivo||'No especificado')
       + (_selectedInsurance?'\n🛡 Seguro: '+_selectedInsurance:'')
       + (waPacNum?'\nWA: https://wa.me/'+waPacNum:'');
-    emailjs.send('service_63xln0n','template_e8t8qkq',{
+    citadocSendEmail('appointment', {
       to_email:          _medico.email,
       doctor_name:       nombreMedico,
       patient_name:      nombre,
       appointment_date:  fechaLabel,
       appointment_time:  selectedSlot,
       location_name:     notaMedico,
-      appointment_mode:  '📋 Ver dashboard: https://citadoc.lat/citadoc-dashboard.html',
+      appointment_mode:  '📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',
       public_profile_url:perfilUrl
-    }).catch(function(e){console.warn(e);});
+    });
   }
   el('step2').style.display = 'none';
   el('bookingSuccess').style.display = 'block';
@@ -1552,7 +1551,12 @@ function cerrarSesion() { _sb.auth.signOut().then(function(){window.location.rel
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof emailjs !== 'undefined') emailjs.init('HwpQ3DPRMmtcVZVt1');
+  window.citadocSendEmail = function(type, data) {
+    fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ type: type }, data))
+    }).catch(function(e){ console.warn('[email]', e); });
+  };
 
   // Tabs
   document.querySelectorAll('.tab').forEach(function(tab) {

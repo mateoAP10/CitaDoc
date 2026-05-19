@@ -28,7 +28,7 @@
 <script src="js/layouts/warm-human.js"></script>
 <script src="js/layouts/performance-athletic.js"></script>
 <script src="js/website-renderer.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('HwpQ3DPRMmtcVZVt1')"></script>
+<script>function citadocSendEmail(type,data){fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({type:type},data))}).catch(function(e){console.warn('[email]',e);});}</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -2522,29 +2522,8 @@ async function bkConfirmar(){
     return;
   }
 
-  // EmailJS — al médico y al paciente (igual que perfil)
-  if(typeof emailjs!=='undefined'){
-    var notaMedico='🩺 Nueva cita\nPaciente: '+n+' · '+t+(e?'\nEmail: '+e:'')
-      +'\nFecha: '+fechaLabel+' a las '+_bkSlot+(motivo?'\nMotivo: '+motivo:'');
-    if(_M.email){
-      emailjs.send('service_63xln0n','template_e8t8qkq',{
-        to_email:_M.email,doctor_name:dr,patient_name:n,
-        appointment_date:fechaLabel,appointment_time:_bkSlot,
-        location_name:notaMedico,
-        appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',
-        public_profile_url:perfilUrl
-      }).catch(function(err){console.warn('emailjs médico:',err);});
-    }
-    if(e){
-      emailjs.send('service_63xln0n','template_e8t8qkq',{
-        to_email:e,doctor_name:dr,patient_name:n,
-        appointment_date:fechaLabel,appointment_time:_bkSlot,
-        location_name:'Consultorio de '+dr,
-        appointment_mode:'🏥 Presencial — confirmación de cita',
-        public_profile_url:perfilUrl
-      }).catch(function(err){console.warn('emailjs paciente:',err);});
-    }
-  }
+  if(_M.email) citadocSendEmail('appointment',{to_email:_M.email,doctor_name:dr,patient_name:n,appointment_date:fechaLabel,appointment_time:_bkSlot,location_name:'Consultorio de '+dr,appointment_mode:'📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html',public_profile_url:perfilUrl});
+  if(e) citadocSendEmail('appointment',{to_email:e,doctor_name:dr,patient_name:n,appointment_date:fechaLabel,appointment_time:_bkSlot,location_name:'Consultorio de '+dr,appointment_mode:'🏥 Presencial',public_profile_url:perfilUrl});
 
   el('bkStep2').style.display='none';el('bkStep3').style.display='block';
   setText('bkConfMsg',n+', tu cita con '+dr+' fue confirmada para el '+fechaLabel+' a las '+_bkSlot+'.'+(e?' Confirmación enviada a '+e+'.':''));

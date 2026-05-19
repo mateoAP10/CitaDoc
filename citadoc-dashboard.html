@@ -1082,7 +1082,6 @@ display:flex;
   <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script defer src="js/shared.js"></script>
 </head>
 <body>
@@ -2721,7 +2720,7 @@ async function confirmarReschedule() {
     var nombreMed = (M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido;
     var fechaHum  = new Date(fecha+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'});
     var loc = _rsCita.location_id ? (window.locationsMedico||[]).find(function(l){ return String(l.id)===String(_rsCita.location_id); }) : null;
-    emailjs.send('service_63xln0n','template_e8t8qkq',{
+    citadocSendEmail('appointment', {
       to_email:          _rsCita.paciente_email,
       doctor_name:       nombreMed,
       patient_name:      _rsCita.paciente_nombre,
@@ -2730,7 +2729,7 @@ async function confirmarReschedule() {
       location_name:     loc ? loc.nombre : 'Consultorio médico',
       appointment_mode:  '🔄 Cita reprogramada',
       public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M.slug||'')
-    }).catch(function(e){ console.warn(e); });
+    });
   }
 
   cerrarReschedule();
@@ -3533,7 +3532,13 @@ async function aplicarMedico(m) {
 
 // ══ INIT ══
 document.addEventListener('DOMContentLoaded', async () => {
-  if (typeof emailjs !== 'undefined') emailjs.init('HwpQ3DPRMmtcVZVt1');
+  // email helper
+  window.citadocSendEmail = function(type, data) {
+    fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ type: type }, data))
+    }).catch(function(e){ console.warn('[email]', e); });
+  };
 
   // Deep link: ?panel=sitio abre Mi Sitio Web directamente
   (function(){
@@ -6667,10 +6672,6 @@ function enviarIndicacionesPaciente() {
     alert('No hay documentos ni indicaciones para enviar.');
     return;
   }
-  if (!indicaciones || !indicaciones.value.trim()) {
-    alert('No hay indicaciones para enviar. Usa el AI o escribe indicaciones primero.');
-    return;
-  }
   if (!_hcPacienteId) { alert('No hay paciente vinculado.'); return; }
 
   // Obtener email del paciente
@@ -6682,20 +6683,16 @@ function enviarIndicacionesPaciente() {
       }
       var paciente = r.data;
       var nombreMedico = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Tu medico';
-      var tpl = {
-        to_email:          paciente.email,
-        doctor_name:       nombreMedico,
-        patient_name:      paciente.nombre,
-        appointment_date:  new Date().toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long'}),
-        appointment_time:  '',
-        location_name:     'Ver indicaciones adjuntas',
-        appointment_mode:  indicaciones.value.trim(),
-        public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M&&M.slug||'')
-      };
-      console.error('EMAIL SEND HIT #1 — indicaciones');
-      emailjs.send('service_63xln0n', 'template_e8t8qkq', tpl)
-        .then(function() { mostrarToast('Indicaciones enviadas a '+paciente.email); })
-        .catch(function(e) { console.error('Email error:', e); alert('Error enviando email. Verifica EmailJS.'); });
+      citadocSendEmail('indicaciones', {
+        to_email:     paciente.email,
+        doctor_name:  nombreMedico,
+        patient_name: paciente.nombre,
+        text:         indicaciones.value.trim() || null,
+        receta:       docs.receta       || null,
+        laboratorios: docs.laboratorios || null,
+        imagenes:     docs.imagenes     || null
+      });
+      mostrarToast('Indicaciones enviadas a '+paciente.email);
     });
 }
 
@@ -7979,10 +7976,8 @@ async function confirmarNuevaCita(pacId, pacNombre, pacEmail, pacTel, pacCedula,
       appointment_mode:  modal==='virtual'?'💻 Virtual':'🏥 Presencial',
       public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(M.slug||'')
     };
-    console.error('EMAIL SEND HIT #2 — confirmarNuevaCita');
-    emailjs.send('service_63xln0n','template_e8t8qkq', emailPayload)
-      .then(function(){ mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail); })
-      .catch(function(e){ console.error('[emailjs] error:', e); mostrarToast('Email no enviado: '+((e&&e.text)||JSON.stringify(e)), 'error'); });
+    citadocSendEmail('appointment', emailPayload);
+    mostrarToast('Cita creada ✓ — Email enviado a '+pacEmail);
   }
 
   cerrarNuevaCita();
@@ -9580,17 +9575,13 @@ function mcEnviarDocs(conOverride, pacOverride) {
   if(btn){var orig=btn.textContent;btn.textContent='Enviando...';btn.disabled=true;
     setTimeout(function(){btn.textContent=orig;btn.disabled=false;},4000);}
 
-  emailjs.send('service_63xln0n','template_e8t8qkq',{
-    to_email:          pac.email,
-    doctor_name:       nomMed,
-    patient_name:      pac.nombre,
-    appointment_date:  fecha,
-    appointment_time:  diag||'Indicaciones adjuntas',
-    location_name:     body,
-    appointment_mode:  '📋 Documento médico — ver detalle abajo',
-    public_profile_url:'https://citadoc.lat/citadoc-perfil.html?slug='+(med.slug||'')
-  }).then(function(){ mostrarToast('✓ Enviado a '+pac.email); })
-   .catch(function(e){ mostrarToast('Error: '+((e&&e.text)||'no enviado'),'error'); });
+  citadocSendEmail('docs', {
+    to_email:    pac.email,
+    doctor_name: nomMed,
+    patient_name:pac.nombre,
+    html_body:   body
+  });
+  mostrarToast('✓ Enviado a '+pac.email);
 }
 
 // Generar docs desde ficha (consultas pasadas)
