@@ -1011,6 +1011,7 @@ var ALL_DOCTORS = [];
 var filtered = [];
 var currentFilter = {esp:'', pais:'', ciudad:'', seguro:'', seguroNombre:''};
 var currentSort = 'destacado';
+var _busquedaActiva = false; // true solo después de buscar explícitamente
 var selectedDoctor = null;
 var selectedDate = null;
 var selectedSlot = null;
@@ -1096,6 +1097,8 @@ function dbToCard(d, i) {
   };
 }
 
+var _medicosLoaded = false;
+
 function cargarMedicos() {
   _sb.from('medicos')
     .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,dias_atencion,slug,activo,email')
@@ -1109,7 +1112,9 @@ function cargarMedicos() {
         var cnt = el('heroCount');
         if (cnt) cnt.textContent = '+'+ALL_DOCTORS.length+' médico'+(ALL_DOCTORS.length!==1?'s':'')+' disponible'+(ALL_DOCTORS.length!==1?'s':'');
       }
-      renderDir();
+      _medicosLoaded = true;
+      // Solo renderiza si el usuario ya realizó una búsqueda activa
+      if (_busquedaActiva) renderDir();
     });
 }
 
@@ -1134,6 +1139,7 @@ function aplicarFiltros() {
 }
 
 function buscar() {
+  _busquedaActiva = true;
   currentFilter.esp    = el('selEsp').value;
   currentFilter.pais   = ssPais ? ssPais.getValue() : '';
   currentFilter.ciudad = ssCiudad ? ssCiudad.getLabel() : '';
@@ -1143,11 +1149,17 @@ function buscar() {
 
 // ── RENDER DIRECTORIO ──
 function renderDir() {
+  if (!_busquedaActiva) {
+    var grid0 = el('doctorsGrid'), meta0 = el('resultMeta');
+    if (meta0) meta0.innerHTML = '';
+    if (grid0) grid0.innerHTML = '<div class="empty-state" style="text-align:center;padding:3rem 1rem;color:var(--muted2)"><div style="font-size:2rem;margin-bottom:.75rem">🔍</div><div style="font-weight:600;color:var(--ink2);font-size:.95rem;margin-bottom:.35rem">Busca tu especialista</div><div style="font-size:.85rem">Elige especialidad, país y ciudad para ver médicos disponibles.</div></div>';
+    return;
+  }
   aplicarFiltros();
   var grid = el('doctorsGrid');
   var meta = el('resultMeta');
   var ciudadEl = el('dirCiudad');
-  if (ciudadEl) ciudadEl.textContent = currentFilter.ciudad || (currentFilter.pais ? PAISES_LABEL[currentFilter.pais]||currentFilter.pais : 'Ecuador');
+  if (ciudadEl) ciudadEl.textContent = currentFilter.ciudad || (currentFilter.pais ? PAISES_LABEL[currentFilter.pais]||currentFilter.pais : 'Tu zona');
   if (meta) meta.innerHTML = '<strong>'+filtered.length+'</strong> médico'+(filtered.length!==1?'s':'')+' encontrado'+(filtered.length!==1?'s':'');
   renderFilterChips();
   if (!grid) return;

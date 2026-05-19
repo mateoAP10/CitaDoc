@@ -54,7 +54,7 @@
         }
       }
 
-      // Directory reloads with new region context
+      // Region auto-detected: load doctors silently (don't render yet — user must search)
       if (typeof window.cargarMedicos === 'function') {
         window.logEvent('directory_reload', { trigger: 'region-applied' });
         window.cargarMedicos();
