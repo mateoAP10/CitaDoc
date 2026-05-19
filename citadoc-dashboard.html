@@ -2385,7 +2385,7 @@ display:flex;
         </div>
         <div class="ai-actions-row" id="aiActionsRow" style="display:none">
           <button class="btn-usar-ai" onclick="usarAIEnConsulta()">📋 Usar en consulta</button>
-          <button class="btn-enviar-ai" onclick="enviarIndicacionesPaciente()">📩 Enviar al paciente</button>
+          <button class="btn-enviar-ai" onclick="enviarIndicacionesPaciente()" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);font-size:.8rem;letter-spacing:.02em">✍️ Firmar y enviar</button>
         </div>
       </div>
 
@@ -2511,6 +2511,7 @@ function showPanel(id, el) {
   if (id === 'pacientes' && !esPro()) { mostrarProModal('pacientes'); return; }
 
   AppState.currentPanel = id;
+  if (id !== 'ficha') sessionStorage.setItem('cd_panel', id);
   closeSidebarOnMobile();
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
@@ -3635,6 +3636,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.medicoGlobal = medico;
     verificarRetornoPago();
     verificarMantenimiento(medico);
+
+    // Restaurar panel activo al recargar
+    var _savedPanel = sessionStorage.getItem('cd_panel');
+    var _urlPanel   = new URLSearchParams(location.search).get('panel');
+    if (!_urlPanel && _savedPanel && _savedPanel !== 'inicio') {
+      var _navEl = document.querySelector('[data-panel="'+_savedPanel+'"]') ||
+                   document.querySelector('[onclick*="showPanel(\''+_savedPanel+'\'"]');
+      setTimeout(function(){ showPanel(_savedPanel, _navEl); }, 200);
+    }
     // Sidebar trigger — hover en tablet
     var sidebarTriggerEl = document.getElementById('sidebarTrigger');
     var sidebarEl = document.getElementById('sidebar');
@@ -9514,7 +9524,16 @@ function mcToggleVitales(btn) {
   if(arrow) arrow.textContent=open?'▾':'▴';
   if(btn) { btn.style.borderColor=open?'':'#0b7c6e'; btn.style.color=open?'':'#0b7c6e'; }
 }
-function cerrarModalConsulta(){var m=document.getElementById('modalConsulta');if(m)m.remove();}
+var _consultaGuardadaParaId = null;
+function cerrarModalConsulta(){
+  var m=document.getElementById('modalConsulta');
+  if(m)m.remove();
+  if(_consultaGuardadaParaId) {
+    var id = _consultaGuardadaParaId;
+    _consultaGuardadaParaId = null;
+    abrirFicha(id);
+  }
+}
 
 async function guardarConsulta(pacienteId) {
   if(!M||!M.id||!pacienteId) return;
@@ -9598,6 +9617,7 @@ async function guardarConsulta(pacienteId) {
   if(res.error){mostrarToast('Error: '+res.error.message,'error');console.error(res.error);return;}
   // Guardar para generar docs
   _lastConsulta = Object.assign({}, consData, res.data||{});
+  _consultaGuardadaParaId = pacienteId;
   // Mostrar botones de documentos en footer
   var footer = document.getElementById('mc_footer_btns');
   if(footer) {
