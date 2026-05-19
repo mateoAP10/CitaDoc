@@ -1,6 +1,7 @@
 // ── I18N ──
 var I18N = {
   es: {
+    'nav.brand': 'Cita<span>Doc</span>',
     'nav.medicos': 'Para médicos',
     'nav.login': 'Iniciar sesión',
     'nav.register': 'Registro médico',
@@ -9,8 +10,7 @@ var I18N = {
     'nav.profile': '👁 Ver mi perfil',
     'nav.logout': '↩ Cerrar sesión',
     'hero.eyebrow': 'Médicos disponibles ahora',
-    'hero.title1': 'Encuentra tu médico,',
-    'hero.title2': 'agenda en minutos',
+    'hero.title': 'Encuentra tu médico,<br><em>agenda en minutos</em>',
     'hero.sub': 'Sin llamadas. Sin intermediarios. Elige especialidad, ciudad y reserva tu cita directamente.',
     'triage.btn': 'Ayúdame con CitaDoc AI',
     'triage.label': 'Triage AI',
@@ -69,6 +69,7 @@ var I18N = {
     'lang.pt': 'Português'
   },
   en: {
+    'nav.brand': 'Cita<span>Doc</span>',
     'nav.medicos': 'For doctors',
     'nav.login': 'Sign in',
     'nav.register': 'Doctor registration',
@@ -77,8 +78,7 @@ var I18N = {
     'nav.profile': '👁 View profile',
     'nav.logout': '↩ Sign out',
     'hero.eyebrow': 'Doctors available now',
-    'hero.title1': 'Find your doctor,',
-    'hero.title2': 'book in minutes',
+    'hero.title': 'Find your doctor,<br><em>book in minutes</em>',
     'hero.sub': 'No calls. No intermediaries. Choose specialty, city and book your appointment directly.',
     'triage.btn': 'Help me with CitaDoc AI',
     'triage.label': 'AI Triage',
@@ -137,6 +137,7 @@ var I18N = {
     'lang.pt': 'Português'
   },
   pt: {
+    'nav.brand': 'Cita<span>Doc</span>',
     'nav.medicos': 'Para médicos',
     'nav.login': 'Entrar',
     'nav.register': 'Cadastro médico',
@@ -145,8 +146,7 @@ var I18N = {
     'nav.profile': '👁 Ver perfil',
     'nav.logout': '↩ Sair',
     'hero.eyebrow': 'Médicos disponíveis agora',
-    'hero.title1': 'Encontre seu médico,',
-    'hero.title2': 'agende em minutos',
+    'hero.title': 'Encontre seu médico,<br><em>agende em minutos</em>',
     'hero.sub': 'Sem ligações. Sem intermediários. Escolha especialidade, cidade e reserve sua consulta diretamente.',
     'triage.btn': 'Me ajude com CitaDoc AI',
     'triage.label': 'Triage AI',
