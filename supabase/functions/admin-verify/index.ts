@@ -22,6 +22,50 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
   }
 
+  const url      = new URL(req.url)
+  const resource = url.searchParams.get('resource') || 'verificaciones'
+
+  // ── PROMOS ────────────────────────────────────────────────────────────────
+  if (resource === 'promos') {
+    if (req.method === 'GET') {
+      const { data, error } = await sb
+        .from('promo_codes')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+      return new Response(JSON.stringify({ data }), { headers: CORS })
+    }
+
+    if (req.method === 'POST') {
+      const body = await req.json()
+
+      if (body.action === 'crear') {
+        const { code, discount_pct, max_uses, expires_at } = body
+        if (!code || !discount_pct) return new Response(JSON.stringify({ error: 'missing fields' }), { status: 400, headers: CORS })
+        const { data, error } = await sb.from('promo_codes').insert({
+          code: code.toUpperCase(),
+          discount_pct,
+          max_uses: max_uses || null,
+          expires_at: expires_at || null,
+        }).select().single()
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+        return new Response(JSON.stringify({ ok: true, data }), { headers: CORS })
+      }
+
+      if (body.action === 'desactivar') {
+        const { id } = body
+        if (!id) return new Response(JSON.stringify({ error: 'missing id' }), { status: 400, headers: CORS })
+        const { error } = await sb.from('promo_codes').update({ active: false }).eq('id', id)
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
+      return new Response(JSON.stringify({ error: 'unknown action' }), { status: 400, headers: CORS })
+    }
+  }
+
+  // ── VERIFICACIONES ────────────────────────────────────────────────────────
   if (req.method === 'GET') {
     const { data, error } = await sb
       .from('medicos')

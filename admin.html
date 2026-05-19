@@ -797,37 +797,54 @@ async function crearPromo() {
   var expires = document.getElementById('promoExpires').value || null;
   var msg     = document.getElementById('promoMsg');
   if (!code || !pct) { msg.textContent = 'Código y % son obligatorios.'; msg.style.color='#f87171'; return; }
-  var res = await sb.from('promo_codes').insert({ code, discount_pct: pct, max_uses: maxUses, expires_at: expires });
-  if (res.error) { msg.textContent = res.error.message; msg.style.color='#f87171'; return; }
-  msg.textContent = '✓ Código ' + code + ' creado.'; msg.style.color='#5dba8a';
-  document.getElementById('promoCode').value = '';
-  document.getElementById('promoDiscount').value = '';
-  document.getElementById('promoMaxUses').value = '';
-  document.getElementById('promoExpires').value = '';
-  cargarPromos();
+  try {
+    var res  = await fetch(ADMIN_VERIFY_URL + '?resource=promos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_VERIFY_TOKEN },
+      body: JSON.stringify({ action: 'crear', code, discount_pct: pct, max_uses: maxUses, expires_at: expires }),
+    });
+    var json = await res.json();
+    if (json.error) throw new Error(json.error);
+    msg.textContent = '✓ Código ' + code + ' creado.'; msg.style.color='#5dba8a';
+    document.getElementById('promoCode').value = '';
+    document.getElementById('promoDiscount').value = '';
+    document.getElementById('promoMaxUses').value = '';
+    document.getElementById('promoExpires').value = '';
+    cargarPromos();
+  } catch(e) {
+    msg.textContent = 'Error: ' + e.message; msg.style.color='#f87171';
+  }
 }
 
 async function desactivarPromo(id) {
-  await sb.from('promo_codes').update({ active: false }).eq('id', id);
+  await fetch(ADMIN_VERIFY_URL + '?resource=promos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_VERIFY_TOKEN },
+    body: JSON.stringify({ action: 'desactivar', id }),
+  });
   cargarPromos();
 }
 
 async function cargarPromos() {
   var el = document.getElementById('promoList');
-  var { data, error } = await sb.from('promo_codes').select('*').order('created_at', { ascending: false }).limit(50);
-  if (error || !data || !data.length) { el.innerHTML = '<div class="empty">Sin códigos aún</div>'; return; }
-  el.innerHTML = data.map(function(r) {
-    var estado = !r.active ? 'Inactivo' : r.expires_at && new Date(r.expires_at) < new Date() ? 'Expirado' : (r.max_uses !== null && r.uses >= r.max_uses ? 'Agotado' : 'Activo');
-    var color  = estado === 'Activo' ? '#5dba8a' : '#9ca3af';
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:.4rem;font-size:.8rem;gap:.5rem;flex-wrap:wrap">' +
-      '<span style="font-weight:700;letter-spacing:.04em;font-family:monospace">' + esc(r.code) + '</span>' +
-      '<span style="color:#c4b5fd">' + r.discount_pct + '% OFF</span>' +
-      '<span style="color:#9ca3af">' + r.uses + (r.max_uses ? '/' + r.max_uses : '') + ' usos</span>' +
-      '<span style="color:#9ca3af">' + (r.expires_at ? fmtDate(r.expires_at) : '∞') + '</span>' +
-      '<span style="color:' + color + '">' + estado + '</span>' +
-      (r.active ? '<button onclick="desactivarPromo(\'' + r.id + '\')" style="padding:.2rem .5rem;background:rgba(239,68,68,.15);color:#f87171;border:none;border-radius:5px;font-size:.72rem;cursor:pointer">Desactivar</button>' : '') +
-    '</div>';
-  }).join('');
+  try {
+    var res  = await fetch(ADMIN_VERIFY_URL + '?resource=promos', { headers: { 'x-admin-token': ADMIN_VERIFY_TOKEN } });
+    var json = await res.json();
+    var data = json.data || [];
+    if (!data.length) { el.innerHTML = '<div class="empty">Sin códigos aún</div>'; return; }
+    el.innerHTML = data.map(function(r) {
+      var estado = !r.active ? 'Inactivo' : r.expires_at && new Date(r.expires_at) < new Date() ? 'Expirado' : (r.max_uses !== null && r.uses >= r.max_uses ? 'Agotado' : 'Activo');
+      var color  = estado === 'Activo' ? '#5dba8a' : '#9ca3af';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .75rem;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:.4rem;font-size:.8rem;gap:.5rem;flex-wrap:wrap">' +
+        '<span style="font-weight:700;letter-spacing:.04em;font-family:monospace">' + esc(r.code) + '</span>' +
+        '<span style="color:#c4b5fd">' + r.discount_pct + '% OFF</span>' +
+        '<span style="color:#9ca3af">' + r.uses + (r.max_uses ? '/' + r.max_uses : '') + ' usos</span>' +
+        '<span style="color:#9ca3af">' + (r.expires_at ? fmtDate(r.expires_at) : '∞') + '</span>' +
+        '<span style="color:' + color + '">' + estado + '</span>' +
+        (r.active ? '<button onclick="desactivarPromo(\'' + r.id + '\')" style="padding:.2rem .5rem;background:rgba(239,68,68,.15);color:#f87171;border:none;border-radius:5px;font-size:.72rem;cursor:pointer">Desactivar</button>' : '') +
+      '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">Error cargando promos</div>'; }
 }
 
 // ── VERIFICACIONES ────────────────────────────────────────────────────────────
