@@ -1989,39 +1989,56 @@ async function consultarTriageAI() {
 }
 
 function renderTriageResult(data) {
-  var esp = data.especialidad_principal || '';
-  var motivo = data.motivo || '';
-  var urgencia = data.urgencia || 'normal';
-  var otros = data.otras_opciones || [];
-  var msgUrgente = data.mensaje_urgencia || '';
+  var esp     = data.especialidad_principal || '';
+  var motivo  = data.motivo || '';
+  var urgencia = data.urgencia || 'baja';
+  var otros   = data.otras_opciones || [];
+  var consejo = data.consejo_urgencia || '';
 
-  var html = '<div class="triage-result">';
+  var urgMap = {
+    baja:  { label:'Urgencia baja',  desc:'Puedes agendar consulta con calma',           icon:'🟢', bg:'#f0fdf4', border:'#86efac', txt:'#166534', accion:'Buscar '+esp+' →' },
+    media: { label:'Urgencia media', desc:'Consulta esta semana, no dejes pasar más',     icon:'🟡', bg:'#fefce8', border:'#fde047', txt:'#854d0e', accion:'Buscar '+esp+' →' },
+    alta:  { label:'Urgencia alta',  desc:'Acude a urgencias hoy para valoración',        icon:'🔴', bg:'#fef2f2', border:'#fca5a5', txt:'#991b1b', accion:'Ir a urgencias — buscar '+esp }
+  };
+  var u = urgMap[urgencia] || urgMap.baja;
 
-  if (urgencia === 'urgente') {
-    html += '<div class="triage-urgente">'
-      + '<span style="font-size:1.3rem;flex-shrink:0">🚨</span>'
-      + '<div><div style="font-weight:700;color:#dc2626;font-size:.9rem;margin-bottom:.2rem">Atención urgente recomendada</div>'
-      + '<div style="font-size:.82rem;color:#7f1d1d;line-height:1.5">'+(msgUrgente||'Consulta un médico o servicio de urgencias lo antes posible.')+'</div></div>'
-      + '</div>';
-  }
+  var espKey = esp.toLowerCase().replace(/\s+/g,'_').replace(/[áéíóúàèìòùäëïöü]/g,function(c){
+    return {á:'a',é:'e',í:'i',ó:'o',ú:'u',à:'a',è:'e',ì:'i',ò:'o',ù:'u',ä:'a',ë:'e',ï:'i',ö:'o',ü:'u'}[c]||c;
+  });
 
-  html += '<div class="triage-result-main">'
-    + '<div style="font-size:.65rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Especialidad recomendada</div>'
-    + '<div class="triage-result-esp">'+esp+'</div>'
-    + '<div class="triage-result-why">'+motivo+'</div>'
-    + '<button class="triage-result-action" onclick="aplicarEspecialidadTriage(\''+esp.toLowerCase().replace(/\s+/g,'_').replace(/[áéíóú]/g,function(c){return{á:'a',é:'e',í:'i',ó:'o',ú:'u'}[c]||c;})+'\',\''+esp+'\')">'
-    + 'Buscar '+esp+' →'
-    + '</button>'
+  var html = '<div class="triage-result">'
+    // Urgency badge — always shown
+    + '<div style="background:'+u.bg+';border:1.5px solid '+u.border+';border-radius:12px;padding:.85rem 1rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:.65rem">'
+      + '<span style="font-size:1.25rem;flex-shrink:0;line-height:1.2">'+u.icon+'</span>'
+      + '<div>'
+        + '<div style="font-weight:800;color:'+u.txt+';font-size:.9rem;margin-bottom:.15rem">'+u.label+'</div>'
+        + '<div style="font-size:.82rem;color:'+u.txt+';opacity:.85;line-height:1.45">'+(consejo||u.desc)+'</div>'
+      + '</div>'
+    + '</div>'
+    // Specialty result
+    + '<div class="triage-result-main">'
+      + '<div style="font-size:.65rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Especialidad recomendada</div>'
+      + '<div class="triage-result-esp">'+esp+'</div>'
+      + '<div class="triage-result-why">'+motivo+'</div>'
+      + (urgencia !== 'alta'
+          ? '<button class="triage-result-action" onclick="aplicarEspecialidadTriage(\''+espKey+'\',\''+esp+'\')">'+u.accion+'</button>'
+          : '<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+              + '<button class="triage-result-action" style="background:#dc2626" onclick="cerrarTriage()">🚨 Ir a urgencias ahora</button>'
+              + '<button style="flex:1;padding:.6rem;background:none;border:1.5px solid var(--teal);color:var(--teal);border-radius:10px;font-family:DM Sans,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer" onclick="aplicarEspecialidadTriage(\''+espKey+'\',\''+esp+'\')">También buscar '+esp+'</button>'
+            + '</div>'
+        )
     + '</div>';
 
   if (otros.length) {
     html += '<div class="triage-otros">'
-      + '<span style="font-size:.72rem;font-weight:700;color:#9ca3af;width:100%;margin-bottom:.25rem">También podrías ver:</span>'
+      + '<span style="font-size:.72rem;font-weight:700;color:#9ca3af;width:100%;margin-bottom:.25rem">También podrías consultar:</span>'
       + otros.map(function(o){
-          var k = o.toLowerCase().replace(/\s+/g,'_').replace(/[áéíóú]/g,function(c){return{á:'a',é:'e',í:'i',ó:'o',ú:'u'}[c]||c;});
+          var k = o.toLowerCase().replace(/\s+/g,'_').replace(/[áéíóúàèìòùäëïöü]/g,function(c){
+            return {á:'a',é:'e',í:'i',ó:'o',ú:'u'}[c]||c;
+          });
           return '<button class="triage-otro-btn" onclick="aplicarEspecialidadTriage(\''+k+'\',\''+o+'\')">'+o+'</button>';
         }).join('')
-      + '</div>';
+    + '</div>';
   }
 
   html += '</div>';
