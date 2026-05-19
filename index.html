@@ -1159,7 +1159,7 @@ function renderDir() {
   var grid = el('doctorsGrid');
   var meta = el('resultMeta');
   var ciudadEl = el('dirCiudad');
-  if (ciudadEl) ciudadEl.textContent = currentFilter.ciudad || (currentFilter.pais ? PAISES_LABEL[currentFilter.pais]||currentFilter.pais : 'Tu zona');
+  if (ciudadEl) ciudadEl.textContent = currentFilter.ciudad || (currentFilter.pais ? PAISES_LABEL[currentFilter.pais]||currentFilter.pais : (PAISES_LABEL[window._regionPais||'ecuador']||'Tu zona'));
   if (meta) meta.innerHTML = '<strong>'+filtered.length+'</strong> médico'+(filtered.length!==1?'s':'')+' encontrado'+(filtered.length!==1?'s':'');
   renderFilterChips();
   if (!grid) return;
@@ -1894,6 +1894,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Exponer para que region.js y init.js puedan llamarla con el país correcto
+  window.renderSeguros = renderSeguros;
+
+  // País actual detectado (se actualiza con region-applied)
+  window._regionPais = 'ecuador';
+
+  // Arrancar con país por defecto; region.js lo corregirá al detectar ubicación
   renderSeguros('ecuador');
 
   // Pub nav — active state + auth routing

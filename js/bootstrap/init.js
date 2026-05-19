@@ -47,6 +47,9 @@
       var region = e.detail || {};
       window.logEvent('region_applied', { country: region.country, source: region.source });
 
+      // Store detected country globally
+      if (region.country) window._regionPais = region.country;
+
       // Language auto-set from region (only if user hasn't manually chosen)
       if (region.language && !localStorage.getItem('citadoc-lang-manual')) {
         if (typeof window.setLang === 'function') {
@@ -54,7 +57,12 @@
         }
       }
 
-      // Region auto-detected: load doctors silently (don't render yet — user must search)
+      // Update insurance section for detected country
+      if (region.country && typeof window.renderSeguros === 'function') {
+        window.renderSeguros(region.country);
+      }
+
+      // Load doctors silently (not rendered until user searches)
       if (typeof window.cargarMedicos === 'function') {
         window.logEvent('directory_reload', { trigger: 'region-applied' });
         window.cargarMedicos();
