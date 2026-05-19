@@ -974,19 +974,25 @@ async function cargarDatos() {
   if (_datosLoaded) return;
   _datosLoaded = true;
 
-  var [rMedicos, rPacientes, rConsultas, rCitas, rGuias] = await Promise.all([
-    sb.from('medicos').select('id,especialidades,ciudad,plan,verificacion_estado,created_at'),
-    sb.from('pacientes').select('id,fecha_nacimiento,ciudad,created_at'),
-    sb.from('consultas').select('id,created_at,diagnostico'),
-    sb.from('citas').select('id,estado,created_at'),
-    sb.from('clinical_guidelines').select('id,categoria,fuente,anio'),
-  ]);
+  document.getElementById('datosKPIs').innerHTML = '<div style="grid-column:1/-1;font-size:.82rem;color:var(--muted);padding:.5rem">Cargando datos...</div>';
 
-  var medicos   = rMedicos.data   || [];
-  var pacientes = rPacientes.data || [];
-  var consultas = rConsultas.data || [];
-  var citas     = rCitas.data     || [];
-  var guias     = rGuias.data     || [];
+  try {
+    var r = await fetch(ADMIN_VERIFY_URL + '?resource=stats', {
+      headers: { 'x-admin-token': ADMIN_VERIFY_TOKEN }
+    });
+    var d = await r.json();
+    if (!d.ok) throw new Error('stats error');
+
+    var medicos   = d.medicos   || [];
+    var pacientes = d.pacientes || [];
+    var consultas = d.consultas || [];
+    var citas     = d.citas     || [];
+    var guias     = d.guias     || [];
+  } catch(e) {
+    document.getElementById('datosKPIs').innerHTML = '<div style="grid-column:1/-1;color:#dc2626;font-size:.82rem">Error cargando datos. Verifica la conexión.</div>';
+    _datosLoaded = false;
+    return;
+  }
 
   // ── KPIs ──
   var kpis = [

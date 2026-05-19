@@ -25,6 +25,25 @@ serve(async (req) => {
   const url      = new URL(req.url)
   const resource = url.searchParams.get('resource') || 'verificaciones'
 
+  // ── STATS ─────────────────────────────────────────────────────────────────
+  if (resource === 'stats') {
+    const [rMed, rPac, rCon, rCit, rGui] = await Promise.all([
+      sb.from('medicos').select('id,especialidades,ciudad,plan,verificacion_estado,created_at'),
+      sb.from('pacientes').select('id,fecha_nacimiento,ciudad,created_at'),
+      sb.from('consultas').select('id,created_at'),
+      sb.from('citas').select('id,estado,created_at'),
+      sb.from('clinical_guidelines').select('id,categoria,fuente,anio'),
+    ])
+    return new Response(JSON.stringify({
+      ok: true,
+      medicos:   rMed.data   || [],
+      pacientes: rPac.data   || [],
+      consultas: rCon.data   || [],
+      citas:     rCit.data   || [],
+      guias:     rGui.data   || [],
+    }), { headers: CORS })
+  }
+
   // ── PROMOS ────────────────────────────────────────────────────────────────
   if (resource === 'promos') {
     if (req.method === 'GET') {
