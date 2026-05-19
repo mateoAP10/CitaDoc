@@ -2438,10 +2438,10 @@ display:flex;
           </div>
         </div>
 
-        <!-- Firmar y enviar — siempre visible al pie de documentos -->
-        <div style="margin-top:1.1rem;display:flex;gap:.6rem;flex-wrap:wrap">
-          <button onclick="generarPDF()" style="flex:1;min-width:120px;padding:.65rem .9rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:#374151;cursor:pointer">🖨️ Vista previa PDF</button>
-          <button onclick="enviarIndicacionesPaciente()" style="flex:2;min-width:180px;padding:.65rem 1rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em">✍️ Firmar y enviar al paciente</button>
+        <!-- Firmar y enviar — sticky al fondo del scroll -->
+        <div style="position:sticky;bottom:0;z-index:10;background:#fff;padding:.75rem 0 .25rem;margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap;pointer-events:auto">
+          <button onclick="generarPDF()" style="flex:1;min-width:120px;padding:.65rem .9rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:#374151;cursor:pointer;pointer-events:auto">🖨️ Vista previa PDF</button>
+          <button onclick="enviarIndicacionesPaciente()" style="flex:2;min-width:180px;padding:.65rem 1rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em;pointer-events:auto">✍️ Firmar y enviar al paciente</button>
         </div>
       </div>
       <!-- Historial previo -->
@@ -7415,10 +7415,12 @@ function generarPDF() {
         + 'Este documento es de uso clínico. Validado por el médico tratante.'
       + '</div>'
       + '<div class="firma-block">'
-      + '<div class="firma-line">'+medNombre+'</div>'
+      + '<div style="width:200px;margin:0 auto 6px;border-top:1.5px solid #1a1a1a;padding-top:6px">'
+      + '<div style="font-size:11px;font-weight:700;color:#1a1a1a">'+medNombre+'</div>'
       + (medEsp ? '<div class="firma-validado">'+medEsp+'</div>' : '')
       + (medCedula ? '<div class="firma-validado">C.I. '+medCedula+'</div>' : '')
-      + (medReg ? '<div class="firma-validado">Reg. Médico: '+medReg+'</div>' : '')
+      + (medReg ? '<div class="firma-validado">Reg. '+medReg+'</div>' : '')
+      + '</div>'
     + '</div>'
     + '</div>'
     + '</div>'
