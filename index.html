@@ -963,7 +963,7 @@ _sb.auth.onAuthStateChange(function(event, session) {
 // ── ESTADO ──
 var ALL_DOCTORS = [];
 var filtered = [];
-var currentFilter = {esp:'', pais:'', ciudad:''};
+var currentFilter = {esp:'', pais:'', ciudad:'', seguro:'', seguroNombre:''};
 var currentSort = 'destacado';
 var selectedDoctor = null;
 var selectedDate = null;
@@ -1076,6 +1076,10 @@ function aplicarFiltros() {
     }
     if (currentFilter.pais && d.country !== currentFilter.pais) return false;
     if (currentFilter.ciudad && d.city.toLowerCase() !== currentFilter.ciudad.toLowerCase()) return false;
+    if (currentFilter.seguro) {
+      var ins = (d.insurance || []).map(function(s){ return s.toLowerCase(); });
+      if (!ins.some(function(s){ return s.includes(currentFilter.seguro) || currentFilter.seguro.includes(s); })) return false;
+    }
     return true;
   });
   if (currentSort==='precio-asc') filtered.sort(function(a,b){return a.price-b.price;});
@@ -1151,6 +1155,7 @@ function renderFilterChips() {
   if (currentFilter.esp && sel) chips.push({label:'🩺 '+(sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].text:''), key:'esp'});
   if (currentFilter.pais) chips.push({label:'🌍 '+(PAISES_LABEL[currentFilter.pais]||currentFilter.pais), key:'pais'});
   if (currentFilter.ciudad) chips.push({label:'📍 '+currentFilter.ciudad, key:'ciudad'});
+  if (currentFilter.seguro) chips.push({label:'🛡️ '+currentFilter.seguroNombre, key:'seguro'});
   chips.forEach(function(chip) {
     var div = document.createElement('div');
     div.className = 'filter-chip';
@@ -1164,6 +1169,10 @@ function removeFilter(key) {
   currentFilter[key] = '';
   if (key==='pais') { currentFilter.ciudad=''; if(ssPais)ssPais.clear(); if(ssCiudad){ssCiudad.clear();ssCiudad.setOptions([]);} }
   if (key==='ciudad' && ssCiudad) ssCiudad.clear();
+  if (key==='seguro') {
+    currentFilter.seguroNombre = '';
+    document.querySelectorAll('#segurosScroll .seguro-card').forEach(function(c){ c.style.opacity='1'; c.style.outline='none'; });
+  }
   renderDir();
 }
 
@@ -1805,9 +1814,24 @@ document.addEventListener('DOMContentLoaded', function() {
         '<div class="seguro-logo" style="background:'+s.accent+'">'+s.icon+'</div>' +
         '<div class="seguro-name">'+s.nombre+'</div>' +
         '<div class="seguro-count">+'+s.medicos+' médicos</div>';
-      card.addEventListener('click', function() {
-        document.getElementById('directorio').scrollIntoView({behavior:'smooth'});
-      });
+      card.addEventListener('click', (function(seguro, cardEl) {
+        return function() {
+          var allCards = document.querySelectorAll('#segurosScroll .seguro-card');
+          if (currentFilter.seguro === seguro.id) {
+            currentFilter.seguro = '';
+            currentFilter.seguroNombre = '';
+            allCards.forEach(function(c){ c.style.opacity='1'; c.style.outline='none'; });
+          } else {
+            currentFilter.seguro = seguro.id;
+            currentFilter.seguroNombre = seguro.nombre;
+            allCards.forEach(function(c){ c.style.opacity='.45'; c.style.outline='none'; });
+            cardEl.style.opacity = '1';
+            cardEl.style.outline = '2.5px solid ' + seguro.accent;
+          }
+          renderDir();
+          document.getElementById('directorio').scrollIntoView({behavior:'smooth'});
+        };
+      })(s, card));
       container.appendChild(card);
     });
   }
