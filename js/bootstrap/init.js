@@ -50,6 +50,14 @@
       // Store detected country globally
       if (region.country) window._regionPais = region.country;
 
+      // Update directory title immediately — don't wait for search
+      var dirCiudad = document.getElementById('dirCiudad');
+      if (dirCiudad && region.country) {
+        var label = (window.PAISES_LABEL && window.PAISES_LABEL[region.country]) || region.country;
+        if (region.city) label = region.city;
+        dirCiudad.textContent = label.charAt(0).toUpperCase() + label.slice(1);
+      }
+
       // Language auto-set from region (only if user hasn't manually chosen)
       if (region.language && !localStorage.getItem('citadoc-lang-manual')) {
         if (typeof window.setLang === 'function') {
