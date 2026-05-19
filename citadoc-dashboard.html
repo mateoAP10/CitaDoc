@@ -10400,6 +10400,18 @@ async function verEnviarDocumentos() {
     renderVerificacionTab();
     mostrarToast('✓ Documentos enviados — revisamos en 48h');
 
+    // Notificar admin
+    fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        type: 'verification_new',
+        to_email: 'mateoalarconpons@gmail.com',
+        nombre: M.nombre || '', apellido: M.apellido || '', titulo: M.titulo || 'Dr.',
+        doctor_email: M.email || '',
+        cedula_url: url1, titulo_url: url2,
+      })
+    }).catch(function(){});
+
   } catch(e) {
     console.error('[verificacion]', e);
     mostrarToast('Error al subir documentos. Intenta de nuevo.', 'error');

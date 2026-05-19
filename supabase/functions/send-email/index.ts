@@ -316,6 +316,90 @@ function tplDocs(htmlBody: string): string {
 </body></html>`
 }
 
+function tplVerificationNew(d: Record<string, string>): string {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:40px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+<tr><td style="background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #1e293b;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="padding:36px 40px 28px;border-bottom:1px solid #1e293b;">
+  <table cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr>
+    <td style="background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.4);border-radius:100px;padding:5px 14px;">
+      <span style="color:#c4b5fd;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Admin · Verificación Pendiente</span>
+    </td>
+  </tr></table>
+  <h1 style="margin:0 0 8px;color:#f8fafc;font-size:20px;font-weight:700;">Nuevo médico para verificar</h1>
+  <p style="margin:0;color:rgba(255,255,255,.4);font-size:14px;">${d.titulo || 'Dr.'} ${d.nombre || ''} ${d.apellido || ''} envió sus documentos.</p>
+</td></tr>
+<tr><td style="padding:28px 40px;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="padding-bottom:14px;border-bottom:1px solid #1e293b;">
+      <p style="margin:0 0 3px;color:rgba(255,255,255,.3);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Nombre</p>
+      <p style="margin:0;color:#e2e8f0;font-size:14px;font-weight:600;">${d.titulo || 'Dr.'} ${d.nombre || ''} ${d.apellido || ''}</p>
+    </td></tr>
+    <tr><td style="padding:14px 0;border-bottom:1px solid #1e293b;">
+      <p style="margin:0 0 3px;color:rgba(255,255,255,.3);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Email</p>
+      <p style="margin:0;color:#e2e8f0;font-size:14px;">${d.doctor_email || ''}</p>
+    </td></tr>
+    <tr><td style="padding:14px 0 20px;">
+      <p style="margin:0 0 10px;color:rgba(255,255,255,.3);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Documentos</p>
+      ${d.cedula_url ? `<p style="margin:0 0 8px;"><a href="${d.cedula_url}" style="color:#818cf8;font-size:13px;font-weight:600;">Ver documento de identidad →</a></p>` : ''}
+      ${d.titulo_url ? `<p style="margin:0;"><a href="${d.titulo_url}" style="color:#818cf8;font-size:13px;font-weight:600;">Ver título médico →</a></p>` : ''}
+    </td></tr>
+  </table>
+  <a href="https://citadoc.lat/citadoc-admin.html" style="display:block;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;margin-top:4px;">Ir al panel de verificaciones →</a>
+</td></tr>
+</table></td></tr>
+<tr><td style="padding:20px 0 0;text-align:center;">
+  <p style="margin:0;color:#cbd5e1;font-size:11px;">CitaDoc Admin</p>
+</td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
+function tplVerificationResult(nombre: string, titulo: string, aprobado: boolean): string {
+  const bg   = aprobado ? 'linear-gradient(135deg,#f0fdf4,#dcfce7)' : 'linear-gradient(135deg,#fff1f2,#fee2e2)'
+  const badgeBg    = aprobado ? '#d1fae5' : '#fee2e2'
+  const badgeColor = aprobado ? '#065f46' : '#991b1b'
+  const badge      = aprobado ? 'Verificación Aprobada' : 'Verificación Rechazada'
+  const headline   = aprobado ? `${titulo} ${nombre}, estás verificado.` : `${titulo} ${nombre}, necesitamos revisar tus documentos.`
+  const body       = aprobado
+    ? 'Tu perfil ahora muestra el badge de médico verificado. Tus pacientes pueden confiar en tu identidad profesional.'
+    : 'No pudimos verificar tus documentos. Por favor sube imágenes más claras o legibles en la sección Verificación de tu perfil.'
+  const cta        = aprobado ? 'Ver mi perfil verificado →' : 'Subir nuevos documentos →'
+  const ctaUrl     = aprobado ? 'https://citadoc.lat/citadoc-dashboard.html' : 'https://citadoc.lat/citadoc-dashboard.html'
+  const ctaColor   = aprobado ? '#059669' : '#dc2626'
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:40px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+<tr><td style="padding-bottom:20px;text-align:center;">
+  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CITADOC</span>
+</td></tr>
+<tr><td style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="background:${bg};padding:36px 40px 28px;border-bottom:1px solid #e2e8f0;">
+  <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;"><tr>
+    <td style="background:${badgeBg};border-radius:100px;padding:5px 14px;">
+      <span style="color:${badgeColor};font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">${badge}</span>
+    </td>
+  </tr></table>
+  <h1 style="margin:0;color:#0f172a;font-size:22px;font-weight:700;line-height:1.3;">${headline}</h1>
+</td></tr>
+<tr><td style="padding:32px 40px;">
+  <p style="margin:0 0 28px;color:#374151;font-size:15px;line-height:1.7;">${body}</p>
+  <a href="${ctaUrl}" style="display:block;background:${ctaColor};color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">${cta}</a>
+</td></tr>
+</table></td></tr>
+<tr><td style="padding:20px 0 0;text-align:center;">
+  <p style="margin:0;color:#cbd5e1;font-size:11px;">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#cbd5e1;text-decoration:none;">hola@citadoc.lat</a></p>
+</td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplWelcomeFree(nombre: string, titulo: string): string {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
@@ -462,6 +546,21 @@ serve(async (req) => {
       case 'reminder': {
         const subject = `Recordatorio: tu cita con ${data.doctor_name || 'tu médico'} es mañana`
         await sendEmail(to_email, subject, tplReminder(data))
+        break
+      }
+
+      case 'verification_new': {
+        const subject = `Verificación pendiente — ${data.titulo || 'Dr.'} ${data.nombre || ''} ${data.apellido || ''}`
+        await sendEmail(to_email, subject, tplVerificationNew(data as Record<string, string>))
+        break
+      }
+
+      case 'verification_result': {
+        const aprobado = data.aprobado === true || data.aprobado === 'true'
+        const subject  = aprobado
+          ? `Tu cuenta CitaDoc ha sido verificada`
+          : `Actualiza tus documentos de verificación`
+        await sendEmail(to_email, subject, tplVerificationResult(data.nombre || '', data.titulo || 'Dr.', aprobado))
         break
       }
 
