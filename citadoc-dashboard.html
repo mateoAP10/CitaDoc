@@ -2454,7 +2454,7 @@ display:flex;
     <!-- Footer fijo — fuera del scroll -->
     <div class="hc-modal-footer">
       <button onclick="generarPDF()" style="flex:1;padding:.65rem .9rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:#374151;cursor:pointer">🖨️ Vista previa PDF</button>
-      <button onclick="enviarIndicacionesPaciente()" style="flex:2;padding:.65rem 1rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em">✍️ Firmar y enviar</button>
+      <button onclick="enviarIndicacionesPaciente()" style="flex:2;padding:.65rem 1rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.02em;touch-action:manipulation;-webkit-tap-highlight-color:transparent">✍️ Firmar y enviar</button>
     </div>
   </div>
 </div>
@@ -3656,13 +3656,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     verificarRetornoPago();
     verificarMantenimiento(medico);
 
-    // Restaurar panel activo al recargar
+    // Restaurar panel activo solo si es reload (no navegación fresh desde index)
+    var _navEntry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    var _navType  = _navEntry ? _navEntry.type : 'reload';
     var _savedPanel = sessionStorage.getItem('cd_panel');
     var _savedFicha = sessionStorage.getItem('cd_ficha');
     var _urlPanel   = new URLSearchParams(location.search).get('panel');
-    if (!_urlPanel && _savedFicha) {
+    if (!_urlPanel && _navType !== 'navigate' && _savedFicha) {
       setTimeout(function(){ abrirFicha(_savedFicha); }, 250);
-    } else if (!_urlPanel && _savedPanel && _savedPanel !== 'inicio') {
+    } else if (!_urlPanel && _navType !== 'navigate' && _savedPanel && _savedPanel !== 'inicio') {
       var _navEl = document.querySelector('[data-panel="'+_savedPanel+'"]') ||
                    document.querySelector('[onclick*="showPanel(\''+_savedPanel+'\'"]');
       setTimeout(function(){ showPanel(_savedPanel, _navEl); }, 200);
@@ -6844,40 +6846,39 @@ async function generarYSubirPDF(pacNombre, docs, indicText) {
 }
 
 async function enviarIndicacionesPaciente() {
-  var snapshot = {
-    indicaciones: (document.getElementById('aiIndicaciones')||{}).value || '',
-    docs:         JSON.parse(JSON.stringify(leerDocumentos())),
-    pacienteId:   _hcPacienteId,
-  };
-  var indicaciones = snapshot.indicaciones;
-  var docs = snapshot.docs;
-  var tieneContenido = indicaciones.trim() || docs.receta || docs.laboratorios || docs.imagenes;
-  if (!tieneContenido) { alert('No hay documentos ni indicaciones para enviar.'); return; }
-  if (!_hcPacienteId) { alert('No hay paciente vinculado.'); return; }
+  try {
+    var indicaciones = (document.getElementById('aiIndicaciones')||{}).value || '';
+    var docs = JSON.parse(JSON.stringify(leerDocumentos()));
+    var tieneContenido = indicaciones.trim() || docs.receta || docs.laboratorios || docs.imagenes;
+    if (!tieneContenido) { mostrarToast('Agrega indicaciones o documentos primero', 'error'); return; }
+    if (!_hcPacienteId) { mostrarToast('Sin paciente vinculado', 'error'); return; }
 
-  var r = await _sb.from('pacientes').select('nombre, email').eq('id', _hcPacienteId).single();
-  if (!r.data || !r.data.email) { alert('Este paciente no tiene email registrado.'); return; }
+    var r = await _sb.from('pacientes').select('nombre, email').eq('id', _hcPacienteId).single();
+    if (!r.data || !r.data.email) { mostrarToast('El paciente no tiene email registrado', 'error'); return; }
 
-  var paciente     = r.data;
-  var nombreMedico = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Tu médico';
+    var paciente     = r.data;
+    var nombreMedico = M ? ((M.titulo||'Dr.')+' '+M.nombre+' '+M.apellido) : 'Tu médico';
 
-  mostrarToast('Generando PDF y enviando...');
+    mostrarToast('Firmando y enviando...');
 
-  // Generar PDF y subir a Storage
-  var pdfUrl = await generarYSubirPDF(paciente.nombre, docs, indicaciones);
+    var pdfUrl = await generarYSubirPDF(paciente.nombre, docs, indicaciones);
 
-  citadocSendEmail('indicaciones', {
-    to_email:     paciente.email,
-    doctor_name:  nombreMedico,
-    patient_name: paciente.nombre,
-    text:         indicaciones.trim() || null,
-    receta:       docs.receta       || null,
-    laboratorios: docs.laboratorios || null,
-    imagenes:     docs.imagenes     || null,
-    pdf_url:      pdfUrl || null,
-  });
+    citadocSendEmail('indicaciones', {
+      to_email:     paciente.email,
+      doctor_name:  nombreMedico,
+      patient_name: paciente.nombre,
+      text:         indicaciones.trim() || null,
+      receta:       docs.receta       || null,
+      laboratorios: docs.laboratorios || null,
+      imagenes:     docs.imagenes     || null,
+      pdf_url:      pdfUrl || null,
+    });
 
-  mostrarToast('✓ Enviado a ' + paciente.email + (pdfUrl ? ' con PDF' : ''));
+    mostrarToast('✓ Enviado a ' + paciente.email);
+  } catch(e) {
+    logError('enviarIndicaciones', e);
+    mostrarToast('Error al enviar — intenta de nuevo', 'error');
+  }
 }
 
 // ── MOSTRAR AI DESDE DATOS GUARDADOS ──
