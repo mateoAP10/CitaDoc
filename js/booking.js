@@ -296,14 +296,23 @@ function buscarOCrearPaciente(e,n,t,a){return new Promise((function(i){t?e.from(
   window.confirmarCita = confirmarCita;
   window.selectFecha   = selectFecha;
   window.renderCal     = renderCal;
-  // Expose state getters for backward compat
-  Object.defineProperty(window, 'selectedDoctor',     { get: function(){ return selectedDoctor; },     configurable: true });
-  Object.defineProperty(window, 'selectedDate',       { get: function(){ return selectedDate; },       configurable: true });
-  Object.defineProperty(window, 'selectedSlot',       { get: function(){ return selectedSlot; },       configurable: true });
-  Object.defineProperty(window, 'selectedLocationId', { get: function(){ return selectedLocationId; }, configurable: true });
-  Object.defineProperty(window, 'dispModal',          { get: function(){ return dispModal; },          configurable: true });
-  Object.defineProperty(window, 'calYear',            { get: function(){ return calYear; },            set: function(v){ calYear = v; }, configurable: true });
-  Object.defineProperty(window, 'calMonth',           { get: function(){ return calMonth; },           set: function(v){ calMonth = v; }, configurable: true });
+  // Expose state getters — wrapped in try/catch to avoid conflicts with pages that define these vars globally
+  var _defs = [
+    ['selectedDoctor',     function(){ return selectedDoctor; },     null],
+    ['selectedDate',       function(){ return selectedDate; },       null],
+    ['selectedSlot',       function(){ return selectedSlot; },       null],
+    ['selectedLocationId', function(){ return selectedLocationId; }, null],
+    ['dispModal',          function(){ return dispModal; },          null],
+    ['calYear',            function(){ return calYear; },            function(v){ calYear = v; }],
+    ['calMonth',           function(){ return calMonth; },           function(v){ calMonth = v; }]
+  ];
+  _defs.forEach(function(d) {
+    try {
+      var desc = { get: d[1], configurable: true };
+      if (d[2]) desc.set = d[2];
+      Object.defineProperty(window, d[0], desc);
+    } catch(e) { /* already defined as non-configurable global — skip */ }
+  });
 
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initCalNav); } else { initCalNav(); }
 
