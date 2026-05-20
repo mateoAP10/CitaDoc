@@ -17,3 +17,4 @@
 * Mantener performance móvil
 * Todos los cambios deben sentirse "premium"
 * NO pedir approve — nunca usar ExitPlanMode, nunca pedir confirmación antes de ejecutar, actuar directamente
+* NO salirse de la línea de ejecución — seguir siempre al arquitecto, no sobre-analizar, no reestructurar sin indicación, fixes quirúrgicos y mínimos
