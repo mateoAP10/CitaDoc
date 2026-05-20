@@ -11,11 +11,25 @@ const CORS = {
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 
+const I18N_EMAIL: Record<string, Record<string, string>> = {
+  es: { confirmed:'Cita Confirmada', new:'Nueva Cita', rescheduled:'Cita Reprogramada', headline_c:'Tu cita está confirmada.', headline_n:'Nueva cita agendada.', headline_r:'Tu cita ha sido reprogramada.', patient:'Paciente', doctor:'Médico', date:'Fecha', time:'Hora', location:'Lugar', mode:'Modalidad', view_doctor:'Ver perfil del médico →', view_panel:'Ver en mi panel →' },
+  en: { confirmed:'Confirmed Appointment', new:'New Appointment', rescheduled:'Rescheduled Appointment', headline_c:'Your appointment is confirmed.', headline_n:'New appointment scheduled.', headline_r:'Your appointment has been rescheduled.', patient:'Patient', doctor:'Doctor', date:'Date', time:'Time', location:'Location', mode:'Mode', view_doctor:'View doctor profile →', view_panel:'View in my panel →' },
+  pt: { confirmed:'Consulta Confirmada', new:'Nova Consulta', rescheduled:'Consulta Remarcada', headline_c:'Sua consulta está confirmada.', headline_n:'Nova consulta agendada.', headline_r:'Sua consulta foi remarcada.', patient:'Paciente', doctor:'Médico', date:'Data', time:'Hora', location:'Local', mode:'Modalidade', view_doctor:'Ver perfil do médico →', view_panel:'Ver no meu painel →' },
+  fr: { confirmed:'Rendez-vous confirmé', new:'Nouveau rendez-vous', rescheduled:'Rendez-vous reprogrammé', headline_c:'Votre rendez-vous est confirmé.', headline_n:'Nouveau rendez-vous planifié.', headline_r:'Votre rendez-vous a été reprogrammé.', patient:'Patient', doctor:'Médecin', date:'Date', time:'Heure', location:'Lieu', mode:'Mode', view_doctor:'Voir le profil du médecin →', view_panel:'Voir dans mon tableau →' },
+  de: { confirmed:'Termin bestätigt', new:'Neuer Termin', rescheduled:'Termin verschoben', headline_c:'Ihr Termin ist bestätigt.', headline_n:'Neuer Termin vereinbart.', headline_r:'Ihr Termin wurde verschoben.', patient:'Patient', doctor:'Arzt', date:'Datum', time:'Uhrzeit', location:'Ort', mode:'Art', view_doctor:'Arztprofil ansehen →', view_panel:'Im Cockpit ansehen →' },
+  it: { confirmed:'Appuntamento confermato', new:'Nuovo appuntamento', rescheduled:'Appuntamento riprogrammato', headline_c:'Il tuo appuntamento è confermato.', headline_n:'Nuovo appuntamento programmato.', headline_r:'Il tuo appuntamento è stato riprogrammato.', patient:'Paziente', doctor:'Medico', date:'Data', time:'Ora', location:'Luogo', mode:'Modalità', view_doctor:'Vedi profilo medico →', view_panel:'Vedi nel mio pannello →' },
+  tr: { confirmed:'Randevu Onaylandı', new:'Yeni Randevu', rescheduled:'Randevu Yeniden Planlandı', headline_c:'Randevunuz onaylandı.', headline_n:'Yeni randevu planlandı.', headline_r:'Randevunuz yeniden planlandı.', patient:'Hasta', doctor:'Doktor', date:'Tarih', time:'Saat', location:'Konum', mode:'Mod', view_doctor:'Doktor profilini görüntüle →', view_panel:'Panelimde görüntüle →' },
+  ru: { confirmed:'Приём подтверждён', new:'Новая запись', rescheduled:'Запись перенесена', headline_c:'Ваш приём подтверждён.', headline_n:'Новая запись создана.', headline_r:'Ваш приём перенесён.', patient:'Пациент', doctor:'Врач', date:'Дата', time:'Время', location:'Место', mode:'Формат', view_doctor:'Посмотреть профиль врача →', view_panel:'Открыть панель →' },
+  ar: { confirmed:'تم تأكيد الموعد', new:'موعد جديد', rescheduled:'تم إعادة جدولة الموعد', headline_c:'تم تأكيد موعدك.', headline_n:'تم جدولة موعد جديد.', headline_r:'تم إعادة جدولة موعدك.', patient:'المريض', doctor:'الطبيب', date:'التاريخ', time:'الوقت', location:'الموقع', mode:'الطريقة', view_doctor:'عرض ملف الطبيب ←', view_panel:'عرض في لوحتي ←' },
+}
+
 function tplAppointment(d: Record<string, string>): string {
+  const lang         = d.lang && I18N_EMAIL[d.lang] ? d.lang : 'es'
+  const T            = I18N_EMAIL[lang]
   const isDoctor     = (d.appointment_mode || '').includes('Dashboard')
-  const isReschedule = (d.appointment_mode || '').includes('reprogramada')
-  const badge        = isReschedule ? 'Cita Reprogramada' : isDoctor ? 'Nueva Cita' : 'Cita Confirmada'
-  const headline     = isReschedule ? 'Tu cita ha sido reprogramada.' : isDoctor ? 'Nueva cita agendada.' : 'Tu cita está confirmada.'
+  const isReschedule = (d.appointment_mode || '').includes('reprogramada') || (d.appointment_mode || '').includes('rescheduled')
+  const badge        = isReschedule ? T.rescheduled : isDoctor ? T.new : T.confirmed
+  const headline     = isReschedule ? T.headline_r : isDoctor ? T.headline_n : T.headline_c
   const modeClean    = (d.appointment_mode || '')
     .replace('📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html', 'Panel médico')
     .replace(/^[^\w]+ /, '')
@@ -25,9 +39,9 @@ function tplAppointment(d: Record<string, string>): string {
     ? 'linear-gradient(135deg,#fffbeb 0%,#fef9c3 100%)'
     : 'linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%)'
   const ctaColor     = isDoctor ? '#1d4ed8' : '#0891b2'
-  const ctaLabel     = isDoctor ? 'Ver en mi panel →' : 'Ver perfil del médico →'
+  const ctaLabel     = isDoctor ? T.view_panel : T.view_doctor
 
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+  return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:40px 16px;">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
@@ -51,21 +65,21 @@ function tplAppointment(d: Record<string, string>): string {
 <tr><td style="padding:32px 40px 28px;">
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr><td style="padding-bottom:18px;border-bottom:1px solid #f1f5f9;">
-      <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Paciente</p>
+      <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">${T.patient}</p>
       <p style="margin:0;color:#0f172a;font-size:15px;font-weight:600;">${d.patient_name || ''}</p>
     </td></tr>
     <tr><td style="padding:18px 0;border-bottom:1px solid #f1f5f9;">
-      <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Médico</p>
+      <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">${T.doctor}</p>
       <p style="margin:0;color:#0f172a;font-size:15px;font-weight:600;">${d.doctor_name || ''}</p>
     </td></tr>
     <tr><td style="padding-top:18px;">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
         <td style="width:50%;vertical-align:top;padding-right:16px;">
-          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Fecha</p>
+          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">${T.date}</p>
           <p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">${d.appointment_date || ''}</p>
         </td>
         <td style="width:50%;vertical-align:top;padding-left:16px;">
-          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Hora</p>
+          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">${T.time}</p>
           <p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">${d.appointment_time || ''}</p>
         </td>
       </tr></table>
@@ -73,11 +87,11 @@ function tplAppointment(d: Record<string, string>): string {
     ${d.location_name ? `<tr><td style="padding-top:18px;">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
         <td style="width:50%;vertical-align:top;padding-right:16px;">
-          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Lugar</p>
+          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">${T.location}</p>
           <p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">${d.location_name}</p>
         </td>
         ${modeClean ? `<td style="width:50%;vertical-align:top;padding-left:16px;">
-          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Modalidad</p>
+          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">${T.mode}</p>
           <p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">${modeClean}</p>
         </td>` : ''}
       </tr></table>

@@ -265,8 +265,8 @@ function buscarOCrearPaciente(e,n,t,a){return new Promise((function(i){t?e.from(
           });
         });
     });
-    if (email) window.citadocSendEmail('appointment', { to_email: email, doctor_name: selectedDoctor.name, patient_name: nombre, appointment_date: fechaLabel, appointment_time: selectedSlot, location_name: 'Consultorio médico', appointment_mode: '🏥 Presencial', public_profile_url: 'https://citadoc.lat/citadoc-perfil.html?slug='+(selectedDoctor.slug||'') });
-    if (selectedDoctor.email) window.citadocSendEmail('appointment', { to_email: selectedDoctor.email, doctor_name: selectedDoctor.name, patient_name: nombre, appointment_date: fechaLabel, appointment_time: selectedSlot, location_name: 'Consultorio médico', appointment_mode: '📋 Dashboard', public_profile_url: 'https://citadoc.lat/citadoc-dashboard.html' });
+    if (email) window.citadocSendEmail('appointment', { to_email: email, doctor_name: selectedDoctor.name, patient_name: nombre, appointment_date: fechaLabel, appointment_time: selectedSlot, location_name: 'Consultorio médico', appointment_mode: '🏥 Presencial', public_profile_url: 'https://citadoc.lat/citadoc-perfil.html?slug='+(selectedDoctor.slug||''), lang: window._currentLang||'es' });
+    if (selectedDoctor.email) window.citadocSendEmail('appointment', { to_email: selectedDoctor.email, doctor_name: selectedDoctor.name, patient_name: nombre, appointment_date: fechaLabel, appointment_time: selectedSlot, location_name: 'Consultorio médico', appointment_mode: '📋 Dashboard', public_profile_url: 'https://citadoc.lat/citadoc-dashboard.html', lang: 'es' });
     window.el('bookingForm').style.display = 'none'; window.el('successState').style.display = 'block';
     var sedeMsg = '';
     if (selectedLocationId && _locationsModal.length) {
