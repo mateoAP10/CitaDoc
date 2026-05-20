@@ -112,21 +112,50 @@ function actualizarCiudadList(){cdFilter('');}
 function cdClose(){var d=document.getElementById('cd-drop');if(d)d.style.display='none';}
 function cdPick(v){var inp=document.getElementById('inf-ciudad');if(inp)inp.value=v;cdClose();}
 function cdFilter(q){
+  var _C={
+    argentina:['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','Mar del Plata','San Miguel de Tucumán','Salta','Santa Fe','San Juan','Resistencia','Neuquén','Corrientes','Posadas','Bahía Blanca','Paraná','Formosa','San Luis','Río Cuarto','Comodoro Rivadavia','Jujuy','Ushuaia','Río Gallegos'],
+    ecuador:['Quito','Guayaquil','Cuenca','Santo Domingo','Machala','Durán','Manta','Portoviejo','Loja','Ambato','Esmeraldas','Quevedo','Riobamba','Milagro','Ibarra','Latacunga','Babahoyo','Tulcán','Azogues'],
+    colombia:['Bogotá','Medellín','Cali','Barranquilla','Cartagena','Cúcuta','Bucaramanga','Pereira','Santa Marta','Ibagué','Manizales','Pasto','Montería','Villavicencio','Valledupar','Armenia','Neiva','Popayán'],
+    peru:['Lima','Arequipa','Trujillo','Chiclayo','Piura','Iquitos','Cusco','Chimbote','Huancayo','Tacna','Juliaca','Ica','Pucallpa','Ayacucho','Cajamarca','Puno','Tarapoto'],
+    chile:['Santiago','Valparaíso','Concepción','La Serena','Antofagasta','Temuco','Rancagua','Talca','Arica','Iquique','Puerto Montt','Osorno','Valdivia','Punta Arenas','Calama'],
+    mexico:['Ciudad de México','Guadalajara','Monterrey','Puebla','Tijuana','León','Juárez','Mexicali','Culiacán','Mérida','Acapulco','Aguascalientes','Cancún','Hermosillo','Chihuahua','Morelia','Querétaro','Toluca','San Luis Potosí'],
+    venezuela:['Caracas','Maracaibo','Valencia','Barquisimeto','Maracay','Ciudad Guayana','Barcelona','Maturín'],
+    bolivia:['La Paz','Cochabamba','Santa Cruz de la Sierra','Oruro','Sucre','Potosí','Tarija'],
+    paraguay:['Asunción','Ciudad del Este','San Lorenzo','Luque','Capiatá'],
+    uruguay:['Montevideo','Salto','Paysandú','Maldonado','Rivera'],
+    brasil:['São Paulo','Rio de Janeiro','Brasília','Salvador','Fortaleza','Belo Horizonte','Manaus','Curitiba','Recife','Porto Alegre','Belém','Florianópolis'],
+    espana:['Madrid','Barcelona','Valencia','Sevilla','Zaragoza','Málaga','Murcia','Bilbao','Alicante','Córdoba','Valladolid','Vigo','Granada'],
+    usa:['New York','Los Angeles','Chicago','Houston','Phoenix','Miami','Atlanta','Boston','Seattle','Denver','Dallas','Washington DC','San Francisco'],
+    canada:['Toronto','Montreal','Vancouver','Calgary','Edmonton','Ottawa','Winnipeg'],
+    reino_unido:['London','Birmingham','Manchester','Glasgow','Liverpool','Edinburgh','Bristol'],
+    alemania:['Berlín','Hamburgo','Múnich','Colonia','Frankfurt','Stuttgart'],
+    australia:['Sydney','Melbourne','Brisbane','Perth','Adelaide','Canberra'],
+    india:['Mumbai','Delhi','Bangalore','Hyderabad','Chennai','Kolkata','Pune'],
+    china:['Pekín','Shanghái','Shenzhen','Guangzhou','Chengdu','Hangzhou'],
+    japon:['Tokio','Osaka','Nagoya','Sapporo','Fukuoka','Kioto'],
+    emiratos_arabes:['Dubái','Abu Dhabi','Sharjah'],
+    israel:['Tel Aviv','Jerusalén','Haifa'],
+    turquia:['Estambul','Ankara','Esmirna','Bursa','Antalya'],
+    sudafrica:['Johannesburgo','Ciudad del Cabo','Durban','Pretoria'],
+    singapur:['Singapur'],
+    nueva_zelanda:['Auckland','Wellington','Christchurch'],
+    corea_del_sur:['Seúl','Busan','Incheon','Daegu']
+  };
   var pais=(document.getElementById('inf-pais')||{}).value||'';
-  var lista=(window.CIUDADES_DASH||{})[pais]||[];
+  var lista=_C[pais]||[];
   var drop=document.getElementById('cd-drop');
   if(!drop)return;
   drop.innerHTML='';
   if(!lista.length){
     var msg=document.createElement('div');
-    msg.style.cssText='padding:.7rem 1rem;font-size:.82rem;color:#a0b0ae';
-    msg.textContent='Selecciona un país primero';
+    msg.style.cssText='padding:.7rem 1rem;font-size:.82rem;color:#a0b0ae;font-family:DM Sans,sans-serif';
+    msg.textContent=pais?'Sin ciudades para este país':'Selecciona un país primero';
     drop.appendChild(msg);drop.style.display='block';return;
   }
   var low=(q||'').toLowerCase();
   var hits=low?lista.filter(function(x){return x.toLowerCase().indexOf(low)>=0;}):lista;
   if(!hits.length){drop.style.display='none';return;}
-  hits.slice(0,40).forEach(function(x){
+  hits.slice(0,50).forEach(function(x){
     var div=document.createElement('div');
     div.style.cssText='padding:.55rem .9rem;font-size:.88rem;color:#1a1a1a;cursor:pointer;font-family:DM Sans,sans-serif';
     div.textContent=x;
