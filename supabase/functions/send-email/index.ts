@@ -5,7 +5,7 @@ const FROM = 'CitaDoc <hola@citadoc.lat>'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type, x-citadoc-public-key',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-citadoc-public-key',
   'Content-Type': 'application/json',
 }
 
