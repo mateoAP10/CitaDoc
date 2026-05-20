@@ -419,6 +419,95 @@ function tplVerificationResult(nombre: string, titulo: string, aprobado: boolean
 </body></html>`
 }
 
+function tplTrialStarted(nombre: string, titulo: string, trialEndsAt: string): string {
+  const endDate = trialEndsAt ? new Date(trialEndsAt).toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' }) : '30 días'
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:40px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+<tr><td style="padding-bottom:20px;text-align:center;">
+  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CITADOC</span>
+</td></tr>
+
+<tr><td style="background:#0f172a;border-radius:20px;overflow:hidden;border:1px solid #1e293b;">
+<table width="100%" cellpadding="0" cellspacing="0">
+
+<tr><td style="padding:48px 44px 40px;border-bottom:1px solid #1e293b;">
+  <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;"><tr>
+    <td style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:6px 16px;">
+      <span style="color:rgba(255,255,255,0.45);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;">Trial Pro Activo</span>
+    </td>
+  </tr></table>
+  <h1 style="margin:0 0 14px;color:#f8fafc;font-size:26px;font-weight:700;line-height:1.2;letter-spacing:-0.5px;">Tu trial Pro comenzó 🚀</h1>
+  <p style="margin:0;color:rgba(255,255,255,0.4);font-size:14px;line-height:1.6;">${titulo} ${nombre}, tienes acceso premium completo hasta el <strong style="color:#f8fafc;">${endDate}</strong>.</p>
+</td></tr>
+
+<tr><td style="padding:36px 44px;">
+  <p style="margin:0 0 28px;color:#94a3b8;font-size:15px;line-height:1.7;">
+    Durante estos 30 días puedes explorar todas las funcionalidades Pro: gestión de pacientes, historiales clínicos, recetas digitales y tu perfil optimizado en búsquedas.
+  </p>
+
+  <p style="margin:0 0 16px;color:rgba(255,255,255,0.2);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Incluido en tu trial</p>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="padding-bottom:16px;">
+      <table cellpadding="0" cellspacing="0"><tr>
+        <td style="vertical-align:top;padding-right:14px;">
+          <div style="width:26px;height:26px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;line-height:26px;">
+            <span style="color:rgba(255,255,255,0.3);font-size:10px;font-weight:700;">01</span>
+          </div>
+        </td>
+        <td style="vertical-align:top;">
+          <p style="margin:0 0 2px;color:#e2e8f0;font-size:14px;font-weight:600;">Perfil destacado en búsquedas</p>
+          <p style="margin:0;color:#475569;font-size:13px;">Aparece primero cuando los pacientes buscan tu especialidad</p>
+        </td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding-bottom:16px;">
+      <table cellpadding="0" cellspacing="0"><tr>
+        <td style="vertical-align:top;padding-right:14px;">
+          <div style="width:26px;height:26px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;line-height:26px;">
+            <span style="color:rgba(255,255,255,0.3);font-size:10px;font-weight:700;">02</span>
+          </div>
+        </td>
+        <td style="vertical-align:top;">
+          <p style="margin:0 0 2px;color:#e2e8f0;font-size:14px;font-weight:600;">Gestión de pacientes completa</p>
+          <p style="margin:0;color:#475569;font-size:13px;">Historial clínico, recetas digitales y seguimiento</p>
+        </td>
+      </tr></table>
+    </td></tr>
+    <tr><td>
+      <table cellpadding="0" cellspacing="0"><tr>
+        <td style="vertical-align:top;padding-right:14px;">
+          <div style="width:26px;height:26px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;line-height:26px;">
+            <span style="color:rgba(255,255,255,0.3);font-size:10px;font-weight:700;">03</span>
+          </div>
+        </td>
+        <td style="vertical-align:top;">
+          <p style="margin:0 0 2px;color:#e2e8f0;font-size:14px;font-weight:600;">Landing personalizada</p>
+          <p style="margin:0;color:#475569;font-size:13px;">Tu propia página web médica con tu branding</p>
+        </td>
+      </tr></table>
+    </td></tr>
+  </table>
+</td></tr>
+
+<tr><td style="padding:0 44px 44px;">
+  <a href="https://citadoc.lat/citadoc-dashboard.html" style="display:block;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;">
+    Explorar mi dashboard &rarr;
+  </a>
+</td></tr>
+
+</table></td></tr>
+
+<tr><td style="padding:20px 0 0;text-align:center;">
+  <p style="margin:0;color:#cbd5e1;font-size:11px;">CitaDoc · La capa AI del médico moderno · <a href="mailto:hola@citadoc.lat" style="color:#cbd5e1;text-decoration:none;">hola@citadoc.lat</a></p>
+</td></tr>
+
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplWelcomeFree(nombre: string, titulo: string): string {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
@@ -577,6 +666,12 @@ serve(async (req) => {
       case 'welcome_free': {
         const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu cuenta CitaDoc está lista`
         await sendEmail(to_email, subject, tplWelcomeFree(data.nombre || '', data.titulo || 'Dr.'))
+        break
+      }
+
+      case 'trial_started': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu trial Pro de CitaDoc comenzó 🚀`
+        await sendEmail(to_email, subject, tplTrialStarted(data.nombre || '', data.titulo || 'Dr.', data.trial_ends_at || ''))
         break
       }
 
