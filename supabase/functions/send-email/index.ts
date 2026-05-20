@@ -508,6 +508,59 @@ function tplTrialStarted(nombre: string, titulo: string, trialEndsAt: string): s
 </body></html>`
 }
 
+function tplTrialReminder(nombre: string, titulo: string, daysLeft: number, trialEndsAt: string): string {
+  const endDate = trialEndsAt ? new Date(trialEndsAt).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
+  const urgency = daysLeft === 1 ? '⚠️ Último día' : daysLeft <= 5 ? '⏳ Quedan pocos días' : '📅 Recordatorio'
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="padding-bottom:20px;text-align:center"><span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span></td></tr>
+<tr><td style="background:#0f172a;border-radius:20px;overflow:hidden;border:1px solid #1e293b">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="padding:40px 44px 32px;border-bottom:1px solid #1e293b">
+  <div style="display:inline-block;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:100px;padding:5px 14px;margin-bottom:20px">
+    <span style="color:#fbbf24;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">${urgency}</span>
+  </div>
+  <h1 style="margin:0 0 12px;color:#f8fafc;font-size:24px;font-weight:700;line-height:1.2">Tu trial Pro vence en ${daysLeft} día${daysLeft > 1 ? 's' : ''}</h1>
+  <p style="margin:0;color:rgba(255,255,255,.4);font-size:14px;line-height:1.6">${titulo} ${nombre}, tu acceso premium termina el <strong style="color:#f8fafc">${endDate}</strong>.</p>
+</td></tr>
+<tr><td style="padding:32px 44px">
+  <p style="margin:0 0 24px;color:#94a3b8;font-size:15px;line-height:1.7">Activa tu plan Pro para seguir con acceso a historiales clínicos, recetas digitales, prioridad en búsquedas y más.</p>
+  <a href="https://citadoc.lat/citadoc-dashboard.html" style="display:block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">Activar Plan Pro →</a>
+</td></tr>
+<tr><td style="padding:0 44px 32px;text-align:center">
+  <p style="margin:0;color:#334155;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#334155">hola@citadoc.lat</a></p>
+</td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
+function tplTrialExpired(nombre: string, titulo: string): string {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="padding-bottom:20px;text-align:center"><span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span></td></tr>
+<tr><td style="background:#0f172a;border-radius:20px;overflow:hidden;border:1px solid #1e293b">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="padding:40px 44px 32px;border-bottom:1px solid #1e293b">
+  <h1 style="margin:0 0 12px;color:#f8fafc;font-size:24px;font-weight:700;line-height:1.2">Tu trial Pro venció</h1>
+  <p style="margin:0;color:rgba(255,255,255,.4);font-size:14px;line-height:1.6">${titulo} ${nombre}, tu período de prueba ha terminado. Tu cuenta vuelve al plan gratuito.</p>
+</td></tr>
+<tr><td style="padding:32px 44px">
+  <p style="margin:0 0 24px;color:#94a3b8;font-size:15px;line-height:1.7">Activa tu plan Pro para recuperar acceso completo a todas las funcionalidades premium de CitaDoc.</p>
+  <a href="https://citadoc.lat/citadoc-dashboard.html" style="display:block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">Activar Plan Pro →</a>
+</td></tr>
+<tr><td style="padding:0 44px 32px;text-align:center">
+  <p style="margin:0;color:#334155;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#334155">hola@citadoc.lat</a></p>
+</td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplWelcomeFree(nombre: string, titulo: string): string {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
@@ -727,6 +780,21 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
 </table></td></tr></table>
 </body></html>`
         await sendEmail(to_email, subject, body)
+        break
+      }
+
+      case 'trial_reminder_20':
+      case 'trial_reminder_25':
+      case 'trial_reminder_29': {
+        const days = type === 'trial_reminder_20' ? 10 : type === 'trial_reminder_25' ? 5 : 1
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu trial Pro vence en ${days} día${days > 1 ? 's' : ''}`
+        await sendEmail(to_email, subject, tplTrialReminder(data.nombre || '', data.titulo || 'Dr.', days, data.trial_ends_at || ''))
+        break
+      }
+
+      case 'trial_expired': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu trial Pro de CitaDoc venció`
+        await sendEmail(to_email, subject, tplTrialExpired(data.nombre || '', data.titulo || 'Dr.'))
         break
       }
 
