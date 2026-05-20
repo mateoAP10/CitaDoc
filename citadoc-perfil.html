@@ -3,31 +3,34 @@
 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
 </button>
 <!-- Share popover -->
-<div id="sharePopover" style="display:none;position:absolute;top:3.2rem;right:.8rem;z-index:99;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(15,26,24,.18),0 2px 8px rgba(15,26,24,.08);padding:.85rem;width:220px;animation:shareIn .2s cubic-bezier(.16,1,.3,1)">
+<div id="sharePopover" style="display:none;position:absolute;top:3.2rem;right:.8rem;z-index:99;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(15,26,24,.18),0 2px 8px rgba(15,26,24,.08);padding:.85rem;width:236px;animation:shareIn .2s cubic-bezier(.16,1,.3,1)">
   <style>@keyframes shareIn{from{opacity:0;transform:scale(.92) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}</style>
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.7rem">
-    <button onclick="shareToInstagram()" title="Instagram" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.6rem .3rem;background:linear-gradient(135deg,#fdf2f8,#fce7f3);border:none;border-radius:12px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#igGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f59e0b"/><stop offset="50%" style="stop-color:#ec4899"/><stop offset="100%" style="stop-color:#8b5cf6"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#ec4899" stroke="none"/></svg>
-      <span style="font-size:.6rem;font-weight:700;background:linear-gradient(135deg,#ec4899,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">IG</span>
+  <div style="font-size:.62rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.65rem">Compartir perfil</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin-bottom:.55rem">
+    <button onclick="shareToInstagram()" style="display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:.7rem .4rem;background:linear-gradient(135deg,#fdf4ff,#fce7f3);border:none;border-radius:12px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="ig1" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f59e0b"/><stop offset="50%" style="stop-color:#ec4899"/><stop offset="100%" style="stop-color:#8b5cf6"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#ig1)" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="url(#ig1)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="#ec4899"/></svg>
+      <span style="font-size:.65rem;font-weight:700;color:#9333ea">Historia</span>
     </button>
-    <button onclick="shareToWhatsApp()" title="WhatsApp" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.6rem .3rem;background:#f0fdf4;border:none;border-radius:12px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#16a34a"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      <span style="font-size:.6rem;font-weight:700;color:#16a34a">WA</span>
-    </button>
-    <button onclick="shareToFacebook()" title="Facebook" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.6rem .3rem;background:#eff6ff;border:none;border-radius:12px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#1d4ed8"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-      <span style="font-size:.6rem;font-weight:700;color:#1d4ed8">FB</span>
-    </button>
-    <button onclick="shareToX()" title="X / Twitter" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.6rem .3rem;background:#f8fafc;border:none;border-radius:12px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="#0f172a"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      <span style="font-size:.6rem;font-weight:700;color:#0f172a">X</span>
-    </button>
-    <button onclick="shareToLinkedIn()" title="LinkedIn" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.6rem .3rem;background:#eff6ff;border:none;border-radius:12px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
-      <svg width="19" height="19" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-      <span style="font-size:.6rem;font-weight:700;color:#0a66c2">in</span>
+    <button onclick="shareToPost()" style="display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:.7rem .4rem;background:#eff6ff;border:none;border-radius:12px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.05)'" onmouseleave="this.style.transform='scale(1)'">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#1d4ed8"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      <span style="font-size:.65rem;font-weight:700;color:#1d4ed8">Post</span>
     </button>
   </div>
-  <button onclick="copiarLink()" id="copyLinkBtn" style="width:100%;padding:.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.78rem;font-weight:600;color:#6b7c79;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:background .15s" onmouseenter="this.style.background='#f0fdf9';this.style.color='#0b7c6e'" onmouseleave="this.style.background='#f8fafc';this.style.color='#6b7c79'">
+  <div style="display:flex;justify-content:space-between;gap:.4rem;margin-bottom:.55rem">
+    <button onclick="shareToWhatsApp()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.28rem;padding:.5rem .25rem;background:#f0fdf4;border:none;border-radius:10px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#16a34a"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span style="font-size:.58rem;font-weight:700;color:#16a34a">WA</span>
+    </button>
+    <button onclick="shareToX()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.28rem;padding:.5rem .25rem;background:#f8fafc;border:none;border-radius:10px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#0f172a"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      <span style="font-size:.58rem;font-weight:700;color:#0f172a">X</span>
+    </button>
+    <button onclick="shareToLinkedIn()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.28rem;padding:.5rem .25rem;background:#eff6ff;border:none;border-radius:10px;cursor:pointer;transition:transform .15s" onmouseenter="this.style.transform='scale(1.08)'" onmouseleave="this.style.transform='scale(1)'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      <span style="font-size:.58rem;font-weight:700;color:#0a66c2">in</span>
+    </button>
+  </div>
+  <button onclick="copiarLink()" id="copyLinkBtn" style="width:100%;padding:.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-family:DM Sans,sans-serif;font-size:.78rem;font-weight:600;color:#6b7c79;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .15s" onmouseenter="this.style.background='#f0fdf9';this.style.color='#0b7c6e'" onmouseleave="this.style.background='#f8fafc';this.style.color='#6b7c79'">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
     <span id="copyLinkText">Copiar enlace</span>
   </button>
@@ -51,17 +54,24 @@
     var _SC={"OSDE":"#0b7c6e","Swiss Medical":"#2563eb","Galeno":"#dc2626","OMINT":"#7c3aed","Medicus":"#ea580c","Sancor Salud":"#0891b2","Medife":"#059669","Ioma":"#b45309","PAMI":"#065f46","Saludsa":"#0b7c6e","BMI":"#2563eb","Humana":"#dc2626","IESS":"#065f46","Sura":"#0b7c6e","Coomeva":"#2563eb","Sanitas":"#dc2626","GNP":"#0b7c6e","AXA":"#2563eb","Rimac":"#0b7c6e","Rimac Seguros":"#0b7c6e","default":"#6b7c79"};
     if(LS&&e.seguros&&e.seguros.length){LS.innerHTML="";e.seguros.forEach(function(s){var col=_SC[s]||_SC.default;var chip=document.createElement("div");chip.style.cssText="display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .75rem;background:"+col+"18;border:1.5px solid "+col+"33;border-radius:8px;font-size:.72rem;font-weight:700;color:"+col;chip.innerHTML='<span style="width:6px;height:6px;border-radius:50%;background:'+col+';flex-shrink:0;display:inline-block"></span>'+s;LS.appendChild(chip)});LSW.style.display="block";}
     D&&(D.innerHTML="",e.seguros.forEach(function(e){var t=document.createElement("button");t.type="button",t.dataset.seguro=e,t.style.cssText="display:inline-flex;align-items:center;gap:.3rem;padding:.38rem .95rem;background:#fff;border:1.5px solid rgba(11,124,110,.18);border-radius:50px;font-size:.76rem;font-weight:600;color:var(--teal-dark);box-shadow:0 1px 4px rgba(11,124,110,.08);cursor:pointer;transition:all .2s;font-family:inherit",t.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'+e,t.addEventListener("click",function(){var t=_selectedInsurance===e;_selectedInsurance=t?null:e,D.querySelectorAll("button").forEach(function(e){var t=e.dataset.seguro===_selectedInsurance;e.style.background=t?"var(--teal)":"#fff",e.style.color=t?"#fff":"var(--teal-dark)",e.style.borderColor=t?"var(--teal)":"rgba(11,124,110,.18)",e.style.boxShadow=t?"0 4px 14px rgba(11,124,110,.3)":"0 1px 4px rgba(11,124,110,.08)"});var a=document.getElementById("insuranceBadge");if(a&&(a.textContent=_selectedInsurance?"🛡 Seguro: "+_selectedInsurance:"",a.style.display=_selectedInsurance?"block":"none"),!t){var n=document.getElementById("agendaSection");n&&n.scrollIntoView({behavior:"smooth",block:"start"})}}),D.appendChild(t)}),el("segurosCard").style.display="block")}var N=el("formList");if(N){var T=(t||[]).filter(function(e){return"academia"===e.tipo});if(T.length){N.innerHTML="";var A=document.createElement("div");A.className="timeline",T.forEach(function(e){var t=document.createElement("div");t.className="tl-item";var a=document.createElement("div");if(a.className="tl-left",e.anio){var n=document.createElement("div");n.className="tl-year",n.textContent=e.anio,a.appendChild(n)}var o=document.createElement("div");o.className="tl-dot",a.appendChild(o);var i=document.createElement("div");i.className="tl-line",a.appendChild(i);var l=document.createElement("div");l.className="tl-content";var r=document.createElement("div");if(r.className="tl-title",r.textContent=e.titulo||"",l.appendChild(r),e.institucion||e.lugar){var c=document.createElement("div");c.className="tl-inst",c.textContent=(e.institucion||"")+(e.lugar?" · "+e.lugar:""),l.appendChild(c)}t.appendChild(a),t.appendChild(l),A.appendChild(t)}),N.appendChild(A)}}var P=el("logrosList");if(P){var O=(t||[]).filter(function(e){return"logro"===e.tipo});O.length&&(P.innerHTML="",O.forEach(function(e){var t=document.createElement("div");t.className="logro-item";var a=document.createElement("div");a.className="logro-icon",a.textContent="⭐";var n=document.createElement("div"),o=document.createElement("div");if(o.className="logro-title",o.textContent=e.titulo||"",n.appendChild(o),e.descripcion){var i=document.createElement("div");i.className="logro-desc",i.textContent=e.descripcion,n.appendChild(i)}t.appendChild(a),t.appendChild(n),P.appendChild(t)}))}if(e.whatsapp_activo&&e.whatsapp){var q=urlWA(e.whatsapp,e.pais,o),H=el("btnWA");H&&(H.href=q||"#"),el("waSection").style.display="block",!1===e.agendamiento_citadoc?el("agendaSection").style.display="none":el("orDivider")&&(el("orDivider").style.display="flex")}var B=el("ubicacionesSection"),W=el("pubUbicaciones");B&&W&&n&&n.length&&(W.innerHTML="",n.forEach(function(e,t){var a=document.createElement("div");a.className="sede-card";var n=0===t?"Sede principal":"Sede secundaria",o=e.direccion?e.direccion.split(",").slice(0,2).join(","):"",i=[e.piso?"Piso "+e.piso:"",e.oficina?"Oficina "+e.oficina:""].filter(Boolean).join(" · ");a.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem"><div class="sede-name">📍 '+(e.nombre||"Consultorio")+'</div><span class="sede-chip">'+n+"</span></div>"+(o?'<div class="sede-addr">'+o+(i?'<br><span style="color:var(--muted2)">'+i+"</span>":"")+"</div>":"")+'<div style="display:flex;gap:.5rem;margin-top:.65rem;flex-wrap:wrap">'+(e.maps_url?'<a href="'+e.maps_url+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;background:#faf9f7;color:var(--teal);border:1px solid rgba(11,124,110,.12);border-radius:10px;font-size:.74rem;font-weight:700;text-decoration:none">🧭 Cómo llegar</a>':"")+"<button onclick=\"document.getElementById('agendaSection')?.scrollIntoView({behavior:'smooth'})\" style=\"display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .85rem;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border:none;border-radius:10px;font-size:.74rem;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(11,124,110,.2)\">📅 Agendar aquí</button></div>",W.appendChild(a)}),B.style.display="block");var F=el("ctaFinal"),j=el("ctaFinalTitle"),z=el("ctaFinalSub"),J=el("btnWAFinal");if(F){if(j){var G="Agenda tu consulta";i&&l?G="Agenda tu consulta "+i.toLowerCase()+" en "+l:l?G="Agenda tu consulta en "+l:i&&(G="Agenda tu consulta de "+i.toLowerCase()),j.textContent=G}if(z&&e.slogan&&(z.textContent=e.slogan),J&&e.whatsapp_activo&&e.whatsapp){var U=urlWA(e.whatsapp,e.pais,o);U&&(J.href=U,J.style.display="inline-flex")}F.style.display="block"}c="https://citadoc.lat/citadoc-perfil.html?slug="+(e.slug||"");window._perfilUrl=c,cargarDisponibilidadPorSede(e,a||[],_sb,selectedLocationId).then(function(e){_disp=e,renderCal()}),renderSedeSelector(n||[]);var V=el("ddVerPerfil");V&&e.slug&&(V.href="citadoc-perfil.html?slug="+e.slug),aplicarLandingConfig(e.landing_config)}function aplicarLandingConfig(e){if((e=e||{}).accent_color&&document.documentElement.style.setProperty("--teal",e.accent_color),e.hero_subtitle){var t=el("profBioShort");t&&(t.textContent=e.hero_subtitle)}if(e.hero_title){var a=el("ctaFinalTitle");a&&(a.textContent=e.hero_title)}if(e.cta_text){var n=el("btnBookHero");n&&(n.textContent="📅 "+e.cta_text)}function o(e){var t=document.querySelector('.tab[data-tab="'+e+'"]'),a=el("tab-"+e);if(t){if(t.classList.contains("active")){document.querySelectorAll(".tab").forEach(function(e){e.classList.remove("active")}),document.querySelectorAll(".tab-panel").forEach(function(e){e.classList.remove("active")});var n=document.querySelector('.tab[data-tab="info"]'),o=el("tab-info");n&&n.classList.add("active"),o&&o.classList.add("active")}t.style.display="none",a&&(a.style.display="none")}}if(!1===e.show_formacion&&o("formacion"),!1===e.show_seguros){var i=el("segurosCard");i&&(i.style.display="none")}if(!1===e.show_ubicaciones){var l=el("ubicacionesSection");l&&(l.style.display="none")}if(!1===e.show_precio){var r=el("bookPrice");r&&(r.style.display="none")}if(!1===e.mostrar_booking_hero){var c=el("btnBookHero");c&&(c.style.display="none")}if(!1===e.whatsapp_primary){var s=document.querySelector(".hero-ctas-v2"),d=el("btnBookHero"),p=el("btnWAHero");s&&d&&p&&s.insertBefore(d,p)}}function cargarPerfil(){var e=new URLSearchParams(window.location.search).get("slug")||"";e?_sb.from("medicos").select("*").eq("slug",e).eq("activo",!0).single().then(function(e){if(!e.error&&e.data){var t=e.data,a=_sb.from("formacion").select("*").eq("medico_id",t.id).order("orden"),n=(new Date).toISOString().split("T")[0],o=new Date;o.setDate(o.getDate()+60);var i=_sb.from("citas").select("fecha,hora").eq("medico_id",t.id).gte("fecha",n).lte("fecha",o.toISOString().split("T")[0]).in("estado",["confirmada","pendiente"]),l=_sb.from("doctor_locations").select("id,nombre,direccion,telefono,ciudad,lat,lng,maps_url").eq("medico_id",t.id).order("created_at"),r=_sb.from("doctor_schedule_blocks").select("location_id,day").eq("medico_id",t.id).eq("is_active",!0);Promise.all([a,i,l,r]).then(function(e){window._sedeBlocks=e[3].data||[],aplicarMedico(t,e[0].data||[],e[1].data||[],e[2].data||[])})}else setText("profName","Médico no encontrado")}):setText("profName","Médico no encontrado")}function showLoggedIn(e){var t=(e.titulo||"Dr.")+" "+e.nombre+" "+e.apellido;setText("navAvatar",(e.nombre[0]||"").toUpperCase()+(e.apellido[0]||"").toUpperCase()),setText("navName",t),setText("ddNombre",t),setText("ddPlan","destacado"===e.plan||"pro"===e.plan?"⭐ PRO":"Plan Gratuito");var a=el("navPill");a&&(a.style.display="flex");var n=el("btnLogin");n&&(n.style.display="none");var o=el("btnRegistro");o&&(o.style.display="none")}function showLoggedOut(){var e=el("navPill");e&&(e.style.display="none");var t=el("btnLogin");t&&(t.style.display="");var a=el("btnRegistro");a&&(a.style.display="")}function doLogin(){var e=el("loginEmail").value.trim(),t=el("loginPass").value,a=el("loginError");if(!e||!t)return a.textContent="Ingresa email y contraseña.",void(a.style.display="block");_sb.auth.signInWithPassword({email:e,password:t}).then(function(e){e.error?(a.textContent="Credenciales incorrectas.",a.style.display="block"):window.location.href="citadoc-dashboard.html"})}function cerrarSesion(){_sb.auth.signOut().then(function(){window.location.reload()})}document.addEventListener("DOMContentLoaded",function(){window.citadocSendEmail=function(e,t){fetch("https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({type:e},t))}).catch(function(e){console.warn("[email]",e)})},document.querySelectorAll(".tab").forEach(function(e){e.addEventListener("click",function(){document.querySelectorAll(".tab").forEach(function(e){e.classList.remove("active")}),document.querySelectorAll(".tab-panel").forEach(function(e){e.classList.remove("active")}),e.classList.add("active");var t=el("tab-"+e.dataset.tab);t&&t.classList.add("active")})}),el("btnPrev").addEventListener("click",function(){--calMonth<0&&(calMonth=11,calYear--),renderCal()}),el("btnNext").addEventListener("click",function(){++calMonth>11&&(calMonth=0,calYear++),renderCal()}),el("btnToForm").addEventListener("click",function(){selectedSlot&&(el("step1").style.display="none",el("step2").style.display="block")}),el("btnBackStep").addEventListener("click",function(){el("step2").style.display="none",el("step1").style.display="block"}),el("btnConfirm").addEventListener("click",confirmarCita),el("btnShareWA").addEventListener("click",function(){var e=window._perfilUrl||"https://citadoc.lat",t=_medico?(_medico.titulo||"Dr.")+" "+_medico.nombre+" "+_medico.apellido:"mi medico",a=_medico&&(_medico.especialidades||[])[0]||"",n="Agenda tu cita con "+t+(a?" - "+a:"")+": "+e;window.open("https://wa.me/?text="+encodeURIComponent(n),"_blank")}),el("btnShareIG").addEventListener("click",function(){var e=window._perfilUrl||"https://citadoc.lat";navigator.clipboard.writeText(e).then(function(){el("btnShareIG").textContent="Copiado!",setTimeout(function(){el("btnShareIG").textContent="Instagram"},2e3)})}),el("btnShareCopy").addEventListener("click",function(){var e=window._perfilUrl||"https://citadoc.lat";navigator.clipboard.writeText(e).then(function(){el("btnShareCopy").textContent="Copiado!",setTimeout(function(){el("btnShareCopy").textContent="Copiar"},2e3)})}),el("btnLogin").addEventListener("click",function(){el("loginOverlay").classList.add("open"),document.body.style.overflow="hidden"}),el("btnCloseLogin").addEventListener("click",function(){el("loginOverlay").classList.remove("open"),document.body.style.overflow=""}),el("loginOverlay").addEventListener("click",function(e){e.target===el("loginOverlay")&&(el("loginOverlay").classList.remove("open"),document.body.style.overflow="")}),el("loginPass").addEventListener("keydown",function(e){"Enter"===e.key&&doLogin()}),el("btnDoLogin").addEventListener("click",doLogin),el("btnLogout").addEventListener("click",cerrarSesion),el("navPill").addEventListener("click",function(){el("navDropdown").classList.toggle("open")}),document.addEventListener("click",function(e){var t=el("navPill"),a=el("navDropdown");t&&a&&!t.contains(e.target)&&!a.contains(e.target)&&a.classList.remove("open")}),function(){var e=window.location.pathname;document.querySelectorAll(".pub-nav-item").forEach(function(t){"inicio"===t.dataset.tab&&(e.endsWith("index.html")||e.endsWith("citadoc-perfil.html")||"/"===e||""===e)?t.classList.add("active"):t.classList.remove("active")});var t=document.getElementById("pubNavPerfil");t&&t.addEventListener("click",function(e){var t=document.getElementById("navPill");if(!(t&&("flex"===t.style.display||"flex"===getComputedStyle(t).display))){e.preventDefault();var a=document.getElementById("loginOverlay");a&&(a.classList.add("open"),document.body.style.overflow="hidden")}})}(),cargarPerfil(),initAuth(_sb,showLoggedIn,showLoggedOut)})</script><footer style="text-align:center;padding:1.4rem 1rem;border-top:1px solid rgba(11,124,110,.1);margin-top:2rem"><span style="font-size:.72rem;color:#9ca3af;letter-spacing:.03em">CitaDoc Health Network ® &nbsp;&middot;&nbsp; Guayaquil, 2026</span></footer><nav class="pub-bottom-nav"><div class="pub-bottom-nav-inner"><a class="pub-nav-item" href="index.html" data-tab="inicio"><span class="pub-nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> </span><span class="pub-nav-label">Inicio</span> </a><a class="pub-nav-item" href="index.html#seguros" data-tab="seguros"><span class="pub-nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> </span><span class="pub-nav-label">Seguros</span> </a><a class="pub-nav-item" href="citadoc-dashboard.html" id="pubNavPerfil" data-tab="perfil"><span class="pub-nav-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> </span><span class="pub-nav-label">Perfil</span></a></div></nav><script>
+<script>
 function _perfilUrl(){return window.location.href;}
+
 function _getPerfil(){
-  var nombre=(document.getElementById('profName')||{textContent:''}).textContent.trim()||'Dr. Medico';
+  var nombre=(document.getElementById('profName')||{textContent:''}).textContent.trim()||'Dr. Médico';
   var esp=(document.getElementById('profSub')||{textContent:''}).textContent.trim()||'';
   var av=document.getElementById('profAvatar');
   var foto=av&&av.querySelector('img')?av.querySelector('img').src:null;
-  var ciudad='';
-  var b=document.getElementById('profBadges');
-  if(b){var m=b.textContent.match(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*/);if(m)ciudad=m[0];}
-  return {nombre:nombre,esp:esp,foto:foto,ciudad:ciudad,url:_perfilUrl()};
+  var precio=(document.getElementById('heroPriceAmt')||{textContent:''}).textContent.trim()||'';
+  var bio=(document.getElementById('profBio')||{textContent:''}).textContent.trim()||'';
+  // Get seguros
+  var segs=[]; document.querySelectorAll('#profSeguros button').forEach(function(b){if(b.dataset.seguro)segs.push(b.dataset.seguro);});
+  // Get city from profSub second part or profBadges
+  var ciudad=''; var sub=(document.getElementById('profSub')||{}).innerHTML||'';
+  var spans=document.querySelectorAll('#profSub span'); if(spans.length>=3)ciudad=spans[2].textContent.trim();
+  return {nombre:nombre,esp:esp,foto:foto,precio:precio,bio:bio,segs:segs,ciudad:ciudad,url:_perfilUrl()};
 }
+
 function compartirPerfil(){
   var p=document.getElementById('sharePopover');
   if(!p)return;
@@ -73,76 +83,95 @@ document.addEventListener('click',function(e){
   if(!e.target.closest('button[onclick="compartirPerfil()"]')&&!e.target.closest('#sharePopover'))
     p.style.display='none';
 });
-function _abrirCard(html,titulo){
+
+function _overlay(content,titulo){
   var ov=document.createElement('div');
-  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:1.5rem;backdrop-filter:blur(10px)';
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.85rem;padding:1rem;backdrop-filter:blur(12px)';
   ov.onclick=function(e){if(e.target===ov)document.body.removeChild(ov);};
-  var label=document.createElement('div');
-  label.style.cssText='color:rgba(255,255,255,.65);font-size:.78rem;font-weight:600;text-align:center';
-  label.textContent=titulo+' — Hace screenshot para compartir';
-  var inner=document.createElement('div');inner.innerHTML=html;
+  var lbl=document.createElement('div');
+  lbl.style.cssText='color:rgba(255,255,255,.6);font-size:.75rem;font-weight:600;text-align:center;letter-spacing:.03em';
+  lbl.textContent=titulo+' — Hace screenshot y compartí';
+  var inner=document.createElement('div');inner.innerHTML=content;
+  var btns=document.createElement('div');
+  btns.style.cssText='display:flex;gap:.6rem';
   var close=document.createElement('button');
-  close.textContent='Cerrar';
-  close.style.cssText='background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:.5rem 1.4rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;transition:background .15s';
-  close.onmouseenter=function(){this.style.background='rgba(255,255,255,.22)';};
-  close.onmouseleave=function(){this.style.background='rgba(255,255,255,.12)';};
+  close.textContent='✕ Cerrar';
+  close.style.cssText='background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:.5rem 1.2rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif';
   close.onclick=function(){document.body.removeChild(ov);};
-  ov.appendChild(label);ov.appendChild(inner);ov.appendChild(close);
+  btns.appendChild(close);
+  ov.appendChild(lbl);ov.appendChild(inner);ov.appendChild(btns);
   document.body.appendChild(ov);
 }
+
 function _storyCard(d){
+  var segsHtml=d.segs.slice(0,3).map(function(s){
+    return '<span style="background:rgba(255,255,255,.18);backdrop-filter:blur(4px);border-radius:6px;padding:.2rem .6rem;font-size:.62rem;font-weight:700;color:#fff;border:1px solid rgba(255,255,255,.2)">'+s+'</span>';
+  }).join('');
   var fotoEl=d.foto
-    ?'<img src="'+d.foto+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" crossorigin="anonymous">'
-    :'<div style="width:100%;height:100%;background:linear-gradient(135deg,#0b7c6e,#062e2b);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:6rem">👨‍⚕️</div>';
-  return '<div style="width:300px;height:533px;background:#062e2b;border-radius:20px;overflow:hidden;position:relative;font-family:-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 24px 64px rgba(0,0,0,.4)">'
+    ?'<img src="'+d.foto+'" style="width:100%;height:100%;object-fit:cover;object-position:top center;position:absolute;inset:0" crossorigin="anonymous">'
+    :'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:7rem;background:linear-gradient(135deg,#0b7c6e 0%,#062e2b 100%)">👨‍⚕️</div>';
+  return '<div style="width:295px;height:524px;background:#062e2b;border-radius:22px;overflow:hidden;position:relative;font-family:-apple-system,BlinkMacSystemFont,DM Sans,sans-serif;box-shadow:0 24px 80px rgba(0,0,0,.5)">'
     +fotoEl
-    +'<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,46,43,.1) 0%,transparent 35%,rgba(6,46,43,.9) 65%,#062e2b 100%)"></div>'
-    +'<div style="position:absolute;top:.9rem;left:1rem;background:rgba(11,124,110,.7);border-radius:20px;padding:.2rem .65rem;backdrop-filter:blur(8px)">'
-      +'<span style="font-size:.65rem;font-weight:700;color:#fff;letter-spacing:.05em">CitaDoc</span>'
-    +'</div>'
-    +'<div style="position:absolute;bottom:0;left:0;right:0;padding:1.4rem 1.4rem 1.8rem">'
-      +'<div style="font-size:.62rem;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem">Salud sin fronteras</div>'
-      +'<div style="font-size:1.25rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:.25rem">'+d.nombre+'</div>'
-      +(d.esp?'<div style="font-size:.72rem;color:rgba(255,255,255,.7);margin-bottom:.5rem">'+d.esp+'</div>':'')
-      +(d.ciudad?'<div style="font-size:.65rem;color:rgba(255,255,255,.5);margin-bottom:.85rem">📍 '+d.ciudad+'</div>':'')
-      +'<div style="display:inline-flex;align-items:center;gap:.35rem;background:#0b7c6e;border-radius:9px;padding:.5rem 1rem">'
-        +'<span style="font-size:.78rem;font-weight:700;color:#fff">📅 Reservar turno</span>'
+    +'<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,46,43,.05) 0%,transparent 30%,rgba(6,46,43,.65) 55%,rgba(6,46,43,.97) 100%)"></div>'
+    +'<div style="position:absolute;top:.85rem;left:.9rem;right:.9rem;display:flex;align-items:center;justify-content:space-between;z-index:2">'
+      +'<div style="background:rgba(11,124,110,.8);backdrop-filter:blur(8px);border-radius:20px;padding:.25rem .7rem;border:1px solid rgba(255,255,255,.15)">'
+        +'<span style="font-size:.62rem;font-weight:800;color:#fff;letter-spacing:.06em">CitaDoc</span>'
       +'</div>'
-      +'<div style="margin-top:.75rem;font-size:.6rem;color:rgba(255,255,255,.3)">citadoc.lat</div>'
+      +(d.precio?'<div style="background:rgba(0,0,0,.45);backdrop-filter:blur(8px);border-radius:20px;padding:.25rem .7rem;border:1px solid rgba(255,255,255,.1)"><span style="font-size:.62rem;font-weight:700;color:#fff">'+d.precio+'</span></div>':'')
+    +'</div>'
+    +'<div style="position:absolute;bottom:0;left:0;right:0;padding:1.2rem 1.2rem 1.5rem;z-index:2">'
+      +(d.segs.length?'<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.65rem">'+segsHtml+'</div>':'')
+      +'<div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem">Salud sin fronteras</div>'
+      +'<div style="font-size:1.3rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:.2rem">'+d.nombre+'</div>'
+      +(d.esp?'<div style="font-size:.75rem;font-weight:600;color:rgba(255,255,255,.75);margin-bottom:.25rem">'+d.esp+'</div>':'')
+      +(d.ciudad?'<div style="font-size:.65rem;color:rgba(255,255,255,.5);margin-bottom:.8rem">📍 '+d.ciudad+'</div>':'<div style="margin-bottom:.8rem"></div>')
+      +'<div style="display:flex;align-items:center;gap:.6rem">'
+        +'<a style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:.35rem;background:#0b7c6e;color:#fff;border-radius:10px;padding:.55rem .8rem;font-size:.8rem;font-weight:800;text-decoration:none;letter-spacing:.01em">📅 Reservar turno</a>'
+        +'<div style="font-size:.58rem;color:rgba(255,255,255,.3);text-align:right;line-height:1.4">citadoc.lat</div>'
+      +'</div>'
     +'</div>'
   +'</div>';
 }
+
 function _postCard(d){
   var fotoEl=d.foto
-    ?'<img src="'+d.foto+'" style="width:52px;height:52px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,.25)" crossorigin="anonymous">'
-    :'<div style="width:52px;height:52px;border-radius:12px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem;border:2px solid rgba(255,255,255,.2)">👨‍⚕️</div>';
-  return '<div style="width:460px;background:#fff;border-radius:16px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.12)">'
-    +'<div style="background:linear-gradient(135deg,#062e2b,#0b7c6e);padding:1.1rem 1.3rem;display:flex;align-items:center;gap:.75rem">'
+    ?'<img src="'+d.foto+'" style="width:58px;height:58px;border-radius:14px;object-fit:cover;object-position:top;border:2px solid rgba(255,255,255,.3);flex-shrink:0" crossorigin="anonymous">'
+    :'<div style="width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;border:2px solid rgba(255,255,255,.2)">👨‍⚕️</div>';
+  var segsHtml=d.segs.slice(0,4).map(function(s){
+    return '<span style="display:inline-flex;align-items:center;gap:.25rem;padding:.28rem .65rem;background:#f0fdf9;border:1.5px solid rgba(11,124,110,.2);border-radius:7px;font-size:.7rem;font-weight:700;color:#085f54"><span style="width:5px;height:5px;border-radius:50%;background:#0b7c6e;display:inline-block"></span>'+s+'</span>';
+  }).join('');
+  var bioShort=d.bio?d.bio.slice(0,120)+(d.bio.length>120?'…':''):'Especialista con atención personalizada. Consulta disponible online y presencial.';
+  return '<div style="width:440px;background:#fff;border-radius:18px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,DM Sans,sans-serif;box-shadow:0 12px 48px rgba(0,0,0,.15)">'
+    +'<div style="background:linear-gradient(135deg,#062e2b 0%,#0b7c6e 100%);padding:1.2rem 1.3rem;display:flex;align-items:center;gap:.85rem">'
       +fotoEl
-      +'<div><div style="font-size:.95rem;font-weight:800;color:#fff">'+d.nombre+'</div>'
-      +(d.esp?'<div style="font-size:.72rem;color:rgba(255,255,255,.7)">'+d.esp+'</div>':'')
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:1rem;font-weight:800;color:#fff;line-height:1.2">'+d.nombre+'</div>'
+        +(d.esp?'<div style="font-size:.75rem;color:rgba(255,255,255,.75);margin-top:.15rem">'+d.esp+'</div>':'')
+        +(d.ciudad?'<div style="font-size:.65rem;color:rgba(255,255,255,.5);margin-top:.1rem">📍 '+d.ciudad+'</div>':'')
       +'</div>'
-      +'<div style="margin-left:auto;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.08em">CITADOC</div>'
+      +'<div style="font-size:.55rem;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0">CitaDoc</div>'
     +'</div>'
-    +'<div style="padding:1rem 1.3rem">'
-      +'<div style="font-size:.82rem;color:#374151;line-height:1.6;margin-bottom:.8rem">'
-        +'Especialista en <strong>'+d.esp+'</strong>'+(d.ciudad?' con atención en '+d.ciudad:'')+'.'
-        +' Agendá tu turno online directamente en CitaDoc.'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;padding-top:.7rem;border-top:1px solid #f1f5f9">'
-        +'<span style="font-size:.68rem;color:#a0b0ae">citadoc.lat</span>'
-        +'<span style="background:#0b7c6e;color:#fff;border-radius:7px;padding:.38rem .85rem;font-size:.75rem;font-weight:700">Reservar turno →</span>'
+    +'<div style="padding:1rem 1.2rem">'
+      +'<div style="font-size:.82rem;color:#374151;line-height:1.6;margin-bottom:.85rem">'+bioShort+'</div>'
+      +(d.segs.length?'<div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.85rem">'+segsHtml+'</div>':'')
+      +'<div style="display:flex;align-items:center;justify-content:space-between;padding-top:.75rem;border-top:1px solid #f1f5f9">'
+        +'<div style="display:flex;align-items:center;gap:.75rem">'
+          +(d.precio?'<div style="font-size:.75rem;font-weight:700;color:#0b7c6e">'+d.precio+'</div>':'')
+          +'<span style="font-size:.65rem;color:#a0b0ae">citadoc.lat</span>'
+        +'</div>'
+        +'<span style="background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;border-radius:8px;padding:.42rem .9rem;font-size:.76rem;font-weight:700">Reservar turno →</span>'
       +'</div>'
     +'</div>'
   +'</div>';
 }
+
 function shareToInstagram(){
   document.getElementById('sharePopover').style.display='none';
-  _abrirCard(_storyCard(_getPerfil()),'Historia para Instagram');
+  _overlay(_storyCard(_getPerfil()),'Historia para Instagram / Facebook Stories');
 }
-function shareToInstagramPost(){
+function shareToPost(){
   document.getElementById('sharePopover').style.display='none';
-  _abrirCard(_postCard(_getPerfil()),'Post para redes');
+  _overlay(_postCard(_getPerfil()),'Post para Facebook / LinkedIn / X');
 }
 function shareToWhatsApp(){
   document.getElementById('sharePopover').style.display='none';
@@ -168,6 +197,5 @@ function copiarLink(){
     var i=document.createElement('input');i.value=_perfilUrl();document.body.appendChild(i);i.select();document.execCommand('copy');document.body.removeChild(i);done();
   });
 }
-
 </script>
 </body></html>
