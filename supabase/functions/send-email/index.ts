@@ -583,6 +583,40 @@ serve(async (req) => {
         break
       }
 
+      case 'pro_activated': {
+        const isProweb = data.plan === 'pro_web'
+        const planLabel = isProweb ? 'PRO + WEB' : 'PRO'
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu plan CitaDoc ${planLabel} está activo`
+        const siteUrl = isProweb && data.slug ? `https://${data.slug}.citadoc.lat` : null
+        const body = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:20px;overflow:hidden">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="padding:40px;text-align:center">
+<div style="display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 16px;margin-bottom:24px">
+<span style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">CitaDoc ${planLabel}</span></div>
+<h1 style="margin:0 0 12px;color:#fff;font-size:26px;font-weight:700;line-height:1.25">Tu práctica médica<br>acaba de evolucionar.</h1>
+<p style="margin:0;color:rgba(255,255,255,.5);font-size:15px">${data.titulo || 'Dr.'} ${data.nombre || ''}, tu plan está activo.</p>
+</td></tr>
+<tr><td style="background:#fff;padding:36px 40px">
+<p style="margin:0 0 20px;color:#374151;font-size:15px;line-height:1.7">Tienes acceso completo a tu dashboard, agendamiento inteligente${isProweb ? ' y tu sitio web médico personalizado' : ''}.</p>
+${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio web: <a href="${siteUrl}" style="color:#0b7c6e;font-weight:700">${siteUrl}</a></p>` : ''}
+<table cellpadding="0" cellspacing="0" style="margin:0 auto"><tr><td>
+<a href="https://citadoc.lat/citadoc-dashboard.html" style="display:inline-block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-size:16px;font-weight:700">Ir a mi dashboard →</a>
+</td></tr></table>
+</td></tr>
+<tr><td style="padding:20px 40px;text-align:center">
+<p style="margin:0;color:rgba(255,255,255,.3);font-size:12px">CitaDoc Health Network · citadoc.lat</p>
+</td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+        await sendEmail(to_email, subject, body)
+        break
+      }
+
       default:
         return new Response(JSON.stringify({ error: 'unknown type: ' + type }), { status: 400, headers: CORS })
     }

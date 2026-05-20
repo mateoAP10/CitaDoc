@@ -411,8 +411,14 @@ serve(async (req) => {
       })
     }
 
-    // Send activation email (fire-and-forget)
-    const emailAddr = email || medico?.email
+    // Send activation email — fallback to auth user email if medico.email is null
+    let emailAddr = email || medico?.email || null
+    if (!emailAddr) {
+      try {
+        const { data: authData } = await sb.auth.admin.getUserById(medicoId)
+        emailAddr = authData?.user?.email || null
+      } catch (_) { /* ignore */ }
+    }
     if (emailAddr && medico) {
       sendActivationEmail({
         email:  emailAddr,
@@ -421,6 +427,9 @@ serve(async (req) => {
         plan,
         slug:   medico.slug || null,
       })
+      console.log('[webhook] Activation email sent to:', emailAddr, 'plan:', plan)
+    } else {
+      console.warn('[webhook] No email found for medico:', medicoId)
     }
 
     console.log('[webhook] Activated:', plan, medicoId, '— transactionId:', transactionId)
