@@ -37,7 +37,78 @@
 <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.2rem 1.3rem;margin-bottom:.85rem">
   <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1.1rem"><span style="font-size:1rem">📍</span><span style="font-size:.65rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em">Ubicación</span></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem">
-    <div><label style="font-size:.65rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.3rem">País</label><select id="inf-pais" style="width:100%;padding:.65rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:DM Sans,sans-serif;outline:none;background:#fff;cursor:pointer" onchange="if(M){M.pais=this.value;initSegurosList();renderSeguros('');var _cm={argentina:'ARS',colombia:'COP',mexico:'MXN',peru:'PEN',chile:'CLP',brasil:'BRL',uruguay:'UYU',bolivia:'BOB',paraguay:'PYG',costa_rica:'CRC',espana:'EUR',francia:'EUR',alemania:'EUR',italia:'EUR',portugal:'EUR',reino_unido:'GBP',canada:'CAD',australia:'AUD',nueva_zelanda:'NZD',japon:'JPY',india:'INR',china:'CNY',corea_del_sur:'KRW',singapur:'SGD',tailandia:'THB',emiratos_arabes:'AED',turquia:'TRY',sudafrica:'ZAR',rusia:'RUB'};var _newCode=_cm[this.value]||'USD';var _inp2=document.getElementById('inf-ciudad');if(_inp2){_inp2.value='';cdClose();}var _b=document.getElementById('precioCurrencyBadge');var _inp=document.getElementById('inf-precio');if(_b){_b.style.transform='scale(.7)';_b.style.opacity='0';setTimeout(function(){_b.textContent=_newCode;_b.style.background=_newCode==='USD'?'#f1f5f9':'#e0f5f2';_b.style.color=_newCode==='USD'?'#a0b0ae':'#0b7c6e';_b.style.transform='scale(1)';_b.style.opacity='1';},160);}if(_inp){_inp.style.transition='transform .2s cubic-bezier(.16,1,.3,1)';_inp.style.transform='scale(1.06)';setTimeout(function(){_inp.style.transform='scale(1)';},200);}}" ><option value="">Seleccionar país</option><option value="argentina">Argentina</option><option value="ecuador">Ecuador</option><option value="colombia">Colombia</option><option value="peru">Perú</option><option value="chile">Chile</option><option value="mexico">México</option><option value="venezuela">Venezuela</option><option value="bolivia">Bolivia</option><option value="paraguay">Paraguay</option><option value="uruguay">Uruguay</option><option value="brasil">Brasil</option><option value="espana">España</option><option value="usa">Estados Unidos</option><option value="canada">Canadá</option><option value="reino_unido">Reino Unido</option><option value="alemania">Alemania</option><option value="australia">Australia</option></select></div>
+    <div><label style="font-size:.65rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.3rem">País</label><select id="inf-pais" style="width:100%;padding:.65rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:DM Sans,sans-serif;outline:none;background:#fff;cursor:pointer" onchange="if(M){M.pais=this.value;initSegurosList();renderSeguros('');var _cm={argentina:'ARS',colombia:'COP',mexico:'MXN',peru:'PEN',chile:'CLP',brasil:'BRL',uruguay:'UYU',bolivia:'BOB',paraguay:'PYG',costa_rica:'CRC',espana:'EUR',francia:'EUR',alemania:'EUR',italia:'EUR',portugal:'EUR',reino_unido:'GBP',canada:'CAD',australia:'AUD',nueva_zelanda:'NZD',japon:'JPY',india:'INR',china:'CNY',corea_del_sur:'KRW',singapur:'SGD',tailandia:'THB',emiratos_arabes:'AED',turquia:'TRY',sudafrica:'ZAR',rusia:'RUB'};var _newCode=_cm[this.value]||'USD';var _inp2=document.getElementById('inf-ciudad');if(_inp2){_inp2.value='';cdClose();}var _b=document.getElementById('precioCurrencyBadge');var _inp=document.getElementById('inf-precio');if(_b){_b.style.transform='scale(.7)';_b.style.opacity='0';setTimeout(function(){_b.textContent=_newCode;_b.style.background=_newCode==='USD'?'#f1f5f9':'#e0f5f2';_b.style.color=_newCode==='USD'?'#a0b0ae':'#0b7c6e';_b.style.transform='scale(1)';_b.style.opacity='1';},160);}if(_inp){_inp.style.transition='transform .2s cubic-bezier(.16,1,.3,1)';_inp.style.transform='scale(1.06)';setTimeout(function(){_inp.style.transform='scale(1)';},200);}}" ><option value="">Seleccionar país</option>
+<optgroup label="Latinoamérica">
+<option value="argentina">Argentina</option>
+<option value="bolivia">Bolivia</option>
+<option value="brasil">Brasil</option>
+<option value="chile">Chile</option>
+<option value="colombia">Colombia</option>
+<option value="costa_rica">Costa Rica</option>
+<option value="cuba">Cuba</option>
+<option value="ecuador">Ecuador</option>
+<option value="el_salvador">El Salvador</option>
+<option value="guatemala">Guatemala</option>
+<option value="honduras">Honduras</option>
+<option value="mexico">México</option>
+<option value="nicaragua">Nicaragua</option>
+<option value="panama">Panamá</option>
+<option value="paraguay">Paraguay</option>
+<option value="peru">Perú</option>
+<option value="republica_dominicana">República Dominicana</option>
+<option value="uruguay">Uruguay</option>
+<option value="venezuela">Venezuela</option>
+</optgroup>
+<optgroup label="Europa">
+<option value="alemania">Alemania</option>
+<option value="austria">Austria</option>
+<option value="belgica">Bélgica</option>
+<option value="chequia">Chequia</option>
+<option value="dinamarca">Dinamarca</option>
+<option value="espana">España</option>
+<option value="finlandia">Finlandia</option>
+<option value="francia">Francia</option>
+<option value="grecia">Grecia</option>
+<option value="holanda">Holanda</option>
+<option value="hungria">Hungría</option>
+<option value="italia">Italia</option>
+<option value="noruega">Noruega</option>
+<option value="polonia">Polonia</option>
+<option value="portugal">Portugal</option>
+<option value="reino_unido">Reino Unido</option>
+<option value="rumania">Rumanía</option>
+<option value="rusia">Rusia</option>
+<option value="suecia">Suecia</option>
+<option value="suiza">Suiza</option>
+<option value="ucrania">Ucrania</option>
+</optgroup>
+<optgroup label="América del Norte">
+<option value="canada">Canadá</option>
+<option value="usa">Estados Unidos</option>
+</optgroup>
+<optgroup label="Asia &amp; Pacífico">
+<option value="australia">Australia</option>
+<option value="china">China</option>
+<option value="corea_del_sur">Corea del Sur</option>
+<option value="filipinas">Filipinas</option>
+<option value="india">India</option>
+<option value="japon">Japón</option>
+<option value="malasia">Malasia</option>
+<option value="nueva_zelanda">Nueva Zelanda</option>
+<option value="singapur">Singapur</option>
+<option value="tailandia">Tailandia</option>
+</optgroup>
+<optgroup label="Medio Oriente &amp; África">
+<option value="arabia_saudita">Arabia Saudita</option>
+<option value="egipto">Egipto</option>
+<option value="emiratos_arabes">Emiratos Árabes</option>
+<option value="israel">Israel</option>
+<option value="kenia">Kenia</option>
+<option value="marruecos">Marruecos</option>
+<option value="nigeria">Nigeria</option>
+<option value="sudafrica">Sudáfrica</option>
+<option value="turquia">Turquía</option>
+</optgroup></select></div>
     <div><label style="font-size:.65rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.3rem">Ciudad</label><div style="position:relative">
 <input id="inf-ciudad" type="text" placeholder="Buscar o escribir ciudad..." autocomplete="off"
   style="width:100%;padding:.65rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:DM Sans,sans-serif;outline:none"
