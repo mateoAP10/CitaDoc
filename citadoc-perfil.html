@@ -124,23 +124,26 @@ function _buildStoryHTML(d){
 function shareToInstagram(){
   document.getElementById('sharePopover').style.display='none';
   var d=_getPerfil();
+  var hero=document.querySelector('.hero-v2');
+  if(!hero){_mostrarCard(_buildStoryHTML(d));return;}
+  // Hide price before capture
+  var pill=document.getElementById('heroPricePill');
+  var pillWas=pill?pill.style.display:'';
+  if(pill)pill.style.display='none';
   if(window.html2canvas){
-    var tmp=document.createElement('div');
-    tmp.style.cssText='position:fixed;left:-9999px;top:0;z-index:-1;width:290px';
-    tmp.innerHTML=_buildStoryHTML(d);
-    document.body.appendChild(tmp);
-    html2canvas(tmp.firstChild,{scale:2,useCORS:true,backgroundColor:'#062e2b',logging:false}).then(function(canvas){
-      document.body.removeChild(tmp);
+    html2canvas(hero,{scale:2,useCORS:true,backgroundColor:null,logging:false,allowTaint:true}).then(function(canvas){
+      if(pill)pill.style.display=pillWas;
       canvas.toBlob(function(blob){
-        var file=new File([blob],'citadoc-historia.jpg',{type:'image/jpeg'});
+        var file=new File([blob],'citadoc-perfil.jpg',{type:'image/jpeg'});
         if(navigator.canShare&&navigator.canShare({files:[file]})){
           navigator.share({files:[file],title:d.nombre+' — CitaDoc',text:'Agenda tu turno: '+d.url}).catch(function(){_mostrarCard(_buildStoryHTML(d));});
         } else {
           _mostrarCard(_buildStoryHTML(d));
         }
-      },'image/jpeg',0.92);
-    }).catch(function(){document.body.removeChild(tmp);_mostrarCard(_buildStoryHTML(d));});
+      },'image/jpeg',0.95);
+    }).catch(function(){if(pill)pill.style.display=pillWas;_mostrarCard(_buildStoryHTML(d));});
   } else {
+    if(pill)pill.style.display=pillWas;
     _mostrarCard(_buildStoryHTML(d));
   }
 }
