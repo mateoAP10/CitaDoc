@@ -89,16 +89,6 @@ function copiarLink(){
   });
 }
 
-// Native share API (mobile)
-document.addEventListener('DOMContentLoaded',function(){
-  if(navigator.share){
-    var btn=document.querySelector('button[onclick="compartirPerfil()"]');
-    if(btn){
-      btn.onclick=function(){
-        navigator.share({title:_perfilTitle(),url:_perfilUrl()}).catch(function(){});
-      };
-    }
-  }
-});
+
 </script>
 </body></html>
