@@ -530,6 +530,24 @@ serve(async (req) => {
 
     if (!to_email) return new Response(JSON.stringify({ error: 'missing to_email' }), { status: 400, headers: CORS })
 
+    // ── Auth / Public Key validation ────────────────────────────────────────────
+    const authHeader = req.headers.get('Authorization')
+    const publicKey  = req.headers.get('x-citadoc-public-key')
+    const VALID_PUBLIC_KEY = Deno.env.get('PUBLIC_BOOKING_KEY') || 'citadoc-public-2026'
+
+    // If no JWT auth, require valid public key
+    if (!authHeader && publicKey !== VALID_PUBLIC_KEY) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS })
+    }
+
+    // Public key access: only allow appointment-related types
+    if (!authHeader && publicKey === VALID_PUBLIC_KEY) {
+      const PUBLIC_ALLOWED_TYPES = ['appointment', 'reschedule', 'reminder']
+      if (!PUBLIC_ALLOWED_TYPES.includes(type)) {
+        return new Response(JSON.stringify({ error: 'Forbidden type for public access' }), { status: 403, headers: CORS })
+      }
+    }
+
     switch (type) {
       case 'appointment':
       case 'reschedule': {
