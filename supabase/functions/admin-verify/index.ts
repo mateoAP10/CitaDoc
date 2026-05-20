@@ -122,7 +122,7 @@ serve(async (req) => {
     if (med?.email) {
       fetch(SEND_EMAIL_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SRV}` },
         body: JSON.stringify({
           type:     'verification_result',
           to_email: med.email,
