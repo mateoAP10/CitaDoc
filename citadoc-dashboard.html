@@ -37,7 +37,7 @@
 <div style="background:#fff;border-radius:14px;border:1px solid var(--border);padding:1.2rem 1.3rem;margin-bottom:.85rem">
   <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1.1rem"><span style="font-size:1rem">📍</span><span style="font-size:.65rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em">Ubicación</span></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem">
-    <div><label style="font-size:.65rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.3rem">País</label><select id="inf-pais" style="width:100%;padding:.65rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:DM Sans,sans-serif;outline:none;background:#fff;cursor:pointer" onchange="if(M){M.pais=this.value;initSegurosList();renderSeguros('');var _cm={argentina:'ARS',colombia:'COP',mexico:'MXN',peru:'PEN',chile:'CLP',brasil:'BRL',uruguay:'UYU',bolivia:'BOB',paraguay:'PYG',costa_rica:'CRC',espana:'EUR',francia:'EUR',alemania:'EUR',italia:'EUR',portugal:'EUR',reino_unido:'GBP',canada:'CAD',australia:'AUD',nueva_zelanda:'NZD',japon:'JPY',india:'INR',china:'CNY',corea_del_sur:'KRW',singapur:'SGD',tailandia:'THB',emiratos_arabes:'AED',turquia:'TRY',sudafrica:'ZAR',rusia:'RUB'};var _newCode=_cm[this.value]||'USD';var _inp2=document.getElementById('inf-ciudad');if(_inp2){_inp2.value='';cdClose();}var _b=document.getElementById('precioCurrencyBadge');var _inp=document.getElementById('inf-precio');if(_b){_b.style.transform='scale(.7)';_b.style.opacity='0';setTimeout(function(){_b.textContent=_newCode;_b.style.background=_newCode==='USD'?'#f1f5f9':'#e0f5f2';_b.style.color=_newCode==='USD'?'#a0b0ae':'#0b7c6e';_b.style.transform='scale(1)';_b.style.opacity='1';},160);}if(_inp){_inp.style.transition='transform .2s cubic-bezier(.16,1,.3,1)';_inp.style.transform='scale(1.06)';setTimeout(function(){_inp.style.transform='scale(1)';},200);}}" ><option value="">Seleccionar país</option>
+    <div><label style="font-size:.65rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.3rem">País</label><select id="inf-pais" style="width:100%;padding:.65rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;box-sizing:border-box;font-family:DM Sans,sans-serif;outline:none;background:#fff;cursor:pointer" onchange="onPaisChange(this.value)"><option value="">Seleccionar país</option>
 <optgroup label="Latinoamérica">
 <option value="argentina">Argentina</option>
 <option value="bolivia">Bolivia</option>
@@ -179,6 +179,19 @@ function infCiudadFilter(q){
   drop.style.display='block';
 }
 function infCiudadClose(){document.getElementById('inf-ciudad-drop').style.display='none';}
+function onPaisChange(v){
+  if(M)M.pais=v;
+  initSegurosList();
+  if(typeof renderSeguros==='function')renderSeguros(v);
+  var _cm={argentina:'ARS',colombia:'COP',mexico:'MXN',peru:'PEN',chile:'CLP',brasil:'BRL',uruguay:'UYU',bolivia:'BOB',paraguay:'PYG',costa_rica:'CRC',espana:'EUR',francia:'EUR',alemania:'EUR',italia:'EUR',portugal:'EUR',reino_unido:'GBP',canada:'CAD',australia:'AUD',nueva_zelanda:'NZD',japon:'JPY',india:'INR',china:'CNY',corea_del_sur:'KRW',singapur:'SGD',tailandia:'THB',emiratos_arabes:'AED',turquia:'TRY',sudafrica:'ZAR',rusia:'RUB'};
+  var code=_cm[v]||'USD';
+  var b=document.getElementById('precioCurrencyBadge');
+  var inp=document.getElementById('inf-precio');
+  var c2=document.getElementById('inf-ciudad');
+  if(c2){c2.value='';cdClose();}
+  if(b){b.style.transform='scale(.7)';b.style.opacity='0';setTimeout(function(){b.textContent=code;b.style.background=code==='USD'?'#f1f5f9':'#e0f5f2';b.style.color=code==='USD'?'#a0b0ae':'#0b7c6e';b.style.transform='scale(1)';b.style.opacity='1';},160);}
+  if(inp){inp.style.transition='transform .2s cubic-bezier(.16,1,.3,1)';inp.style.transform='scale(1.06)';setTimeout(function(){inp.style.transform='scale(1)';},200);}
+}
 function actualizarCiudadList(){cdClose();}
 function cdClose(){var d=document.getElementById('cd-drop');if(d)d.style.display='none';}
 document.addEventListener('click',function(e){var w=document.getElementById('inf-ciudad');var d=document.getElementById('cd-drop');if(w&&d&&!w.contains(e.target)&&!d.contains(e.target))cdClose();});
