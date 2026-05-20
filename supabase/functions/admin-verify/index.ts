@@ -88,12 +88,29 @@ serve(async (req) => {
   if (req.method === 'GET') {
     const { data, error } = await sb
       .from('medicos')
-      .select('id, nombre, apellido, titulo, email, especialidades, verificacion_estado, cedula_doc_url, titulo_doc_url, created_at')
+      .select('id, nombre, apellido, titulo, email, especialidades, verificacion_estado, cedula_doc_url, titulo_doc_url, user_id, created_at')
       .in('verificacion_estado', ['en_revision', 'verificado', 'rechazado'])
       .order('created_at', { ascending: false })
 
     if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
-    return new Response(JSON.stringify({ data }), { headers: CORS })
+
+    // Generate signed URLs (24h) for private bucket docs
+    const enriched = await Promise.all((data || []).map(async (m) => {
+      const toPath = (url: string) => url ? url.split('/verificacion-docs/')[1] : null
+      const sign = async (url: string) => {
+        const path = toPath(url)
+        if (!path) return url
+        const { data: s } = await sb.storage.from('verificacion-docs').createSignedUrl(path, 86400)
+        return s?.signedUrl || url
+      }
+      return {
+        ...m,
+        cedula_doc_url:  m.cedula_doc_url  ? await sign(m.cedula_doc_url)  : null,
+        titulo_doc_url:  m.titulo_doc_url  ? await sign(m.titulo_doc_url)  : null,
+      }
+    }))
+
+    return new Response(JSON.stringify({ data: enriched }), { headers: CORS })
   }
 
   if (req.method === 'POST') {
