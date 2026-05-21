@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     const pagesData = await pagesRes.json()
 
     // Save to DB
-    await sb.from('platform_settings' as never).upsert({
+    const { error: dbErr } = await sb.from('platform_settings' as never).upsert({
       key:   'meta_integration',
       value: {
         access_token:  finalToken,
@@ -91,10 +91,8 @@ Deno.serve(async (req) => {
         ad_accounts:   adData.data || [],
         pages:         pagesData.data || [],
       }
-    }, { onConflict: 'key' }).catch(async () => {
-      // Fallback: store in medicos settings table or log
-      console.log('[meta-oauth] platform_settings table not found, storing in secrets')
-    })
+    }, { onConflict: 'key' })
+    if (dbErr) console.error('[meta-oauth] db error:', dbErr)
 
     return Response.redirect(`https://citadoc.lat/admin.html?key=citadoc-growth-2026&meta_connected=1`)
 
