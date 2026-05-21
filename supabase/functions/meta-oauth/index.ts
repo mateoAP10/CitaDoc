@@ -107,8 +107,8 @@ Deno.serve(async (req) => {
     if (req.headers.get('x-admin-token') !== ADMIN_TOKEN)
       return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
 
-    const { data } = await sb.from('platform_settings' as never).select('value').eq('key', 'meta_integration').single().catch(() => ({ data: null }))
-    if (!data) return new Response(JSON.stringify({ connected: false }), { headers: CORS })
+    const { data, error: selErr } = await sb.from('platform_settings' as never).select('value').eq('key', 'meta_integration').single()
+    if (selErr || !data) return new Response(JSON.stringify({ connected: false }), { headers: CORS })
 
     const v = (data as any).value
     return new Response(JSON.stringify({
