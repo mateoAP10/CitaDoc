@@ -75,10 +75,9 @@ Deno.serve(async (req) => {
       // 1. Campaign — click-to-Instagram-DM
       const campaign = await metaPost(`/${meta.adAccount}/campaigns`, meta.token, {
         name:         name || 'CitaDoc — Médicos Ecuador · DM Instagram',
-        objective:    'MESSAGES',
+        objective:    'OUTCOME_ENGAGEMENT',
         status:       'PAUSED',
-        buying_type:  'AUCTION',
-        special_ad_categories: ['NONE'],
+        special_ad_categories: [],
       })
       if (campaign.error) return new Response(JSON.stringify({ ok: false, step: 'campaign', error: campaign.error }), { headers: CORS })
 
@@ -89,9 +88,8 @@ Deno.serve(async (req) => {
         campaign_id:       campaign.id,
         daily_budget:      dailyBudgetCents,
         billing_event:     'IMPRESSIONS',
-        optimization_goal: 'REPLIES',
+        optimization_goal: 'CONVERSATIONS',
         destination_type:  'INSTAGRAM_DIRECT',
-        promoted_object:   { page_id: meta.pageId },
         targeting: {
           geo_locations:   { countries: ['EC'] },
           age_min:         25,
