@@ -74,10 +74,11 @@ Deno.serve(async (req) => {
 
       // 1. Campaign — click-to-Instagram-DM
       const campaign = await metaPost(`/${meta.adAccount}/campaigns`, meta.token, {
-        name:                   name || 'CitaDoc — Médicos Ecuador · DM Instagram',
-        objective:              'OUTCOME_ENGAGEMENT',
-        status:                 'PAUSED',
-        special_ad_categories:  ['NONE'],
+        name:                            name || 'CitaDoc — Médicos Ecuador · DM Instagram',
+        objective:                       'OUTCOME_ENGAGEMENT',
+        status:                          'PAUSED',
+        special_ad_categories:           ['NONE'],
+        is_adset_budget_sharing_enabled: false,
       })
       if (campaign.error) return new Response(JSON.stringify({ ok: false, step: 'campaign', error: campaign.error, full: JSON.stringify(campaign) }), { headers: CORS })
 
