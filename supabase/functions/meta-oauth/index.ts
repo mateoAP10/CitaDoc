@@ -42,10 +42,10 @@ Deno.serve(async (req) => {
     const error = url.searchParams.get('error')
 
     if (error) {
-      return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_error=${encodeURIComponent(error)}`)
+      return Response.redirect(`https://citadoc.lat/admin.html?key=citadoc-growth-2026&meta_error=${encodeURIComponent(error)}`)
     }
     if (!code) {
-      return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_error=no_code`)
+      return Response.redirect(`https://citadoc.lat/admin.html?key=citadoc-growth-2026&meta_error=no_code`)
     }
 
     try {
@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     )
     const tokenData = await tokenRes.json()
     if (!tokenData.access_token) {
-      return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_error=token_failed`)
+      return Response.redirect(`https://citadoc.lat/admin.html?key=citadoc-growth-2026&meta_error=token_failed`)
     }
 
     // Exchange for long-lived token (60 days)
@@ -96,11 +96,11 @@ Deno.serve(async (req) => {
       console.log('[meta-oauth] platform_settings table not found, storing in secrets')
     })
 
-    return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_connected=1`)
+    return Response.redirect(`https://citadoc.lat/admin.html?key=citadoc-growth-2026&meta_connected=1`)
 
     } catch(e) {
       console.error('[meta-oauth] callback error:', e)
-      return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_error=${encodeURIComponent(String(e))}`)
+      return Response.redirect(`https://citadoc.lat/admin.html?key=citadoc-growth-2026&meta_error=${encodeURIComponent(String(e))}`)
     }
   }
 
