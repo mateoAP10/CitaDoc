@@ -70,55 +70,67 @@ Deno.serve(async (req) => {
 
     // ── Create full campaign ────────────────────────────────────────────────
     if (action === 'create') {
-      const { name, daily_budget_usd, video_url, headline, description, cta_url, ig_post_id } = body
+      const { name, daily_budget_usd, description, ig_post_shortcode } = body
 
-      // 1. Campaign
+      // 1. Campaign — objective: messages to Instagram
       const campaign = await metaPost(`/${meta.adAccount}/campaigns`, meta.token, {
-        name:      name || 'CitaDoc — Adquisición Médicos Ecuador',
-        objective: 'OUTCOME_TRAFFIC',
+        name:      name || 'CitaDoc — Médicos Ecuador · DM Instagram',
+        objective: 'OUTCOME_ENGAGEMENT',
         status:    'PAUSED',
         special_ad_categories: [],
       })
       if (campaign.error) return new Response(JSON.stringify({ ok: false, step: 'campaign', error: campaign.error }), { headers: CORS })
 
-      // 2. Ad Set — Ecuador, $6.50/day (~$200/month)
+      // 2. Ad Set — Ecuador, Instagram DM destination
       const dailyBudgetCents = Math.round((daily_budget_usd || 6.5) * 100)
       const adset = await metaPost(`/${meta.adAccount}/adsets`, meta.token, {
-        name:          'Ecuador · Médicos',
-        campaign_id:   campaign.id,
-        daily_budget:  dailyBudgetCents,
-        billing_event: 'IMPRESSIONS',
-        optimization_goal: 'LINK_CLICKS',
+        name:              'Ecuador · Médicos · Instagram DM',
+        campaign_id:       campaign.id,
+        daily_budget:      dailyBudgetCents,
+        billing_event:     'IMPRESSIONS',
+        optimization_goal: 'CONVERSATIONS',
+        destination_type:  'INSTAGRAM_DIRECT',
         targeting: {
-          geo_locations: { countries: ['EC'] },
-          age_min: 25,
-          age_max: 55,
-          flexible_spec: [{ interests: [{ id: '6003409350626', name: 'Medicine' }] }],
+          geo_locations:   { countries: ['EC'] },
+          age_min:         25,
+          age_max:         60,
+          publisher_platforms: ['instagram'],
+          instagram_positions: ['stream', 'reels', 'story'],
         },
-        status: 'PAUSED',
+        status:     'PAUSED',
         start_time: new Date(Date.now() + 86400000).toISOString(),
       })
       if (adset.error) return new Response(JSON.stringify({ ok: false, step: 'adset', error: adset.error }), { headers: CORS })
 
-      // 3. Creative
+      // Get IG account ID
+      const igRes = await metaGet(`/${meta.pageId}`, meta.pageToken, 'fields=instagram_business_account')
+      const igId  = igRes.instagram_business_account?.id || meta.pageId
+
+      // 3. Creative — Instagram message ad
       let creative: Record<string, unknown>
-      if (ig_post_id) {
-        // Use existing IG post
+      if (ig_post_shortcode) {
+        // Boost existing IG post as message ad
         creative = await metaPost(`/${meta.adAccount}/adcreatives`, meta.token, {
-          name: 'Creative — IG Post',
-          object_story_id: `${meta.pageId}_${ig_post_id}`,
+          name: 'Creative — IG Post Boost',
+          object_story_spec: {
+            page_id:          meta.pageId,
+            instagram_actor_id: igId,
+            link_data: {
+              message:     description || '¿Eres médico? Escríbenos por Instagram y te activamos CitaDoc gratis.',
+              call_to_action: { type: 'MESSAGE_PAGE' },
+            },
+          },
         })
       } else {
-        // Link ad with image
+        // Default message ad without post
         creative = await metaPost(`/${meta.adAccount}/adcreatives`, meta.token, {
-          name: 'Creative — CitaDoc',
+          name: 'Creative — CitaDoc DM',
           object_story_spec: {
-            page_id: meta.pageId,
+            page_id:           meta.pageId,
+            instagram_actor_id: igId,
             link_data: {
-              link:        cta_url || 'https://citadoc.lat/citadoc-registro.html',
-              message:     description || '¿Eres médico? Gestiona tus citas, historias clínicas y presencia digital desde CitaDoc. Gratis para comenzar.',
-              name:        headline || 'CitaDoc — La plataforma del médico moderno',
-              call_to_action: { type: 'SIGN_UP', value: { link: cta_url || 'https://citadoc.lat/citadoc-registro.html' } },
+              message:        description || '¿Eres médico? Escríbenos por Instagram y te activamos CitaDoc gratis.',
+              call_to_action: { type: 'MESSAGE_PAGE' },
             },
           },
         })
