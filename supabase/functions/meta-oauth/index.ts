@@ -48,10 +48,13 @@ Deno.serve(async (req) => {
       return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_error=no_code`)
     }
 
+    try {
+
     // Exchange code for short-lived token
+    const redirectUri = `https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/meta-oauth?action=callback`
     const tokenRes = await fetch(
       `https://graph.facebook.com/v19.0/oauth/access_token?` +
-      new URLSearchParams({ client_id: APP_ID, client_secret: APP_SECRET, redirect_uri: REDIRECT_URI, code }),
+      new URLSearchParams({ client_id: APP_ID, client_secret: APP_SECRET, redirect_uri: redirectUri, code }),
     )
     const tokenData = await tokenRes.json()
     if (!tokenData.access_token) {
@@ -94,6 +97,11 @@ Deno.serve(async (req) => {
     })
 
     return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_connected=1`)
+
+    } catch(e) {
+      console.error('[meta-oauth] callback error:', e)
+      return Response.redirect(`https://citadoc.lat/admin.html?key=${ADMIN_TOKEN}&meta_error=${encodeURIComponent(String(e))}`)
+    }
   }
 
   // ── 3. Get current connection status ──────────────────────────────────────
