@@ -59,7 +59,6 @@ async function cargarAgentes(){
     const errors = agents.filter(a=>a.cron_data?.last_status==='failed').length;
     const badge = document.getElementById('agentsBadge');
     if(badge){ badge.textContent=errors||''; badge.style.display=errors?'inline':'none'; }
-    grid.innerHTML = html || '<div style="color:#94a3b8;text-align:center;padding:1rem">Sin datos de agentes</div>';
     // Meta status
     try{
       const mr=await fetch(META_OAUTH_URL+'?action=status',{headers:{'x-admin-token':ADMIN_VERIFY_TOKEN}});
@@ -72,6 +71,7 @@ async function cargarAgentes(){
       const btn=document.getElementById('btnMetaConnect');
       if(btn&&mc){btn.textContent='✅ Meta';btn.style.background='#16a34a';}
     }catch(_){}
+    grid.innerHTML = html || '<div style="color:#94a3b8;text-align:center;padding:1rem">Sin datos de agentes</div>';
   } catch(e){
     grid.innerHTML = '<div style="color:#dc2626;padding:1rem">Error: '+e.message+'</div>';
   }
