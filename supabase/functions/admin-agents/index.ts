@@ -8,6 +8,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_SRV)
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'content-type,x-admin-token',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   'Content-Type': 'application/json',
 }
 
@@ -38,28 +39,18 @@ Deno.serve(async (req) => {
   if (req.headers.get('x-admin-token') !== ADMIN_TOKEN)
     return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
 
-  // Get cron status directly from pg_cron
-  const { data: cronRows } = await sb.from('cron_status' as never).select('*').catch(() => ({ data: null }))
-
-  // Try raw SQL via postgres REST
-  let cronMap: Record<string, { schedule: string; last_run: string; last_status: string; return_message: string }> = {}
-  
   try {
-    const q = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_get_cron_status`, {
-      method: 'POST',
-      headers: { apikey: SUPABASE_SRV, Authorization: `Bearer ${SUPABASE_SRV}`, 'Content-Type': 'application/json' },
-      body: '{}'
-    })
-    if (q.ok) {
-      const rows = await q.json()
-      if (Array.isArray(rows)) for (const r of rows) cronMap[r.jobname] = r
-    }
-  } catch (_) {}
+    const { data: cronRows } = await sb.rpc('admin_get_cron_status')
+    const cronMap: Record<string, unknown> = {}
+    if (Array.isArray(cronRows)) for (const r of cronRows as any[]) cronMap[r.jobname] = r
 
-  const agents = AGENTS.map(a => ({
-    ...a,
-    cron_data: (a as any).cron ? cronMap[(a as any).cron] || null : null,
-  }))
+    const agents = AGENTS.map(a => ({
+      ...a,
+      cron_data: (a as any).cron ? cronMap[(a as any).cron] || null : null,
+    }))
 
-  return new Response(JSON.stringify({ ok: true, agents }), { headers: CORS })
+    return new Response(JSON.stringify({ ok: true, agents }), { headers: CORS })
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e) }), { headers: CORS })
+  }
 })
