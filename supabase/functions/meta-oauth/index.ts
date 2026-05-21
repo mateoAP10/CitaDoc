@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const params = new URLSearchParams({
       client_id:     APP_ID,
       redirect_uri:  REDIRECT_URI,
-      scope:         'pages_show_list,instagram_basic,instagram_content_publish,ads_management,business_management,pages_read_engagement',
+      scope:         'pages_show_list,pages_read_engagement,ads_management,ads_read,business_management',
       response_type: 'code',
       state:         'citadoc_meta_' + Date.now(),
     })
