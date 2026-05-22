@@ -31,6 +31,22 @@
 </div>
 <div id="campanasGrid" style="display:grid;gap:.75rem"><div style="text-align:center;padding:2rem;color:#94a3b8">Cargando campañas...</div></div>
 
+<div style="margin-top:2rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+    <div>
+      <div style="font-size:1rem;font-weight:700;color:#0f172a">📊 Rendimiento</div>
+      <div style="font-size:.78rem;color:#64748b;margin-top:.1rem">Reglas activas de protección — últimos 3 días</div>
+    </div>
+    <button onclick="verificarRendimiento()" style="padding:.4rem .9rem;background:#f59e0b;color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">⚡ Verificar ahora</button>
+  </div>
+  <div id="rendimientoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">CTR mínimo</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a">0.5%</div></div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Días sin mensajes</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a">2 días</div></div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Costo/mensaje max</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a"></div></div>
+  </div>
+  <div id="rendimientoStatus" style="background:#f8fafc;border-radius:10px;padding:1rem 1.2rem;font-size:.85rem;color:#64748b">Aplasta ⚡ para verificar el estado de tus campañas ahora.</div>
+</div>
+
 <!-- Modal nueva campaña -->
 <div id="modalCampana" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:16px;padding:1.8rem;max-width:520px;width:90%;max-height:90vh;overflow-y:auto">
@@ -277,5 +293,38 @@ async function cargarLeads(){
 async function updateLeadEstado(id,estado){
   await fetch(ADMIN_VERIFY_URL+'?resource=leads',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':ADMIN_VERIFY_TOKEN},body:JSON.stringify({action:'update_estado',id,estado})});
   cargarLeads();
+}
+
+const META_GUARD_URL = SB_URL + '/functions/v1/meta-campaign-guard';
+
+async function verificarRendimiento(){
+  const status = document.getElementById('rendimientoStatus');
+  if(!status) return;
+  status.style.background='#fef9c3';
+  status.style.color='#854d0e';
+  status.textContent='Verificando campañas...';
+  try{
+    const r = await fetch(META_GUARD_URL, {method:'POST',headers:{'Content-Type':'application/json'}});
+    const d = await r.json();
+    if(d.ok){
+      if(d.paused && d.paused.length > 0){
+        status.style.background='#fef2f2';
+        status.style.color='#dc2626';
+        status.innerHTML='⚠️ <strong>'+d.paused.length+' campaña(s) pausada(s) por bajo rendimiento:</strong> '+d.paused.join(', ')+'. Revisa tu email para detalles.';
+      } else {
+        status.style.background='#f0fdf4';
+        status.style.color='#16a34a';
+        status.innerHTML='✅ <strong>Todo bien.</strong> '+d.checked+' campaña(s) revisada(s). Ninguna fue pausada.';
+      }
+    } else {
+      status.style.background='#fff7ed';
+      status.style.color='#c2410c';
+      status.textContent='Error al verificar: '+(d.error||'desconocido');
+    }
+  }catch(e){
+    status.style.background='#fef2f2';
+    status.style.color='#dc2626';
+    status.textContent='Error: '+e.message;
+  }
 }
 </script></body></html>
