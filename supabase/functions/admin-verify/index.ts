@@ -113,6 +113,21 @@ serve(async (req) => {
     return new Response(JSON.stringify({ data: enriched }), { headers: CORS })
   }
 
+  // ── Leads ──────────────────────────────────────────────────────────────────
+  if (resource === 'leads') {
+    if (req.method === 'GET') {
+      const { data } = await sb.from('leads').select('*').order('created_at', { ascending: false }).limit(100)
+      return new Response(JSON.stringify({ data: data || [] }), { headers: CORS })
+    }
+    if (req.method === 'POST') {
+      const body = await req.json()
+      if (body.action === 'update_estado') {
+        await sb.from('leads').update({ estado: body.estado, updated_at: new Date().toISOString() }).eq('id', body.id)
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+    }
+  }
+
   if (req.method === 'POST') {
     const body = await req.json()
     const { medico_id, action } = body
