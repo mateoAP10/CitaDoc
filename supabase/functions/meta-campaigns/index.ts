@@ -189,6 +189,62 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, insights: parsed }), { headers: CORS })
     }
 
+    // ── AI Campaign Analysis ────────────────────────────────────────────────
+    if (action === 'analyze') {
+      const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
+      if (!anthropicKey) return new Response(JSON.stringify({ ok: false, error: 'No ANTHROPIC_API_KEY' }), { headers: CORS })
+
+      // Get insights first
+      const fields = 'impressions,reach,spend,actions,cost_per_action_type,clicks,ctr,cpm'
+      const data = await metaGet(`/${meta.adAccount}/insights`, meta.token,
+        `fields=${fields}&date_preset=last_30d&level=campaign&limit=10`)
+
+      const insights = (data.data || []).map((d: any) => {
+        const actions    = d.actions || []
+        const msgs       = actions.find((a: any) => a.action_type === 'onsite_conversion.messaging_conversation_started_7d')
+        const costPerMsg = d.cost_per_action_type?.find((a: any) => a.action_type === 'onsite_conversion.messaging_conversation_started_7d')
+        return {
+          impresiones:      parseInt(d.impressions || '0'),
+          alcance:          parseInt(d.reach || '0'),
+          gasto_usd:        parseFloat(d.spend || '0'),
+          mensajes:         msgs ? parseInt(msgs.value) : 0,
+          costo_por_mensaje: costPerMsg ? parseFloat(costPerMsg.value) : null,
+          clics:            parseInt(d.clicks || '0'),
+          ctr:              parseFloat(d.ctr || '0'),
+          cpm:              parseFloat(d.cpm || '0'),
+        }
+      })
+
+      const prompt = `Eres el analista de publicidad de CitaDoc, una plataforma SaaS para médicos en Latinoamérica.
+
+Estamos corriendo una campaña de Meta Ads en Ecuador para adquirir médicos. El objetivo es que los médicos nos envíen un DM por Instagram.
+
+Métricas de los últimos 30 días:
+${JSON.stringify(insights, null, 2)}
+
+Analiza estas métricas y responde en español con:
+1. **Estado general** (1 línea: bueno / regular / malo)
+2. **Lo que está funcionando** (máximo 2 puntos)
+3. **Lo que hay que mejorar** (máximo 2 puntos con acciones concretas)
+4. **Recomendación de presupuesto** (¿subir, bajar o mantener?)
+
+Sé directo, específico y práctico. Máximo 150 palabras. Sin introducciones.`
+
+      const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 400,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      })
+      const aiData = await aiRes.json()
+      const analysis = aiData.content?.[0]?.text || 'No se pudo generar análisis.'
+
+      return new Response(JSON.stringify({ ok: true, analysis, insights }), { headers: CORS })
+    }
+
     return new Response(JSON.stringify({ error: 'unknown action' }), { status: 400, headers: CORS })
 
   } catch (e) {

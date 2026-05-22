@@ -8,6 +8,13 @@
   <button onclick="abrirNuevaCampana()" style="padding:.5rem 1.2rem;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">+ Nueva campaña</button>
 </div>
 <div id="metaInsights" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.5rem"></div>
+<div id="metaAnalysis" style="display:none;background:#0f172a;border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+    <div style="font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em">🤖 Análisis de campaña</div>
+    <button onclick="analizarCampana()" id="btnAnalizar" style="padding:.3rem .7rem;background:rgba(167,139,250,.2);color:#c4b5fd;border:1px solid rgba(167,139,250,.3);border-radius:6px;font-size:.75rem;cursor:pointer;font-family:DM Sans,sans-serif">↻ Actualizar</button>
+  </div>
+  <div id="metaAnalysisText" style="font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.7;white-space:pre-wrap"></div>
+</div>
 <div id="campanasGrid" style="display:grid;gap:.75rem"><div style="text-align:center;padding:2rem;color:#94a3b8">Cargando campañas...</div></div>
 
 <!-- Modal nueva campaña -->
@@ -142,7 +149,7 @@ const IG_VIDEOS = [
   {url:'https://www.instagram.com/p/DYlWVGctJA1/',shortcode:'DYlWVGctJA1',label:'Video 2'},
 ];
 
-async function cargarCampanas(){cargarInsights();
+async function cargarCampanas(){cargarInsights();analizarCampana();
   const grid=document.getElementById('campanasGrid');
   if(!grid)return;
   try{
@@ -207,5 +214,22 @@ async function cargarInsights(){
     ];
     el.innerHTML=cards.map(c=>'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;text-align:center"><div style="font-size:1.4rem;font-weight:700;color:'+c.color+'">'+c.value+'</div><div style="font-size:.72rem;color:#94a3b8;margin-top:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em">'+c.label+'</div></div>').join('');
   }catch(_){}
+}
+
+async function analizarCampana(){
+  const el=document.getElementById('metaAnalysisText');
+  const panel=document.getElementById('metaAnalysis');
+  const btn=document.getElementById('btnAnalizar');
+  if(!el||!panel)return;
+  panel.style.display='block';
+  el.textContent='Analizando campaña...';
+  btn.textContent='...';btn.disabled=true;
+  try{
+    const r=await fetch(META_CAMPAIGNS_URL+'?action=analyze',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':ADMIN_VERIFY_TOKEN},body:'{}'});
+    const d=await r.json();
+    if(d.ok){el.textContent=d.analysis;}
+    else{el.textContent='Error: '+(d.error||'No se pudo analizar');}
+  }catch(e){el.textContent='Error: '+e.message;}
+  btn.textContent='↻ Actualizar';btn.disabled=false;
 }
 </script></body></html>
