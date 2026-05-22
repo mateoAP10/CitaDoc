@@ -7,6 +7,7 @@
   </div>
   <button onclick="abrirNuevaCampana()" style="padding:.5rem 1.2rem;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">+ Nueva campaña</button>
 </div>
+<div id="metaInsights" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.5rem"></div>
 <div id="campanasGrid" style="display:grid;gap:.75rem"><div style="text-align:center;padding:2rem;color:#94a3b8">Cargando campañas...</div></div>
 
 <!-- Modal nueva campaña -->
@@ -141,7 +142,7 @@ const IG_VIDEOS = [
   {url:'https://www.instagram.com/p/DYlWVGctJA1/',shortcode:'DYlWVGctJA1',label:'Video 2'},
 ];
 
-async function cargarCampanas(){
+async function cargarCampanas(){cargarInsights();
   const grid=document.getElementById('campanasGrid');
   if(!grid)return;
   try{
@@ -179,5 +180,32 @@ async function toggleCampana(id,newStatus,btn){
   const r=await fetch(META_CAMPAIGNS_URL+'?action=toggle',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':ADMIN_VERIFY_TOKEN},body:JSON.stringify({campaign_id:id,status:newStatus})});
   const d=await r.json();
   if(d.ok)cargarCampanas();else btn.disabled=false;
+}
+
+async function cargarInsights(){
+  const el=document.getElementById('metaInsights');
+  if(!el)return;
+  try{
+    const r=await fetch(META_CAMPAIGNS_URL+'?action=insights',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':ADMIN_VERIFY_TOKEN},body:'{}'});
+    const d=await r.json();
+    if(!d.ok||!d.insights.length){el.innerHTML='';return;}
+    const total=d.insights.reduce((acc,i)=>({
+      impressions:acc.impressions+i.impressions,
+      reach:acc.reach+i.reach,
+      spend:acc.spend+i.spend,
+      messages:acc.messages+i.messages,
+      clicks:acc.clicks+i.clicks,
+      cost_per_message:i.cost_per_message||acc.cost_per_message
+    }),{impressions:0,reach:0,spend:0,messages:0,clicks:0,cost_per_message:null});
+    const fmt=n=>n>=1000?(n/1000).toFixed(1)+'k':n.toString();
+    const cards=[
+      {label:'Impresiones',value:fmt(total.impressions),color:'#0b7c6e'},
+      {label:'Alcance',value:fmt(total.reach),color:'#0369a1'},
+      {label:'Mensajes',value:total.messages||'—',color:'#7c3aed'},
+      {label:'Clics',value:fmt(total.clicks),color:'#b45309'},
+      {label:'Gasto',value:'$'+total.spend.toFixed(2),color:'#dc2626'},
+    ];
+    el.innerHTML=cards.map(c=>'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;text-align:center"><div style="font-size:1.4rem;font-weight:700;color:'+c.color+'">'+c.value+'</div><div style="font-size:.72rem;color:#94a3b8;margin-top:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em">'+c.label+'</div></div>').join('');
+  }catch(_){}
 }
 </script></body></html>

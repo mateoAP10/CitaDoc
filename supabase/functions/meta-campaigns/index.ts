@@ -163,6 +163,32 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: !r.error, result: r }), { headers: CORS })
     }
 
+    // ── Campaign insights ───────────────────────────────────────────────────
+    if (action === 'insights') {
+      const fields = 'impressions,reach,spend,actions,cost_per_action_type,clicks'
+      const data = await metaGet(
+        `/${meta.adAccount}/insights`,
+        meta.token,
+        `fields=${fields}&date_preset=last_30d&level=campaign&limit=10`
+      )
+      // Parse messages started from actions
+      const parsed = (data.data || []).map((d: any) => {
+        const actions      = d.actions || []
+        const msgs         = actions.find((a: any) => a.action_type === 'onsite_conversion.messaging_conversation_started_7d')
+        const costPerMsg   = d.cost_per_action_type?.find((a: any) => a.action_type === 'onsite_conversion.messaging_conversation_started_7d')
+        return {
+          campaign_id:      d.campaign_id,
+          impressions:      parseInt(d.impressions || '0'),
+          reach:            parseInt(d.reach || '0'),
+          spend:            parseFloat(d.spend || '0'),
+          messages:         msgs ? parseInt(msgs.value) : 0,
+          cost_per_message: costPerMsg ? parseFloat(costPerMsg.value) : null,
+          clicks:           parseInt(d.clicks || '0'),
+        }
+      })
+      return new Response(JSON.stringify({ ok: true, insights: parsed }), { headers: CORS })
+    }
+
     return new Response(JSON.stringify({ error: 'unknown action' }), { status: 400, headers: CORS })
 
   } catch (e) {
