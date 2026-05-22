@@ -35,16 +35,16 @@
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
     <div>
       <div style="font-size:1rem;font-weight:700;color:#0f172a">📊 Rendimiento</div>
-      <div style="font-size:.78rem;color:#64748b;margin-top:.1rem">Reglas activas de protección — últimos 3 días</div>
+      <div style="font-size:.78rem;color:#64748b;margin-top:.1rem">Automático cada 72h — alerta por email si hay problema</div>
     </div>
-    <button onclick="verificarRendimiento()" style="padding:.4rem .9rem;background:#f59e0b;color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">⚡ Verificar ahora</button>
+    <span style="font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:.3rem .8rem;border-radius:20px;font-weight:600">🤖 Activo · cada 72h</span>
   </div>
   <div id="rendimientoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem">
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">CTR mínimo</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a">0.5%</div></div>
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Días sin mensajes</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a">2 días</div></div>
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Costo/mensaje max</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a"></div></div>
   </div>
-  <div id="rendimientoStatus" style="background:#f8fafc;border-radius:10px;padding:1rem 1.2rem;font-size:.85rem;color:#64748b">Aplasta ⚡ para verificar el estado de tus campañas ahora.</div>
+  <div id="rendimientoStatus" style="background:#f0fdf4;border-radius:10px;padding:1rem 1.2rem;font-size:.85rem;color:#16a34a">✅ Agente activo desde 21/05/2026. Próximo chequeo automático en 72h. Si hay bajo rendimiento recibes alerta por email.</div>
 </div>
 
 <!-- Modal nueva campaña -->
