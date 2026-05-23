@@ -731,6 +731,143 @@ function tplWelcomeFree(nombre: string, titulo: string): string {
 </body></html>`
 }
 
+function tplWeeklyReport(d: Record<string, any>): string {
+  const nombre      = d.nombre || ''
+  const titulo      = d.titulo || 'Dr.'
+  const slug        = d.slug   || ''
+  const citasSemana = Number(d.citas_semana) || 0
+  const citasTotal  = Number(d.citas_total)  || 0
+  const score       = Number(d.score)        || 0
+  const insight     = d.insight || 'sin_citas_comparte'
+  const dashUrl     = 'https://citadoc.lat/citadoc-dashboard.html'
+  const profileUrl  = slug ? `https://citadoc.lat/citadoc-perfil.html?slug=${slug}` : dashUrl
+
+  const scoreBar = Math.round(score / 10) // 0-10 blocks
+  const scoreColor = score >= 80 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444'
+
+  const INSIGHTS: Record<string, { headline: string; body: string; cta: string; ctaUrl: string; color: string }> = {
+    sin_horarios: {
+      headline: 'Tu agenda está cerrada para pacientes',
+      body:     'Sin horarios configurados, nadie puede agendarte aunque encuentren tu perfil. Toma 3 minutos activar tu disponibilidad.',
+      cta:      'Configurar mi horario →',
+      ctaUrl:   dashUrl,
+      color:    '#ef4444',
+    },
+    sin_foto: {
+      headline: 'Una foto puede duplicar tus citas',
+      body:     'Los perfiles con foto profesional generan significativamente más confianza. Los pacientes quieren saber con quién se van a atender.',
+      cta:      'Agregar mi foto →',
+      ctaUrl:   dashUrl,
+      color:    '#f59e0b',
+    },
+    sin_citas_comparte: {
+      headline: 'Comparte tu perfil — es tu link de citas',
+      body:     'Tu perfil ya está listo. La forma más rápida de conseguir tu primera cita online es enviarle el link a tus pacientes por WhatsApp.',
+      cta:      'Ver mi perfil →',
+      ctaUrl:   profileUrl,
+      color:    '#0b7c6e',
+    },
+    perfil_incompleto: {
+      headline: `Tu perfil está al ${score}% — complétalo`,
+      body:     'Los perfiles completos aparecen primero en el directorio y generan más confianza. Agregar bio, precio y especialidades toma minutos.',
+      cta:      'Completar mi perfil →',
+      ctaUrl:   dashUrl,
+      color:    '#6366f1',
+    },
+    upsell_pro: {
+      headline: `Tuviste ${citasSemana} cita${citasSemana !== 1 ? 's' : ''} esta semana`,
+      body:     'Con CitaDoc Pro tendrías historial clínico, recetas digitales y aparecerías primero en búsquedas. Perfecto para el siguiente nivel.',
+      cta:      'Ver plan Pro →',
+      ctaUrl:   dashUrl,
+      color:    '#0b7c6e',
+    },
+    agenda_vacia: {
+      headline: 'Tu agenda está abierta pero sin citas',
+      body:     'Tu perfil y horarios están listos. Comparte tu link de citas con tus pacientes actuales para empezar a recibir agendamientos online.',
+      cta:      'Compartir mi perfil →',
+      ctaUrl:   profileUrl,
+      color:    '#0b7c6e',
+    },
+    excelente: {
+      headline: `Excelente semana — ${citasSemana} cita${citasSemana !== 1 ? 's' : ''}`,
+      body:     'Tu perfil está generando resultados. Sigue compartiendo tu enlace y considera activar más funciones premium para optimizar tu consulta.',
+      cta:      'Ver mi dashboard →',
+      ctaUrl:   dashUrl,
+      color:    '#10b981',
+    },
+  }
+
+  const ins = INSIGHTS[insight] || INSIGHTS['sin_citas_comparte']
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+
+<tr><td style="padding-bottom:20px;text-align:center">
+  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span>
+</td></tr>
+
+<tr><td style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
+<table width="100%" cellpadding="0" cellspacing="0">
+
+<!-- Header -->
+<tr><td style="background:linear-gradient(135deg,#052a27,#073d36);padding:36px 40px 28px">
+  <p style="margin:0 0 6px;color:rgba(255,255,255,.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Reporte semanal</p>
+  <h1 style="margin:0 0 6px;color:#fff;font-size:22px;font-weight:700;line-height:1.25">${titulo} ${nombre}</h1>
+  <p style="margin:0;color:rgba(255,255,255,.45);font-size:14px">Esta semana en CitaDoc</p>
+</td></tr>
+
+<!-- Stats row -->
+<tr><td style="padding:28px 40px;border-bottom:1px solid #f1f5f9">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td width="33%" style="text-align:center;padding:16px 8px;background:#f8fafc;border-radius:12px">
+      <div style="color:#0b7c6e;font-size:32px;font-weight:800;line-height:1">${citasSemana}</div>
+      <div style="color:#64748b;font-size:12px;margin-top:6px;font-weight:600">citas esta semana</div>
+    </td>
+    <td width="4%"></td>
+    <td width="33%" style="text-align:center;padding:16px 8px;background:#f8fafc;border-radius:12px">
+      <div style="color:#0b7c6e;font-size:32px;font-weight:800;line-height:1">${citasTotal}</div>
+      <div style="color:#64748b;font-size:12px;margin-top:6px;font-weight:600">citas totales</div>
+    </td>
+    <td width="4%"></td>
+    <td width="33%" style="text-align:center;padding:16px 8px;background:#f8fafc;border-radius:12px">
+      <div style="color:${scoreColor};font-size:32px;font-weight:800;line-height:1">${score}%</div>
+      <div style="color:#64748b;font-size:12px;margin-top:6px;font-weight:600">perfil completo</div>
+    </td>
+  </tr></table>
+
+  <!-- Score bar -->
+  <div style="margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Completitud del perfil</span>
+      <span style="color:${scoreColor};font-size:12px;font-weight:700">${score}%</span>
+    </div>
+    <div style="background:#e2e8f0;border-radius:100px;height:8px;overflow:hidden">
+      <div style="background:${scoreColor};width:${score}%;height:8px;border-radius:100px"></div>
+    </div>
+  </div>
+</td></tr>
+
+<!-- Insight -->
+<tr><td style="padding:28px 40px">
+  <div style="border-left:3px solid ${ins.color};padding-left:16px;margin-bottom:24px">
+    <p style="margin:0 0 8px;color:#0f172a;font-size:16px;font-weight:700;line-height:1.3">${ins.headline}</p>
+    <p style="margin:0;color:#475569;font-size:14px;line-height:1.7">${ins.body}</p>
+  </div>
+  <a href="${ins.ctaUrl}" style="display:block;background:${ins.color};color:#fff;text-align:center;padding:15px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">${ins.cta}</a>
+</td></tr>
+
+<!-- Footer -->
+<tr><td style="padding:0 40px 28px;text-align:center;border-top:1px solid #f1f5f9">
+  <p style="margin:16px 0 0;color:#94a3b8;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#94a3b8;text-decoration:none">hola@citadoc.lat</a></p>
+</td></tr>
+
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplPerfilFrioFoto(nombre: string, titulo: string): string {
   const dashUrl = 'https://citadoc.lat/citadoc-dashboard.html'
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
@@ -967,6 +1104,12 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'onboarding_day5': {
         const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, así están usando CitaDoc otros médicos`
         await sendEmail(to_email, subject, tplOnboardingDay5(data.nombre || '', data.titulo || 'Dr.', data.slug || ''))
+        break
+      }
+
+      case 'weekly_report': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu semana en CitaDoc`
+        await sendEmail(to_email, subject, tplWeeklyReport(data))
         break
       }
 
