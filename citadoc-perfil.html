@@ -78,7 +78,7 @@ function _getPerfil(){
   var ciudad=spans.length>=3?spans[2].textContent.trim():'';
   return {nombre:n?n.textContent.trim():'Dr. Médico',esp:s?s.textContent.replace(/·/g,'').trim():'',foto:foto,segs:segs,precio:precio,bio:bio,ciudad:ciudad,url:_getUrl()};
 }
-function compartirPerfil(){doShare();}
+function compartirPerfil(){var e=window._perfilUrl||location.href,n=window._medico?((window._medico.titulo||'Dr.')+' '+window._medico.nombre+' '+window._medico.apellido):'Mi médico';if(navigator.share){navigator.share({title:n,text:'Agenda tu cita con '+n+' en CitaDoc',url:e}).catch(function(){});}else{navigator.clipboard.writeText(e).catch(function(){});}}
 
 function _mostrarCard(html){
   var ov=document.createElement('div');
