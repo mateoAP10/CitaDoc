@@ -56,7 +56,7 @@ function selectFecha(e,t){selectedDate=e,selectedSlot=null,renderCal();var a=_di
 // Query booked slots for this date in real time
 _sb.from("citas").select("hora").eq("medico_id",_medico.id).eq("fecha",e).in("estado",["confirmada","pendiente"]).then(function(res){var booked=new Set((res.data||[]).map(function(r){return r.hora;}));_renderSlots(e,a,booked);});
 var o=e.split("-");setText("slotsTitle","Horarios - "+parseInt(o[2])+" de "+MESES[parseInt(o[1])-1]),el("slotsWrap").style.display=a.length?"block":"none";var i=el("btnToForm");i&&(i.disabled=!0,i.style.opacity=".4")}function renderSedeSelector(e){_locationsMedico=e||[];var t=el("sedeSelectorWrap");if(t){if(t.innerHTML="",!e||0===e.length)return t.style.display="none",void(selectedLocationId=null);if(1===e.length){selectedLocationId=e[0].id,t.style.display="block";var a=document.createElement("div");a.className="sede-info-label";var n={lun:"Lun",mar:"Mar",mie:"Mié",jue:"Jue",vie:"Vie",sab:"Sáb",dom:"Dom"},o=(window._sedeBlocks||[]).filter(function(t){return String(t.location_id)===String(e[0].id)}),i=["lun","mar","mie","jue","vie","sab","dom"].filter(function(e){return o.some(function(t){return t.day===e})}).map(function(e){return n[e]}).join(" · ");return a.innerHTML="📍 <strong>"+(e[0].nombre||"Consultorio")+"</strong>"+(e[0].direccion?" · "+e[0].direccion.split(",").slice(0,2).join(","):"")+(i?' <span style="color:var(--teal);font-weight:700">· '+i+"</span>":""),t.appendChild(a),void cargarDisponibilidadPorSede(_medico,[],_sb,selectedLocationId).then(function(e){_disp=e,renderCal()})}t.style.display="block";var l=document.createElement("div");l.className="sede-selector-label",l.textContent="Selecciona una sede",t.appendChild(l),e.forEach(function(a,n){var o=document.createElement("div");o.className="sede-card",String(selectedLocationId)===String(a.id)&&o.classList.add("selected");var i=document.createElement("div");i.className="sede-name",i.textContent=a.nombre||"Consultorio",o.appendChild(i);var l=document.createElement("div");l.className="sede-addr",l.textContent=a.direccion?a.direccion.split(",").slice(0,2).join(","):"",o.appendChild(l);var r={lun:"Lun",mar:"Mar",mie:"Mié",jue:"Jue",vie:"Vie",sab:"Sáb",dom:"Dom"},c=(window._sedeBlocks||[]).filter(function(e){return String(e.location_id)===String(a.id)}),s=["lun","mar","mie","jue","vie","sab","dom"].filter(function(e){return c.some(function(t){return t.day===e})});if(s.length){var d=document.createElement("div");d.style.cssText="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.45rem",s.forEach(function(e){var t=document.createElement("span");t.style.cssText="font-size:.68rem;font-weight:700;color:var(--teal);background:var(--teal-lite);border-radius:6px;padding:.15rem .45rem",t.textContent=r[e],d.appendChild(t)}),o.appendChild(d)}var p=document.createElement("span");p.className="sede-chip",p.textContent="Elegir esta sede",o.appendChild(p),o.addEventListener("click",function(){selectedLocationId=a.id,selectedDate=null,selectedSlot=null,el("slotsWrap").style.display="none";var t=el("btnToForm");t&&(t.disabled=!0,t.style.opacity=".4"),renderSedeSelector(e),cargarDisponibilidadPorSede(_medico,[],_sb,selectedLocationId).then(function(e){_disp=e,renderCal()})}),t.appendChild(o)})}}function confirmarCita(){if(_medico&&selectedDate&&selectedSlot){var e=el("inpNombre").value.trim(),t=el("inpTel").value.trim(),a=el("inpEmail").value.trim(),n=el("inpMotivo").value.trim();if(e&&t){var o=el("btnConfirm");o&&(o.textContent="Confirmando...",o.disabled=!0);var i=selectedDate.split("-"),l=parseInt(i[2])+" de "+MESES[parseInt(i[1])-1]+" "+i[0],r=(_medico.titulo||"Dr.")+" "+_medico.nombre+" "+_medico.apellido;buscarOCrearPaciente(_sb,e,a,t).then(function(i){_sb.from("citas").select("id").eq("medico_id",_medico.id).eq("fecha",selectedDate).eq("hora",selectedSlot).in("estado",["confirmada","pendiente"]).then(function(l){if(l.data&&l.data.length>0)return alert("Este horario acaba de ser reservado. Por favor selecciona otro."),el("step2").style.display="none",el("step1").style.display="block",void(o&&(o.textContent="Confirmar cita",o.disabled=!1));"undefined"!=typeof _agendaCache&&delete _agendaCache[_medico.id+"_"+selectedDate],_sb.from("citas").insert({medico_id:_medico.id,paciente_id:i||null,paciente_nombre:e,paciente_email:a||null,paciente_tel:t,motivo:n||null,seguro:_selectedInsurance||null,fecha:selectedDate,hora:selectedSlot,estado:"confirmada"}).then(function(res){if(res.error){if(res.error.message&&res.error.message.indexOf("unique_slot_cita")>-1){alert("Ese horario acaba de ser reservado. Por favor selecciona otro.");el("step2").style.display="none";el("step1").style.display="block";delete _disp[selectedDate];cargarDisponibilidadConBloqueos(_medico,[],_sb).then(function(e){_disp=e;renderCal();});}else{console.error("cita:",res.error);}}else{// Slot booked — remove from calendar immediately
-if(_disp[selectedDate]){_disp[selectedDate]=_disp[selectedDate].filter(function(h){return h!==selectedSlot;});if(!_disp[selectedDate].length)delete _disp[selectedDate];renderCal();}}})})});var c="";if(selectedLocationId&&_locationsMedico.length){var s=_locationsMedico.find(function(e){return String(e.id)===String(selectedLocationId)});s&&(c=s.nombre)}var d="https://citadoc.lat/citadoc-perfil.html?slug="+(_medico.slug||"");var _docEmail=_medico.email||null;if(!_docEmail){try{var _authUser=_sb.auth.getUser&&(_sb.auth.getUser());if(_authUser&&_authUser.data&&_authUser.data.user)_docEmail=_authUser.data.user.email;}catch(e){}}if(_docEmail){var p=t?limpiarNumeroWA(t,_medico.pais||"ecuador"):null,m="🩺 Nueva cita agendada\nPaciente: "+e+" · "+t+(a?"\nEmail: "+a:"")+"\nFecha: "+l+" a las "+selectedSlot+(c?"\nSede: "+c:"")+"\nMotivo: "+(n||"No especificado")+(_selectedInsurance?"\n🛡 Seguro: "+_selectedInsurance:"")+(p?"\nWA: https://wa.me/"+p:"");citadocSendEmail("appointment",{to_email:_docEmail,doctor_name:r,patient_name:e,appointment_date:l,appointment_time:selectedSlot,location_name:c||"Consultorio",appointment_mode:"📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html",public_profile_url:d,lang:"es"});if(a){citadocSendEmail("appointment",{to_email:a,doctor_name:r,patient_name:e,appointment_date:l,appointment_time:selectedSlot,location_name:c||"Consultorio",appointment_mode:"🏥 Presencial",public_profile_url:d,lang:window._currentLang||"es"})}}el("step2").style.display="none",el("bookingSuccess").style.display="block";var u="";if(selectedLocationId&&_locationsMedico.length){var f=_locationsMedico.find(function(e){return String(e.id)===String(selectedLocationId)});f&&(u=" 📍 "+(f.nombre||"Consultorio"))}setText("successMsg",e+", tu cita con "+r+" esta confirmada para el "+l+" a las "+selectedSlot+"."+u+(a?" Confirmacion enviada a "+a+".":"")),o&&(o.textContent="Confirmar cita",o.disabled=!1);var v=el("waNotificarWrap"),h=el("btnWANotificar");if(v&&h&&_medico&&_medico.whatsapp_activo&&_medico.whatsapp){var g=limpiarNumeroWA(_medico.whatsapp,_medico.pais);if(g){var b="Hola "+r+", acabo de agendar una cita para el "+l+" a las "+selectedSlot+". Soy "+e+" ("+t+"). ¡Muchas gracias!";h.href="https://wa.me/"+g+"?text="+encodeURIComponent(b),v.style.display="block"}}}else alert("Completa nombre y teléfono.")}}function aplicarMedico(e,t,a,n){_medico=e;window._perfilImg=null;if(e.foto_url){var _pi=new Image();_pi.crossOrigin='anonymous';_pi.onload=function(){window._perfilImg=_pi;};_pi.src=e.foto_url+'?t='+Date.now();}var o=(e.titulo||"Dr.")+" "+e.nombre+" "+e.apellido,i=(e.especialidades||[])[0]||"",l=e.ciudad||"",r=PAISES_LABEL[e.pais||"ecuador"]||e.pais||"",c="https://citadoc.lat/citadoc-perfil.html?slug="+(e.slug||""),s=o+(i?" — "+i:"")+(l?" en "+l+", "+r+".":".")+(e.anos_experiencia?" "+e.anos_experiencia+" años de experiencia.":"")+" Agenda tu cita online en CitaDoc.",d=e.foto_url||"https://citadoc.lat/og-citadoc.png";document.title=o+(i?" — "+i:"")+(l?" en "+l:"");var p=function(e,t,a){var n=document.getElementById(e);n&&n.setAttribute(t,a)};p("metaDesc","content",s),p("metaCanonical","href",c),p("metaOGTitle","content",o+(i?" — "+i:"")),p("metaOGDesc","content",s),p("metaOGImage","content",d),p("metaOGUrl","content",c),p("metaTWTitle","content",o+(i?" — "+i:"")),p("metaTWDesc","content",s);var m={"@context":"https://schema.org","@type":"Physician",name:o,url:c,image:d,description:e.bio||s};i&&(m.medicalSpecialty=i),e.precio&&(m.priceRange="$"+e.precio),(e.telefono||e.whatsapp)&&(m.telephone=e.telefono||e.whatsapp),l&&(m.address={"@type":"PostalAddress",addressLocality:l,addressCountry:r});if(e.instagram||e.linkedin||e.facebook){m.sameAs=[];e.instagram&&m.sameAs.push("https://instagram.com/"+e.instagram.replace("@",""));e.linkedin&&m.sameAs.push(e.linkedin);e.facebook&&m.sameAs.push(e.facebook)}
+if(_disp[selectedDate]){_disp[selectedDate]=_disp[selectedDate].filter(function(h){return h!==selectedSlot;});if(!_disp[selectedDate].length)delete _disp[selectedDate];renderCal();}}})})});var c="";if(selectedLocationId&&_locationsMedico.length){var s=_locationsMedico.find(function(e){return String(e.id)===String(selectedLocationId)});s&&(c=s.nombre)}var d="https://citadoc.lat/citadoc-perfil.html?slug="+(_medico.slug||"");var _docEmail=_medico.email||null;if(!_docEmail){try{var _authUser=_sb.auth.getUser&&(_sb.auth.getUser());if(_authUser&&_authUser.data&&_authUser.data.user)_docEmail=_authUser.data.user.email;}catch(e){}}if(_docEmail){var p=t?limpiarNumeroWA(t,_medico.pais||"ecuador"):null,m="🩺 Nueva cita agendada\nPaciente: "+e+" · "+t+(a?"\nEmail: "+a:"")+"\nFecha: "+l+" a las "+selectedSlot+(c?"\nSede: "+c:"")+"\nMotivo: "+(n||"No especificado")+(_selectedInsurance?"\n🛡 Seguro: "+_selectedInsurance:"")+(p?"\nWA: https://wa.me/"+p:"");citadocSendEmail("appointment",{to_email:_docEmail,doctor_name:r,patient_name:e,appointment_date:l,appointment_time:selectedSlot,location_name:c||"Consultorio",appointment_mode:"📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html",public_profile_url:d,lang:"es"});if(a){citadocSendEmail("appointment",{to_email:a,doctor_name:r,patient_name:e,appointment_date:l,appointment_time:selectedSlot,location_name:c||"Consultorio",appointment_mode:"🏥 Presencial",public_profile_url:d,lang:window._currentLang||"es"})}}el("step2").style.display="none",el("bookingSuccess").style.display="block";var u="";if(selectedLocationId&&_locationsMedico.length){var f=_locationsMedico.find(function(e){return String(e.id)===String(selectedLocationId)});f&&(u=" 📍 "+(f.nombre||"Consultorio"))}setText("successMsg",e+", tu cita con "+r+" esta confirmada para el "+l+" a las "+selectedSlot+"."+u+(a?" Confirmacion enviada a "+a+".":"")),o&&(o.textContent="Confirmar cita",o.disabled=!1);var v=el("waNotificarWrap"),h=el("btnWANotificar");if(v&&h&&_medico&&_medico.whatsapp_activo&&_medico.whatsapp){var g=limpiarNumeroWA(_medico.whatsapp,_medico.pais);if(g){var b="Hola "+r+", acabo de agendar una cita para el "+l+" a las "+selectedSlot+". Soy "+e+" ("+t+"). ¡Muchas gracias!";h.href="https://wa.me/"+g+"?text="+encodeURIComponent(b),v.style.display="block"}}}else alert("Completa nombre y teléfono.")}}function aplicarMedico(e,t,a,n){_medico=e;window._perfilImg=null;if(e.foto_url){fetch(e.foto_url).then(function(r){return r.blob();}).then(function(b){var u=URL.createObjectURL(b);var pi=new Image();pi.onload=function(){window._perfilImg=pi;};pi.src=u;}).catch(function(){});}var o=(e.titulo||"Dr.")+" "+e.nombre+" "+e.apellido,i=(e.especialidades||[])[0]||"",l=e.ciudad||"",r=PAISES_LABEL[e.pais||"ecuador"]||e.pais||"",c="https://citadoc.lat/citadoc-perfil.html?slug="+(e.slug||""),s=o+(i?" — "+i:"")+(l?" en "+l+", "+r+".":".")+(e.anos_experiencia?" "+e.anos_experiencia+" años de experiencia.":"")+" Agenda tu cita online en CitaDoc.",d=e.foto_url||"https://citadoc.lat/og-citadoc.png";document.title=o+(i?" — "+i:"")+(l?" en "+l:"");var p=function(e,t,a){var n=document.getElementById(e);n&&n.setAttribute(t,a)};p("metaDesc","content",s),p("metaCanonical","href",c),p("metaOGTitle","content",o+(i?" — "+i:"")),p("metaOGDesc","content",s),p("metaOGImage","content",d),p("metaOGUrl","content",c),p("metaTWTitle","content",o+(i?" — "+i:"")),p("metaTWDesc","content",s);var m={"@context":"https://schema.org","@type":"Physician",name:o,url:c,image:d,description:e.bio||s};i&&(m.medicalSpecialty=i),e.precio&&(m.priceRange="$"+e.precio),(e.telefono||e.whatsapp)&&(m.telephone=e.telefono||e.whatsapp),l&&(m.address={"@type":"PostalAddress",addressLocality:l,addressCountry:r});if(e.instagram||e.linkedin||e.facebook){m.sameAs=[];e.instagram&&m.sameAs.push("https://instagram.com/"+e.instagram.replace("@",""));e.linkedin&&m.sameAs.push(e.linkedin);e.facebook&&m.sameAs.push(e.facebook)}
 m.availableService={"@type":"MedicalTherapy","name":"Consulta médica","url":c};
 if(e.precio){m.makesOffer={"@type":"Offer","price":e.precio,"priceCurrency":"USD","availability":"https://schema.org/InStock"}}
 m.knowsAbout=(e.especialidades||[]).join(", ")||i||undefined;
@@ -107,113 +107,191 @@ function compartirPerfil(){
       ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
     }
 
-    // Fondo gradiente
-    var g=ctx.createLinearGradient(0,0,W,H);
-    g.addColorStop(0,'#052a27');g.addColorStop(0.55,'#073d36');g.addColorStop(1,'#0a4f46');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-
-    // Glows decorativos
-    var g1=ctx.createRadialGradient(820,220,0,820,220,480);
-    g1.addColorStop(0,'rgba(14,157,140,0.22)');g1.addColorStop(1,'transparent');
-    ctx.fillStyle=g1;ctx.fillRect(0,0,W,H);
-    var g2=ctx.createRadialGradient(180,860,0,180,860,380);
-    g2.addColorStop(0,'rgba(14,157,140,0.1)');g2.addColorStop(1,'transparent');
-    ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
-
-    // === FOTO (izquierda) — usa imagen precargada en window._perfilImg ===
     var img=window._perfilImg||null;
-    var px=72,py=72,pw=390,ph=440,pr=20;
+    var bio=m.bio||'';
+    var exp=m.anos_experiencia||0;
+    var precio=m.precio||0;
+
+    // === FONDO ===
+    if(img){
+      // Foto de fondo full-bleed (top half)
+      ctx.save();
+      var sc=Math.max(W/img.naturalWidth,(H*0.62)/img.naturalHeight);
+      var iw=img.naturalWidth*sc,ih=img.naturalHeight*sc;
+      ctx.drawImage(img,(W-iw)/2,0,iw,ih);
+      ctx.restore();
+      // Overlay degradado sobre la foto
+      var ov=ctx.createLinearGradient(0,0,0,H);
+      ov.addColorStop(0,'rgba(5,42,39,0.18)');
+      ov.addColorStop(0.35,'rgba(5,42,39,0.35)');
+      ov.addColorStop(0.58,'rgba(5,42,39,0.88)');
+      ov.addColorStop(1,'rgba(5,42,39,1)');
+      ctx.fillStyle=ov;ctx.fillRect(0,0,W,H);
+    }else{
+      // Gradiente oscuro con glows
+      var g=ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,'#052a27');g.addColorStop(0.55,'#073d36');g.addColorStop(1,'#0a4f46');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      var g1=ctx.createRadialGradient(820,180,0,820,180,520);
+      g1.addColorStop(0,'rgba(14,157,140,0.28)');g1.addColorStop(1,'transparent');
+      ctx.fillStyle=g1;ctx.fillRect(0,0,W,H);
+      var g2=ctx.createRadialGradient(200,900,0,200,900,400);
+      g2.addColorStop(0,'rgba(14,157,140,0.14)');g2.addColorStop(1,'transparent');
+      ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+    }
+
+    // === LOGO top-left ===
+    ctx.fillStyle='rgba(255,255,255,0.92)';
+    ctx.font='bold 34px -apple-system,Helvetica,sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText('CitaDoc',64,76);
+    // Punto verde del logo
+    ctx.fillStyle='#0e9d8c';
+    ctx.beginPath();ctx.arc(64+ctx.measureText('CitaDoc').width+10,62,7,0,Math.PI*2);ctx.fill();
+
+    // === Badge DESTACADO top-right ===
+    if(esDestacado){
+      ctx.font='bold 22px -apple-system,Helvetica,sans-serif';
+      var bdtxt='★ Destacado';
+      var bdw=ctx.measureText(bdtxt).width+36;
+      var bdx=W-64-bdw,bdy=48,bdh=44;
+      rr(bdx,bdy,bdw,bdh,22);
+      ctx.fillStyle='rgba(245,158,11,0.22)';ctx.fill();
+      rr(bdx,bdy,bdw,bdh,22);
+      ctx.strokeStyle='rgba(245,168,31,0.7)';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle='#f5c842';ctx.textAlign='right';
+      ctx.fillText(bdtxt,W-64-18,bdy+30);
+      ctx.textAlign='left';
+    }
+
+    // === AVATAR circular (foto o inicial) ===
+    var avR=100,avX=140,avY=img?400:320;
     ctx.save();
-    rr(px,py,pw,ph,pr);
+    ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);
     if(img){
       ctx.clip();
-      var sc=Math.max(pw/img.naturalWidth,ph/img.naturalHeight);
-      var iw=img.naturalWidth*sc,ih=img.naturalHeight*sc;
-      ctx.drawImage(img,px+(pw-iw)/2,py+(ph-ih)/2,iw,ih);
+      var avsc=Math.max((avR*2)/img.naturalWidth,(avR*2)/img.naturalHeight);
+      var aviw=img.naturalWidth*avsc,avih=img.naturalHeight*avsc;
+      ctx.drawImage(img,avX-avR+(aviw>avR*2?(aviw-avR*2)/2:0)*-1,avY-avR+(avih>avR*2?(avih-avR*2)/2:0)*-1,aviw,avih);
+      // Más simple: centrar la imagen en el círculo
+      ctx.restore();
+      ctx.save();
+      ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);ctx.clip();
+      var avsc2=Math.max((avR*2)/img.naturalWidth,(avR*2)/img.naturalHeight);
+      ctx.drawImage(img,avX-img.naturalWidth*avsc2/2,avY-img.naturalHeight*avsc2/2,img.naturalWidth*avsc2,img.naturalHeight*avsc2);
     }else{
-      ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,0.25)';
-      ctx.font='110px serif';ctx.textAlign='center';
-      ctx.fillText('👤',px+pw/2,py+ph/2+38);
+      ctx.fillStyle='rgba(14,157,140,0.35)';ctx.fill();
+      ctx.restore();ctx.save();
+      ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);ctx.clip();
+      var initials=(m.nombre||'M').charAt(0).toUpperCase()+(m.apellido||'D').charAt(0).toUpperCase();
+      ctx.fillStyle='rgba(255,255,255,0.9)';
+      ctx.font='bold 72px -apple-system,Helvetica,sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(initials,avX,avY);
+      ctx.textBaseline='alphabetic';
     }
     ctx.restore();
-    rr(px,py,pw,ph,pr);
-    ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=2;ctx.stroke();
+    // Borde del avatar
+    ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.45)';ctx.lineWidth=4;ctx.stroke();
 
-    // === Badge Destacado ===
-    if(esDestacado){
-      var bdx=px,bdy=py+ph+18,bdw=196,bdh=46;
-      rr(bdx,bdy,bdw,bdh,23);
-      ctx.fillStyle='rgba(245,158,11,0.15)';ctx.fill();
-      rr(bdx,bdy,bdw,bdh,23);
-      ctx.strokeStyle='rgba(245,158,11,0.45)';ctx.lineWidth=1.5;ctx.stroke();
-      ctx.fillStyle='#f5b73f';ctx.font='bold 22px -apple-system,Helvetica,sans-serif';
-      ctx.textAlign='center';ctx.fillText('★ Destacado',bdx+bdw/2,bdy+31);
-    }
+    // === CONTENIDO TEXTO — dos columnas debajo del avatar ===
+    var baseY=img?540:440;
 
-    // === TEXTO (derecha) ===
-    var rx=500,ry=72;
-    ctx.textAlign='left';
-
-    ctx.fillStyle='#ffffff';ctx.font='bold 58px -apple-system,Helvetica,sans-serif';
+    // Nombre — grande
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#ffffff';
+    ctx.font='bold 66px -apple-system,Helvetica,sans-serif';
     var partes=nombreCompleto.split(' ');
     var l1=partes.slice(0,2).join(' '),l2=partes.slice(2).join(' ');
-    ctx.fillText(l1,rx,ry+64);
-    var textY=ry+64;
-    if(l2){ctx.fillText(l2,rx,textY+70);textY+=70;}
-    textY+=48;
+    ctx.fillText(l1,64,baseY);
+    var ty=baseY;
+    if(l2){ty+=76;ctx.fillText(l2,64,ty);}
+    ty+=56;
 
+    // Especialidad
     if(specs){
-      ctx.fillStyle='rgba(14,157,140,1)';
-      ctx.font='30px -apple-system,Helvetica,sans-serif';
-      ctx.fillText(specs,rx,textY);textY+=48;
+      ctx.fillStyle='#4dd9c8';
+      ctx.font='bold 32px -apple-system,Helvetica,sans-serif';
+      ctx.fillText(specs,64,ty);ty+=50;
     }
 
+    // Lugar
     if(lugar){
-      ctx.fillStyle='rgba(255,255,255,0.5)';
-      ctx.font='27px -apple-system,Helvetica,sans-serif';
-      ctx.fillText('📍 '+lugar,rx,textY);textY+=50;
+      ctx.fillStyle='rgba(255,255,255,0.55)';
+      ctx.font='28px -apple-system,Helvetica,sans-serif';
+      ctx.fillText('📍 '+lugar,64,ty);ty+=44;
     }
 
-    textY+=10;
-    ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(rx,textY);ctx.lineTo(W-72,textY);ctx.stroke();
-    textY+=28;
+    ty+=16;
+    // Línea separadora
+    ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(64,ty);ctx.lineTo(W-64,ty);ctx.stroke();
+    ty+=32;
 
+    // Stats row: exp + precio (si hay datos)
+    var stats=[];
+    if(exp>0)stats.push({v:exp+' años',l:'experiencia'});
+    if(precio>0)stats.push({v:'$'+precio,l:'consulta'});
+    stats.push({v:'24/7',l:'online'});
+
+    var statW=Math.floor((W-128)/stats.length);
+    stats.forEach(function(s,i){
+      var sx=64+i*statW+statW/2;
+      ctx.textAlign='center';
+      ctx.fillStyle='#ffffff';ctx.font='bold 36px -apple-system,Helvetica,sans-serif';
+      ctx.fillText(s.v,sx,ty+36);
+      ctx.fillStyle='rgba(255,255,255,0.42)';ctx.font='22px -apple-system,Helvetica,sans-serif';
+      ctx.fillText(s.l,sx,ty+64);
+    });
+    ty+=90;
+
+    // Separador entre stats y seguros
+    ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(64,ty);ctx.lineTo(W-64,ty);ctx.stroke();
+    ty+=28;
+
+    // Seguros
     if(seguros.length>0){
-      ctx.fillStyle='rgba(255,255,255,0.38)';
-      ctx.font='21px -apple-system,Helvetica,sans-serif';
-      ctx.fillText('Seguros aceptados',rx,textY);textY+=38;
-      var chipX=rx,chipY=textY;
+      ctx.textAlign='left';
+      ctx.fillStyle='rgba(255,255,255,0.4)';
+      ctx.font='22px -apple-system,Helvetica,sans-serif';
+      ctx.fillText('Seguros aceptados',64,ty);ty+=38;
+      var chipX=64,chipY=ty;
       seguros.forEach(function(seg){
-        var txt=seg.length>16?seg.slice(0,15)+'…':seg;
-        ctx.font='20px -apple-system,Helvetica,sans-serif';
-        var tw=ctx.measureText(txt).width+28;
-        rr(chipX,chipY,tw,40,20);
-        ctx.fillStyle='rgba(255,255,255,0.09)';ctx.fill();
-        rr(chipX,chipY,tw,40,20);
-        ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1;ctx.stroke();
-        ctx.fillStyle='rgba(255,255,255,0.7)';
-        ctx.fillText(txt,chipX+14,chipY+27);
+        var txt=seg.length>18?seg.slice(0,17)+'…':seg;
+        ctx.font='21px -apple-system,Helvetica,sans-serif';
+        var tw=ctx.measureText(txt).width+30;
+        if(chipX+tw>W-64){chipX=64;chipY+=50;}
+        rr(chipX,chipY,tw,42,21);
+        ctx.fillStyle='rgba(14,157,140,0.2)';ctx.fill();
+        rr(chipX,chipY,tw,42,21);
+        ctx.strokeStyle='rgba(14,157,140,0.45)';ctx.lineWidth=1;ctx.stroke();
+        ctx.fillStyle='rgba(255,255,255,0.82)';
+        ctx.fillText(txt,chipX+15,chipY+29);
         chipX+=tw+10;
-        if(chipX>W-100){chipX=rx;chipY+=50;}
       });
+      ty=chipY+60;
+    }else if(bio){
+      // Bio snippet si no hay seguros
+      ctx.textAlign='left';
+      ctx.fillStyle='rgba(255,255,255,0.48)';
+      ctx.font='24px -apple-system,Helvetica,sans-serif';
+      var bioSnip=bio.length>90?bio.slice(0,89)+'…':bio;
+      ctx.fillText(bioSnip,64,ty);ty+=40;
     }
 
-    // === BRANDING ===
-    var bry=H-110;
+    // === BRANDING INFERIOR ===
+    var bry=H-80;
     ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(72,bry);ctx.lineTo(W-72,bry);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,0.9)';
-    ctx.font='bold 38px -apple-system,Helvetica,sans-serif';
-    ctx.textAlign='left';ctx.fillText('CitaDoc',72,bry+52);
-    ctx.fillStyle='rgba(255,255,255,0.3)';
+    ctx.beginPath();ctx.moveTo(64,bry-20);ctx.lineTo(W-64,bry-20);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.35)';
     ctx.font='24px -apple-system,Helvetica,sans-serif';
-    ctx.fillText('citadoc.lat',72,bry+86);
-    ctx.fillStyle='rgba(14,157,140,0.85)';
-    ctx.font='bold 26px -apple-system,Helvetica,sans-serif';
+    ctx.textAlign='left';ctx.fillText('citadoc.lat',64,bry+20);
+    ctx.fillStyle='rgba(14,157,140,0.9)';
+    ctx.font='bold 28px -apple-system,Helvetica,sans-serif';
     ctx.textAlign='right';
-    ctx.fillText('Agenda tu cita online →',W-72,bry+66);
+    ctx.fillText('Agenda tu cita online →',W-64,bry+20);
 
     // toDataURL es síncrono — se puede llamar navigator.share() en el mismo frame del gesto
     var dataUrl=canvas.toDataURL('image/png');
