@@ -731,6 +731,84 @@ function tplWelcomeFree(nombre: string, titulo: string): string {
 </body></html>`
 }
 
+function tplPerfilFrioFoto(nombre: string, titulo: string): string {
+  const dashUrl = 'https://citadoc.lat/citadoc-dashboard.html'
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="padding-bottom:20px;text-align:center"><span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span></td></tr>
+<tr><td style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="background:linear-gradient(135deg,#fefce8,#fef9c3);padding:40px 44px 32px;border-bottom:1px solid #fde68a">
+  <p style="margin:0 0 8px;color:#92400e;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Tu perfil</p>
+  <h1 style="margin:0 0 12px;color:#0f1a18;font-size:24px;font-weight:700;line-height:1.2">Los pacientes confían más cuando te ven</h1>
+  <p style="margin:0;color:#78716c;font-size:15px;line-height:1.6">${titulo} ${nombre}, agregar tu foto de perfil profesional puede duplicar la tasa de agendamiento.</p>
+</td></tr>
+<tr><td style="padding:32px 44px">
+  <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7">Una foto profesional genera confianza inmediata. Solo toma un minuto subirla desde tu panel.</p>
+  <a href="${dashUrl}" style="display:block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">Agregar mi foto ahora →</a>
+</td></tr>
+<tr><td style="padding:0 44px 28px;text-align:center"><p style="margin:0;color:#94a3b8;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#94a3b8">hola@citadoc.lat</a></p></td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
+function tplPerfilFrioHorarios(nombre: string, titulo: string): string {
+  const dashUrl = 'https://citadoc.lat/citadoc-dashboard.html'
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="padding-bottom:20px;text-align:center"><span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span></td></tr>
+<tr><td style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="background:linear-gradient(135deg,#eff6ff,#dbeafe);padding:40px 44px 32px;border-bottom:1px solid #bfdbfe">
+  <p style="margin:0 0 8px;color:#1e40af;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Tu agenda</p>
+  <h1 style="margin:0 0 12px;color:#0f1a18;font-size:24px;font-weight:700;line-height:1.2">Tu perfil está activo pero sin horarios</h1>
+  <p style="margin:0;color:#475569;font-size:15px;line-height:1.6">${titulo} ${nombre}, sin horarios configurados los pacientes no pueden agendarte.</p>
+</td></tr>
+<tr><td style="padding:32px 44px">
+  <p style="margin:0 0 24px;color:#374151;font-size:15px;line-height:1.7">Configurar tu disponibilidad toma menos de 3 minutos. Elige tus días y horarios, y empieza a recibir citas hoy mismo.</p>
+  <a href="${dashUrl}" style="display:block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">Configurar mi horario →</a>
+</td></tr>
+<tr><td style="padding:0 44px 28px;text-align:center"><p style="margin:0;color:#94a3b8;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#94a3b8">hola@citadoc.lat</a></p></td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
+function tplPerfilFrioSinCitas(nombre: string, titulo: string, slug: string): string {
+  const profileUrl = slug ? `https://citadoc.lat/citadoc-perfil.html?slug=${slug}` : 'https://citadoc.lat/citadoc-dashboard.html'
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="padding-bottom:20px;text-align:center"><span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span></td></tr>
+<tr><td style="background:#0f172a;border-radius:20px;overflow:hidden;border:1px solid #1e293b">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="padding:40px 44px 32px;border-bottom:1px solid #1e293b">
+  <div style="display:inline-block;background:rgba(14,157,140,.15);border:1px solid rgba(14,157,140,.3);border-radius:100px;padding:5px 14px;margin-bottom:20px">
+    <span style="color:#4dd9c8;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Tu primera cita te espera</span>
+  </div>
+  <h1 style="margin:0 0 12px;color:#f8fafc;font-size:24px;font-weight:700;line-height:1.2">Lleva pacientes a tu perfil</h1>
+  <p style="margin:0;color:rgba(255,255,255,.45);font-size:15px;line-height:1.6">${titulo} ${nombre}, tu perfil está listo. El siguiente paso es compartirlo con tus pacientes actuales.</p>
+</td></tr>
+<tr><td style="padding:32px 44px">
+  <p style="margin:0 0 20px;color:#94a3b8;font-size:15px;line-height:1.7">Comparte el enlace de tu perfil por WhatsApp con tus pacientes. Es la forma más rápida de conseguir tu primera cita online.</p>
+  <div style="background:#1e293b;border-radius:12px;padding:16px 20px;margin-bottom:24px">
+    <p style="margin:0 0 6px;color:rgba(255,255,255,.3);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase">Tu enlace de citas</p>
+    <p style="margin:0;color:#4dd9c8;font-size:14px;font-weight:600;word-break:break-all">${profileUrl}</p>
+  </div>
+  <a href="${profileUrl}" style="display:block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">Ver mi perfil →</a>
+</td></tr>
+<tr><td style="padding:0 44px 28px;text-align:center"><p style="margin:0;color:#475569;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#475569">hola@citadoc.lat</a></p></td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
 // ── Send via Resend ───────────────────────────────────────────────────────────
 async function sendEmail(to: string, subject: string, html: string) {
   if (!RESEND_API_KEY) { console.warn('[send-email] No RESEND_API_KEY'); return }
@@ -889,6 +967,24 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'onboarding_day5': {
         const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, así están usando CitaDoc otros médicos`
         await sendEmail(to_email, subject, tplOnboardingDay5(data.nombre || '', data.titulo || 'Dr.', data.slug || ''))
+        break
+      }
+
+      case 'perfil_frio_foto': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu perfil necesita una foto`
+        await sendEmail(to_email, subject, tplPerfilFrioFoto(data.nombre || '', data.titulo || 'Dr.'))
+        break
+      }
+
+      case 'perfil_frio_horarios': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, configura tu horario y empieza a recibir citas`
+        await sendEmail(to_email, subject, tplPerfilFrioHorarios(data.nombre || '', data.titulo || 'Dr.'))
+        break
+      }
+
+      case 'perfil_frio_sin_citas': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu primera cita online está a un paso`
+        await sendEmail(to_email, subject, tplPerfilFrioSinCitas(data.nombre || '', data.titulo || 'Dr.', data.slug || ''))
         break
       }
 
