@@ -78,7 +78,75 @@ function _getPerfil(){
   var ciudad=spans.length>=3?spans[2].textContent.trim():'';
   return {nombre:n?n.textContent.trim():'Dr. Médico',esp:s?s.textContent.replace(/·/g,'').trim():'',foto:foto,segs:segs,precio:precio,bio:bio,ciudad:ciudad,url:_getUrl()};
 }
-function compartirPerfil(){var e=window._perfilUrl||location.href,n=window._medico?((window._medico.titulo||'Dr.')+' '+window._medico.nombre+' '+window._medico.apellido):'Mi médico';if(navigator.share){navigator.share({title:n,text:'Agenda tu cita con '+n+' en CitaDoc',url:e}).catch(function(){});}else{navigator.clipboard.writeText(e).catch(function(){});}}
+function compartirPerfil(){
+  var e=window._perfilUrl||location.href;
+  var m=window._medico||{};
+  var n=(m.titulo||'Dr.')+' '+(m.nombre||'')+' '+(m.apellido||'');
+  var specs=(m.especialidades||[]).slice(0,2).join(' · ');
+  var ogUrl='https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/doctor-og?slug='+(m.slug||'');
+
+  function shareNow(files){
+    var payload={title:n,text:'Agenda tu cita con '+n+' en CitaDoc',url:ogUrl};
+    if(files&&navigator.canShare&&navigator.canShare({files:files})){payload.files=files;}
+    navigator.share(payload).catch(function(){});
+  }
+
+  if(!navigator.share){navigator.clipboard.writeText(e).catch(function(){});return;}
+
+  // Intentar generar tarjeta imagen para Instagram
+  try{
+    var canvas=document.createElement('canvas');
+    canvas.width=1080;canvas.height=1080;
+    var ctx=canvas.getContext('2d');
+    // Fondo gradiente
+    var grad=ctx.createLinearGradient(0,0,1080,1080);
+    grad.addColorStop(0,'#052a27');grad.addColorStop(1,'#0b7c6e');
+    ctx.fillStyle=grad;ctx.fillRect(0,0,1080,1080);
+    // Círculo sutil decorativo
+    ctx.beginPath();ctx.arc(900,180,320,0,Math.PI*2);
+    ctx.fillStyle='rgba(14,157,140,0.12)';ctx.fill();
+    // Foto del médico si existe
+    var fotoUrl=m.foto_url||'';
+    function dibujarTextoYCompartir(){
+      // Nombre
+      ctx.fillStyle='#ffffff';
+      ctx.font='bold 68px -apple-system, Helvetica, sans-serif';
+      ctx.textAlign='left';
+      var nombreLineas=n.trim().split(' ');
+      var linea1=nombreLineas.slice(0,2).join(' ');
+      var linea2=nombreLineas.slice(2).join(' ');
+      ctx.fillText(linea1,100,fotoUrl?540:440);
+      if(linea2)ctx.fillText(linea2,100,fotoUrl?624:524);
+      // Especialidad
+      if(specs){ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='38px -apple-system, Helvetica, sans-serif';ctx.fillText(specs,100,fotoUrl?700:600);}
+      // URL
+      ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='30px -apple-system, Helvetica, sans-serif';
+      ctx.fillText(e.replace('https://',''),100,920);
+      // Logo CitaDoc
+      ctx.fillStyle='#ffffff';ctx.font='bold 36px -apple-system, Helvetica, sans-serif';ctx.textAlign='right';
+      ctx.fillText('CitaDoc',980,60);
+      ctx.textAlign='left';
+      canvas.toBlob(function(blob){
+        if(blob){var f=new File([blob],'citadoc-'+n.replace(/\s/g,'-')+'.png',{type:'image/png'});shareNow([f]);}
+        else{shareNow(null);}
+      },'image/png');
+    }
+    if(fotoUrl){
+      var img=new Image();img.crossOrigin='anonymous';
+      img.onload=function(){
+        // Foto circular grande
+        ctx.save();ctx.beginPath();ctx.arc(540,300,220,0,Math.PI*2);ctx.clip();
+        ctx.drawImage(img,320,80,440,440);ctx.restore();
+        // Borde foto
+        ctx.beginPath();ctx.arc(540,300,222,0,Math.PI*2);
+        ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=3;ctx.stroke();
+        dibujarTextoYCompartir();
+      };
+      img.onerror=function(){fotoUrl='';dibujarTextoYCompartir();};
+      img.src=fotoUrl;
+    }else{dibujarTextoYCompartir();}
+  }catch(err){shareNow(null);}
+}
 
 function _mostrarCard(html){
   var ov=document.createElement('div');
