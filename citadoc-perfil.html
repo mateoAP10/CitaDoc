@@ -81,70 +81,173 @@ function _getPerfil(){
 function compartirPerfil(){
   var e=window._perfilUrl||location.href;
   var m=window._medico||{};
-  var n=(m.titulo||'Dr.')+' '+(m.nombre||'')+' '+(m.apellido||'');
+  var titulo=m.titulo||'Dr.';
+  var nombreCompleto=titulo+' '+(m.nombre||'')+' '+(m.apellido||'');
   var specs=(m.especialidades||[]).slice(0,2).join(' · ');
+  var lugar=[m.ciudad,m.pais].filter(Boolean).join(', ');
+  var seguros=(m.seguros||[]).slice(0,4);
+  var esDestacado=m.plan==='destacado'||m.plan==='pro_web';
   var ogUrl='https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/doctor-og?slug='+(m.slug||'');
 
   function shareNow(files){
-    var payload={title:n,text:'Agenda tu cita con '+n+' en CitaDoc',url:ogUrl};
+    var payload={title:nombreCompleto,text:'Agenda tu cita con '+nombreCompleto+' en CitaDoc',url:ogUrl};
     if(files&&navigator.canShare&&navigator.canShare({files:files})){payload.files=files;}
     navigator.share(payload).catch(function(){});
   }
 
   if(!navigator.share){navigator.clipboard.writeText(e).catch(function(){});return;}
 
-  // Intentar generar tarjeta imagen para Instagram
   try{
+    var W=1080,H=1080;
     var canvas=document.createElement('canvas');
-    canvas.width=1080;canvas.height=1080;
+    canvas.width=W;canvas.height=H;
     var ctx=canvas.getContext('2d');
-    // Fondo gradiente
-    var grad=ctx.createLinearGradient(0,0,1080,1080);
-    grad.addColorStop(0,'#052a27');grad.addColorStop(1,'#0b7c6e');
-    ctx.fillStyle=grad;ctx.fillRect(0,0,1080,1080);
-    // Círculo sutil decorativo
-    ctx.beginPath();ctx.arc(900,180,320,0,Math.PI*2);
-    ctx.fillStyle='rgba(14,157,140,0.12)';ctx.fill();
-    // Foto del médico si existe
-    var fotoUrl=m.foto_url||'';
-    function dibujarTextoYCompartir(){
-      // Nombre
-      ctx.fillStyle='#ffffff';
-      ctx.font='bold 68px -apple-system, Helvetica, sans-serif';
+
+    function rr(x,y,w,h,r){
+      ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);
+      ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);
+      ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+      ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);
+      ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+    }
+
+    function drawCard(img){
+      // Fondo gradiente
+      var g=ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,'#052a27');g.addColorStop(0.55,'#073d36');g.addColorStop(1,'#0a4f46');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+
+      // Glows decorativos
+      var g1=ctx.createRadialGradient(820,220,0,820,220,480);
+      g1.addColorStop(0,'rgba(14,157,140,0.22)');g1.addColorStop(1,'transparent');
+      ctx.fillStyle=g1;ctx.fillRect(0,0,W,H);
+      var g2=ctx.createRadialGradient(180,860,0,180,860,380);
+      g2.addColorStop(0,'rgba(14,157,140,0.1)');g2.addColorStop(1,'transparent');
+      ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+
+      // === FOTO (izquierda) ===
+      var px=72,py=72,pw=390,ph=440,pr=20;
+      ctx.save();
+      rr(px,py,pw,ph,pr);
+      if(img){
+        ctx.clip();
+        var sc=Math.max(pw/img.width,ph/img.height);
+        var iw=img.width*sc,ih=img.height*sc;
+        ctx.drawImage(img,px+(pw-iw)/2,py+(ph-ih)/2,iw,ih);
+      }else{
+        ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,0.25)';
+        ctx.font='110px serif';ctx.textAlign='center';
+        ctx.fillText('👤',px+pw/2,py+ph/2+38);
+      }
+      ctx.restore();
+      // Borde foto
+      rr(px,py,pw,ph,pr);
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=2;ctx.stroke();
+
+      // === Badge Destacado ===
+      if(esDestacado){
+        var bx=px,by=py+ph+18,bw=196,bh=46;
+        rr(bx,by,bw,bh,23);
+        ctx.fillStyle='rgba(245,158,11,0.15)';ctx.fill();
+        rr(bx,by,bw,bh,23);
+        ctx.strokeStyle='rgba(245,158,11,0.45)';ctx.lineWidth=1.5;ctx.stroke();
+        ctx.fillStyle='#f5b73f';ctx.font='bold 22px -apple-system,Helvetica,sans-serif';
+        ctx.textAlign='center';ctx.fillText('★ Destacado',bx+bw/2,by+31);
+      }
+
+      // === TEXTO (derecha) ===
+      var rx=500,ry=72;
       ctx.textAlign='left';
-      var nombreLineas=n.trim().split(' ');
-      var linea1=nombreLineas.slice(0,2).join(' ');
-      var linea2=nombreLineas.slice(2).join(' ');
-      ctx.fillText(linea1,100,fotoUrl?540:440);
-      if(linea2)ctx.fillText(linea2,100,fotoUrl?624:524);
+
+      // Nombre (puede ocupar 2 líneas)
+      ctx.fillStyle='#ffffff';ctx.font='bold 58px -apple-system,Helvetica,sans-serif';
+      var partes=nombreCompleto.trim().split(' ');
+      var l1=partes.slice(0,2).join(' '),l2=partes.slice(2).join(' ');
+      ctx.fillText(l1,rx,ry+64);
+      var textY=ry+64;
+      if(l2){ctx.fillText(l2,rx,textY+70);textY+=70;}
+      textY+=48;
+
       // Especialidad
-      if(specs){ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='38px -apple-system, Helvetica, sans-serif';ctx.fillText(specs,100,fotoUrl?700:600);}
-      // URL
-      ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='30px -apple-system, Helvetica, sans-serif';
-      ctx.fillText(e.replace('https://',''),100,920);
-      // Logo CitaDoc
-      ctx.fillStyle='#ffffff';ctx.font='bold 36px -apple-system, Helvetica, sans-serif';ctx.textAlign='right';
-      ctx.fillText('CitaDoc',980,60);
+      if(specs){
+        ctx.fillStyle='rgba(14,157,140,1)';
+        ctx.font='30px -apple-system,Helvetica,sans-serif';
+        ctx.fillText(specs,rx,textY);textY+=48;
+      }
+
+      // Lugar
+      if(lugar){
+        ctx.fillStyle='rgba(255,255,255,0.5)';
+        ctx.font='27px -apple-system,Helvetica,sans-serif';
+        ctx.fillText('📍 '+lugar,rx,textY);textY+=50;
+      }
+
+      // Línea divisoria
+      textY+=10;
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(rx,textY);ctx.lineTo(W-72,textY);ctx.stroke();
+      textY+=28;
+
+      // Seguros
+      if(seguros.length>0){
+        ctx.fillStyle='rgba(255,255,255,0.38)';
+        ctx.font='21px -apple-system,Helvetica,sans-serif';
+        ctx.fillText('Seguros aceptados',rx,textY);textY+=38;
+
+        var cx=rx,cy=textY;
+        seguros.forEach(function(seg){
+          var txt=seg.length>16?seg.slice(0,15)+'…':seg;
+          ctx.font='20px -apple-system,Helvetica,sans-serif';
+          var tw=ctx.measureText(txt).width+28;
+          rr(cx,cy,tw,40,20);
+          ctx.fillStyle='rgba(255,255,255,0.09)';ctx.fill();
+          rr(cx,cy,tw,40,20);
+          ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1;ctx.stroke();
+          ctx.fillStyle='rgba(255,255,255,0.7)';
+          ctx.fillText(txt,cx+14,cy+27);
+          cx+=tw+10;
+          if(cx>W-100){cx=rx;cy+=50;}
+        });
+      }
+
+      // === BRANDING INFERIOR ===
+      var by2=H-110;
+      ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(72,by2);ctx.lineTo(W-72,by2);ctx.stroke();
+
+      ctx.fillStyle='rgba(255,255,255,0.9)';
+      ctx.font='bold 38px -apple-system,Helvetica,sans-serif';
+      ctx.textAlign='left';ctx.fillText('CitaDoc',72,by2+52);
+
+      ctx.fillStyle='rgba(255,255,255,0.3)';
+      ctx.font='24px -apple-system,Helvetica,sans-serif';
+      ctx.fillText('citadoc.lat',72,by2+86);
+
+      ctx.fillStyle='rgba(14,157,140,0.85)';
+      ctx.font='bold 26px -apple-system,Helvetica,sans-serif';
+      ctx.textAlign='right';
+      ctx.fillText('Agenda tu cita online →',W-72,by2+66);
+
       ctx.textAlign='left';
+
+      // Exportar
       canvas.toBlob(function(blob){
-        if(blob){var f=new File([blob],'citadoc-'+n.replace(/\s/g,'-')+'.png',{type:'image/png'});shareNow([f]);}
-        else{shareNow(null);}
+        if(blob){
+          var f=new File([blob],'citadoc-'+(m.slug||'perfil')+'.png',{type:'image/png'});
+          shareNow([f]);
+        }else{shareNow(null);}
       },'image/png');
     }
+
+    var fotoUrl=m.foto_url||'';
     if(fotoUrl){
       var img=new Image();img.crossOrigin='anonymous';
-      img.onload=function(){
-        // Foto circular grande
-        ctx.save();ctx.beginPath();ctx.arc(540,300,220,0,Math.PI*2);ctx.clip();
-        ctx.drawImage(img,320,80,440,440);ctx.restore();
-        // Borde foto
-        ctx.beginPath();ctx.arc(540,300,222,0,Math.PI*2);
-        ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=3;ctx.stroke();
-        dibujarTextoYCompartir();
-      };
-      img.onerror=function(){fotoUrl='';dibujarTextoYCompartir();};
-      img.src=fotoUrl;
-    }else{dibujarTextoYCompartir();}
+      img.onload=function(){drawCard(img);};
+      img.onerror=function(){drawCard(null);};
+      img.src=fotoUrl+'?t='+Date.now();
+    }else{drawCard(null);}
+
   }catch(err){shareNow(null);}
 }
 
