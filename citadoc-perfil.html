@@ -232,8 +232,8 @@ function compartirPerfil(){
     // Stats row: exp + precio (si hay datos)
     var stats=[];
     if(exp>0)stats.push({v:exp+' años',l:'experiencia'});
-    if(precio>0)stats.push({v:'$'+precio,l:'consulta'});
-    stats.push({v:'24/7',l:'online'});
+    stats.push({v:'24/7',l:'disponible'});
+    stats.push({v:'Online',l:'sin llamadas'});
 
     var statW=Math.floor((W-128)/stats.length);
     stats.forEach(function(s,i){
@@ -282,16 +282,26 @@ function compartirPerfil(){
     }
 
     // === BRANDING INFERIOR ===
-    var bry=H-80;
-    ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(64,bry-20);ctx.lineTo(W-64,bry-20);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,0.35)';
-    ctx.font='24px -apple-system,Helvetica,sans-serif';
-    ctx.textAlign='left';ctx.fillText('citadoc.lat',64,bry+20);
-    ctx.fillStyle='rgba(14,157,140,0.9)';
-    ctx.font='bold 28px -apple-system,Helvetica,sans-serif';
-    ctx.textAlign='right';
-    ctx.fillText('Agenda tu cita online →',W-64,bry+20);
+    var bry=H-96;
+    ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(64,bry-16);ctx.lineTo(W-64,bry-16);ctx.stroke();
+
+    // CitaDoc — nombre a la izquierda
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.font='bold 32px -apple-system,Helvetica,sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText('CitaDoc',64,bry+30);
+
+    // Pill con link — a la derecha, prominente
+    ctx.font='bold 26px -apple-system,Helvetica,sans-serif';
+    var linkTxt='citadoc.lat/'+( m.slug||'');
+    var linkW=ctx.measureText(linkTxt).width+48;
+    var lx=W-64-linkW,ly=bry+4,lh=48;
+    rr(lx,ly,linkW,lh,24);
+    ctx.fillStyle='rgba(14,157,140,0.9)';ctx.fill();
+    ctx.fillStyle='#ffffff';
+    ctx.textAlign='center';
+    ctx.fillText(linkTxt,lx+linkW/2,ly+32);
 
     // toDataURL es síncrono — se puede llamar navigator.share() en el mismo frame del gesto
     var dataUrl=canvas.toDataURL('image/png');
