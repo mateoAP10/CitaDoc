@@ -561,6 +561,88 @@ function tplTrialExpired(nombre: string, titulo: string): string {
 </body></html>`
 }
 
+function tplOnboardingDay2(nombre: string, titulo: string, slug: string): string {
+  const dashUrl = 'https://citadoc.lat/citadoc-dashboard.html'
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="padding-bottom:20px;text-align:center"><span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span></td></tr>
+<tr><td style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);padding:40px 44px 32px;border-bottom:1px solid #e2e8f0">
+  <p style="margin:0 0 8px;color:#16a34a;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Tu perfil médico</p>
+  <h1 style="margin:0 0 12px;color:#0f1a18;font-size:26px;font-weight:700;line-height:1.2">Tu consulta merece estar completa</h1>
+  <p style="margin:0;color:#475569;font-size:15px;line-height:1.6">${titulo} ${nombre}, tienes una cuenta activa en CitaDoc. Completa tu perfil para que los pacientes puedan encontrarte.</p>
+</td></tr>
+<tr><td style="padding:32px 44px">
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px">
+    <tr><td style="padding:14px 0;border-bottom:1px solid #f1f5f9">
+      <span style="color:#0b7c6e;font-size:18px;margin-right:12px">○</span>
+      <span style="color:#334155;font-size:15px">Agrega tu foto de perfil profesional</span>
+    </td></tr>
+    <tr><td style="padding:14px 0;border-bottom:1px solid #f1f5f9">
+      <span style="color:#0b7c6e;font-size:18px;margin-right:12px">○</span>
+      <span style="color:#334155;font-size:15px">Escribe una bio breve sobre tu práctica</span>
+    </td></tr>
+    <tr><td style="padding:14px 0">
+      <span style="color:#0b7c6e;font-size:18px;margin-right:12px">○</span>
+      <span style="color:#334155;font-size:15px">Configura tu precio de consulta</span>
+    </td></tr>
+  </table>
+  <a href="${dashUrl}" style="display:block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">Completar mi perfil →</a>
+</td></tr>
+<tr><td style="padding:0 44px 28px;text-align:center">
+  <p style="margin:0;color:#94a3b8;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#94a3b8">hola@citadoc.lat</a></p>
+</td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
+function tplOnboardingDay5(nombre: string, titulo: string, slug: string): string {
+  const profileUrl = slug ? `https://citadoc.lat/dr/${slug}` : 'https://citadoc.lat/citadoc-dashboard.html'
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
+<tr><td style="padding-bottom:20px;text-align:center"><span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span></td></tr>
+<tr><td style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="background:#0f172a;padding:40px 44px 32px;border-bottom:1px solid #1e293b">
+  <p style="margin:0 0 8px;color:#63b3ed;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Comunidad CitaDoc</p>
+  <h1 style="margin:0 0 12px;color:#f8fafc;font-size:26px;font-weight:700;line-height:1.2">Así usan CitaDoc otros médicos</h1>
+  <p style="margin:0;color:rgba(255,255,255,.5);font-size:15px;line-height:1.6">${titulo} ${nombre}, tu perfil digital ya está activo. Aquí lo que están logrando médicos como tú.</p>
+</td></tr>
+<tr><td style="padding:32px 44px">
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px">
+    <tr>
+      <td width="33%" style="text-align:center;padding:20px 8px;background:#f8fafc;border-radius:12px;margin:4px">
+        <div style="color:#0b7c6e;font-size:28px;font-weight:800;line-height:1">5 min</div>
+        <div style="color:#64748b;font-size:12px;margin-top:6px">para activar<br>tu perfil</div>
+      </td>
+      <td width="4%"></td>
+      <td width="33%" style="text-align:center;padding:20px 8px;background:#f8fafc;border-radius:12px">
+        <div style="color:#0b7c6e;font-size:28px;font-weight:800;line-height:1">24/7</div>
+        <div style="color:#64748b;font-size:12px;margin-top:6px">pacientes<br>pueden agendarte</div>
+      </td>
+      <td width="4%"></td>
+      <td width="33%" style="text-align:center;padding:20px 8px;background:#f8fafc;border-radius:12px">
+        <div style="color:#0b7c6e;font-size:28px;font-weight:800;line-height:1">0</div>
+        <div style="color:#64748b;font-size:12px;margin-top:6px">costo para<br>empezar</div>
+      </td>
+    </tr>
+  </table>
+  <a href="${profileUrl}" style="display:block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-align:center;padding:16px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none">Ver mi perfil público →</a>
+</td></tr>
+<tr><td style="padding:0 44px 28px;text-align:center">
+  <p style="margin:0;color:#94a3b8;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#94a3b8">hola@citadoc.lat</a></p>
+</td></tr>
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplWelcomeFree(nombre: string, titulo: string): string {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
@@ -795,6 +877,18 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'trial_expired': {
         const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu trial Pro de CitaDoc venció`
         await sendEmail(to_email, subject, tplTrialExpired(data.nombre || '', data.titulo || 'Dr.'))
+        break
+      }
+
+      case 'onboarding_day2': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu perfil médico te está esperando`
+        await sendEmail(to_email, subject, tplOnboardingDay2(data.nombre || '', data.titulo || 'Dr.', data.slug || ''))
+        break
+      }
+
+      case 'onboarding_day5': {
+        const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, así están usando CitaDoc otros médicos`
+        await sendEmail(to_email, subject, tplOnboardingDay5(data.nombre || '', data.titulo || 'Dr.', data.slug || ''))
         break
       }
 
