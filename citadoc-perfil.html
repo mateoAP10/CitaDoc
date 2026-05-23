@@ -164,39 +164,8 @@ function compartirPerfil(){
       ctx.textAlign='left';
     }
 
-    // === AVATAR circular (foto o inicial) ===
-    var avR=100,avX=140,avY=img?400:320;
-    ctx.save();
-    ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);
-    if(img){
-      ctx.clip();
-      var avsc=Math.max((avR*2)/img.naturalWidth,(avR*2)/img.naturalHeight);
-      var aviw=img.naturalWidth*avsc,avih=img.naturalHeight*avsc;
-      ctx.drawImage(img,avX-avR+(aviw>avR*2?(aviw-avR*2)/2:0)*-1,avY-avR+(avih>avR*2?(avih-avR*2)/2:0)*-1,aviw,avih);
-      // Más simple: centrar la imagen en el círculo
-      ctx.restore();
-      ctx.save();
-      ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);ctx.clip();
-      var avsc2=Math.max((avR*2)/img.naturalWidth,(avR*2)/img.naturalHeight);
-      ctx.drawImage(img,avX-img.naturalWidth*avsc2/2,avY-img.naturalHeight*avsc2/2,img.naturalWidth*avsc2,img.naturalHeight*avsc2);
-    }else{
-      ctx.fillStyle='rgba(14,157,140,0.35)';ctx.fill();
-      ctx.restore();ctx.save();
-      ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);ctx.clip();
-      var initials=(m.nombre||'M').charAt(0).toUpperCase()+(m.apellido||'D').charAt(0).toUpperCase();
-      ctx.fillStyle='rgba(255,255,255,0.9)';
-      ctx.font='bold 72px -apple-system,Helvetica,sans-serif';
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(initials,avX,avY);
-      ctx.textBaseline='alphabetic';
-    }
-    ctx.restore();
-    // Borde del avatar
-    ctx.beginPath();ctx.arc(avX,avY,avR,0,Math.PI*2);
-    ctx.strokeStyle='rgba(255,255,255,0.45)';ctx.lineWidth=4;ctx.stroke();
-
-    // === CONTENIDO TEXTO — dos columnas debajo del avatar ===
-    var baseY=img?540:440;
+    // === CONTENIDO TEXTO ===
+    var baseY=img?520:200;
 
     // Nombre — grande
     ctx.textAlign='left';ctx.textBaseline='alphabetic';
