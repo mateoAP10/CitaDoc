@@ -32,6 +32,11 @@ const AGENTS = [
   { id:'growth-daily-batch',       label:'Growth Batch',          cat:'Growth',  desc:'Batch diario de contenido growth', cron:'growth-daily-content' },
   { id:'process-scheduled',        label:'Scheduled Posts',       cat:'Growth',  desc:'Publica posts programados en redes', cron:'process-scheduled-posts' },
   { id:'showcase-batch',           label:'Showcase Batch',        cat:'Growth',  desc:'Genera showcases automáticamente', cron:'auto-showcase-batch' },
+  { id:'growth-agent',             label:'Growth Agent',          cat:'Growth',  desc:'Trigger en tiempo real: nuevo médico → score + bio IA + email inmediato' },
+  { id:'onboarding-drip',          label:'Onboarding Drip',       cat:'Growth',  desc:'Day2 / Day5 emails personalizados', cron:'onboarding-drip-daily' },
+  { id:'perfil-frio',              label:'Perfil Frío',           cat:'Growth',  desc:'Detecta perfiles sin foto/horarios/citas — 3 nudges', cron:'perfil-frio-daily' },
+  { id:'weekly-report',            label:'Weekly Report',         cat:'Growth',  desc:'Reporte lunes con insight único priorizado', cron:'weekly-report-monday' },
+  { id:'review-drip',              label:'Review Drip',           cat:'Growth',  desc:'Pide reseña post-cita (rating médico + app)', cron:'review-drip-hourly' },
 ]
 
 Deno.serve(async (req) => {
@@ -49,7 +54,29 @@ Deno.serve(async (req) => {
       cron_data: (a as any).cron ? cronMap[(a as any).cron] || null : null,
     }))
 
-    return new Response(JSON.stringify({ ok: true, agents }), { headers: CORS })
+    // Growth Agent live stats
+    const { data: growthRows } = await sb
+      .from('growth_events')
+      .select('onboarding_state, metadata, created_at')
+      .eq('event_type', 'doctor.created')
+      .order('created_at', { ascending: false })
+      .limit(50)
+
+    const growthStats = growthRows ? {
+      total: growthRows.length,
+      by_state: growthRows.reduce((acc: Record<string, number>, r: any) => {
+        acc[r.onboarding_state] = (acc[r.onboarding_state] || 0) + 1
+        return acc
+      }, {}),
+      bio_generated: growthRows.filter((r: any) => r.metadata?.bio_generated).length,
+      recent: growthRows.slice(0, 5).map((r: any) => ({
+        state: r.onboarding_state,
+        bio: r.metadata?.bio_generated,
+        created_at: r.created_at,
+      })),
+    } : null
+
+    return new Response(JSON.stringify({ ok: true, agents, growth_stats: growthStats }), { headers: CORS })
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e) }), { headers: CORS })
   }

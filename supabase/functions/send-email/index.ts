@@ -731,6 +731,56 @@ function tplWelcomeFree(nombre: string, titulo: string): string {
 </body></html>`
 }
 
+function tplReviewRequest(d: Record<string, any>): string {
+  const reviewUrl  = d.review_url || ''
+  const doctorNombre = d.doctor_nombre || 'tu médico'
+  const paciente   = d.paciente_nombre || ''
+
+  const starLinks = [1,2,3,4,5].map(n => {
+    const emojis = ['😕','😐','🙂','😊','🤩']
+    return `<td style="text-align:center;padding:0 4px">
+      <a href="${reviewUrl}&r=${n}" style="display:block;font-size:38px;text-decoration:none;line-height:1">${emojis[n-1]}</a>
+      <div style="color:#94a3b8;font-size:10px;margin-top:4px;font-weight:600">${n}★</div>
+    </td>`
+  }).join('')
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
+
+<tr><td style="padding-bottom:20px;text-align:center">
+  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span>
+</td></tr>
+
+<tr><td style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
+<table width="100%" cellpadding="0" cellspacing="0">
+
+<tr><td style="background:linear-gradient(135deg,#052a27,#073d36);padding:36px 40px 28px;text-align:center">
+  <p style="margin:0 0 6px;color:rgba(255,255,255,.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Tu opinión importa</p>
+  <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;line-height:1.3">¿Cómo estuvo tu cita${paciente ? ', '+paciente.split(' ')[0] : ''}?</h1>
+  <p style="margin:8px 0 0;color:rgba(255,255,255,.45);font-size:14px">Con ${doctorNombre}</p>
+</td></tr>
+
+<tr><td style="padding:36px 40px;text-align:center">
+  <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">Toca cómo te sentiste — toma 2 segundos.</p>
+
+  <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px">
+    <tr>${starLinks}</tr>
+  </table>
+
+  <p style="margin:0;color:#cbd5e1;font-size:12px">Tu reseña es anónima y ayuda a otros pacientes</p>
+</td></tr>
+
+<tr><td style="padding:0 40px 28px;text-align:center;border-top:1px solid #f1f5f9">
+  <p style="margin:16px 0 0;color:#94a3b8;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#94a3b8;text-decoration:none">hola@citadoc.lat</a></p>
+</td></tr>
+
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplWeeklyReport(d: Record<string, any>): string {
   const nombre      = d.nombre || ''
   const titulo      = d.titulo || 'Dr.'
@@ -946,6 +996,80 @@ function tplPerfilFrioSinCitas(nombre: string, titulo: string, slug: string): st
 </body></html>`
 }
 
+// ── Growth Welcome ────────────────────────────────────────────────────────────
+function tplGrowthWelcome(nombre: string, state: string, bioGenerada: string | null, slug: string): string {
+  const profileUrl = `https://citadoc.lat/citadoc-perfil.html?slug=${slug}`
+  const panelUrl   = 'https://citadoc.lat/citadoc-panel.html'
+
+  const stateConfig: Record<string, { headline: string; body: string; cta: string; ctaUrl: string }> = {
+    NEW_EMPTY: {
+      headline: 'Tu perfil está listo. Activémoslo juntos.',
+      body: 'La IA ya generó tu bio profesional. Solo falta tu foto y tus horarios para que los pacientes puedan agendarte hoy.',
+      cta: 'Completar mi perfil →',
+      ctaUrl: panelUrl,
+    },
+    NEW_PARTIAL: {
+      headline: 'Buen comienzo. Falta poco.',
+      body: 'Tu especialidad ya está. Agrega tu foto — es lo que más genera confianza en los pacientes — y configura tus horarios.',
+      cta: 'Agregar foto y horarios →',
+      ctaUrl: panelUrl,
+    },
+    HIGH_INTENT: {
+      headline: 'Tu perfil se ve muy bien.',
+      body: 'Solo falta configurar tu disponibilidad para que los pacientes puedan agendarte. Toma menos de 3 minutos.',
+      cta: 'Activar mi agenda →',
+      ctaUrl: panelUrl,
+    },
+    LIKELY_PRO: {
+      headline: 'Perfil fuerte. Empeza a recibir pacientes hoy.',
+      body: 'Tu perfil está casi completo. Ya podés recibir citas online desde CitaDoc.',
+      cta: 'Ver mi perfil público →',
+      ctaUrl: profileUrl,
+    },
+  }
+
+  const cfg = stateConfig[state] || stateConfig['NEW_EMPTY']
+  const bioSection = bioGenerada
+    ? `<tr><td style="padding:20px 32px;background:#f0fdf9;border-radius:12px;margin:0 32px;">
+        <p style="margin:0 0 6px;color:#047857;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;">✨ Bio generada por IA</p>
+        <p style="margin:0;color:#0f172a;font-size:14px;line-height:1.6;font-style:italic;">"${bioGenerada}"</p>
+        <p style="margin:8px 0 0;color:#64748b;font-size:12px;">Podés editarla en tu panel cuando quieras.</p>
+      </td></tr><tr><td style="height:24px;"></td></tr>`
+    : ''
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bienvenido a CitaDoc</title></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 16px;">
+<tr><td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+  <!-- Header -->
+  <tr><td style="background:linear-gradient(135deg,#052a27,#0b7c6e);border-radius:16px 16px 0 0;padding:32px 32px 28px;text-align:center;">
+    <p style="margin:0 0 4px;color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CitaDoc</p>
+    <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;line-height:1.3;">${cfg.headline}</h1>
+  </td></tr>
+  <!-- Body -->
+  <tr><td style="background:#fff;padding:32px;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr><td>
+        <p style="margin:0 0 20px;color:#334155;font-size:15px;line-height:1.65;">Hola <strong>${nombre}</strong>, bienvenido a CitaDoc.</p>
+        <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.65;">${cfg.body}</p>
+      </td></tr>
+      ${bioSection}
+      <tr><td style="text-align:center;padding-bottom:8px;">
+        <a href="${cfg.ctaUrl}" style="display:inline-block;background:#0b7c6e;color:#fff;text-decoration:none;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;">${cfg.cta}</a>
+      </td></tr>
+    </table>
+  </td></tr>
+  <!-- Footer -->
+  <tr><td style="background:#f8fafc;border-radius:0 0 16px 16px;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;">
+    <p style="margin:0;color:#94a3b8;font-size:12px;">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#0b7c6e;text-decoration:none;">hola@citadoc.lat</a></p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`
+}
+
 // ── Send via Resend ───────────────────────────────────────────────────────────
 async function sendEmail(to: string, subject: string, html: string) {
   if (!RESEND_API_KEY) { console.warn('[send-email] No RESEND_API_KEY'); return }
@@ -1107,6 +1231,12 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
         break
       }
 
+      case 'review_request': {
+        const subject = `¿Cómo fue tu cita con ${data.doctor_nombre || 'tu médico'}?`
+        await sendEmail(to_email, subject, tplReviewRequest(data))
+        break
+      }
+
       case 'weekly_report': {
         const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu semana en CitaDoc`
         await sendEmail(to_email, subject, tplWeeklyReport(data))
@@ -1128,6 +1258,23 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'perfil_frio_sin_citas': {
         const subject = `${data.titulo || 'Dr.'} ${data.nombre || ''}, tu primera cita online está a un paso`
         await sendEmail(to_email, subject, tplPerfilFrioSinCitas(data.nombre || '', data.titulo || 'Dr.', data.slug || ''))
+        break
+      }
+
+      case 'growth_welcome': {
+        const state = data.onboarding_state || 'NEW_EMPTY'
+        const stateLabel: Record<string, string> = {
+          NEW_EMPTY:   'Tu perfil está listo — activémoslo juntos',
+          NEW_PARTIAL:  'Buen comienzo en CitaDoc',
+          HIGH_INTENT:  'Tu perfil se ve muy bien',
+          LIKELY_PRO:   'Perfil fuerte — empeza a recibir pacientes',
+        }
+        const subject = stateLabel[state] || 'Bienvenido a CitaDoc'
+        await sendEmail(
+          to_email,
+          subject,
+          tplGrowthWelcome(data.medico_nombre || '', state, data.bio_generada || null, data.medico_slug || '')
+        )
         break
       }
 
