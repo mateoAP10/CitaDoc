@@ -474,6 +474,35 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .pac-rec-btn-fill{background:var(--red);border-color:var(--red);color:#fff}
 .pac-rec-btn-fill:hover{background:var(--red-dark)}
 
+/* ── CARPETAS DE PACIENTES ───────────────────────────────────────────────── */
+.doc-folder-track{
+  display:flex;gap:.65rem;overflow-x:auto;scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:.15rem .05rem .85rem;cursor:grab;user-select:none;margin-bottom:.1rem
+}
+.doc-folder-track::-webkit-scrollbar{display:none}
+.doc-folder-track.dragging{cursor:grabbing}
+.doc-folder{
+  flex:0 0 84px;scroll-snap-align:start;position:relative;
+  cursor:pointer;transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s
+}
+.doc-folder-tab{position:absolute;top:-8px;left:0;width:44%;height:8px;background:#e8dfc8;border-radius:5px 5px 0 0;transition:background .2s}
+.doc-folder-body{
+  background:#f0e8d4;border-radius:0 8px 8px 8px;padding:.9rem .6rem .75rem;
+  text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.06);
+  border:1px solid rgba(0,0,0,.06);min-height:78px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;
+  transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s
+}
+.doc-folder:hover .doc-folder-body{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.13)}
+.doc-folder:hover .doc-folder-tab{background:#d4c9a8}
+.doc-folder.active .doc-folder-body{background:linear-gradient(135deg,var(--red-lite),#ffe8ea);border-color:color-mix(in srgb,var(--red) 22%,transparent)}
+.doc-folder.active .doc-folder-tab{background:color-mix(in srgb,var(--red) 28%,transparent)}
+.doc-folder-letter{font-family:Fraunces,serif;font-size:1.75rem;font-weight:700;color:#5a4a2a;line-height:1}
+.doc-folder.active .doc-folder-letter{color:var(--red-dark)}
+.doc-folder-count{font-size:.58rem;font-weight:700;color:#8a7a5a;letter-spacing:.04em}
+.doc-folder.active .doc-folder-count{color:var(--red)}
+
 /* ── RECETA MODAL ────────────────────────────────────────────────────────── */
 .receta-overlay{
   position:fixed;inset:0;z-index:300;
@@ -558,6 +587,110 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .doc-topbar-logo{height:28px;max-width:130px;object-fit:contain;display:none}
 .doc-topbar-center-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;display:none}
 .doc-topbar-center-name{font-size:.72rem;font-weight:700;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:none}
+
+/* ── MODAL CONSULTA DOS PASOS ────────────────────────────────────────────── */
+.cm-overlay{
+  position:fixed;inset:0;z-index:310;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+@media(min-width:640px){.cm-overlay{align-items:center}}
+.cm-overlay.open{display:flex}
+.cm-card{
+  background:#fff;width:100%;max-width:600px;
+  border-radius:20px 20px 0 0;max-height:92svh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 -8px 40px rgba(0,0,0,.18)
+}
+@media(min-width:640px){.cm-card{border-radius:20px;max-height:90svh}}
+.cm-header{
+  display:flex;align-items:center;gap:.85rem;
+  padding:1.1rem 1.3rem .9rem;
+  border-bottom:1.5px solid var(--border);flex-shrink:0;
+  background:linear-gradient(135deg,var(--red),var(--red-dark));
+}
+.cm-header-info{flex:1;min-width:0}
+.cm-pac-name{font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-header-sub{font-size:.68rem;color:rgba(255,255,255,.65);font-weight:500;margin-top:.1rem}
+.cm-dots{display:flex;align-items:center;gap:.45rem;flex-shrink:0}
+.cm-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .2s}
+.cm-dot.active{background:#fff;width:20px;border-radius:4px}
+.cm-close{
+  width:30px;height:30px;border:none;background:rgba(255,255,255,.15);
+  border-radius:9px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:.85rem;flex-shrink:0;transition:background .15s
+}
+.cm-close:hover{background:rgba(255,255,255,.28)}
+.cm-body{flex:1;overflow-y:auto;padding:1.2rem 1.3rem}
+.cm-step{display:flex;flex-direction:column;gap:.85rem}
+@keyframes cmSlideIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes cmSlideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-28px)}}
+.cm-step{animation:cmSlideIn .28s cubic-bezier(.16,1,.3,1) both}
+.cm-step-exit{animation:cmSlideOut .18s ease both}
+.cm-field{display:flex;flex-direction:column;gap:.3rem}
+.cm-field label{font-size:.7rem;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em}
+.cm-field input[type=text],.cm-field textarea{
+  width:100%;padding:.7rem .9rem;border:1.5px solid var(--border);border-radius:11px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);
+  background:#fff;outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s;
+  line-height:1.55
+}
+.cm-field input[type=text]:focus,.cm-field textarea:focus{
+  border-color:var(--red);box-shadow:0 0 0 3px var(--red-lite)
+}
+/* CIE-10 & Meds dropdown */
+.cm-diag-wrap,.cm-rx-wrap{position:relative}
+.cm-drop{
+  position:fixed;background:#fff;border:1.5px solid var(--border);
+  border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.14);
+  z-index:400;max-height:220px;overflow-y:auto;min-width:260px
+}
+.cm-drop-row{
+  padding:.65rem 1rem;cursor:pointer;font-size:.84rem;color:var(--ink2);
+  display:flex;align-items:flex-start;gap:.6rem;transition:background .1s
+}
+.cm-drop-row:hover,.cm-drop-row.focused{background:var(--red-lite)}
+.cm-drop-code{font-size:.68rem;font-weight:700;color:var(--red);background:var(--red-lite);padding:.15rem .45rem;border-radius:5px;flex-shrink:0;margin-top:.1rem}
+.cm-drop-label{line-height:1.4;flex:1}
+.cm-drop-med{padding:.65rem 1rem;cursor:pointer;font-size:.84rem;color:var(--ink2);transition:background .1s}
+.cm-drop-med:hover,.cm-drop-med.focused{background:var(--red-lite)}
+/* Tags */
+.cm-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.35rem}
+.cm-tag{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.28rem .65rem;border-radius:20px;font-size:.75rem;font-weight:600;cursor:default
+}
+.cm-tag-diag{background:#e0f5f2;border:1px solid rgba(11,124,110,.18);color:#065f46}
+.cm-tag-diag .cm-tag-code{font-size:.62rem;background:#065f46;color:#fff;padding:.1rem .35rem;border-radius:4px}
+.cm-tag-med{background:#e0f0ff;border:1px solid rgba(59,130,246,.2);color:#1e40af}
+.cm-tag-rm{background:none;border:none;cursor:pointer;color:currentColor;opacity:.55;font-size:.78rem;padding:0;line-height:1;transition:opacity .12s}
+.cm-tag-rm:hover{opacity:1}
+/* Footer */
+.cm-footer{
+  padding:.9rem 1.3rem 1.1rem;border-top:1.5px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center
+}
+.btn-cm-next{
+  margin-left:auto;background:linear-gradient(135deg,var(--red),var(--red-dark));
+  color:#fff;border:none;border-radius:11px;padding:.78rem 1.4rem;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:opacity .15s;box-shadow:0 4px 14px rgba(204,41,54,.25)
+}
+.btn-cm-next:hover{opacity:.9}
+.btn-cm-back{
+  background:none;border:1.5px solid var(--border);border-radius:11px;
+  padding:.78rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:.88rem;
+  font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s
+}
+.btn-cm-back:hover{border-color:var(--ink);color:var(--ink)}
+.btn-cm-save{
+  margin-left:auto;background:linear-gradient(135deg,var(--red),var(--red-dark));
+  color:#fff;border:none;border-radius:11px;padding:.78rem 1.4rem;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:opacity .15s;box-shadow:0 4px 14px rgba(204,41,54,.25)
+}
+.btn-cm-save:hover{opacity:.9}
+.btn-cm-save:disabled{opacity:.55;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -815,15 +948,18 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         <div>
           <div class="doc-section-header">
             <div class="doc-section-title">Mis pacientes</div>
-            <span class="doc-pac-count" id="pacCount" style="font-size:.75rem;color:var(--muted);font-weight:600"></span>
+            <span id="pacCount" style="font-size:.75rem;color:var(--muted);font-weight:600"></span>
           </div>
-          <div class="pac-search-bar" style="margin-bottom:.85rem">
+          <!-- Carpetas por letra -->
+          <div class="doc-folder-track" id="docFolderTrack"></div>
+          <!-- Búsqueda -->
+          <div style="position:relative;margin-bottom:.85rem">
             <svg style="position:absolute;left:.9rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted2);pointer-events:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input id="buscarPacienteDoc" autocomplete="off" placeholder="Buscar por nombre o teléfono..." oninput="buscarPacienteDoc(this.value)" style="width:100%;padding:.72rem 1rem .72rem 2.6rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box">
           </div>
           <div id="pacientesGrid" class="pac-rec-grid">
             <div class="doc-citas-empty" style="margin:0">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
               Cargando pacientes...
             </div>
           </div>
@@ -837,10 +973,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
               <button class="doc-tab active" id="tabCita" onclick="switchDocTab('cita')">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
                 Nueva cita
-              </button>
-              <button class="doc-tab" id="tabConsulta" onclick="switchDocTab('consulta')">
-                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 000 2H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2h-.01a1 1 0 000-2V3a2 2 0 012 2v10a4 4 0 01-4 4H6a4 4 0 01-4-4V5z" clip-rule="evenodd"/></svg>
-                Consulta
               </button>
               <button class="doc-tab" id="tabPaciente" onclick="switchDocTab('paciente')">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/></svg>
@@ -857,16 +989,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
               <div class="doc-field"><label>Motivo <span style="font-weight:400;color:var(--muted2)">(opcional)</span></label><input id="citaMotivo" placeholder="Consulta general, control..."></div>
               <button class="btn-doc-save" id="btnSaveCita" onclick="saveCita()">Guardar cita</button>
               <div class="doc-toast" id="toastCita"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Cita registrada correctamente</div>
-            </div>
-            <div class="doc-tab-panel" id="panelConsulta">
-              <div class="doc-field"><label>Paciente</label><input id="cPaciente" placeholder="Nombre completo" autocomplete="off"></div>
-              <div class="doc-field"><label>Teléfono</label><input id="cTel" type="tel" placeholder="+1 555 0000"></div>
-              <div class="doc-field"><label>Motivo</label><input id="cMotivo" placeholder="Ej: control, dolor abdominal..."></div>
-              <div class="doc-field"><label>Diagnóstico</label><textarea id="cDiag" rows="2" placeholder="Diagnóstico principal..."></textarea></div>
-              <div class="doc-field"><label>Plan / Indicaciones</label><textarea id="cPlan" rows="2" placeholder="Tratamiento, indicaciones, receta..."></textarea></div>
-              <div class="doc-field"><label>Notas</label><textarea id="cNotas" rows="2" placeholder="Observaciones adicionales..."></textarea></div>
-              <button class="btn-doc-save" id="btnSaveConsulta" onclick="saveConsulta()">Guardar consulta</button>
-              <div class="doc-toast" id="toastConsulta"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Consulta guardada</div>
             </div>
             <div class="doc-tab-panel" id="panelPaciente">
               <div class="doc-field"><label>Nombre completo</label><input id="pNombre" placeholder="Nombre y apellido" autocomplete="off"></div>
@@ -927,20 +1049,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         <div id="ftabPaneHist">
           <div class="doc-section-header" style="margin-bottom:.85rem">
             <div class="doc-section-title">Historial clínico</div>
-            <button class="doc-section-action" onclick="toggleFichaConsultaForm()">+ Nueva consulta</button>
+            <button class="doc-section-action" onclick="abrirConsultaModal()">+ Nueva consulta</button>
           </div>
-
-          <!-- Nueva consulta inline form -->
-          <div class="ficha-consulta-form" id="fichaConsultaForm">
-            <div class="doc-field"><label>Motivo</label><input id="fcMotivo" placeholder="Motivo de consulta..." autocomplete="off"></div>
-            <div class="doc-field"><label>Enfermedad actual</label><textarea id="fcEnfermedad" rows="2" placeholder="Descripción de la enfermedad actual..."></textarea></div>
-            <div class="doc-field"><label>Diagnóstico</label><textarea id="fcDiagnostico" rows="2" placeholder="Diagnóstico principal..."></textarea></div>
-            <div class="doc-field"><label>Plan / Indicaciones</label><textarea id="fcPlan" rows="2" placeholder="Tratamiento, medicamentos, indicaciones..."></textarea></div>
-            <div class="doc-field"><label>Notas</label><textarea id="fcNotas" rows="2" placeholder="Observaciones adicionales..."></textarea></div>
-            <button class="btn-doc-save" id="btnSaveFichaConsulta" onclick="saveFichaConsulta()">Guardar consulta</button>
-            <div class="doc-toast" id="toastFichaConsulta"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Consulta guardada</div>
-          </div>
-
           <div id="fichaConsultas">
             <div class="ficha-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Sin historial clínico aún</div>
           </div>
@@ -958,6 +1068,94 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
     </div><!-- /doc-portal-inner -->
   </div><!-- /doc-portal-body -->
 </div><!-- /doc-portal -->
+
+<!-- MODAL CONSULTA — dos pasos -->
+<div class="cm-overlay" id="cmOverlay" onclick="cmCloseOnBg(event)">
+  <div class="cm-card" id="cmCard">
+
+    <div class="cm-header">
+      <div class="cm-header-info">
+        <div class="cm-pac-name" id="mc_pacNombre">Paciente</div>
+        <div class="cm-header-sub">Nueva consulta clínica</div>
+      </div>
+      <div class="cm-dots">
+        <div class="cm-dot active" id="mc_dot1"></div>
+        <div class="cm-dot" id="mc_dot2"></div>
+      </div>
+      <button class="cm-close" onclick="cmCerrar()">✕</button>
+    </div>
+
+    <div class="cm-body" id="cm_body">
+
+      <!-- PASO 1 -->
+      <div class="cm-step" id="mc_step1">
+
+        <div class="cm-field">
+          <label>Motivo de consulta *</label>
+          <input type="text" id="c_motivo" autocomplete="off" placeholder="Dolor lumbar, control, seguimiento...">
+        </div>
+
+        <div class="cm-field">
+          <label>Enfermedad actual</label>
+          <textarea id="c_enfermedad" rows="3" placeholder="Descripción detallada de la enfermedad actual..."></textarea>
+        </div>
+
+        <div class="cm-field">
+          <label>Examen físico</label>
+          <textarea id="c_examen" rows="3" placeholder="Hallazgos del examen físico..."></textarea>
+        </div>
+
+        <div class="cm-field">
+          <label>Diagnóstico — CIE-10</label>
+          <div class="cm-diag-wrap">
+            <input type="text" id="c_diag_search" autocomplete="off" placeholder="Buscar código o patología..." oninput="fDiagBuscar(this.value)" onkeydown="fDiagKeyNav(event)">
+            <div class="cm-drop" id="c_diag_drop" style="display:none"></div>
+          </div>
+          <div class="cm-tags" id="c_diag_tags"></div>
+          <input type="hidden" id="c_diagnostico">
+        </div>
+
+        <div class="cm-field">
+          <label>Notas privadas</label>
+          <textarea id="c_notas" rows="2" placeholder="Observaciones internas..."></textarea>
+        </div>
+
+      </div><!-- /mc_step1 -->
+
+      <!-- PASO 2 -->
+      <div class="cm-step" id="mc_step2" style="display:none">
+
+        <div class="cm-field">
+          <label>Medicamentos</label>
+          <div class="cm-rx-wrap">
+            <input type="text" id="mc_med_search" autocomplete="off" placeholder="Buscar medicamento..." oninput="mcMedBuscar(this.value)" onkeydown="mcMedKeyNav(event)">
+            <div class="cm-drop" id="mc_med_drop" style="display:none"></div>
+          </div>
+          <div class="cm-tags" id="mc_med_tags"></div>
+          <input type="hidden" id="c_plan">
+        </div>
+
+        <div class="cm-field">
+          <label>Indicaciones generales</label>
+          <textarea id="c_indicaciones" rows="4" placeholder="Reposo, dieta, controles de seguimiento, advertencias..."></textarea>
+        </div>
+
+      </div><!-- /mc_step2 -->
+
+    </div><!-- /cm_body -->
+
+    <div class="cm-footer">
+      <div id="mc_footer_s1" style="display:flex;width:100%;justify-content:flex-end">
+        <button class="btn-cm-next" onclick="cmIrPaso2()">Siguiente →</button>
+      </div>
+      <div id="mc_footer_s2" style="display:none;width:100%;justify-content:space-between">
+        <button class="btn-cm-back" onclick="cmVolverPaso1()">← Volver</button>
+        <button class="btn-cm-save" id="mc_btn_save" onclick="cmGuardar()">Guardar consulta ✓</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- RECETA MODAL -->
 <div class="receta-overlay" id="recetaOverlay" onclick="closeRecetaOnBg(event)">
@@ -1755,7 +1953,47 @@ async function loadMisPacientes() {
 
   _misPacientes = pacientes
   el('pacCount').textContent = pacientes.length ? pacientes.length + ' paciente' + (pacientes.length>1?'s':'') : ''
+  _pacLetraActiva = null
+  renderCarpetas()
   renderMisPacientes(pacientes)
+}
+
+var _pacLetraActiva = null
+
+function _letraNorm(nombre) {
+  return ((nombre||'?')[0]||'?').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+}
+
+function renderCarpetas() {
+  const track = el('docFolderTrack')
+  if (!track) return
+  const counts = {}
+  _misPacientes.forEach(p => { const l=_letraNorm(p.nombre); counts[l]=(counts[l]||0)+1 })
+  const letras = Object.keys(counts).sort()
+  if (!letras.length) { track.innerHTML=''; return }
+  track.innerHTML = letras.map(l =>
+    `<div class="doc-folder${_pacLetraActiva===l?' active':''}" onclick="pacSelLetra('${l}')">
+      <div class="doc-folder-tab"></div>
+      <div class="doc-folder-body">
+        <div class="doc-folder-letter">${l}</div>
+        <div class="doc-folder-count">${counts[l]} pac.</div>
+      </div>
+    </div>`
+  ).join('')
+  // Drag-to-scroll
+  let drag=false, ox=0, sl=0
+  track.addEventListener('mousedown', e=>{drag=true;track.classList.add('dragging');ox=e.pageX-track.offsetLeft;sl=track.scrollLeft})
+  document.addEventListener('mouseup', ()=>{drag=false;track.classList.remove('dragging')})
+  track.addEventListener('mousemove', e=>{if(!drag)return;e.preventDefault();track.scrollLeft=sl-1.2*(e.pageX-track.offsetLeft-ox)})
+}
+
+function pacSelLetra(l) {
+  if (_pacLetraActiva === l) { _pacLetraActiva=null } else { _pacLetraActiva=l }
+  el('buscarPacienteDoc').value = ''
+  renderCarpetas()
+  renderMisPacientes(_pacLetraActiva
+    ? _misPacientes.filter(p=>_letraNorm(p.nombre)===_pacLetraActiva)
+    : _misPacientes)
 }
 
 function renderMisPacientes(lista) {
@@ -1784,6 +2022,8 @@ function renderMisPacientes(lista) {
 }
 
 function buscarPacienteDoc(q) {
+  _pacLetraActiva = null
+  renderCarpetas()
   if (!q.trim()) { renderMisPacientes(_misPacientes); return }
   const lq = q.toLowerCase()
   renderMisPacientes(_misPacientes.filter(p =>
@@ -1922,7 +2162,7 @@ async function abrirFichaDoc(pacienteId, nombre) {
 
   const [pacs, consultas, citas] = await Promise.all([
     dbGet('pacientes', 'id=eq.'+pacienteId+'&select=*&limit=1', _authToken),
-    dbGet('consultas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken),
+    dbGet('consultas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,examen_fisico,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken),
     dbGet('citas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,fecha,hora,estado&order=fecha.desc', _authToken)
   ])
 
@@ -1973,8 +2213,10 @@ function renderFichaHistorial(consultas) {
     const motivo = c.motivo || 'Consulta'
     const fields = [
       {label:'Enfermedad actual', val:c.enfermedad_actual},
-      {label:'Diagnóstico',       val:c.diagnostico},
-      {label:'Plan / Indicaciones',val:c.plan || c.indicaciones},
+      {label:'Examen físico',     val:c.examen_fisico},
+      {label:'Diagnóstico CIE-10',val:c.diagnostico},
+      {label:'Medicamentos',      val:c.plan},
+      {label:'Indicaciones',      val:c.indicaciones},
       {label:'Notas',             val:c.notas},
     ].filter(f => f.val && f.val.trim())
     return `<div class="ficha-consulta-item" id="consulta-${i}" onclick="toggleConsulta(${i})">
@@ -2004,40 +2246,6 @@ function fichaTabSwitch(tab) {
   })
 }
 
-function toggleFichaConsultaForm() {
-  const form = el('fichaConsultaForm')
-  form.classList.toggle('open')
-}
-
-async function saveFichaConsulta() {
-  if (!_fichaDoc?.id) return
-  const motivo = el('fcMotivo').value.trim()
-  if (!motivo) { el('fcMotivo').focus(); return }
-  const btn = el('btnSaveFichaConsulta')
-  btn.disabled = true
-
-  await dbPost('consultas', {
-    medico_id:        _docMedico.id,
-    paciente_id:      _fichaDoc.id,
-    motivo,
-    enfermedad_actual: el('fcEnfermedad').value.trim() || null,
-    diagnostico:       el('fcDiagnostico').value.trim() || null,
-    plan:              el('fcPlan').value.trim() || null,
-    notas:             el('fcNotas').value.trim() || null,
-    estado:            'completada'
-  }, _authToken)
-
-  ;['fcMotivo','fcEnfermedad','fcDiagnostico','fcPlan','fcNotas'].forEach(id=>{el(id).value=''})
-  btn.disabled = false
-  el('fichaConsultaForm').classList.remove('open')
-  const t = el('toastFichaConsulta'); t.classList.add('show')
-  setTimeout(()=>t.classList.remove('show'), 2500)
-
-  // Reload historial
-  const consultas = await dbGet('consultas', 'paciente_id=eq.'+_fichaDoc.id+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken)
-  renderFichaHistorial(consultas)
-  el('fichaStatConsultas').textContent = consultas.length
-}
 
 // ── RECETA ────────────────────────────────────────────────────────────────────
 function openRecetaModal() {
@@ -2200,6 +2408,227 @@ async function savePaciente() {
   setTimeout(() => { toast.classList.remove('show') }, 2500)
   loadMisPacientes()
 }
+
+// ── MODAL CONSULTA ────────────────────────────────────────────────────────────
+var CIE10=[{c:"M17.0",l:"Gonartrosis primaria bilateral"},{c:"M17.1",l:"Gonartrosis primaria unilateral"},{c:"M19.0",l:"Artrosis primaria de otras articulaciones"},{c:"M75.1",l:"Síndrome del manguito rotador"},{c:"M75.0",l:"Capsulitis adhesiva del hombro"},{c:"M54.5",l:"Lumbalgia inespecífica"},{c:"M54.4",l:"Lumbociatalgia"},{c:"M47.8",l:"Espondilosis con mielopatía"},{c:"M51.1",l:"Hernia de disco lumbar con radiculopatía"},{c:"M48.0",l:"Estenosis del canal espinal"},{c:"S72.0",l:"Fractura del cuello del fémur"},{c:"S52.5",l:"Fractura distal del radio"},{c:"S82.0",l:"Fractura de la rótula"},{c:"S83.5",l:"Lesión del ligamento cruzado anterior"},{c:"M23.2",l:"Lesión meniscal — crónica"},{c:"M65.3",l:"Tenosinovitis del tendón largo del bíceps"},{c:"M77.1",l:"Epicondilitis lateral — codo de tenista"},{c:"M77.0",l:"Epicondilitis medial — codo de golfista"},{c:"M25.5",l:"Dolor articular"},{c:"M79.0",l:"Reumatismo inespecífico"},{c:"J06.9",l:"Infección aguda de vías respiratorias superiores"},{c:"J00",l:"Rinofaringitis aguda — resfrío común"},{c:"J20.9",l:"Bronquitis aguda"},{c:"J18.9",l:"Neumonía"},{c:"J45.9",l:"Asma bronquial"},{c:"K29.7",l:"Gastritis crónica"},{c:"K21.0",l:"Enfermedad por reflujo gastroesofágico"},{c:"K57.3",l:"Enfermedad diverticular del colon"},{c:"K80.2",l:"Colelitiasis"},{c:"I10",l:"Hipertensión arterial esencial"},{c:"I25.1",l:"Cardiopatía coronaria con angina"},{c:"I50.9",l:"Insuficiencia cardíaca"},{c:"I48",l:"Fibrilación auricular"},{c:"E11.9",l:"Diabetes mellitus tipo 2"},{c:"E10.9",l:"Diabetes mellitus tipo 1"},{c:"E78.5",l:"Hiperlipidemia mixta"},{c:"E03.9",l:"Hipotiroidismo"},{c:"E05.9",l:"Hipertiroidismo"},{c:"E66.9",l:"Obesidad"},{c:"N39.0",l:"Infección urinaria"},{c:"N18.3",l:"Enfermedad renal crónica estadio 3"},{c:"N40",l:"Hiperplasia prostática benigna"},{c:"R05",l:"Tos"},{c:"R51",l:"Cefalea"},{c:"R42",l:"Vértigo"},{c:"R07.4",l:"Dolor torácico inespecífico"},{c:"R10.4",l:"Dolor abdominal inespecífico"},{c:"F41.1",l:"Trastorno de ansiedad generalizada"},{c:"F32.9",l:"Episodio depresivo"},{c:"F43.1",l:"Trastorno de estrés postraumático"},{c:"G43.9",l:"Migraña"},{c:"G40.9",l:"Epilepsia"},{c:"G35",l:"Esclerosis múltiple"},{c:"G62.9",l:"Polineuropatía"},{c:"G57.0",l:"Lesión del nervio ciático"},{c:"G56.0",l:"Síndrome del túnel carpiano"},{c:"G50.0",l:"Neuralgia del trigémino"},{c:"L20.9",l:"Dermatitis atópica"},{c:"L40.0",l:"Psoriasis vulgar"},{c:"L03.9",l:"Celulitis"},{c:"B02.9",l:"Herpes zóster"},{c:"N94.6",l:"Dismenorrea"},{c:"N83.2",l:"Quiste ovárico"},{c:"N76.0",l:"Vaginitis aguda"},{c:"J02.9",l:"Faringoamigdalitis aguda"},{c:"H66.9",l:"Otitis media aguda"},{c:"A09",l:"Gastroenteritis infecciosa"},{c:"J03.9",l:"Amigdalitis aguda"},{c:"I21.9",l:"Infarto agudo de miocardio"},{c:"I20.9",l:"Angina pectoris"},{c:"Z71.1",l:"Consulta de control preventivo"},{c:"Z00.0",l:"Examen médico general"},{c:"T14.9",l:"Traumatismo inespecífico"}]
+
+var _mcMeds=["Paracetamol 500mg","Paracetamol 1g","Ibuprofeno 400mg","Ibuprofeno 600mg","Diclofenaco 50mg","Diclofenaco 75mg","Naproxeno 500mg","Ketorolaco 10mg","Ketorolaco 30mg","Tramadol 50mg","Tramadol 100mg","Amoxicilina 500mg","Amoxicilina 875mg","Amoxicilina+Clavulánico 875mg","Azitromicina 500mg","Ciprofloxacino 500mg","Levofloxacino 500mg","Cefalexina 500mg","Clindamicina 300mg","Metronidazol 500mg","Doxiciclina 100mg","Omeprazol 20mg","Omeprazol 40mg","Pantoprazol 40mg","Metoclopramida 10mg","Loperamida 2mg","Enalapril 5mg","Enalapril 10mg","Lisinopril 10mg","Amlodipino 5mg","Amlodipino 10mg","Atenolol 50mg","Metoprolol 50mg","Losartán 50mg","Losartán 100mg","Hidroclorotiazida 25mg","Furosemida 40mg","Metformina 500mg","Metformina 850mg","Metformina 1000mg","Glibenclamida 5mg","Sitagliptina 100mg","Insulina NPH","Insulina Glargina","Levotiroxina 25mcg","Levotiroxina 50mcg","Levotiroxina 75mcg","Levotiroxina 100mcg","Sertralina 50mg","Sertralina 100mg","Fluoxetina 20mg","Escitalopram 10mg","Alprazolam 0.5mg","Clonazepam 0.5mg","Clonazepam 2mg","Diazepam 5mg","Prednisona 5mg","Prednisona 20mg","Dexametasona 4mg","Ciclobenzaprina 5mg","Tizanidina 4mg","Vitamina D 1000UI","Vitamina D 2000UI","Calcio 500mg","Hierro 300mg","Ácido fólico 1mg","Vitamina B12 1000mcg","Loratadina 10mg","Cetirizina 10mg","Montelukast 10mg","Salbutamol inhalador","Budesonida inhalador","Diclofenaco gel 1%","Acetilcisteína 600mg","Ambroxol 30mg","Atorvastatina 10mg","Atorvastatina 20mg","Atorvastatina 40mg","Rosuvastatina 10mg","Gabapentina 300mg","Pregabalina 75mg","Pregabalina 150mg","Carbamazepina 200mg","Allopurinol 100mg","Colchicina 0.5mg","Meloxicam 7.5mg","Meloxicam 15mg","Celecoxib 200mg"]
+
+var _fichadiags = []
+var _cmMedItems = []
+var _cmDiagIdx  = -1
+var _cmMedIdx   = -1
+
+function _norm(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase() }
+
+function abrirConsultaModal() {
+  const pac = _fichaDoc?.paciente || {}
+  el('mc_pacNombre').textContent = pac.nombre || _fichaDoc?.nombre || 'Paciente'
+  // Reset state
+  _fichadiags = []; _cmMedItems = []; _cmDiagIdx = -1; _cmMedIdx = -1
+  ;['c_motivo','c_enfermedad','c_examen','c_notas','c_indicaciones','mc_med_search','c_diag_search'].forEach(id=>{const e=el(id);if(e)e.value=''})
+  el('c_diagnostico').value = ''
+  el('c_plan').value = ''
+  el('c_diag_tags').innerHTML = ''
+  el('mc_med_tags').innerHTML = ''
+  el('c_diag_drop').style.display = 'none'
+  el('mc_med_drop').style.display = 'none'
+  // Step 1
+  el('mc_step1').style.display = 'flex'
+  el('mc_step2').style.display = 'none'
+  el('mc_footer_s1').style.display = 'flex'
+  el('mc_footer_s2').style.display = 'none'
+  el('mc_dot1').classList.add('active'); el('mc_dot2').classList.remove('active')
+  el('cmOverlay').classList.add('open')
+  el('cm_body').scrollTop = 0
+  setTimeout(()=>el('c_motivo').focus(), 160)
+}
+
+function cmCerrar() {
+  el('cmOverlay').classList.remove('open')
+  el('c_diag_drop').style.display = 'none'
+  el('mc_med_drop').style.display = 'none'
+}
+
+function cmCloseOnBg(e) {
+  if (e.target === el('cmOverlay')) cmCerrar()
+}
+
+function cmIrPaso2() {
+  const motivo = el('c_motivo').value.trim()
+  if (!motivo) { el('c_motivo').focus(); el('c_motivo').style.borderColor='var(--red)'; setTimeout(()=>el('c_motivo').style.borderColor='',1800); return }
+  // Animate out step 1, in step 2
+  const s1 = el('mc_step1')
+  s1.classList.add('cm-step-exit')
+  setTimeout(() => {
+    s1.style.display = 'none'; s1.classList.remove('cm-step-exit')
+    el('mc_step2').style.display = 'flex'
+    el('mc_step2').classList.add('cm-step')
+    el('mc_footer_s1').style.display = 'none'
+    el('mc_footer_s2').style.display = 'flex'
+    el('mc_dot1').classList.remove('active'); el('mc_dot2').classList.add('active')
+    el('cm_body').scrollTop = 0
+    el('mc_med_search').focus()
+  }, 180)
+}
+
+function cmVolverPaso1() {
+  el('mc_step2').style.display = 'none'
+  el('mc_step1').style.display = 'flex'
+  el('mc_footer_s1').style.display = 'flex'
+  el('mc_footer_s2').style.display = 'none'
+  el('mc_dot1').classList.add('active'); el('mc_dot2').classList.remove('active')
+  el('cm_body').scrollTop = 0
+}
+
+async function cmGuardar() {
+  if (!_fichaDoc?.id) return
+  const motivo = el('c_motivo').value.trim()
+  if (!motivo) { cmVolverPaso1(); setTimeout(()=>el('c_motivo').focus(),120); return }
+  const btn = el('mc_btn_save')
+  btn.disabled = true; btn.textContent = 'Guardando...'
+
+  const diagStr = _fichadiags.map(d => d.c + ' — ' + d.l).join('; ')
+  const medStr  = _cmMedItems.join(' | ')
+
+  await dbPost('consultas', {
+    medico_id:        _docMedico.id,
+    paciente_id:      _fichaDoc.id,
+    motivo,
+    enfermedad_actual: el('c_enfermedad').value.trim() || null,
+    examen_fisico:    el('c_examen').value.trim()      || null,
+    diagnostico:      diagStr                           || null,
+    plan:             medStr                            || null,
+    indicaciones:     el('c_indicaciones').value.trim() || null,
+    notas:            el('c_notas').value.trim()        || null,
+    estado:           'completada'
+  }, _authToken)
+
+  btn.disabled = false; btn.textContent = 'Guardar consulta ✓'
+  cmCerrar()
+
+  const consultas = await dbGet('consultas', 'paciente_id=eq.'+_fichaDoc.id+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,examen_fisico,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken)
+  renderFichaHistorial(consultas)
+  el('fichaStatConsultas').textContent = consultas.length
+}
+
+// ── CIE-10 ────────────────────────────────────────────────────────────────────
+function fDiagBuscar(q) {
+  const drop = el('c_diag_drop')
+  if (!q.trim()) { drop.style.display='none'; return }
+  const nq = _norm(q)
+  const hits = CIE10.filter(e => _norm(e.c).includes(nq) || _norm(e.l).includes(nq)).slice(0,12)
+  if (!hits.length) { drop.style.display='none'; return }
+  _cmDiagIdx = -1
+  drop.innerHTML = hits.map((e,i) =>
+    `<div class="cm-drop-row" data-i="${i}" onmousedown="fDiagAgregar('${e.c}','${e.l.replace(/'/g,'&#39;')}')">
+      <span class="cm-drop-code">${e.c}</span>
+      <span class="cm-drop-label">${e.l}</span>
+    </div>`
+  ).join('')
+  posicionarDrop('c_diag_search', 'c_diag_drop')
+  drop.style.display = 'block'
+}
+
+function fDiagKeyNav(ev) {
+  const rows = el('c_diag_drop').querySelectorAll('.cm-drop-row')
+  if (!rows.length) return
+  if (ev.key==='ArrowDown'){ev.preventDefault();_cmDiagIdx=Math.min(_cmDiagIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmDiagIdx))}
+  else if (ev.key==='ArrowUp'){ev.preventDefault();_cmDiagIdx=Math.max(_cmDiagIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmDiagIdx))}
+  else if (ev.key==='Enter'&&_cmDiagIdx>=0){ev.preventDefault();rows[_cmDiagIdx].dispatchEvent(new MouseEvent('mousedown'))}
+  else if (ev.key==='Escape'){el('c_diag_drop').style.display='none'}
+}
+
+function fDiagAgregar(code, label) {
+  if (_fichadiags.find(d=>d.c===code)) { el('c_diag_drop').style.display='none'; el('c_diag_search').value=''; return }
+  _fichadiags.push({c:code, l:label})
+  el('c_diag_drop').style.display='none'
+  el('c_diag_search').value = ''
+  fDiagRender()
+  fDiagSync()
+}
+
+function fDiagRemover(i) {
+  _fichadiags.splice(i,1); fDiagRender(); fDiagSync()
+}
+
+function fDiagRender() {
+  el('c_diag_tags').innerHTML = _fichadiags.map((d,i) =>
+    `<span class="cm-tag cm-tag-diag">
+      <span class="cm-tag-code">${d.c}</span>${d.l}
+      <button class="cm-tag-rm" onmousedown="fDiagRemover(${i})">✕</button>
+    </span>`
+  ).join('')
+}
+
+function fDiagSync() {
+  el('c_diagnostico').value = _fichadiags.map(d=>d.c+' — '+d.l).join('; ')
+}
+
+// ── MEDICAMENTOS ──────────────────────────────────────────────────────────────
+function mcMedBuscar(q) {
+  const drop = el('mc_med_drop')
+  if (!q.trim()) { drop.style.display='none'; return }
+  const nq = _norm(q)
+  const hits = _mcMeds.filter(m => _norm(m).includes(nq)).slice(0,14)
+  if (!hits.length) { drop.style.display='none'; return }
+  _cmMedIdx = -1
+  drop.innerHTML = hits.map((m,i) =>
+    `<div class="cm-drop-med" data-i="${i}" onmousedown="mcMedAgregar('${m.replace(/'/g,'&#39;')}')">💊 ${m}</div>`
+  ).join('')
+  posicionarDrop('mc_med_search', 'mc_med_drop')
+  drop.style.display = 'block'
+}
+
+function mcMedKeyNav(ev) {
+  const rows = el('mc_med_drop').querySelectorAll('.cm-drop-med')
+  if (!rows.length) return
+  if (ev.key==='ArrowDown'){ev.preventDefault();_cmMedIdx=Math.min(_cmMedIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmMedIdx))}
+  else if (ev.key==='ArrowUp'){ev.preventDefault();_cmMedIdx=Math.max(_cmMedIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmMedIdx))}
+  else if (ev.key==='Enter'&&_cmMedIdx>=0){ev.preventDefault();rows[_cmMedIdx].dispatchEvent(new MouseEvent('mousedown'))}
+  else if (ev.key==='Escape'){el('mc_med_drop').style.display='none'}
+}
+
+function mcMedAgregar(name) {
+  if (!_cmMedItems.includes(name)) { _cmMedItems.push(name) }
+  el('mc_med_drop').style.display = 'none'
+  el('mc_med_search').value = ''
+  mcMedRender(); mcMedSync()
+}
+
+function mcMedRemover(i) {
+  _cmMedItems.splice(i,1); mcMedRender(); mcMedSync()
+}
+
+function mcMedRender() {
+  el('mc_med_tags').innerHTML = _cmMedItems.map((m,i) =>
+    `<span class="cm-tag cm-tag-med">💊 ${m}
+      <button class="cm-tag-rm" onmousedown="mcMedRemover(${i})">✕</button>
+    </span>`
+  ).join('')
+}
+
+function mcMedSync() {
+  el('c_plan').value = _cmMedItems.join(' | ')
+}
+
+// Position dropdown below its trigger input using fixed positioning
+function posicionarDrop(inputId, dropId) {
+  const input = el(inputId), drop = el(dropId)
+  if (!input || !drop) return
+  const r = input.getBoundingClientRect()
+  drop.style.top    = (r.bottom + 4) + 'px'
+  drop.style.left   = r.left + 'px'
+  drop.style.width  = r.width + 'px'
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+  if (!el('c_diag_search')?.contains(e.target) && !el('c_diag_drop')?.contains(e.target))
+    el('c_diag_drop') && (el('c_diag_drop').style.display='none')
+  if (!el('mc_med_search')?.contains(e.target) && !el('mc_med_drop')?.contains(e.target))
+    el('mc_med_drop') && (el('mc_med_drop').style.display='none')
+}, true)
 
 // ── STICKY NAV ────────────────────────────────────────────────────────────────
 // Sticky nav on scroll
