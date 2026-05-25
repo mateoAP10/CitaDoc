@@ -428,6 +428,14 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .ficha-hero-sub{font-size:.78rem;color:var(--muted);margin-top:.2rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .ficha-wa-btn{display:inline-flex;align-items:center;gap:.35rem;background:#25D366;color:#fff;border:none;border-radius:8px;padding:.38rem .8rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;text-decoration:none;flex-shrink:0;transition:background .15s}
 .ficha-wa-btn:hover{background:#1da851}
+.ficha-alergy-banner{
+  display:flex;align-items:flex-start;gap:.75rem;
+  background:#fff1f2;border:2px solid #fca5a5;border-radius:14px;
+  padding:1rem 1.1rem;
+}
+.ficha-alergy-banner>svg{color:#dc2626;flex-shrink:0;margin-top:.1rem}
+.ficha-alergy-title{font-size:.72rem;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem}
+.ficha-alergy-text{font-size:.9rem;font-weight:600;color:#7f1d1d;line-height:1.45}
 .ficha-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:#fff;border-radius:14px;border:1.5px solid var(--border);overflow:hidden}
 .ficha-stat{padding:.85rem 1rem;border-right:1.5px solid var(--border);display:flex;flex-direction:column;justify-content:center}
 .ficha-stat:last-child{border-right:none}
@@ -1083,6 +1091,15 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
               Receta
             </button>
+          </div>
+        </div>
+
+        <!-- Allergy alert -->
+        <div class="ficha-alergy-banner" id="fichaAlergyBanner" style="display:none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>
+            <div class="ficha-alergy-title">⚠ Alergias conocidas</div>
+            <div class="ficha-alergy-text" id="fichaAlergyText"></div>
           </div>
         </div>
 
@@ -2292,6 +2309,16 @@ async function abrirFichaDoc(pacienteId, nombre) {
     el(id).value = pac[field] || ''
   })
 
+  // Allergy banner
+  const alergias = pac.alergias?.trim()
+  const banner = el('fichaAlergyBanner')
+  if (alergias) {
+    el('fichaAlergyText').textContent = alergias
+    banner.style.display = 'flex'
+  } else {
+    banner.style.display = 'none'
+  }
+
   // Historial
   renderFichaHistorial(consultas)
 }
@@ -2369,6 +2396,11 @@ async function saveAntecedentes() {
   setTimeout(()=>t.classList.remove('show'), 2500)
 
   if (_fichaDoc.paciente) Object.assign(_fichaDoc.paciente, body)
+
+  // Refresh allergy banner live
+  const al = body.alergias?.trim()
+  el('fichaAlergyBanner').style.display = al ? 'flex' : 'none'
+  if (al) el('fichaAlergyText').textContent = al
 }
 
 // ── RECETA ────────────────────────────────────────────────────────────────────
