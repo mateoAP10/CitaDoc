@@ -174,9 +174,11 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .modal-services{margin-bottom:1.25rem}
 .modal-service-row{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.85rem}
 .modal-service-row:last-child{border:none}
-.modal-total{background:var(--bg2);border-radius:10px;padding:.85rem 1rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
-.modal-total-label{font-size:.78rem;font-weight:600;color:var(--muted)}
-.modal-total-amount{font-size:1.3rem;font-weight:800;color:var(--ink)}
+.modal-total{background:linear-gradient(150deg,#111 0%,#1a0b0c 100%);border-radius:16px;padding:1.2rem 1.4rem 1.3rem;display:flex;flex-direction:column;margin-bottom:1.5rem;position:relative;overflow:hidden;border:1px solid rgba(204,41,54,.18);box-shadow:0 4px 24px rgba(0,0,0,.18)}
+.modal-total::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(204,41,54,.55),transparent)}
+.modal-total::after{content:'';position:absolute;top:-45px;right:-30px;width:130px;height:130px;background:radial-gradient(circle,rgba(204,41,54,.2) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+.modal-total-label{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.55rem;position:relative;z-index:1}
+.modal-total-amount{font-size:2.6rem;font-weight:800;color:#fff;line-height:1;letter-spacing:-.03em;position:relative;z-index:1}
 .form-group{margin-bottom:1rem}
 .form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--ink2);margin-bottom:.35rem}
 .form-control{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .15s}
@@ -1569,11 +1571,9 @@ async function init() {
   if (centers.length) {
     _center = centers[0]
     applyBranding(_center)
-    const [svcs] = await Promise.all([
-      dbGet('center_services', 'center_id=eq.'+_center.id+'&select=*&order=categoria,orden'),
-      loadDoctors()
-    ])
+    const svcs = await dbGet('center_services', 'center_id=eq.'+_center.id+'&select=*&order=categoria,orden')
     if (svcs.length) { _services = svcs; renderServices() }
+    await loadDoctors()
   }
 }
 
@@ -1724,12 +1724,13 @@ function updateCalcSummary() {
 
 // ── DOCTORS ───────────────────────────────────────────────────────────────────
 function matchConsultaService(esp) {
-  if (!esp) return null
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim()
   const consultas = _services.filter(s => s.categoria === 'consulta')
+  if (!consultas.length) return null
+  if (!esp) return consultas[0]
   return consultas.find(s => norm(s.nombre) === norm(esp))
       || consultas.find(s => norm(esp).includes(norm(s.nombre)) || norm(s.nombre).includes(norm(esp)))
-      || null
+      || consultas[0]
 }
 
 function renderDoctors(docs) {
@@ -1873,10 +1874,15 @@ async function openModalForDoctor(encoded) {
   const d = JSON.parse(decodeURIComponent(encoded))
   _modalDoctor = d; _modalDate = null; _modalSlot = null
   el('modalTitle').textContent = 'Consulta con ' + d.nombre
-  el('modalServices').style.display = 'block'
-  el('modalServices').innerHTML = `<div class="modal-service-row"><span>${esc(d.svcNombre)}</span><span style="font-weight:700">${d.precio!==null?'$'+d.precio:'A consultar'}</span></div>`
-  el('modalTotal').style.display = d.precio!==null ? 'flex' : 'none'
-  if (d.precio!==null) el('modalTotalAmt').textContent = '$'+d.precio
+  el('modalServices').style.display = 'none'
+  el('modalTotal').style.display = 'flex'
+  if (d.precio !== null) {
+    el('modalTotalAmt').textContent = '$'+d.precio
+    el('modalTotalAmt').style.fontSize = '2.6rem'
+  } else {
+    el('modalTotalAmt').textContent = 'A consultar'
+    el('modalTotalAmt').style.fontSize = '1.4rem'
+  }
 
   // WA + online booking options
   const waOpt = el('modalWaOpt')
