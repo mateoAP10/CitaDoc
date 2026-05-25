@@ -1,0 +1,3 @@
+ALTER TABLE public.center_leads
+  ADD COLUMN IF NOT EXISTS cedula TEXT,
+  ADD COLUMN IF NOT EXISTS hora   TEXT;

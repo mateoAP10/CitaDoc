@@ -177,8 +177,25 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .form-control{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .15s}
 .form-control:focus{border-color:var(--red)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-.btn-submit{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:.5rem;transition:background .15s}
+.btn-submit{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:.75rem;transition:background .15s}
 .btn-submit:hover{background:var(--red-dark)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+/* slot picker */
+.modal-section-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:.85rem 0 .5rem}
+.modal-days{display:flex;gap:.4rem;overflow-x:auto;padding:.25rem 0 .65rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.modal-days::-webkit-scrollbar{display:none}
+.day-pill{flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;padding:.4rem .55rem;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:default;min-width:46px;gap:.05rem;opacity:.4}
+.day-pill.avail{cursor:pointer;opacity:1;border-color:rgba(204,41,54,.35)}
+.day-pill.avail:hover{border-color:var(--red);background:var(--red-lite)}
+.day-pill.sel{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;opacity:1!important}
+.day-pill-dow{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.day-pill-n{font-size:.95rem;font-weight:800;line-height:1.2}
+.day-pill-mon{font-size:.52rem;opacity:.7}
+.slots-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.25rem}
+.slot-btn{padding:.38rem .65rem;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--ink)}
+.slot-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
+.slot-btn.sel{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important}
+.slot-btn.booked{opacity:.4;cursor:not-allowed;background:var(--bg2);color:var(--muted2);pointer-events:none}
 .btn-submit:disabled{opacity:.5;cursor:not-allowed}
 .modal-success{text-align:center;padding:1rem 0}
 .modal-success-icon{font-size:3rem;margin-bottom:.75rem}
@@ -476,33 +493,44 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         <div class="modal-total-label">Total estimado</div>
         <div class="modal-total-amount" id="modalTotalAmt">$0</div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input class="form-control" id="fNombre" placeholder="Tu nombre" autocomplete="given-name">
+
+      <!-- SLOT PICKER — shown when booking a specific doctor -->
+      <div id="slotPicker" style="display:none">
+        <div class="modal-section-label">Elegí un día</div>
+        <div class="modal-days" id="modalDays">
+          <div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>
         </div>
-        <div class="form-group">
-          <label>Apellido</label>
-          <input class="form-control" id="fApellido" placeholder="Tu apellido" autocomplete="family-name">
+        <div id="slotWrap" style="display:none">
+          <div class="modal-section-label" id="slotTitle">Horarios disponibles</div>
+          <div class="slots-grid" id="slotsGrid"></div>
         </div>
       </div>
+
+      <!-- PATIENT FORM -->
       <div class="form-group">
-        <label>Teléfono / WhatsApp</label>
-        <input class="form-control" id="fTelefono" type="tel" placeholder="+593..." autocomplete="tel">
+        <label>Nombre completo</label>
+        <input class="form-control" id="fNombre" placeholder="Nombre y apellido" autocomplete="name">
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label>Teléfono / WhatsApp</label>
+          <input class="form-control" id="fTelefono" type="tel" placeholder="+593..." autocomplete="tel">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Cédula / ID</label>
+          <input class="form-control" id="fCedula" placeholder="0000000000" inputmode="numeric" maxlength="15">
+        </div>
       </div>
       <div class="form-group">
         <label>Email</label>
         <input class="form-control" id="fEmail" type="email" placeholder="tu@email.com" autocomplete="email">
       </div>
-      <div class="form-group">
+      <!-- Fecha general — solo cuando no hay slot picker activo -->
+      <div class="form-group" id="fechaGroup">
         <label>¿Cuándo preferís atenderte?</label>
         <input class="form-control" id="fFecha" type="date">
       </div>
-      <div class="form-group">
-        <label>Comentario adicional <span style="color:var(--muted);font-weight:400">(opcional)</span></label>
-        <input class="form-control" id="fNota" placeholder="Ej: tengo historia previa, vendré con un familiar...">
-      </div>
-      <button class="btn-submit" id="btnSubmit" onclick="submitReserva()">Solicitar reserva →</button>
+      <button class="btn-submit" id="btnSubmit" onclick="submitReserva()">Solicitar turno →</button>
     </div>
     <div id="modalSuccessContent" style="display:none">
       <div class="modal-success">
@@ -740,32 +768,148 @@ document.querySelectorAll('.cat-pill').forEach(btn => {
   })
 })
 
+// ── AVAILABILITY HELPERS (inlined from shared.js logic) ───────────────────────
+const MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+const DIAS_C  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+const DIAS_K  = ['dom','lun','mar','mie','jue','vie','sab']
+function pad2(n) { return String(n).padStart(2,'0') }
+function hhmm(s) { const [h,m] = s.split(':'); return 60*parseInt(h)+parseInt(m) }
+function genSlots(desde, hasta, date, dayIdx, booked) {
+  const slots = [], nowMin = dayIdx===0 ? 60*(new Date).getHours()+(new Date).getMinutes()+120 : 0
+  let t = hhmm(desde), end = hhmm(hasta)
+  while (t < end) {
+    const h = pad2(Math.floor(t/60))+':'+pad2(t%60)
+    if (!booked.some(b=>b.fecha===date&&b.hora===h) && t>=nowMin) slots.push(h)
+    t += 30
+  }
+  return slots
+}
+async function loadDoctorDisp(medicoId) {
+  const today = new Date(); today.setHours(0,0,0,0)
+  const endD  = new Date(today); endD.setDate(today.getDate()+60)
+  const t0 = today.toISOString().split('T')[0], t1 = endD.toISOString().split('T')[0]
+
+  const [mRes, citasRes, bloqRes, excRes] = await Promise.all([
+    sb.from('medicos').select('dias_atencion,horario_desde,horario_hasta,horarios_config').eq('id', medicoId).single(),
+    sb.from('citas').select('fecha,hora').eq('medico_id', medicoId).gte('fecha',t0).lte('fecha',t1).in('estado',['confirmada','pendiente']),
+    sb.from('bloqueos_medico').select('fecha_inicio,fecha_fin').eq('medico_id', medicoId).gte('fecha_fin',t0),
+    sb.from('excepciones_medico').select('fecha,tipo,desde,hasta').eq('medico_id', medicoId).gte('fecha',t0)
+  ])
+
+  const medico = mRes.data || {}
+  const booked = citasRes.data || []
+  const blocked = new Set()
+  ;(bloqRes.data||[]).forEach(b => {
+    let d = new Date(b.fecha_inicio+'T12:00:00')
+    const fin = new Date(b.fecha_fin+'T12:00:00')
+    while (d<=fin) { blocked.add(d.toISOString().split('T')[0]); d.setDate(d.getDate()+1) }
+  })
+  const excMap = {}
+  ;(excRes.data||[]).forEach(e => { excMap[e.fecha] = e })
+
+  const disp = {}
+  for (let i=0; i<60; i++) {
+    const d = new Date(today); d.setDate(today.getDate()+i)
+    const date = d.toISOString().split('T')[0]
+    if (blocked.has(date)) continue
+    const exc = excMap[date]
+    if (exc) {
+      if (exc.tipo==='bloqueado') continue
+      if (exc.tipo==='custom' && exc.desde && exc.hasta) {
+        const s = genSlots(exc.desde, exc.hasta, date, i, booked)
+        if (s.length) disp[date] = s
+        continue
+      }
+    }
+    const dow = DIAS_K[d.getDay()]
+    let bloques = []
+    if (medico.horarios_config && medico.horarios_config[dow]?.activo) {
+      bloques = medico.horarios_config[dow].bloques || []
+    } else if ((medico.dias_atencion||[]).includes(dow)) {
+      bloques = [{desde: medico.horario_desde||'09:00', hasta: medico.horario_hasta||'17:00'}]
+    }
+    const slots = bloques.flatMap(b => genSlots(b.desde, b.hasta, date, i, booked))
+    if (slots.length) disp[date] = slots
+  }
+  return disp
+}
+
 // ── MODAL ─────────────────────────────────────────────────────────────────────
-let _modalDoctor = null // {id, nombre, esp, svcNombre, precio}
+let _modalDoctor = null
+let _modalDisp   = {}
+let _modalDate   = null
+let _modalSlot   = null
 
 function openModal() {
-  _modalDoctor = null
+  _modalDoctor = null; _modalDisp = {}; _modalDate = null; _modalSlot = null
   el('modalTitle').textContent = 'Solicitar atención'
   el('modalServices').style.display = 'none'
   el('modalTotal').style.display    = 'none'
+  el('slotPicker').style.display    = 'none'
+  el('fechaGroup').style.display    = 'block'
   el('modalOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
 }
 
-function openModalForDoctor(encoded) {
+async function openModalForDoctor(encoded) {
   const d = JSON.parse(decodeURIComponent(encoded))
-  _modalDoctor = d
+  _modalDoctor = d; _modalDate = null; _modalSlot = null
   el('modalTitle').textContent = 'Consulta con ' + d.nombre
   el('modalServices').style.display = 'block'
-  el('modalServices').innerHTML = `<div class="modal-service-row"><span>${esc(d.svcNombre)}</span><span style="font-weight:700">${d.precio !== null ? '$'+d.precio : 'A consultar'}</span></div>`
-  if (d.precio !== null) {
-    el('modalTotal').style.display    = 'flex'
-    el('modalTotalAmt').textContent   = '$' + d.precio
-  } else {
-    el('modalTotal').style.display = 'none'
-  }
+  el('modalServices').innerHTML = `<div class="modal-service-row"><span>${esc(d.svcNombre)}</span><span style="font-weight:700">${d.precio!==null?'$'+d.precio:'A consultar'}</span></div>`
+  el('modalTotal').style.display = d.precio!==null ? 'flex' : 'none'
+  if (d.precio!==null) el('modalTotalAmt').textContent = '$'+d.precio
+  el('slotPicker').style.display = 'block'
+  el('slotWrap').style.display   = 'none'
+  el('fechaGroup').style.display = 'none'
+  el('modalDays').innerHTML = '<div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>'
   el('modalOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
+  // Load availability async
+  _modalDisp = await loadDoctorDisp(d.id)
+  renderModalDays()
+}
+
+function renderModalDays() {
+  const today = new Date(); today.setHours(0,0,0,0)
+  const pills = []
+  for (let i=0; i<60; i++) {
+    const dt = new Date(today); dt.setDate(today.getDate()+i)
+    const date = dt.toISOString().split('T')[0]
+    const avail = !!_modalDisp[date]
+    const sel   = date===_modalDate
+    pills.push(
+      `<div class="day-pill${avail?' avail':''}${sel?' sel':''}" ${avail?`onclick="selectModalDay('${date}')"`:''}>`+
+      `<span class="day-pill-dow">${DIAS_C[dt.getDay()]}</span>`+
+      `<span class="day-pill-n">${dt.getDate()}</span>`+
+      `<span class="day-pill-mon">${MESES_C[dt.getMonth()]}</span>`+
+      `</div>`
+    )
+  }
+  if (!pills.some((p,i)=>_modalDisp[new Date(today.getTime()+i*86400000).toISOString().split('T')[0]])) {
+    el('modalDays').innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin disponibilidad próxima</div>'
+    return
+  }
+  el('modalDays').innerHTML = pills.join('')
+  // Scroll to first available
+  const firstAvail = el('modalDays').querySelector('.avail')
+  if (firstAvail) setTimeout(()=>firstAvail.scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'}),50)
+}
+
+function selectModalDay(date) {
+  _modalDate = date; _modalSlot = null
+  renderModalDays()
+  const slots = _modalDisp[date] || []
+  el('slotsGrid').innerHTML = slots.map(h=>`<button class="slot-btn" onclick="selectModalSlot('${h}',this)">${h}</button>`).join('')
+  const d = date.split('-')
+  el('slotTitle').textContent = 'Horarios — '+parseInt(d[2])+' de '+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(d[1])-1]
+  el('slotWrap').style.display = 'block'
+}
+
+function selectModalSlot(slot, btn) {
+  _modalSlot = slot
+  el('slotsGrid').querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('sel'))
+  btn.classList.add('sel')
 }
 
 function openModalFromCalc() {
@@ -782,25 +926,29 @@ function openModalFromCalc() {
 }
 
 function closeModal() {
-  _modalDoctor = null
+  _modalDoctor = null; _modalDisp = {}; _modalDate = null; _modalSlot = null
   el('modalOverlay').classList.remove('open')
   document.body.style.overflow = ''
   el('modalContent').style.display = 'block'
   el('modalSuccessContent').style.display = 'none'
+  el('fNombre').value = ''; el('fTelefono').value = ''; el('fCedula').value = ''; el('fEmail').value = ''
 }
 
 function closeModalOnBg(e) { if (e.target === el('modalOverlay')) closeModal() }
 
 async function submitReserva() {
   const nombre   = el('fNombre').value.trim()
-  const apellido = el('fApellido').value.trim()
   const telefono = el('fTelefono').value.trim()
+  const cedula   = el('fCedula').value.trim()
   const email    = el('fEmail').value.trim()
-  const fecha    = el('fFecha').value
-  const nota     = el('fNota').value.trim()
+  const fecha    = _modalDate || el('fFecha').value
 
   if (!nombre || !telefono) {
     alert('Por favor completá nombre y teléfono.')
+    return
+  }
+  if (_modalDoctor && !_modalSlot) {
+    alert('Por favor seleccioná un horario.')
     return
   }
 
@@ -817,20 +965,24 @@ async function submitReserva() {
   // Save lead to Supabase
   await sb.from('center_leads').insert({
     center_id:    _center?.id,
-    nombre:       nombre + ' ' + apellido,
+    nombre,
     telefono,
+    cedula:       cedula || null,
     email:        email || null,
     fecha_pref:   fecha || null,
-    nota:         (_modalDoctor ? 'Médico: ' + _modalDoctor.nombre + '\n' : '') + (nota || ''),
+    hora:         _modalSlot || null,
+    nota:         _modalDoctor ? 'Médico: ' + _modalDoctor.nombre : null,
     servicios:    leadsServices.length ? JSON.stringify(leadsServices) : null,
     total_est:    leadsTotal || null,
   }).catch(()=>{})
 
   // WhatsApp auto-message
   const waNum    = _center?.whatsapp || '593989173062'
-  const docLine  = _modalDoctor ? `\n\nMédico de preferencia: ${_modalDoctor.nombre}` : ''
-  const svcs     = leadsServices.length ? '\n\nServicios de interés:\n' + leadsServices.map(s=>'• '+s.nombre+(s.precio?(' ($'+s.precio+')'):'') ).join('\n') : ''
-  const msg      = encodeURIComponent(`Hola Doctor Center, soy ${nombre} ${apellido}. Quisiera solicitar un turno.${docLine}${svcs}${fecha?'\n\nFecha preferida: '+fecha:''}${nota?'\n\nNota: '+nota:''}`)
+  const docLine  = _modalDoctor ? `\n\nMédico: ${_modalDoctor.nombre}` : ''
+  const slotLine = _modalSlot ? `\nHorario solicitado: ${fecha} a las ${_modalSlot}` : (fecha?`\nFecha preferida: ${fecha}`:'')
+  const cedLine  = cedula ? `\nCédula: ${cedula}` : ''
+  const svcs     = leadsServices.length ? '\n\nServicios:\n' + leadsServices.map(s=>'• '+s.nombre+(s.precio?(' ($'+s.precio+')'):'') ).join('\n') : ''
+  const msg      = encodeURIComponent(`Hola Doctor Center, soy ${nombre}. Quisiera solicitar un turno.${docLine}${cedLine}${slotLine}${svcs}`)
 
   el('modalContent').style.display      = 'none'
   el('modalSuccessContent').style.display = 'block'
