@@ -217,48 +217,82 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .mob-tab-label{font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 
 /* ── DOCTOR PANEL ─────────────────────────────────────────────────────────── */
-.doc-panel{display:none;position:fixed;inset:0;z-index:190;background:#fff;overflow-y:auto;padding-bottom:90px}
-.doc-panel.open{display:block}
-.doc-panel-head{position:sticky;top:0;z-index:2;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:1rem 5vw;display:flex;align-items:center;justify-content:space-between}
-.doc-panel-title{font-size:1rem;font-weight:800;color:var(--ink)}
-.doc-panel-close{background:none;border:none;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--muted);font-size:1.15rem}
-.doc-panel-body{padding:1.5rem 5vw}
-.doc-login-hint{font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:1.5rem;line-height:1.5}
-.doc-login-form{display:flex;flex-direction:column;gap:.75rem;max-width:360px;margin:0 auto}
+/* ── DOCTOR DRAWER ───────────────────────────────────────────────────────── */
+.doc-overlay{display:none;position:fixed;inset:0;z-index:190;background:rgba(0,0,0,.45);backdrop-filter:blur(4px)}
+.doc-overlay.open{display:block}
+.doc-drawer{position:fixed;top:0;right:0;bottom:0;z-index:191;width:min(420px,100vw);background:#fff;box-shadow:-8px 0 40px rgba(0,0,0,.12);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .32s cubic-bezier(.22,.61,.36,1)}
+.doc-drawer.open{transform:translateX(0)}
+.doc-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);flex-shrink:0;background:#fff}
+.doc-drawer-brand{display:flex;align-items:center;gap:.5rem}
+.doc-drawer-brand svg{width:22px;height:22px;color:var(--red)}
+.doc-drawer-brand-name{font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
+.doc-drawer-close{width:34px;height:34px;border:none;background:var(--bg2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1rem;transition:background .15s}
+.doc-drawer-close:hover{background:var(--border)}
+.doc-drawer-body{flex:1;overflow-y:auto;padding:1.5rem 1.4rem;display:flex;flex-direction:column;gap:0}
+
+/* Login state */
+.doc-login-wrap{display:flex;flex-direction:column;align-items:center;padding:1.5rem 0 0}
+.doc-login-icon{width:64px;height:64px;border-radius:50%;background:var(--red-lite);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem}
+.doc-login-icon svg{width:30px;height:30px;color:var(--red)}
+.doc-login-title{font-size:1.25rem;font-weight:800;color:var(--ink);text-align:center;margin-bottom:.35rem}
+.doc-login-sub{font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:1.75rem;line-height:1.55}
+.doc-login-form{display:flex;flex-direction:column;gap:.8rem;width:100%}
 .doc-field{display:flex;flex-direction:column;gap:.3rem}
-.doc-field label{font-size:.75rem;font-weight:600;color:var(--ink2)}
-.doc-field input,.doc-field textarea{padding:.7rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);outline:none;transition:border-color .15s;resize:vertical}
-.doc-field input:focus,.doc-field textarea:focus{border-color:var(--red)}
-.btn-doc-login{background:var(--red);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .15s;margin-top:.25rem}
+.doc-field label{font-size:.72rem;font-weight:700;color:var(--ink2);letter-spacing:.03em}
+.doc-field input,.doc-field textarea{padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;resize:vertical}
+.doc-field input:focus,.doc-field textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,41,54,.09)}
+.btn-doc-login{background:var(--red);color:#fff;border:none;border-radius:11px;padding:.85rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .15s;margin-top:.25rem;width:100%}
+.btn-doc-login:hover{background:var(--red-dark)}
 .btn-doc-login:disabled{opacity:.6;cursor:not-allowed}
-.doc-err{font-size:.78rem;color:#dc2626;text-align:center;display:none}
-.doc-welcome{font-size:.85rem;color:var(--muted);margin-bottom:.5rem}
-.doc-welcome strong{color:var(--ink);font-weight:700}
-.btn-signout{float:right;background:none;border:1px solid var(--border);border-radius:8px;padding:.35rem .85rem;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;color:var(--muted);cursor:pointer}
-.doc-section-title{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .75rem}
-.lead-item{background:var(--bg2);border-radius:10px;padding:.9rem 1rem;display:flex;gap:.75rem;margin-bottom:.55rem;align-items:flex-start}
-.lead-dot{width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:.35rem;flex-shrink:0}
-.lead-name{font-size:.88rem;font-weight:700;color:var(--ink)}
-.lead-meta{font-size:.73rem;color:var(--muted);margin-top:.1rem}
-.cita-item{display:flex;align-items:center;gap:.75rem;padding:.75rem .9rem;background:#fff;border:1.5px solid var(--border);border-radius:11px;margin-bottom:.45rem}
-.cita-hora{font-size:.95rem;font-weight:800;color:var(--ink);min-width:42px;font-variant-numeric:tabular-nums}
+.doc-err{font-size:.78rem;color:#dc2626;text-align:center;display:none;background:#fff0f0;border-radius:8px;padding:.5rem .75rem}
+
+/* Doctor avatar card */
+.doc-avatar-card{display:flex;align-items:center;gap:.85rem;padding:1.1rem;background:linear-gradient(135deg,var(--red) 0%,#a01d28 100%);border-radius:14px;margin-bottom:1.35rem}
+.doc-avatar{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.02em;border:2px solid rgba(255,255,255,.35)}
+.doc-avatar-info{flex:1;min-width:0}
+.doc-avatar-name{font-size:.92rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-avatar-role{font-size:.7rem;color:rgba(255,255,255,.7);margin-top:.1rem;font-weight:500}
+.btn-signout{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:.35rem .85rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s}
+.btn-signout:hover{background:rgba(255,255,255,.28)}
+
+/* Section headers */
+.doc-section{margin-bottom:1.5rem}
+.doc-section-label{display:flex;align-items:center;gap:.45rem;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem}
+.doc-section-label svg{width:14px;height:14px;flex-shrink:0}
+
+/* Cita cards — timeline style */
+.cita-item{display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;background:#fff;border:1.5px solid var(--border);border-radius:12px;margin-bottom:.45rem;transition:border-color .15s}
+.cita-item:hover{border-color:var(--red)}
+.cita-hora{font-size:.95rem;font-weight:800;color:var(--ink);min-width:44px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.cita-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0}
+.cita-dot.confirmada{background:#22c55e}
+.cita-dot.pendiente{background:#eab308}
+.cita-dot.cancelada{background:#ef4444}
 .cita-info{flex:1;min-width:0}
 .cita-nombre{font-size:.85rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cita-meta{font-size:.72rem;color:var(--muted);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cita-badge{font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;flex-shrink:0}
+.cita-badge{font-size:.6rem;font-weight:700;padding:.2rem .6rem;border-radius:20px;flex-shrink:0;letter-spacing:.03em}
 .cita-badge.confirmada{background:#dcfce7;color:#166534}
 .cita-badge.pendiente{background:#fef9c3;color:#854d0e}
 .cita-badge.cancelada{background:#fee2e2;color:#991b1b}
-.doc-actions{display:flex;flex-direction:column;gap:.6rem;margin-top:1.5rem}
-.btn-doc-action{display:flex;align-items:center;gap:.65rem;padding:.85rem 1rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;color:var(--ink);cursor:pointer;transition:all .15s;text-align:left;width:100%}
-.btn-doc-action:hover,.btn-doc-action.active{border-color:var(--red);color:var(--red);background:var(--red-lite)}
-.btn-doc-action svg{width:20px;height:20px;flex-shrink:0}
-.doc-form{background:var(--bg2);border-radius:12px;padding:1rem;margin-top:.75rem;display:none;flex-direction:column;gap:.65rem}
-.doc-form.open{display:flex}
-.doc-form .doc-field input,.doc-form .doc-field textarea{background:#fff}
-.btn-doc-save{background:var(--red);color:#fff;border:none;border-radius:8px;padding:.65rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer}
+.doc-citas-empty{font-size:.82rem;color:var(--muted2);padding:.65rem .2rem;display:flex;align-items:center;gap:.5rem}
+
+/* Tab bar */
+.doc-tabs{display:flex;gap:.4rem;background:var(--bg2);border-radius:12px;padding:.3rem;margin-bottom:1rem}
+.doc-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:.38rem;padding:.55rem .4rem;border:none;background:transparent;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;white-space:nowrap}
+.doc-tab svg{width:14px;height:14px;flex-shrink:0}
+.doc-tab.active{background:#fff;color:var(--red);box-shadow:0 1px 6px rgba(0,0,0,.08)}
+
+/* Forms */
+.doc-tab-panel{display:none;flex-direction:column;gap:.7rem;background:var(--bg2);border-radius:12px;padding:1.1rem}
+.doc-tab-panel.active{display:flex}
+.doc-tab-panel .doc-field input,.doc-tab-panel .doc-field textarea{background:#fff}
+.doc-field-row{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.btn-doc-save{background:var(--red);color:#fff;border:none;border-radius:10px;padding:.75rem;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:background .15s;width:100%}
+.btn-doc-save:hover{background:var(--red-dark)}
 .btn-doc-save:disabled{opacity:.6;cursor:not-allowed}
-.doc-toast{display:none;text-align:center;font-size:.8rem;font-weight:600;color:#166534;background:#dcfce7;border-radius:8px;padding:.55rem;margin-top:.25rem}
+.doc-toast{display:none;align-items:center;justify-content:center;gap:.45rem;font-size:.8rem;font-weight:600;color:#166534;background:#dcfce7;border-radius:9px;padding:.6rem .9rem;margin-top:.15rem}
+.doc-toast.show{display:flex}
 </style>
 </head>
 <body>
@@ -427,84 +461,140 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 </footer>
 
 <!-- DOCTOR PANEL -->
-<div class="doc-panel" id="docPanel">
-  <div class="doc-panel-head">
-    <div class="doc-panel-title" id="docPanelTitle">Acceso médico</div>
-    <button class="doc-panel-close" onclick="closeDocPanel()">✕</button>
-  </div>
-  <div class="doc-panel-body">
+<!-- DOC DRAWER OVERLAY -->
+<div class="doc-overlay" id="docOverlay" onclick="closeDocPanel()"></div>
 
-    <!-- LOGIN STATE -->
+<!-- DOC DRAWER -->
+<div class="doc-drawer" id="docPanel">
+
+  <!-- Head -->
+  <div class="doc-drawer-head">
+    <div class="doc-drawer-brand">
+      <svg viewBox="0 0 40 40" fill="currentColor"><rect x="18" y="2" width="4" height="36" rx="2"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(60 20 20)"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(120 20 20)"/></svg>
+      <span class="doc-drawer-brand-name">CitaDoc</span>
+    </div>
+    <button class="doc-drawer-close" onclick="closeDocPanel()">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </button>
+  </div>
+
+  <div class="doc-drawer-body">
+
+    <!-- ── LOGIN ── -->
     <div id="docLoginView">
-      <p class="doc-login-hint">Ingresá con tu cuenta CitaDoc para ver tus citas y registrar consultas.</p>
-      <div class="doc-login-form">
-        <div class="doc-field"><label>Email</label><input id="docEmail" type="email" placeholder="tu@email.com" autocomplete="email"></div>
-        <div class="doc-field"><label>Contraseña</label><input id="docPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
-        <div class="doc-err" id="docErr">Usuario o contraseña incorrectos</div>
-        <button class="btn-doc-login" id="btnDocLogin" onclick="docLogin()">Entrar →</button>
+      <div class="doc-login-wrap">
+        <div class="doc-login-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="doc-login-title">Acceso médico</div>
+        <p class="doc-login-sub">Ingresá con tu cuenta CitaDoc para ver tus citas del día y registrar consultas.</p>
+        <div class="doc-login-form">
+          <div class="doc-field"><label>Email</label><input id="docEmail" type="email" placeholder="tu@email.com" autocomplete="email"></div>
+          <div class="doc-field"><label>Contraseña</label><input id="docPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+          <div class="doc-err" id="docErr">Usuario o contraseña incorrectos</div>
+          <button class="btn-doc-login" id="btnDocLogin" onclick="docLogin()">Ingresar al panel</button>
+        </div>
       </div>
     </div>
 
-    <!-- DASHBOARD STATE -->
+    <!-- ── DASHBOARD ── -->
     <div id="docDashView" style="display:none">
-      <div style="overflow:hidden">
-        <button class="btn-signout" onclick="docSignOut()">Cerrar sesión</button>
-        <div class="doc-welcome">Bienvenido, <strong id="docDrName">Dr.</strong></div>
+
+      <!-- Doctor card -->
+      <div class="doc-avatar-card">
+        <div class="doc-avatar" id="docAvatar">M</div>
+        <div class="doc-avatar-info">
+          <div class="doc-avatar-name" id="docDrName">Dr. Nombre</div>
+          <div class="doc-avatar-role">Médico · CitaDoc</div>
+        </div>
+        <button class="btn-signout" onclick="docSignOut()">Salir</button>
       </div>
 
-      <div class="doc-section-title">Citas de hoy</div>
-      <div id="docCitas"><div style="font-size:.82rem;color:var(--muted2)">Cargando...</div></div>
-
-      <div class="doc-actions">
-        <!-- Nueva cita -->
-        <button class="btn-doc-action" id="btnCita" onclick="toggleDocForm('cita')">
+      <!-- Citas de hoy -->
+      <div class="doc-section">
+        <div class="doc-section-label">
           <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
-          + Nueva cita
-        </button>
-        <div class="doc-form" id="formCita">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">
-            <div class="doc-field" style="grid-column:1/-1"><label>Paciente</label><input id="citaNombre" placeholder="Nombre completo"></div>
-            <div class="doc-field" style="grid-column:1/-1"><label>Teléfono</label><input id="citaTel" type="tel" placeholder="+1 555..."></div>
-            <div class="doc-field"><label>Fecha</label><input id="citaFecha" type="date"></div>
-            <div class="doc-field"><label>Hora</label><input id="citaHora" type="time" step="1800"></div>
-            <div class="doc-field" style="grid-column:1/-1"><label>Motivo (opcional)</label><input id="citaMotivo" placeholder="Consulta general, control..."></div>
+          Citas de hoy
+        </div>
+        <div id="docCitas">
+          <div class="doc-citas-empty">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+            Cargando citas...
           </div>
-          <button class="btn-doc-save" id="btnSaveCita" onclick="saveCita()">Guardar cita</button>
-          <div class="doc-toast" id="toastCita">✓ Cita registrada</div>
+        </div>
+      </div>
+
+      <!-- Acciones — tab bar -->
+      <div class="doc-section">
+        <div class="doc-section-label">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"/></svg>
+          Registrar
         </div>
 
-        <!-- Nueva consulta -->
-        <button class="btn-doc-action" id="btnConsulta" onclick="toggleDocForm('consulta')">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 000 2H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2h-.01a1 1 0 000-2V3a2 2 0 012 2v10a4 4 0 01-4 4H6a4 4 0 01-4-4V5z" clip-rule="evenodd"/></svg>
-          + Registrar consulta
-        </button>
-        <div class="doc-form" id="formConsulta">
-          <div class="doc-field"><label>Paciente</label><input id="cPaciente" placeholder="Nombre completo"></div>
-          <div class="doc-field"><label>Teléfono</label><input id="cTel" type="tel" placeholder="+1 555..."></div>
+        <div class="doc-tabs">
+          <button class="doc-tab active" id="tabCita" onclick="switchDocTab('cita')">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+            Cita
+          </button>
+          <button class="doc-tab" id="tabConsulta" onclick="switchDocTab('consulta')">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 000 2H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2h-.01a1 1 0 000-2V3a2 2 0 012 2v10a4 4 0 01-4 4H6a4 4 0 01-4-4V5z" clip-rule="evenodd"/></svg>
+            Consulta
+          </button>
+          <button class="doc-tab" id="tabPaciente" onclick="switchDocTab('paciente')">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/></svg>
+            Paciente
+          </button>
+        </div>
+
+        <!-- Form: Cita -->
+        <div class="doc-tab-panel active" id="panelCita">
+          <div class="doc-field"><label>Paciente</label><input id="citaNombre" placeholder="Nombre completo" autocomplete="off"></div>
+          <div class="doc-field"><label>Teléfono</label><input id="citaTel" type="tel" placeholder="+1 555 0000"></div>
+          <div class="doc-field-row">
+            <div class="doc-field"><label>Fecha</label><input id="citaFecha" type="date"></div>
+            <div class="doc-field"><label>Hora</label><input id="citaHora" type="time" step="1800"></div>
+          </div>
+          <div class="doc-field"><label>Motivo <span style="font-weight:400;opacity:.6">(opcional)</span></label><input id="citaMotivo" placeholder="Consulta general, control..."></div>
+          <button class="btn-doc-save" id="btnSaveCita" onclick="saveCita()">Guardar cita</button>
+          <div class="doc-toast" id="toastCita">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Cita registrada correctamente
+          </div>
+        </div>
+
+        <!-- Form: Consulta -->
+        <div class="doc-tab-panel" id="panelConsulta">
+          <div class="doc-field"><label>Paciente</label><input id="cPaciente" placeholder="Nombre completo" autocomplete="off"></div>
+          <div class="doc-field"><label>Teléfono</label><input id="cTel" type="tel" placeholder="+1 555 0000"></div>
           <div class="doc-field"><label>Motivo</label><input id="cMotivo" placeholder="Ej: dolor abdominal, control..."></div>
           <div class="doc-field"><label>Diagnóstico / notas</label><textarea id="cDiag" rows="3" placeholder="Diagnóstico, indicaciones, receta..."></textarea></div>
           <button class="btn-doc-save" id="btnSaveConsulta" onclick="saveConsulta()">Guardar consulta</button>
-          <div class="doc-toast" id="toastConsulta">✓ Consulta guardada</div>
+          <div class="doc-toast" id="toastConsulta">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Consulta guardada
+          </div>
         </div>
 
-        <!-- Nuevo paciente -->
-        <button class="btn-doc-action" id="btnPaciente" onclick="toggleDocForm('paciente')">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/></svg>
-          + Nuevo paciente
-        </button>
-        <div class="doc-form" id="formPaciente">
-          <div class="doc-field"><label>Nombre</label><input id="pNombre" placeholder="Nombre"></div>
-          <div class="doc-field"><label>Apellido</label><input id="pApellido" placeholder="Apellido"></div>
-          <div class="doc-field"><label>Teléfono / WhatsApp</label><input id="pTel" type="tel" placeholder="+1 555..."></div>
-          <div class="doc-field"><label>Email</label><input id="pEmail" type="email" placeholder="opcional"></div>
+        <!-- Form: Paciente -->
+        <div class="doc-tab-panel" id="panelPaciente">
+          <div class="doc-field-row">
+            <div class="doc-field"><label>Nombre</label><input id="pNombre" placeholder="Nombre" autocomplete="off"></div>
+            <div class="doc-field"><label>Apellido</label><input id="pApellido" placeholder="Apellido"></div>
+          </div>
+          <div class="doc-field"><label>Teléfono / WhatsApp</label><input id="pTel" type="tel" placeholder="+1 555 0000"></div>
+          <div class="doc-field"><label>Email <span style="font-weight:400;opacity:.6">(opcional)</span></label><input id="pEmail" type="email" placeholder="paciente@email.com"></div>
           <button class="btn-doc-save" id="btnSavePaciente" onclick="savePaciente()">Registrar paciente</button>
-          <div class="doc-toast" id="toastPaciente">✓ Paciente registrado</div>
+          <div class="doc-toast" id="toastPaciente">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Paciente registrado
+          </div>
         </div>
-      </div>
-    </div>
 
-  </div>
-</div>
+      </div>
+    </div><!-- /docDashView -->
+
+  </div><!-- /doc-drawer-body -->
+</div><!-- /doc-drawer -->
 
 <!-- BOOKING MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBg(event)">
@@ -1107,13 +1197,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
 
 function openDocPanel() {
   el('docPanel').classList.add('open')
+  el('docOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
 }
 
 function closeDocPanel() {
   el('docPanel').classList.remove('open')
+  el('docOverlay').classList.remove('open')
   document.body.style.overflow = ''
-  // Reset active tab to inicio if closing panel
   document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'))
   el('tabInicio').classList.add('active')
 }
@@ -1131,7 +1222,7 @@ async function docLogin() {
   if (error) {
     el('docErr').style.display = 'block'
     btn.disabled = false
-    btn.textContent = 'Entrar →'
+    btn.textContent = 'Ingresar al panel'
   }
 }
 
@@ -1163,19 +1254,25 @@ async function loadDocMedico() {
 function showDocLogin() {
   el('docLoginView').style.display = 'block'
   el('docDashView').style.display = 'none'
-  el('docPanelTitle').textContent = 'Acceso médico'
   const btn = el('btnDocLogin')
   btn.disabled = false
-  btn.textContent = 'Entrar →'
+  btn.textContent = 'Ingresar al panel'
 }
 
 function showDocDash() {
   el('docLoginView').style.display = 'none'
   el('docDashView').style.display = 'block'
   const titulo = _docMedico.titulo || 'Dr.'
-  el('docDrName').textContent = titulo + ' ' + _docMedico.nombre + ' ' + _docMedico.apellido
-  el('docPanelTitle').textContent = 'Panel médico'
+  const nombre = _docMedico.nombre || ''
+  const apellido = _docMedico.apellido || ''
+  el('docDrName').textContent = titulo + ' ' + nombre + ' ' + apellido
+  // Avatar initials
+  const initials = ((nombre[0]||'') + (apellido[0]||'')).toUpperCase() || '?'
+  el('docAvatar').textContent = initials
   loadTodayCitas()
+  // Set today's date on cita form
+  if (el('citaFecha') && !el('citaFecha').value)
+    el('citaFecha').value = new Date().toISOString().split('T')[0]
 }
 
 async function loadTodayCitas() {
@@ -1188,7 +1285,7 @@ async function loadTodayCitas() {
     _authToken)
 
   if (!citas.length) {
-    wrap.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin citas para hoy</div>'
+    wrap.innerHTML = '<div class="doc-citas-empty"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>Sin citas agendadas para hoy</div>'
     return
   }
 
@@ -1259,21 +1356,22 @@ async function saveCita() {
     motivo: el('citaMotivo').value.trim() || null,
   }, _authToken)
 
-  ;['citaNombre','citaTel','citaFecha','citaHora','citaMotivo'].forEach(id => { if(el(id)) el(id).value='' })
+  ;['citaNombre','citaTel','citaHora','citaMotivo'].forEach(id => { if(el(id)) el(id).value='' })
   btn.disabled = false
   btn.textContent = 'Guardar cita'
-  const t = el('toastCita'); t.style.display='block'
-  setTimeout(()=>{ t.style.display='none' }, 2500)
+  const t = el('toastCita'); t.classList.add('show')
+  setTimeout(()=>{ t.classList.remove('show') }, 2500)
   loadTodayCitas()
 }
 
 // ── DOCTOR FORMS ──────────────────────────────────────────────────────────────
-function toggleDocForm(key) {
-  const form = el('form' + key.charAt(0).toUpperCase() + key.slice(1))
-  const btn  = el('btn'  + key.charAt(0).toUpperCase() + key.slice(1))
-  const open = form.classList.toggle('open')
-  btn.classList.toggle('active', open)
-  if (open && key === 'cita' && el('citaFecha') && !el('citaFecha').value)
+function switchDocTab(key) {
+  const cap = key.charAt(0).toUpperCase() + key.slice(1)
+  document.querySelectorAll('.doc-tab').forEach(t => t.classList.remove('active'))
+  document.querySelectorAll('.doc-tab-panel').forEach(p => p.classList.remove('active'))
+  el('tab' + cap).classList.add('active')
+  el('panel' + cap).classList.add('active')
+  if (key === 'cita' && el('citaFecha') && !el('citaFecha').value)
     el('citaFecha').value = new Date().toISOString().split('T')[0]
 }
 
@@ -1304,8 +1402,8 @@ async function saveConsulta() {
   btn.disabled = false
 
   const toast = el('toastConsulta')
-  toast.style.display = 'block'
-  setTimeout(() => { toast.style.display = 'none' }, 2500)
+  toast.classList.add('show')
+  setTimeout(() => { toast.classList.remove('show') }, 2500)
 }
 
 async function savePaciente() {
@@ -1330,8 +1428,8 @@ async function savePaciente() {
   btn.disabled = false
 
   const toast = el('toastPaciente')
-  toast.style.display = 'block'
-  setTimeout(() => { toast.style.display = 'none' }, 2500)
+  toast.classList.add('show')
+  setTimeout(() => { toast.classList.remove('show') }, 2500)
 }
 
 // ── STICKY NAV ────────────────────────────────────────────────────────────────
