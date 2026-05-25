@@ -457,6 +457,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .ficha-ante-title{font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;padding:.85rem 1rem .55rem}
 .ficha-ante-val{font-size:.84rem;color:var(--ink2);padding:.1rem 1rem 1rem;line-height:1.55;white-space:pre-wrap}
 .ficha-ante-empty{font-size:.82rem;color:var(--muted2);padding:.1rem 1rem 1rem;font-style:italic}
+.ficha-ante-textarea{
+  width:100%;padding:.5rem 1rem .9rem;border:none;border-top:1px solid var(--border);
+  font-family:'DM Sans',sans-serif;font-size:.84rem;color:var(--ink2);
+  background:transparent;outline:none;resize:vertical;line-height:1.55;
+  transition:background .15s,box-shadow .15s;box-sizing:border-box
+}
+.ficha-ante-textarea:focus{background:var(--red-lite);box-shadow:inset 3px 0 0 var(--red)}
 .ficha-consulta-form{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;margin-top:.75rem;display:none;flex-direction:column;gap:.75rem}
 .ficha-consulta-form.open{display:flex}
 /* pac-rec-card — identical to CitaDoc patient panel */
@@ -1058,10 +1065,24 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 
         <!-- Antecedentes -->
         <div id="ftabPaneAnte" style="display:none">
-          <div class="ficha-ante-card"><div class="ficha-ante-title">Alergias</div><div id="anteAlergias" class="ficha-ante-empty">Sin datos registrados</div></div>
-          <div class="ficha-ante-card"><div class="ficha-ante-title">Medicación actual</div><div id="anteMedicacion" class="ficha-ante-empty">Sin datos registrados</div></div>
-          <div class="ficha-ante-card"><div class="ficha-ante-title">Antecedentes médicos</div><div id="anteAntecedentes" class="ficha-ante-empty">Sin datos registrados</div></div>
-          <div class="ficha-ante-card"><div class="ficha-ante-title">Cirugías previas</div><div id="anteCirugias" class="ficha-ante-empty">Sin datos registrados</div></div>
+          <div class="ficha-ante-card">
+            <div class="ficha-ante-title">Alergias</div>
+            <textarea class="ficha-ante-textarea" id="anteAlergias" placeholder="Medicamentos, alimentos, sustancias..." rows="2"></textarea>
+          </div>
+          <div class="ficha-ante-card">
+            <div class="ficha-ante-title">Medicación actual</div>
+            <textarea class="ficha-ante-textarea" id="anteMedicacion" placeholder="Medicamentos que toma actualmente..." rows="2"></textarea>
+          </div>
+          <div class="ficha-ante-card">
+            <div class="ficha-ante-title">Antecedentes médicos</div>
+            <textarea class="ficha-ante-textarea" id="anteAntecedentes" placeholder="Enfermedades previas, condiciones crónicas..." rows="2"></textarea>
+          </div>
+          <div class="ficha-ante-card">
+            <div class="ficha-ante-title">Cirugías previas</div>
+            <textarea class="ficha-ante-textarea" id="anteCirugias" placeholder="Procedimientos quirúrgicos anteriores..." rows="2"></textarea>
+          </div>
+          <button class="btn-doc-save" id="btnSaveAnte" onclick="saveAntecedentes()" style="margin-top:.25rem">Guardar antecedentes</button>
+          <div class="doc-toast" id="toastAnte"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Antecedentes guardados</div>
         </div>
 
       </div><!-- /docFichaView -->
@@ -2206,13 +2227,9 @@ async function abrirFichaDoc(pacienteId, nombre) {
   const ultima = consultas[0]?.created_at ? new Date(consultas[0].created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—'
   el('fichaStatUltima').textContent    = ultima
 
-  // Antecedentes
-  const anteMap = {alergias:'anteAlergias', medicacion:'anteMedicacion', antecedentes:'anteAntecedentes', cirugias:'anteCirugias'}
-  Object.entries(anteMap).forEach(([field, id]) => {
-    const val = pac[field]
-    const wrap = el(id)
-    if (val && val.trim()) { wrap.className='ficha-ante-val'; wrap.textContent = val }
-    else { wrap.className='ficha-ante-empty'; wrap.textContent = 'Sin datos registrados' }
+  // Antecedentes — poblar textareas editables
+  ;[['alergias','anteAlergias'],['medicacion','anteMedicacion'],['antecedentes','anteAntecedentes'],['cirugias','anteCirugias']].forEach(([field,id])=>{
+    el(id).value = pac[field] || ''
   })
 
   // Historial
@@ -2268,6 +2285,31 @@ function fichaTabSwitch(tab) {
   })
 }
 
+
+// ── ANTECEDENTES ──────────────────────────────────────────────────────────────
+async function saveAntecedentes() {
+  if (!_fichaDoc?.id) return
+  const btn = el('btnSaveAnte')
+  btn.disabled = true; btn.textContent = 'Guardando...'
+
+  const body = {
+    alergias:     el('anteAlergias').value.trim()     || null,
+    medicacion:   el('anteMedicacion').value.trim()   || null,
+    antecedentes: el('anteAntecedentes').value.trim() || null,
+    cirugias:     el('anteCirugias').value.trim()     || null,
+  }
+
+  await xhrReq('PATCH',
+    SB_URL+'/rest/v1/pacientes?id=eq.'+_fichaDoc.id,
+    H(_authToken,{'Content-Type':'application/json','Prefer':'return=minimal'}),
+    JSON.stringify(body))
+
+  btn.disabled = false; btn.textContent = 'Guardar antecedentes'
+  const t = el('toastAnte'); t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'), 2500)
+
+  if (_fichaDoc.paciente) Object.assign(_fichaDoc.paciente, body)
+}
 
 // ── RECETA ────────────────────────────────────────────────────────────────────
 function openRecetaModal() {
