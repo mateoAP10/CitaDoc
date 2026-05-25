@@ -625,6 +625,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   box-shadow:0 4px 14px rgba(37,211,102,.3)
 }
 .btn-receta-wa:hover{background:#1da851}
+.btn-receta-email{display:inline-flex;align-items:center;gap:.45rem;padding:.72rem 1.2rem;background:linear-gradient(135deg,var(--red-dark),var(--red));color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-receta-email:hover{opacity:.88}
 /* Receta button inside ficha hero */
 .ficha-receta-btn{
   display:none;align-items:center;gap:.35rem;
@@ -1348,8 +1350,18 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
     <div class="receta-modal-footer">
       <button class="btn-receta-wa" onclick="enviarRecetaWhatsApp()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.025.507 3.933 1.395 5.6L0 24l6.615-1.376A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.37l-.36-.214-3.724.776.793-3.632-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-        Enviar por WhatsApp
+        WhatsApp
       </button>
+      <button class="btn-receta-email" id="btnRecetaEmail" onclick="enviarRecetaEmail()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+        Email
+      </button>
+    </div>
+    <div id="recetaEmailRow" style="display:none;padding:.75rem 1.3rem;border-top:1px solid #f1f5f9;gap:.5rem;align-items:center">
+      <input id="recetaEmailInput" type="email" placeholder="correo del paciente..." style="flex:1;padding:.55rem .85rem;border:1.5px solid #e2e8f0;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none">
+      <button onclick="confirmarRecetaEmail()" style="padding:.55rem 1rem;background:linear-gradient(135deg,var(--red-dark),var(--red));color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap">Enviar →</button>
+    </div>
+    <div class="doc-toast" id="toastRecetaEmail" style="margin:.5rem 1.3rem 0"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Email enviado</div>
     </div>
 
   </div>
@@ -1437,6 +1449,24 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 const sb      = supabase.createClient(SB_URL, SB_ANON)
+const EMAIL_FN      = SB_URL + '/functions/v1/send-email'
+const EMAIL_PUB_KEY = 'citadoc-public-2026'
+
+function _brand() {
+  return { brand_name: (_center?.nombre || 'Doctor Center').toUpperCase(), brand_subtitle: 'Powered by CitaDoc Health Network' }
+}
+function _docFullName() {
+  const t = _docMedico?.titulo || 'Dr.'
+  return (t + ' ' + (_docMedico?.nombre||'') + ' ' + (_docMedico?.apellido||'')).trim()
+}
+async function sendDocEmail(payload, usePublicKey) {
+  try {
+    const hdrs = usePublicKey
+      ? { 'x-citadoc-public-key': EMAIL_PUB_KEY, 'Content-Type': 'application/json', apikey: SB_ANON }
+      : { Authorization: 'Bearer ' + _authToken, 'Content-Type': 'application/json', apikey: SB_ANON }
+    await xhrReq('POST', EMAIL_FN, hdrs, JSON.stringify({ ..._brand(), ...payload }), 15000)
+  } catch(e) { console.warn('[email]', e) }
+}
 let _authToken = null  // updated on auth state change
 
 // ── XHR HELPERS (bypass any service-worker fetch interception) ─────────────
@@ -1889,6 +1919,19 @@ async function submitReserva() {
     total_est:    leadsTotal || null,
   })
 
+  // Confirmation email to patient
+  if (email) {
+    const docName = _modalDoctor?.nombre || _docFullName() || 'tu médico'
+    sendDocEmail({
+      type: 'appointment', to_email: email,
+      patient_name: nombre, doctor_name: docName,
+      appointment_date: fecha || 'Por confirmar',
+      appointment_time: _modalSlot || 'Por confirmar',
+      appointment_location: _center?.nombre || 'Doctor Center',
+      appointment_mode: 'Solicitud de cita',
+    }, true)
+  }
+
   // WhatsApp auto-message
   const waNum    = _center?.whatsapp || '593989173062'
   const docLine  = _modalDoctor ? `\n\nMédico: ${_modalDoctor.nombre}` : ''
@@ -2267,6 +2310,19 @@ async function saveCita() {
     motivo: el('citaMotivo').value.trim() || null,
   }, _authToken)
 
+  // Email de confirmación al paciente
+  const pacEmail = (await dbGet('pacientes', 'telefono=eq.'+encodeURIComponent(tel)+'&select=email&limit=1', _authToken))[0]?.email
+  if (pacEmail) {
+    sendDocEmail({
+      type: 'appointment', to_email: pacEmail,
+      patient_name: nombre, doctor_name: _docFullName(),
+      appointment_date: new Date(fecha+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),
+      appointment_time: hora,
+      appointment_location: _center?.nombre || 'Doctor Center',
+      appointment_mode: 'Cita confirmada',
+    })
+  }
+
   ;['citaNombre','citaTel','citaHora','citaMotivo'].forEach(id => { if(el(id)) el(id).value='' })
   btn.disabled = false
   btn.textContent = 'Guardar cita'
@@ -2461,6 +2517,8 @@ function openRecetaModal() {
 
 function closeRecetaModal() {
   el('recetaOverlay').classList.remove('open')
+  el('recetaEmailRow').style.display = 'none'
+  el('toastRecetaEmail').classList.remove('show')
 }
 
 function closeRecetaOnBg(e) {
@@ -2501,6 +2559,39 @@ function enviarRecetaWhatsApp() {
   const pacTel = _fichaDoc?.paciente?.telefono || ''
   const base   = pacTel ? 'https://wa.me/' + pacTel.replace(/\D/g,'') : 'https://wa.me/'
   window.open(base + '?text=' + encodeURIComponent(msg), '_blank')
+}
+
+function enviarRecetaEmail() {
+  const emailRow = el('recetaEmailRow')
+  if (emailRow.style.display === 'flex') { emailRow.style.display = 'none'; return }
+  const pacEmail = _fichaDoc?.paciente?.email || ''
+  el('recetaEmailInput').value = pacEmail
+  emailRow.style.display = 'flex'
+  setTimeout(() => el('recetaEmailInput').focus(), 80)
+}
+
+async function confirmarRecetaEmail() {
+  const toEmail = el('recetaEmailInput').value.trim()
+  if (!toEmail || !toEmail.includes('@')) { el('recetaEmailInput').focus(); return }
+  const meds   = (el('r_medicamentos').value || '').trim()
+  const indic  = (el('r_indicaciones').value || '').trim()
+  if (!meds && !indic) return
+  const pacNombre = _fichaDoc?.paciente?.nombre || _fichaDoc?.nombre || ''
+  // Parse free-text meds — each line becomes one entry
+  const medItems = meds.split('\n').filter(l=>l.trim()).map(l => {
+    const [med, resto=''] = l.split(' — ')
+    const parts = resto.split(' · ')
+    return { medicamento: med.trim(), dosis: parts[0]||'', frecuencia: parts[1]||'', duracion: parts[2]||'' }
+  })
+  await sendDocEmail({
+    type: 'indicaciones', to_email: toEmail,
+    doctor_name: _docFullName(), patient_name: pacNombre,
+    receta: medItems.length ? { items: medItems } : undefined,
+    text:   indic || undefined,
+  })
+  el('recetaEmailRow').style.display = 'none'
+  const t = el('toastRecetaEmail'); t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 2500)
 }
 
 // ── MINI MODALS ───────────────────────────────────────────────────────────────
@@ -2782,6 +2873,28 @@ async function cmGuardar() {
 
   btn.disabled = false; btn.textContent = 'Guardar consulta ✓'
   cmCerrar()
+
+  // Email al paciente si tiene correo y hay indicaciones/meds/labs/imgs
+  const pacEmail = _fichaDoc.paciente?.email
+  const hasContent = medStr || labStr || imgStr || el('c_indicaciones').value.trim()
+  if (pacEmail && hasContent) {
+    const pacNombre = _fichaDoc.paciente?.nombre || _fichaDoc.nombre || ''
+    const labItems  = _cmLabItems.map(s => ({ nombre: s.split(' — ')[0], indicacion: s.split(' — ').slice(1).join(' — ') }))
+    const imgItems  = _cmImgItems.map(s => ({ estudio: s.split(' — ')[0], zona: s.split(' — ').slice(1).join(' — ') }))
+    const medItems  = _cmMedItems.map(s => {
+      const [med, resto=''] = s.split(' — ')
+      const parts = resto.split(' · ')
+      return { medicamento: med.trim(), dosis: parts[0]||'', frecuencia: parts[1]||'', duracion: parts[2]||'' }
+    })
+    sendDocEmail({
+      type: 'indicaciones', to_email: pacEmail,
+      doctor_name: _docFullName(), patient_name: pacNombre,
+      receta:       medItems.length ? { items: medItems } : undefined,
+      laboratorios: labItems.length ? { items: labItems } : undefined,
+      imagenes:     imgItems.length ? { items: imgItems } : undefined,
+      text:         el('c_indicaciones').value.trim() || undefined,
+    })
+  }
 
   const consultas = await dbGet('consultas', 'paciente_id=eq.'+_fichaDoc.id+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,examen_fisico,plan,estudios,imagenes,indicaciones,notas,created_at&order=created_at.desc', _authToken)
   renderFichaHistorial(consultas)

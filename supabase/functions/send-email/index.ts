@@ -47,7 +47,8 @@ function tplAppointment(d: Record<string, string>): string {
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
 <tr><td style="padding-bottom:20px;text-align:center;">
-  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CITADOC</span>
+  <span style="color:#0f172a;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${d.brand_name || 'CITADOC'}</span>
+  ${d.brand_subtitle ? `<br><span style="color:#94a3b8;font-size:10px;letter-spacing:1px;">${d.brand_subtitle}</span>` : ''}
 </td></tr>
 
 <tr><td style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
@@ -189,7 +190,8 @@ function tplIndicaciones(d: Record<string, unknown>): string {
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;">
 
 <tr><td style="padding-bottom:20px;text-align:center;">
-  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CITADOC</span>
+  <span style="color:#0f172a;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${safe(d.brand_name as string) || 'CITADOC'}</span>
+  ${d.brand_subtitle ? `<br><span style="color:#94a3b8;font-size:10px;letter-spacing:1px;">${safe(d.brand_subtitle as string)}</span>` : ''}
 </td></tr>
 
 <tr><td style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
@@ -224,7 +226,8 @@ ${(d.pdf_url as string) ? `<tr><td style="padding:0 40px 20px;">
 </table></td></tr>
 
 <tr><td style="padding:20px 0 0;text-align:center;">
-  <p style="margin:0;color:#cbd5e1;font-size:11px;">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#cbd5e1;text-decoration:none;">hola@citadoc.lat</a></p>
+  <p style="margin:0;color:#cbd5e1;font-size:11px;">${safe(d.brand_name as string) || 'CitaDoc'} · <a href="mailto:hola@citadoc.lat" style="color:#cbd5e1;text-decoration:none;">hola@citadoc.lat</a></p>
+  ${d.brand_subtitle ? '<p style="margin:3px 0 0;color:#e2e8f0;font-size:10px;">Powered by CitaDoc Health Network</p>' : ''}
 </td></tr>
 
 </table></td></tr></table>
