@@ -746,6 +746,14 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 }
 .btn-cm-save:hover{opacity:.9}
 .btn-cm-save:disabled{opacity:.55;cursor:not-allowed}
+/* Send section buttons */
+.cm-send-btn{padding:.2rem .6rem;border:1.5px solid var(--red);border-radius:7px;background:#fff;color:var(--red);font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.cm-send-btn:hover{background:var(--red-lite)}
+.cm-send-row{display:flex;gap:.45rem;align-items:center;margin-top:.35rem}
+.cm-send-row input{flex:1;padding:.52rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.83rem;outline:none;transition:border-color .15s}
+.cm-send-row input:focus{border-color:var(--red)}
+.cm-send-row button{padding:.52rem 1rem;background:linear-gradient(135deg,var(--red-dark),var(--red));color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.cm-send-row button:hover{opacity:.88}
 /* Voice bar */
 .cm-voice-bar{
   display:flex;align-items:center;gap:.65rem;padding:.75rem 1rem;
@@ -1241,35 +1249,56 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       <div class="cm-step" id="mc_step2" style="display:none">
 
         <div class="cm-field">
-          <label>💊 Medicamentos</label>
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>💊 Medicamentos</span>
+            <button class="cm-send-btn" onclick="cmToggleSendRow('med')" type="button">📧 Enviar receta</button>
+          </label>
           <div class="cm-rx-wrap">
             <input type="text" id="mc_med_search" autocomplete="off" placeholder="Buscar medicamento..." oninput="mcMedBuscar(this.value)" onkeydown="mcMedKeyNav(event)">
             <div class="cm-drop" id="mc_med_drop" style="display:none"></div>
           </div>
           <div id="mc_med_posologia" style="display:none"></div>
           <div class="cm-tags" id="mc_med_tags"></div>
+          <div class="cm-send-row" id="cm_send_row_med" style="display:none">
+            <input type="email" id="cm_send_email_med" placeholder="correo del paciente..." autocomplete="off">
+            <button type="button" onclick="cmEnviarSeccion('med')">Enviar →</button>
+          </div>
           <input type="hidden" id="c_plan">
         </div>
 
         <div class="cm-field">
-          <label>🔬 Laboratorios</label>
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>🔬 Laboratorios</span>
+            <button class="cm-send-btn" onclick="cmToggleSendRow('lab')" type="button">📧 Enviar orden</button>
+          </label>
           <div class="cm-rx-wrap">
             <input type="text" id="mc_lab_search" autocomplete="off" placeholder="Buscar examen de laboratorio..." oninput="mcLabBuscar(this.value)" onkeydown="mcLabKeyNav(event)">
             <div class="cm-drop" id="mc_lab_drop" style="display:none"></div>
           </div>
           <div id="mc_lab_posologia" style="display:none"></div>
           <div class="cm-tags" id="mc_lab_tags"></div>
+          <div class="cm-send-row" id="cm_send_row_lab" style="display:none">
+            <input type="email" id="cm_send_email_lab" placeholder="correo del paciente..." autocomplete="off">
+            <button type="button" onclick="cmEnviarSeccion('lab')">Enviar →</button>
+          </div>
           <input type="hidden" id="c_estudios">
         </div>
 
         <div class="cm-field">
-          <label>🩻 Imágenes diagnósticas</label>
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>🩻 Imágenes diagnósticas</span>
+            <button class="cm-send-btn" onclick="cmToggleSendRow('img')" type="button">📧 Enviar orden</button>
+          </label>
           <div class="cm-rx-wrap">
             <input type="text" id="mc_img_search" autocomplete="off" placeholder="Buscar imagen diagnóstica..." oninput="mcImgBuscar(this.value)" onkeydown="mcImgKeyNav(event)">
             <div class="cm-drop" id="mc_img_drop" style="display:none"></div>
           </div>
           <div id="mc_img_posologia" style="display:none"></div>
           <div class="cm-tags" id="mc_img_tags"></div>
+          <div class="cm-send-row" id="cm_send_row_img" style="display:none">
+            <input type="email" id="cm_send_email_img" placeholder="correo del paciente..." autocomplete="off">
+            <button type="button" onclick="cmEnviarSeccion('img')">Enviar →</button>
+          </div>
           <input type="hidden" id="c_imagenes">
         </div>
 
@@ -2748,6 +2777,54 @@ function cmCerrar() {
 
 function cmCloseOnBg(e) {
   if (e.target === el('cmOverlay')) cmCerrar()
+}
+
+/* ── ENVÍO POR SECCIÓN ── */
+function cmToggleSendRow(type) {
+  const row = el('cm_send_row_' + type)
+  const open = row.style.display === 'flex'
+  ;['med','lab','img'].forEach(t => { el('cm_send_row_'+t).style.display='none' })
+  if (!open) {
+    const pacEmail = _fichaDoc?.paciente?.email || ''
+    el('cm_send_email_' + type).value = pacEmail
+    row.style.display = 'flex'
+    setTimeout(() => el('cm_send_email_' + type).focus(), 60)
+  }
+}
+
+async function cmEnviarSeccion(type) {
+  const toEmail = el('cm_send_email_' + type).value.trim()
+  if (!toEmail || !toEmail.includes('@')) { el('cm_send_email_'+type).focus(); return }
+  const pacNombre = _fichaDoc?.paciente?.nombre || _fichaDoc?.nombre || ''
+  const docName   = _docFullName()
+
+  let payload = { type: 'indicaciones', to_email: toEmail, doctor_name: docName, patient_name: pacNombre }
+
+  if (type === 'med') {
+    if (!_cmMedItems.length) return
+    payload.receta = { items: _cmMedItems.map(s => {
+      const [med, resto=''] = s.split(' — '); const p = resto.split(' · ')
+      return { medicamento: med.trim(), dosis: p[0]||'', frecuencia: p[1]||'', duracion: p[2]||'' }
+    })}
+  } else if (type === 'lab') {
+    if (!_cmLabItems.length) return
+    payload.laboratorios = { items: _cmLabItems.map(s => {
+      const [nombre, resto=''] = s.split(' — ')
+      return { nombre: nombre.trim(), indicacion: resto.trim() }
+    })}
+  } else if (type === 'img') {
+    if (!_cmImgItems.length) return
+    payload.imagenes = { items: _cmImgItems.map(s => {
+      const parts = s.split(' — ')
+      return { estudio: parts[0].trim(), zona: parts.slice(1).join(' — ').trim() }
+    })}
+  }
+
+  await sendDocEmail(payload)
+  el('cm_send_row_' + type).style.display = 'none'
+  // Brief visual confirmation on the button
+  const btn = document.querySelector(`[onclick="cmToggleSendRow('${type}')"]`)
+  if (btn) { const orig = btn.textContent; btn.textContent = '✓ Enviado'; setTimeout(()=>{ btn.textContent = orig }, 2000) }
 }
 
 /* ── VOICE DICTATION ── */
