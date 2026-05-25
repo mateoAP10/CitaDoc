@@ -819,7 +819,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 
 <!-- HERO -->
 <section class="hero">
-  <img class="hero-bg" id="heroImg" src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1600&q=85" alt="Doctor Center" loading="eager">
+  <img class="hero-bg" id="heroImg" src="" alt="" style="opacity:0;transition:opacity .5s">
   <div class="hero-gradient"></div>
   <div class="hero-content">
     <div class="hero-badge">Guayaquil · Urdesa Norte</div>
@@ -1609,6 +1609,7 @@ function applyBranding(c) {
 
   if (c.portada_url) {
     const img = el('heroImg')
+    img.onload = () => { img.style.opacity = '1' }
     img.src = c.portada_url
     const FILTERS = {
       bw:       'grayscale(100%)',
