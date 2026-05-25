@@ -145,7 +145,9 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .doctor-spec{font-size:.75rem;color:var(--red);font-weight:600;margin-bottom:.5rem}
 .doctor-rating{font-size:.72rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:.25rem}
 .doctor-stars{color:#f59e0b;letter-spacing:.05em}
-.btn-agendar-sm{margin-top:.85rem;width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:.5rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s}
+.doctor-price{margin-top:.55rem;font-size:1.05rem;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.doctor-price span{font-size:.7rem;font-weight:500;color:var(--muted);margin-left:.2rem}
+.btn-agendar-sm{margin-top:.75rem;width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:.5rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s}
 .btn-agendar-sm:hover{background:var(--red-dark)}
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────── */
@@ -681,20 +683,33 @@ function updateCalcSummary() {
 }
 
 // ── DOCTORS ───────────────────────────────────────────────────────────────────
+function matchConsultaService(esp) {
+  if (!esp) return null
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim()
+  const consultas = _services.filter(s => s.categoria === 'consulta')
+  return consultas.find(s => norm(s.nombre) === norm(esp))
+      || consultas.find(s => norm(esp).includes(norm(s.nombre)) || norm(s.nombre).includes(norm(esp)))
+      || null
+}
+
 function renderDoctors(docs) {
   el('doctorsGrid').innerHTML = docs.map(d => {
-    const nombre = (d.titulo||'Dr.') + ' ' + d.nombre + ' ' + d.apellido
-    const esp    = (d.especialidades||[])[0] || ''
-    const rating = d.rating_promedio ? parseFloat(d.rating_promedio).toFixed(1) : null
-    const avatar = d.foto_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(d.nombre+' '+d.apellido)+'&background=f9fafb&color=6b7280&size=144'
-    const stars  = rating ? '★'.repeat(Math.round(parseFloat(rating))) + '☆'.repeat(5-Math.round(parseFloat(rating))) : ''
-    return `<a class="doctor-card" href="https://citadoc.lat/citadoc-perfil.html?slug=${d.slug||''}" target="_blank">
+    const nombre  = (d.titulo||'Dr.') + ' ' + d.nombre + ' ' + d.apellido
+    const esp     = (d.especialidades||[])[0] || ''
+    const rating  = d.rating_promedio ? parseFloat(d.rating_promedio).toFixed(1) : null
+    const avatar  = d.foto_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(d.nombre+' '+d.apellido)+'&background=f9fafb&color=6b7280&size=144'
+    const stars   = rating ? '★'.repeat(Math.round(parseFloat(rating))) + '☆'.repeat(5-Math.round(parseFloat(rating))) : ''
+    const svc     = matchConsultaService(esp)
+    const precio  = svc ? svc.precio : null
+    const docData = encodeURIComponent(JSON.stringify({id:d.id, nombre, esp, svcId:svc?.id||null, svcNombre:svc?.nombre||esp, precio}))
+    return `<div class="doctor-card">
       <img class="doctor-avatar" src="${avatar}" alt="${nombre}" loading="lazy">
       <div class="doctor-name">${nombre}</div>
       ${esp ? `<div class="doctor-spec">${esp}</div>` : ''}
       ${rating ? `<div class="doctor-rating"><span class="doctor-stars">${stars}</span>${rating} · ${d.total_resenas} reseñas</div>` : ''}
-      <button class="btn-agendar-sm" onclick="event.preventDefault();openModal()">Agendar consulta</button>
-    </a>`
+      ${precio !== null ? `<div class="doctor-price">$${precio} <span>consulta</span></div>` : ''}
+      <button class="btn-agendar-sm" onclick="openModalForDoctor('${docData}')">Agendar consulta</button>
+    </div>`
   }).join('')
 }
 
@@ -726,10 +741,30 @@ document.querySelectorAll('.cat-pill').forEach(btn => {
 })
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
+let _modalDoctor = null // {id, nombre, esp, svcNombre, precio}
+
 function openModal() {
-  el('modalOverlay').classList.add('open')
+  _modalDoctor = null
+  el('modalTitle').textContent = 'Solicitar atención'
   el('modalServices').style.display = 'none'
   el('modalTotal').style.display    = 'none'
+  el('modalOverlay').classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function openModalForDoctor(encoded) {
+  const d = JSON.parse(decodeURIComponent(encoded))
+  _modalDoctor = d
+  el('modalTitle').textContent = 'Consulta con ' + d.nombre
+  el('modalServices').style.display = 'block'
+  el('modalServices').innerHTML = `<div class="modal-service-row"><span>${esc(d.svcNombre)}</span><span style="font-weight:700">${d.precio !== null ? '$'+d.precio : 'A consultar'}</span></div>`
+  if (d.precio !== null) {
+    el('modalTotal').style.display    = 'flex'
+    el('modalTotalAmt').textContent   = '$' + d.precio
+  } else {
+    el('modalTotal').style.display = 'none'
+  }
+  el('modalOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
 }
 
@@ -747,6 +782,7 @@ function openModalFromCalc() {
 }
 
 function closeModal() {
+  _modalDoctor = null
   el('modalOverlay').classList.remove('open')
   document.body.style.overflow = ''
   el('modalContent').style.display = 'block'
@@ -772,22 +808,29 @@ async function submitReserva() {
   btn.disabled = true
   btn.textContent = 'Enviando...'
 
+  // Build services list — doctor modal or estimador selection
+  const leadsServices = _modalDoctor
+    ? [{ id: _modalDoctor.svcId||'', nombre: _modalDoctor.svcNombre, precio: _modalDoctor.precio||0 }]
+    : _selected
+  const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
+
   // Save lead to Supabase
   await sb.from('center_leads').insert({
-    center_id:  _center?.id,
-    nombre:     nombre + ' ' + apellido,
+    center_id:    _center?.id,
+    nombre:       nombre + ' ' + apellido,
     telefono,
-    email:      email || null,
-    fecha_pref: fecha || null,
-    nota:       nota || null,
-    servicios:  _selected.length ? JSON.stringify(_selected) : null,
-    total_est:  _selected.reduce((a,s)=>a+s.precio,0) || null,
+    email:        email || null,
+    fecha_pref:   fecha || null,
+    nota:         (_modalDoctor ? 'Médico: ' + _modalDoctor.nombre + '\n' : '') + (nota || ''),
+    servicios:    leadsServices.length ? JSON.stringify(leadsServices) : null,
+    total_est:    leadsTotal || null,
   }).catch(()=>{})
 
   // WhatsApp auto-message
-  const waNum = _center?.whatsapp || '593989173062'
-  const svcs  = _selected.length ? '\n\nServicios de interés:\n' + _selected.map(s=>'• '+s.nombre+' ($'+s.precio+')').join('\n') : ''
-  const msg   = encodeURIComponent(`Hola Doctor Center, soy ${nombre} ${apellido}. Quisiera solicitar un turno.${svcs}${fecha?'\n\nFecha preferida: '+fecha:''}${nota?'\n\nNota: '+nota:''}`)
+  const waNum    = _center?.whatsapp || '593989173062'
+  const docLine  = _modalDoctor ? `\n\nMédico de preferencia: ${_modalDoctor.nombre}` : ''
+  const svcs     = leadsServices.length ? '\n\nServicios de interés:\n' + leadsServices.map(s=>'• '+s.nombre+(s.precio?(' ($'+s.precio+')'):'') ).join('\n') : ''
+  const msg      = encodeURIComponent(`Hola Doctor Center, soy ${nombre} ${apellido}. Quisiera solicitar un turno.${docLine}${svcs}${fecha?'\n\nFecha preferida: '+fecha:''}${nota?'\n\nNota: '+nota:''}`)
 
   el('modalContent').style.display      = 'none'
   el('modalSuccessContent').style.display = 'block'
