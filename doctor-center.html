@@ -149,6 +149,8 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .doctor-stars{color:#f59e0b;letter-spacing:.05em}
 .doctor-price{margin-top:.55rem;font-size:1.05rem;font-weight:800;color:var(--ink);letter-spacing:-.01em}
 .doctor-price span{font-size:.7rem;font-weight:500;color:var(--muted);margin-left:.2rem}
+.doctor-registro{font-size:.68rem;color:var(--muted2);margin-bottom:.45rem;letter-spacing:.01em}
+.doctor-registro strong{color:var(--muted);font-weight:600}
 .btn-agendar-sm{margin-top:.75rem;width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:.5rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s}
 .btn-agendar-sm:hover{background:var(--red-dark)}
 
@@ -184,6 +186,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .btn-submit:disabled{opacity:.5;cursor:not-allowed}
 /* slot picker */
 .modal-section-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:.85rem 0 .5rem}
+.modal-wa-opt{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.1rem}
+.modal-wa-opt .modal-section-label{margin-top:0}
+.btn-modal-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:.55rem;padding:.72rem 1rem;background:#25d366;color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .15s}
+.btn-modal-wa:hover{opacity:.88}
+.btn-modal-online{width:100%;display:flex;align-items:center;justify-content:center;gap:.45rem;padding:.72rem 1rem;background:#fff;border:1.5px solid var(--red);color:var(--red);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-modal-online:hover{background:var(--red-lite)}
 .modal-days{display:flex;gap:.4rem;overflow-x:auto;padding:.25rem 0 .65rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .modal-days::-webkit-scrollbar{display:none}
 .day-pill{flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;padding:.4rem .55rem;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:default;min-width:46px;gap:.05rem;opacity:.4}
@@ -1410,6 +1418,18 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         <div class="modal-total-amount" id="modalTotalAmt">$0</div>
       </div>
 
+      <!-- BOOKING OPTIONS — WA / online / both -->
+      <div class="modal-wa-opt" id="modalWaOpt" style="display:none">
+        <div class="modal-section-label">¿Cómo querés agendar?</div>
+        <a class="btn-modal-wa" id="modalWaLink" href="#" target="_blank" rel="noopener">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          Escribir por WhatsApp
+        </a>
+        <button class="btn-modal-online" id="modalOnlineBtn" style="display:none" onclick="modalShowOnlineForm()">
+          📅 Agendar con fecha y hora
+        </button>
+      </div>
+
       <!-- SLOT PICKER — shown when booking a specific doctor -->
       <div id="slotPicker" style="display:none">
         <div class="modal-section-label">Elegí un día</div>
@@ -1610,7 +1630,7 @@ async function loadDoctors() {
     return
   }
   const ids = links.map(l => l.medico_id)
-  const docs = await dbGet('medicos', 'id=in.('+ids.join(',')+')'+'&select=id,nombre,apellido,titulo,especialidades,foto_url,slug,rating_promedio,total_resenas')
+  const docs = await dbGet('medicos', 'id=in.('+ids.join(',')+')'+'&select=id,nombre,apellido,titulo,especialidades,foto_url,slug,rating_promedio,total_resenas,senescyt,whatsapp,whatsapp_activo,agendamiento_citadoc')
   if (!docs.length) return
   _doctors = docs
   el('docsSubLabel').textContent = docs.length + ' especialista' + (docs.length !== 1 ? 's' : '')
@@ -1707,11 +1727,18 @@ function renderDoctors(docs) {
     const stars   = rating ? '★'.repeat(Math.round(parseFloat(rating))) + '☆'.repeat(5-Math.round(parseFloat(rating))) : ''
     const svc     = matchConsultaService(esp)
     const precio  = svc ? svc.precio : null
-    const docData = encodeURIComponent(JSON.stringify({id:d.id, nombre, esp, svcId:svc?.id||null, svcNombre:svc?.nombre||esp, precio}))
+    const docData = encodeURIComponent(JSON.stringify({
+      id:d.id, nombre, esp,
+      svcId:svc?.id||null, svcNombre:svc?.nombre||esp, precio,
+      whatsapp: d.whatsapp||null,
+      wa: !!(d.whatsapp_activo && d.whatsapp),
+      online: !!d.agendamiento_citadoc
+    }))
     return `<div class="doctor-card">
       <img class="doctor-avatar" src="${avatar}" alt="${nombre}" loading="lazy">
       <div class="doctor-name">${nombre}</div>
       ${esp ? `<div class="doctor-spec">${esp}</div>` : ''}
+      ${d.senescyt ? `<div class="doctor-registro"><strong>Reg. médico</strong> ${esc(d.senescyt)}</div>` : ''}
       ${rating ? `<div class="doctor-rating"><span class="doctor-stars">${stars}</span>${rating} · ${d.total_resenas} reseñas</div>` : ''}
       ${precio !== null ? `<div class="doctor-price">$${precio} <span>consulta</span></div>` : ''}
       <button class="btn-agendar-sm" onclick="openModalForDoctor('${docData}')">Agendar consulta</button>
@@ -1836,15 +1863,68 @@ async function openModalForDoctor(encoded) {
   el('modalServices').innerHTML = `<div class="modal-service-row"><span>${esc(d.svcNombre)}</span><span style="font-weight:700">${d.precio!==null?'$'+d.precio:'A consultar'}</span></div>`
   el('modalTotal').style.display = d.precio!==null ? 'flex' : 'none'
   if (d.precio!==null) el('modalTotalAmt').textContent = '$'+d.precio
-  el('slotPicker').style.display = 'block'
-  el('slotWrap').style.display   = 'none'
-  el('fechaGroup').style.display = 'none'
-  el('modalDays').innerHTML = '<div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>'
+
+  // WA + online booking options
+  const waOpt = el('modalWaOpt')
+  const waLink = el('modalWaLink')
+  const onlineBtn = el('modalOnlineBtn')
+  if (d.wa || d.online) {
+    waOpt.style.display = 'flex'
+    if (d.wa) {
+      const waNum = d.whatsapp.replace(/\D/g,'')
+      const waMsg = encodeURIComponent('Hola, quisiera agendar una consulta con ' + d.nombre + '.')
+      waLink.href = 'https://wa.me/' + waNum + '?text=' + waMsg
+      waLink.style.display = 'flex'
+    } else {
+      waLink.style.display = 'none'
+    }
+    if (d.online) {
+      onlineBtn.style.display = d.wa ? 'flex' : 'none'
+    } else {
+      onlineBtn.style.display = 'none'
+    }
+  } else {
+    waOpt.style.display = 'none'
+  }
+
+  // Slot picker: show only if online booking enabled
+  if (d.online) {
+    el('slotPicker').style.display = 'block'
+    el('slotWrap').style.display   = 'none'
+    el('fechaGroup').style.display = 'none'
+    el('modalDays').innerHTML = '<div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>'
+    // If also has WA, hide the form until user picks "Agendar con fecha"
+    if (d.wa) {
+      el('slotPicker').style.display = 'none'
+      el('fechaGroup').style.display = 'none'
+      el('btnSubmit').style.display  = 'none'
+      document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = 'none' })
+    } else {
+      el('btnSubmit').style.display  = ''
+      document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = '' })
+      _modalDisp = await loadDoctorDisp(d.id)
+      renderModalDays()
+    }
+  } else {
+    el('slotPicker').style.display = 'none'
+    el('fechaGroup').style.display = d.wa ? 'none' : 'block'
+    el('btnSubmit').style.display  = d.wa ? 'none' : ''
+    document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = d.wa ? 'none' : '' })
+  }
+
   el('modalOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
-  // Load availability async
-  _modalDisp = await loadDoctorDisp(d.id)
-  renderModalDays()
+}
+
+function modalShowOnlineForm() {
+  const d = _modalDoctor
+  if (!d) return
+  el('modalOnlineBtn').style.display = 'none'
+  el('slotPicker').style.display = 'block'
+  el('slotWrap').style.display   = 'none'
+  el('btnSubmit').style.display  = ''
+  document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = '' })
+  loadDoctorDisp(d.id).then(disp => { _modalDisp = disp; renderModalDays() })
 }
 
 function renderModalDays() {
@@ -1908,6 +1988,9 @@ function closeModal() {
   document.body.style.overflow = ''
   el('modalContent').style.display = 'block'
   el('modalSuccessContent').style.display = 'none'
+  el('modalWaOpt').style.display = 'none'
+  el('btnSubmit').style.display  = ''
+  document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = '' })
   el('fNombre').value = ''; el('fTelefono').value = ''; el('fCedula').value = ''; el('fEmail').value = ''
 }
 
@@ -1924,7 +2007,7 @@ async function submitReserva() {
     alert('Por favor completá nombre y teléfono.')
     return
   }
-  if (_modalDoctor && !_modalSlot) {
+  if (_modalDoctor && _modalDoctor.online && !_modalSlot) {
     alert('Por favor seleccioná un horario.')
     return
   }
