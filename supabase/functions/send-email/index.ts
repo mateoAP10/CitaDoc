@@ -47,6 +47,7 @@ function tplAppointment(d: Record<string, string>): string {
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
 <tr><td style="padding-bottom:20px;text-align:center;">
+  ${d.brand_logo ? `<img src="${d.brand_logo}" alt="" style="height:44px;max-width:160px;object-fit:contain;display:block;margin:0 auto 8px;">` : ''}
   <span style="color:#0f172a;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${d.brand_name || 'CITADOC'}</span>
   ${d.brand_subtitle ? `<br><span style="color:#94a3b8;font-size:10px;letter-spacing:1px;">${d.brand_subtitle}</span>` : ''}
 </td></tr>
@@ -190,6 +191,7 @@ function tplIndicaciones(d: Record<string, unknown>): string {
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;">
 
 <tr><td style="padding-bottom:20px;text-align:center;">
+  ${d.brand_logo ? `<img src="${d.brand_logo as string}" alt="" style="height:44px;max-width:160px;object-fit:contain;display:block;margin:0 auto 8px;">` : ''}
   <span style="color:#0f172a;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">${safe(d.brand_name as string) || 'CITADOC'}</span>
   ${d.brand_subtitle ? `<br><span style="color:#94a3b8;font-size:10px;letter-spacing:1px;">${safe(d.brand_subtitle as string)}</span>` : ''}
 </td></tr>

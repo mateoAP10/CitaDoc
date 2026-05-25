@@ -1453,7 +1453,11 @@ const EMAIL_FN      = SB_URL + '/functions/v1/send-email'
 const EMAIL_PUB_KEY = 'citadoc-public-2026'
 
 function _brand() {
-  return { brand_name: (_center?.nombre || 'Doctor Center').toUpperCase(), brand_subtitle: 'Powered by CitaDoc Health Network' }
+  return {
+    brand_name:     (_center?.nombre || 'Doctor Center').toUpperCase(),
+    brand_subtitle: 'Powered by CitaDoc Health Network',
+    brand_logo:     _center?.logo_url || null,
+  }
 }
 function _docFullName() {
   const t = _docMedico?.titulo || 'Dr.'
