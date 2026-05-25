@@ -562,6 +562,34 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 const sb      = supabase.createClient(SB_URL, SB_ANON)
+let _authToken = null  // updated on auth state change
+
+// ── XHR HELPERS (bypass any service-worker fetch interception) ─────────────
+function xhrReq(method, url, hdrs, body, ms) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest()
+    x.timeout = ms || 10000
+    x.open(method, url)
+    Object.entries(hdrs).forEach(([k,v]) => x.setRequestHeader(k,v))
+    x.onload    = () => res({ ok: x.status>=200&&x.status<300, text: x.responseText })
+    x.onerror   = () => rej(new Error('network'))
+    x.ontimeout = () => rej(new Error('timeout'))
+    x.send(body||null)
+  })
+}
+function H(token, extra) {
+  return { apikey: SB_ANON, Authorization: 'Bearer '+(token||SB_ANON), Accept: 'application/json', ...extra }
+}
+async function dbGet(table, query, token) {
+  try {
+    const r = await xhrReq('GET', SB_URL+'/rest/v1/'+table+'?'+query, H(token))
+    return r.ok ? (JSON.parse(r.text)||[]) : []
+  } catch(e) { return [] }
+}
+async function dbPost(table, body, token) {
+  try { await xhrReq('POST', SB_URL+'/rest/v1/'+table, H(token,{'Content-Type':'application/json','Prefer':'return=minimal'}), JSON.stringify(body)) }
+  catch(e) {}
+}
 
 // Detect center slug from subdomain or default to 'doctor-center'
 const host   = window.location.hostname
@@ -577,22 +605,16 @@ let _searchQ   = ''
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
-  const [cRes, sRes] = await Promise.all([
-    sb.from('centers').select('*').eq('slug', slug).single(),
-    sb.from('center_services').select('*').eq('activo', true).order('orden')
-  ])
-
-  if (cRes.data) {
-    _center = cRes.data
+  const centers = await dbGet('centers', 'slug=eq.'+encodeURIComponent(slug)+'&select=*&limit=1')
+  if (centers.length) {
+    _center = centers[0]
     applyBranding(_center)
+    const [svcs] = await Promise.all([
+      dbGet('center_services', 'center_id=eq.'+_center.id+'&select=*&order=categoria,orden'),
+      loadDoctors()
+    ])
+    if (svcs.length) { _services = svcs; renderServices() }
   }
-
-  if (sRes.data) {
-    _services = sRes.data
-    renderServices()
-  }
-
-  loadDoctors()
 }
 
 function applyBranding(c) {
@@ -618,22 +640,16 @@ function applyBranding(c) {
 }
 
 async function loadDoctors() {
-  const { data: links } = await sb
-    .from('center_doctors')
-    .select('medico_id, orden')
-    .eq('center_id', _center?.id || '')
-    .order('orden')
-
-  if (!links || !links.length) {
+  if (!_center?.id) return
+  const links = await dbGet('center_doctors', 'center_id=eq.'+_center.id+'&select=medico_id,orden&order=orden')
+  if (!links.length) {
     el('docsSubLabel').textContent = 'Próximamente'
     el('doctorsGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Médicos próximamente</div>'
     return
   }
-
   const ids = links.map(l => l.medico_id)
-  const { data: docs } = await sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url,slug,rating_promedio,total_resenas').in('id', ids)
-
-  if (!docs) return
+  const docs = await dbGet('medicos', 'id=in.('+ids.join(',')+')'+'&select=id,nombre,apellido,titulo,especialidades,foto_url,slug,rating_promedio,total_resenas')
+  if (!docs.length) return
   _doctors = docs
   el('docsSubLabel').textContent = docs.length + ' especialista' + (docs.length !== 1 ? 's' : '')
   renderDoctors(docs)
@@ -789,23 +805,22 @@ async function loadDoctorDisp(medicoId) {
   const endD  = new Date(today); endD.setDate(today.getDate()+60)
   const t0 = today.toISOString().split('T')[0], t1 = endD.toISOString().split('T')[0]
 
-  const [mRes, citasRes, bloqRes, excRes] = await Promise.all([
-    sb.from('medicos').select('dias_atencion,horario_desde,horario_hasta,horarios_config').eq('id', medicoId).single(),
-    sb.from('citas').select('fecha,hora').eq('medico_id', medicoId).gte('fecha',t0).lte('fecha',t1).in('estado',['confirmada','pendiente']),
-    sb.from('bloqueos_medico').select('fecha_inicio,fecha_fin').eq('medico_id', medicoId).gte('fecha_fin',t0),
-    sb.from('excepciones_medico').select('fecha,tipo,desde,hasta').eq('medico_id', medicoId).gte('fecha',t0)
+  const [mArr, booked, bloqArr, excArr] = await Promise.all([
+    dbGet('medicos', 'id=eq.'+medicoId+'&select=dias_atencion,horario_desde,horario_hasta,horarios_config&limit=1'),
+    dbGet('citas', 'medico_id=eq.'+medicoId+'&select=fecha,hora&fecha=gte.'+t0+'&fecha=lte.'+t1+'&estado=in.(confirmada,pendiente)'),
+    dbGet('bloqueos_medico', 'medico_id=eq.'+medicoId+'&select=fecha_inicio,fecha_fin&fecha_fin=gte.'+t0),
+    dbGet('excepciones_medico', 'medico_id=eq.'+medicoId+'&select=fecha,tipo,desde,hasta&fecha=gte.'+t0)
   ])
 
-  const medico = mRes.data || {}
-  const booked = citasRes.data || []
+  const medico = mArr[0] || {}
   const blocked = new Set()
-  ;(bloqRes.data||[]).forEach(b => {
+  ;(bloqArr||[]).forEach(b => {
     let d = new Date(b.fecha_inicio+'T12:00:00')
     const fin = new Date(b.fecha_fin+'T12:00:00')
     while (d<=fin) { blocked.add(d.toISOString().split('T')[0]); d.setDate(d.getDate()+1) }
   })
   const excMap = {}
-  ;(excRes.data||[]).forEach(e => { excMap[e.fecha] = e })
+  ;(excArr||[]).forEach(e => { excMap[e.fecha] = e })
 
   const disp = {}
   for (let i=0; i<60; i++) {
@@ -962,8 +977,7 @@ async function submitReserva() {
     : _selected
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
-  // Save lead to Supabase
-  await sb.from('center_leads').insert({
+  await dbPost('center_leads', {
     center_id:    _center?.id,
     nombre,
     telefono,
@@ -974,7 +988,7 @@ async function submitReserva() {
     nota:         _modalDoctor ? 'Médico: ' + _modalDoctor.nombre : null,
     servicios:    leadsServices.length ? JSON.stringify(leadsServices) : null,
     total_est:    leadsTotal || null,
-  }).catch(()=>{})
+  })
 
   // WhatsApp auto-message
   const waNum    = _center?.whatsapp || '593989173062'
@@ -1030,6 +1044,7 @@ let _docUser = null
 let _docMedico = null
 
 sb.auth.onAuthStateChange(async (event, session) => {
+  _authToken = session?.access_token || null
   if (session?.user) {
     _docUser = session.user
     await loadDocMedico()
@@ -1076,24 +1091,13 @@ async function docSignOut() {
 }
 
 async function loadDocMedico() {
-  // Find medico record linked to this auth user
-  const { data: medico } = await sb
-    .from('medicos')
-    .select('id,nombre,apellido,titulo')
-    .eq('user_id', _docUser.id)
-    .single()
-
+  const medicos = await dbGet('medicos', 'user_id=eq.'+_docUser.id+'&select=id,nombre,apellido,titulo&limit=1', _authToken)
+  const medico = medicos[0]
   if (!medico) { showDocLogin(); return }
 
-  // Check if medico belongs to this center
   if (_center) {
-    const { data: link } = await sb
-      .from('center_doctors')
-      .select('medico_id')
-      .eq('center_id', _center.id)
-      .eq('medico_id', medico.id)
-      .single()
-    if (!link) {
+    const links = await dbGet('center_doctors', 'center_id=eq.'+_center.id+'&medico_id=eq.'+medico.id+'&select=medico_id&limit=1', _authToken)
+    if (!links.length) {
       el('docErr').textContent = 'No tenés acceso a este centro'
       el('docErr').style.display = 'block'
       el('docLoginView').style.display = 'block'
@@ -1127,12 +1131,7 @@ function showDocDash() {
 async function loadTodayLeads() {
   if (!_center) return
   const hoy = new Date().toISOString().split('T')[0]
-  const { data: leads } = await sb
-    .from('center_leads')
-    .select('id,nombre,telefono,servicios,created_at')
-    .eq('center_id', _center.id)
-    .gte('created_at', hoy + 'T00:00:00')
-    .order('created_at', { ascending: false })
+  const leads = await dbGet('center_leads', 'center_id=eq.'+_center.id+'&select=id,nombre,telefono,servicios,created_at&created_at=gte.'+hoy+'T00:00:00&order=created_at.desc', _authToken)
 
   const wrap = el('docLeads')
   if (!leads || !leads.length) {
@@ -1168,7 +1167,7 @@ async function saveConsulta() {
   const btn = el('btnSaveConsulta')
   btn.disabled = true
 
-  await sb.from('center_consultations').insert({
+  await dbPost('center_consultations', {
     center_id:       _center?.id,
     medico_id:       _docMedico?.id,
     paciente_nombre: paciente,
@@ -1176,7 +1175,7 @@ async function saveConsulta() {
     motivo:          motivo || null,
     diagnostico:     diag || null,
     fecha:           new Date().toISOString().split('T')[0]
-  }).catch(() => {})
+  }, _authToken)
 
   el('cPaciente').value = ''
   el('cTel').value = ''
@@ -1199,10 +1198,10 @@ async function savePaciente() {
   const btn = el('btnSavePaciente')
   btn.disabled = true
 
-  await sb.from('pacientes').insert({
+  await dbPost('pacientes', {
     nombre, apellido: apellido || null,
     telefono: tel, email: email || null
-  }).catch(() => {})
+  }, _authToken)
 
   el('pNombre').value = ''
   el('pApellido').value = ''
