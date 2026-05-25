@@ -626,8 +626,10 @@ async function saveLogoSize() {
   btn.disabled = true
   const { error } = await sbPatch('centers', 'id=eq.' + _center.id, { logo_size: _currentLogoSize })
   btn.disabled = false
-  if (error) { toast('Error: ' + error.message, 'err') }
-  else { toast('Tamaño guardado', 'ok'); btn.textContent = '✓ Guardado' }
+  if (error) {
+    const msg = error.message && error.message.includes('400') ? 'Falta correr el migration en Supabase (logo_size)' : 'Error: ' + error.message
+    toast(msg, 'err')
+  } else { toast('Tamaño guardado', 'ok'); btn.textContent = '✓ Guardado' }
   setTimeout(() => { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar tamaño' }, 2000)
 }
 
