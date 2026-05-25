@@ -308,24 +308,28 @@ function checkKey() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
-  const [cRes, docsRes, sRes] = await Promise.all([
-    sb.from('centers').select('*').eq('slug', CENTER_SLUG).single(),
-    sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url').eq('activo', true).order('apellido'),
-    sb.from('center_services').select('*').order('categoria').order('orden')
-  ])
+  try {
+    const [cRes, docsRes, sRes] = await Promise.all([
+      sb.from('centers').select('*').eq('slug', CENTER_SLUG).single(),
+      sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url').eq('activo', true).order('apellido'),
+      sb.from('center_services').select('*').order('categoria').order('orden')
+    ])
 
-  if (cRes.data) {
+    if (cRes.error) { toast('Error cargando centro: ' + cRes.error.message, 'err'); return }
+    if (!cRes.data)  { toast('Centro no encontrado en la base de datos', 'err'); return }
+
     _center = cRes.data
     fillInfoForm(_center)
     if (_center.portada_url) showPortada(_center.portada_url)
 
-    // Load which doctors are in this center
     const { data: links } = await sb.from('center_doctors').select('medico_id').eq('center_id', _center.id)
     _inCenter = (links || []).map(l => l.medico_id)
-  }
 
-  _allDocs = docsRes.data || []
-  _services = sRes.data?.filter(s => s.center_id === _center?.id) || []
+    _allDocs  = docsRes.data || []
+    _services = (sRes.data || []).filter(s => s.center_id === _center.id)
+  } catch(e) {
+    toast('Error de carga: ' + e.message, 'err')
+  }
 
   renderDocs()
   renderServices()
@@ -333,19 +337,25 @@ async function init() {
 
 // ── PORTADA ───────────────────────────────────────────────────────────────────
 async function uploadPortada(input) {
+  if (!_center) { toast('Centro no cargado aún, recargá la página', 'err'); return }
   const file = input.files[0]
   if (!file) return
   const prog = el('uploadProgress')
   prog.textContent = 'Subiendo...'
 
-  const ext  = file.name.split('.').pop()
+  const ext  = file.name.split('.').pop().toLowerCase()
   const path = CENTER_SLUG + '/portada.' + ext
-  const { data, error } = await sb.storage.from('centers').upload(path, file, { upsert: true, contentType: file.type })
 
-  if (error) { prog.textContent = 'Error al subir la foto.'; return }
+  // Delete old file first to avoid upsert permission edge cases
+  await sb.storage.from('centers').remove([CENTER_SLUG + '/portada.jpg', CENTER_SLUG + '/portada.jpeg', CENTER_SLUG + '/portada.png', CENTER_SLUG + '/portada.webp']).catch(()=>{})
 
-  const url = sb.storage.from('centers').getPublicUrl(path).data.publicUrl + '?t=' + Date.now()
-  await sb.from('centers').update({ portada_url: url }).eq('id', _center.id)
+  const { error: upErr } = await sb.storage.from('centers').upload(path, file, { upsert: true, contentType: file.type })
+  if (upErr) { prog.textContent = 'Error: ' + upErr.message; console.error('storage upload:', upErr); return }
+
+  const url = sb.storage.from('centers').getPublicUrl(path).data.publicUrl + '?v=' + Date.now()
+  const { error: dbErr } = await sb.from('centers').update({ portada_url: url }).eq('id', _center.id)
+  if (dbErr) { prog.textContent = 'Foto subida pero no se pudo guardar la URL: ' + dbErr.message; return }
+
   _center.portada_url = url
   showPortada(url)
   prog.textContent = '✓ Foto guardada'
@@ -373,6 +383,7 @@ function fillInfoForm(c) {
 }
 
 async function saveInfo() {
+  if (!_center) { toast('Centro no cargado aún, recargá la página', 'err'); return }
   const btn = el('btnSaveInfo')
   btn.disabled = true
   btn.textContent = 'Guardando...'
@@ -391,14 +402,13 @@ async function saveInfo() {
   const { error } = await sb.from('centers').update(upd).eq('id', _center.id)
 
   if (error) {
-    toast('Error al guardar', 'err')
+    console.error('saveInfo error:', error)
+    toast('Error: ' + error.message, 'err')
   } else {
     Object.assign(_center, upd)
-    btn.classList.add('saved')
     btn.innerHTML = '✓ Guardado'
     toast('Información actualizada', 'ok')
     setTimeout(() => {
-      btn.classList.remove('saved')
       btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar cambios'
     }, 2500)
   }
