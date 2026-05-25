@@ -31,6 +31,7 @@ nav.scrolled .nav-star{color:var(--ink)}
 .nav-logo-text{font-size:.78rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:.09em;text-transform:uppercase;transition:color .2s}
 .nav-logo-text span{display:block;letter-spacing:.09em}
 nav.scrolled .nav-logo-text{color:var(--ink)}
+nav.scrolled #navLogoImg{filter:none}
 .nav-links{display:flex;gap:1.5rem;flex:1;justify-content:center}
 .nav-links a{font-size:.82rem;font-weight:500;color:rgba(255,255,255,.8);text-decoration:none;transition:color .15s}
 .nav-links a:hover{color:#fff}
@@ -255,14 +256,15 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <a class="nav-logo" href="#">
+    <a class="nav-logo" href="#" id="navLogoLink">
       <!-- 6-arm asterisk mark — extracted from Doctor Center identity -->
-      <svg class="nav-star" viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
+      <svg class="nav-star" id="navStar" viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
         <rect x="18" y="2" width="4" height="36" rx="2"/>
         <rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(60 20 20)"/>
         <rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(120 20 20)"/>
       </svg>
-      <div class="nav-logo-text">DOCTOR<span>CENTER</span></div>
+      <div class="nav-logo-text" id="navLogoText">DOCTOR<span>CENTER</span></div>
+      <img id="navLogoImg" src="" alt="Logo" style="display:none;height:32px;max-width:140px;object-fit:contain;filter:brightness(0) invert(1);transition:filter .2s">
     </a>
     <div class="nav-links">
       <a href="#servicios">Servicios</a>
@@ -654,15 +656,11 @@ function applyBranding(c) {
   }
 
   if (c.logo_url) {
-    let logoEl = el('heroLogo')
-    if (!logoEl) {
-      logoEl = document.createElement('img')
-      logoEl.id = 'heroLogo'
-      logoEl.alt = c.nombre || 'Logo'
-      logoEl.style.cssText = 'position:absolute;bottom:1.75rem;left:50%;transform:translateX(-50%);max-width:180px;max-height:70px;object-fit:contain;filter:drop-shadow(0 2px 12px rgba(0,0,0,.35));z-index:3;pointer-events:none'
-      el('heroImg').parentElement.appendChild(logoEl)
-    }
-    logoEl.src = c.logo_url
+    el('navStar').style.display    = 'none'
+    el('navLogoText').style.display = 'none'
+    const img = el('navLogoImg')
+    img.src = c.logo_url
+    img.style.display = 'block'
   }
 }
 
