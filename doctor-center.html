@@ -430,14 +430,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   border-radius:9px;padding:.6rem .9rem;border:1px solid rgba(22,163,74,.15)
 }
 .doc-toast.show{display:flex}
-.cfg-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;overflow:hidden}
-.cfg-card-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.1rem;cursor:pointer;user-select:none}
-.cfg-card-title{font-size:.88rem;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:.5rem}
-.cfg-card-chevron{font-size:.7rem;color:var(--muted2);transition:transform .2s}
-.cfg-card-chevron.open{transform:rotate(180deg)}
-.cfg-card-body{display:none;padding:0 1.1rem 1.1rem;display:flex;flex-direction:column;gap:.85rem}
-.cfg-card-body.hidden{display:none}
-.cfg-chips-row{display:flex;flex-direction:column;gap:.55rem}
 @media(max-width:600px){
   .doc-hero-card{flex-direction:column;align-items:flex-start}
   .doc-hero-avatar{display:none}
@@ -1068,41 +1060,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
           </div>
         </div>
 
-        <!-- ── CONFIGURAR PORTADA ── -->
-        <div class="cfg-card">
-          <div class="cfg-card-header" onclick="toggleCfgCard()">
-            <div class="cfg-card-title">
-              <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
-              Configurar portada
-            </div>
-            <span class="cfg-card-chevron" id="cfgChevron">▼</span>
-          </div>
-          <div class="cfg-card-body hidden" id="cfgCardBody">
-            <div class="cfg-chips-row">
-              <div class="doc-field">
-                <label>Burbuja 1</label>
-                <input id="cfgChip1" placeholder="Ej: Atención inmediata">
-              </div>
-              <div class="doc-field">
-                <label>Burbuja 2</label>
-                <input id="cfgChip2" placeholder="Ej: Múltiples especialidades">
-              </div>
-              <div class="doc-field">
-                <label>Burbuja 3</label>
-                <input id="cfgChip3" placeholder="Ej: Lab · Imágenes · Consultas">
-              </div>
-            </div>
-            <div class="doc-field">
-              <label>Link Google Maps (dirección)</label>
-              <input id="cfgMapsUrl" type="url" placeholder="https://maps.google.com/...">
-            </div>
-            <button class="btn-doc-save" id="btnSaveCfg" onclick="saveCfgPortada()">Guardar cambios</button>
-            <div class="doc-toast" id="toastCfg">
-              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-              Portada actualizada
-            </div>
-          </div>
-        </div>
 
       </div><!-- /docAgendaView -->
 
@@ -2204,42 +2161,6 @@ async function docSignOut() {
   closeDocPanel()
 }
 
-function toggleCfgCard() {
-  const body = el('cfgCardBody')
-  const chev = el('cfgChevron')
-  const open = !body.classList.contains('hidden')
-  body.classList.toggle('hidden', open)
-  chev.classList.toggle('open', !open)
-  if (!open) {
-    el('cfgChip1').value    = _center?.chip1 || ''
-    el('cfgChip2').value    = _center?.chip2 || ''
-    el('cfgChip3').value    = _center?.chip3 || ''
-    el('cfgMapsUrl').value  = _center?.maps_url || ''
-  }
-}
-
-async function saveCfgPortada() {
-  if (!_center?.id) return
-  const btn = el('btnSaveCfg')
-  btn.disabled = true; btn.textContent = 'Guardando...'
-  const patch = {
-    chip1:    el('cfgChip1').value.trim() || null,
-    chip2:    el('cfgChip2').value.trim() || null,
-    chip3:    el('cfgChip3').value.trim() || null,
-    maps_url: el('cfgMapsUrl').value.trim() || null,
-  }
-  try {
-    await xhrReq('PATCH',
-      SB_URL+'/rest/v1/centers?id=eq.'+_center.id,
-      { Authorization:'Bearer '+_authToken, 'Content-Type':'application/json', apikey:SB_ANON, Prefer:'return=minimal' },
-      JSON.stringify(patch)
-    )
-    Object.assign(_center, patch)
-    applyBranding(_center)
-    const t = el('toastCfg'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500)
-  } catch(e) { console.error('[cfg]', e) }
-  btn.disabled = false; btn.textContent = 'Guardar cambios'
-}
 
 async function loadDocMedico() {
   const medicos = await dbGet('medicos', 'user_id=eq.'+_docUser.id+'&select=id,nombre,apellido,titulo&limit=1', _authToken)
