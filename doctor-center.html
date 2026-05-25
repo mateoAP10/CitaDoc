@@ -459,6 +459,20 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .ficha-ante-empty{font-size:.82rem;color:var(--muted2);padding:.1rem 1rem 1rem;font-style:italic}
 .ficha-consulta-form{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;margin-top:.75rem;display:none;flex-direction:column;gap:.75rem}
 .ficha-consulta-form.open{display:flex}
+/* pac-rec-card — identical to CitaDoc patient panel */
+.pac-rec-grid{display:flex;flex-direction:column;gap:.55rem}
+.pac-rec-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:.9rem 1rem;display:flex;align-items:center;gap:.85rem;transition:all .2s;cursor:pointer}
+.pac-rec-card:hover{border-color:var(--red);box-shadow:0 4px 16px rgba(204,41,54,.1);transform:translateY(-1px)}
+.pac-rec-avatar{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0}
+.pac-rec-info{flex:1;min-width:0}
+.pac-rec-name{font-weight:700;font-size:.88rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pac-rec-sub{font-size:.72rem;color:var(--muted);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pac-rec-actions{display:flex;gap:.35rem;flex-shrink:0}
+.pac-rec-btn{padding:.32rem .65rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:1.5px solid;transition:all .15s;white-space:nowrap}
+.pac-rec-btn-outline{background:#fff;border-color:var(--red);color:var(--red)}
+.pac-rec-btn-outline:hover{background:var(--red-lite)}
+.pac-rec-btn-fill{background:var(--red);border-color:var(--red);color:#fff}
+.pac-rec-btn-fill:hover{background:var(--red-dark)}
 </style>
 </head>
 <body>
@@ -703,6 +717,24 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
             <div class="doc-citas-empty">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               Cargando agenda...
+            </div>
+          </div>
+        </div>
+
+        <!-- Mis pacientes -->
+        <div>
+          <div class="doc-section-header">
+            <div class="doc-section-title">Mis pacientes</div>
+            <span class="doc-pac-count" id="pacCount" style="font-size:.75rem;color:var(--muted);font-weight:600"></span>
+          </div>
+          <div class="pac-search-bar" style="margin-bottom:.85rem">
+            <svg style="position:absolute;left:.9rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted2);pointer-events:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input id="buscarPacienteDoc" autocomplete="off" placeholder="Buscar por nombre o teléfono..." oninput="buscarPacienteDoc(this.value)" style="width:100%;padding:.72rem 1rem .72rem 2.6rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box">
+          </div>
+          <div id="pacientesGrid" class="pac-rec-grid">
+            <div class="doc-citas-empty" style="margin:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              Cargando pacientes...
             </div>
           </div>
         </div>
@@ -1516,13 +1548,77 @@ function showDocDash() {
   switchDocView('agenda')
 }
 
+let _misPacientes = []
+
 function switchDocView(view) {
   el('docLoginView').style.display  = view === 'login'  ? 'block' : 'none'
   el('docAgendaView').style.display = view === 'agenda' ? 'block' : 'none'
   el('docFichaView').style.display  = view === 'ficha'  ? 'block' : 'none'
-  el('doc-portal-body') && el('doc-portal-body').scrollTo(0, 0)
   document.querySelector('.doc-portal-body')?.scrollTo(0, 0)
-  if (view === 'agenda') loadTodayCitas()
+  if (view === 'agenda') { loadTodayCitas(); loadMisPacientes() }
+}
+
+async function loadMisPacientes() {
+  const grid = el('pacientesGrid')
+  // Collect patient ids from citas + consultas + direct medico_id
+  const [citaRows, consultaRows, directRows] = await Promise.all([
+    dbGet('citas',     'medico_id=eq.'+_docMedico.id+'&select=paciente_id', _authToken),
+    dbGet('consultas', 'medico_id=eq.'+_docMedico.id+'&select=paciente_id', _authToken),
+    dbGet('pacientes', 'medico_id=eq.'+_docMedico.id+'&select=id,nombre,telefono,email&order=nombre', _authToken)
+  ])
+  const ids = [...new Set([
+    ...citaRows.map(r=>r.paciente_id),
+    ...consultaRows.map(r=>r.paciente_id),
+    ...directRows.map(r=>r.id)
+  ].filter(Boolean))]
+
+  let pacientes = directRows
+  if (ids.length) {
+    const extra = await dbGet('pacientes', 'id=in.('+ids.join(',')+')'+'&select=id,nombre,telefono,email&order=nombre', _authToken)
+    // Merge and deduplicate by id
+    const seen = new Set(pacientes.map(p=>p.id))
+    extra.forEach(p => { if (!seen.has(p.id)) { seen.add(p.id); pacientes.push(p) } })
+    pacientes.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
+  }
+
+  _misPacientes = pacientes
+  el('pacCount').textContent = pacientes.length ? pacientes.length + ' paciente' + (pacientes.length>1?'s':'') : ''
+  renderMisPacientes(pacientes)
+}
+
+function renderMisPacientes(lista) {
+  const grid = el('pacientesGrid')
+  if (!lista.length) {
+    grid.innerHTML = `<div class="doc-citas-empty" style="margin:0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Sin pacientes registrados aún
+    </div>`
+    return
+  }
+  grid.innerHTML = lista.map(p => {
+    const initials = (p.nombre||'P').split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()
+    const sub = p.telefono || p.email || 'Sin contacto'
+    return `<div class="pac-rec-card" onclick="abrirFichaDoc('${p.id}','${esc(p.nombre||'')}')">
+      <div class="pac-rec-avatar">${initials}</div>
+      <div class="pac-rec-info">
+        <div class="pac-rec-name">${esc(p.nombre||'Paciente')}</div>
+        <div class="pac-rec-sub">${esc(sub)}</div>
+      </div>
+      <div class="pac-rec-actions">
+        <button class="pac-rec-btn pac-rec-btn-outline" onclick="event.stopPropagation();abrirFichaDoc('${p.id}','${esc(p.nombre||'')}')">Ver ficha</button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function buscarPacienteDoc(q) {
+  if (!q.trim()) { renderMisPacientes(_misPacientes); return }
+  const lq = q.toLowerCase()
+  renderMisPacientes(_misPacientes.filter(p =>
+    (p.nombre||'').toLowerCase().includes(lq) ||
+    (p.telefono||'').includes(q) ||
+    (p.email||'').toLowerCase().includes(lq)
+  ))
 }
 
 async function loadTodayCitas() {
@@ -1831,7 +1927,8 @@ async function savePaciente() {
   btn.disabled = true
 
   await dbPost('pacientes', {
-    nombre, telefono: tel, email: email || null
+    nombre, telefono: tel, email: email || null,
+    medico_id: _docMedico.id
   }, _authToken)
 
   el('pNombre').value = ''
@@ -1842,6 +1939,7 @@ async function savePaciente() {
   const toast = el('toastPaciente')
   toast.classList.add('show')
   setTimeout(() => { toast.classList.remove('show') }, 2500)
+  loadMisPacientes()
 }
 
 // ── STICKY NAV ────────────────────────────────────────────────────────────────
