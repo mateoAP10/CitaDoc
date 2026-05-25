@@ -219,6 +219,36 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:6px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+/* ── FLOATING BOTTOM NAV ──────────────────────────────────────────────────── */
+.float-nav{
+  display:none;
+  position:fixed;
+  bottom:calc(1.1rem + env(safe-area-inset-bottom,0px));
+  left:50%;transform:translateX(-50%);
+  z-index:200;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.6);
+  border-radius:28px;
+  padding:.35rem .4rem;
+  display:none;
+  gap:.2rem;
+  box-shadow:0 8px 32px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.8);
+}
+@media(max-width:768px){.float-nav{display:flex}}
+.float-tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.22rem;padding:.55rem .9rem;border:none;background:transparent;
+  border-radius:22px;cursor:pointer;font-family:'DM Sans',sans-serif;
+  color:var(--muted2);transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  -webkit-tap-highlight-color:transparent;min-width:68px;
+}
+.float-tab svg{width:20px;height:20px;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.float-tab-label{font-size:.56rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;transition:color .2s}
+.float-tab.active{background:var(--red);color:#fff;box-shadow:0 4px 14px rgba(204,41,54,.35)}
+.float-tab:not(.active):active{transform:scale(.92)}
+.float-tab.active svg{transform:scale(1.1)}
+
 
 /* ── DOCTOR PANEL ─────────────────────────────────────────────────────────── */
 /* ── DOCTOR PORTAL — full-screen, CitaDoc-level ──────────────────────────── */
@@ -1509,6 +1539,21 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   </div>
 </div>
 
+<!-- FLOATING NAV -->
+<div class="float-nav" id="floatNav">
+  <button class="float-tab active" id="fnMedicos" onclick="floatTab('medicos')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+    <span class="float-tab-label">Médicos</span>
+  </button>
+  <button class="float-tab" id="fnEstimador" onclick="floatTab('estimador')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>
+    <span class="float-tab-label">Estimador</span>
+  </button>
+  <button class="float-tab" id="fnPerfil" onclick="floatTab('perfil')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="float-tab-label">Perfil</span>
+  </button>
+</div>
 
 <script>
 const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
@@ -2111,6 +2156,31 @@ function hexToRgba(hex, a) {
 }
 
 // ── MOBILE BOTTOM NAV ────────────────────────────────────────────────────────
+function floatTab(tab) {
+  document.querySelectorAll('.float-tab').forEach(t => t.classList.remove('active'))
+  el('fn' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active')
+
+  if (tab === 'medicos') {
+    closeDocPanel()
+    const docsBody = el('docsBody')
+    if (!docsBody.classList.contains('open')) toggleSection('docs')
+    el('docsTrigger').scrollIntoView({behavior:'smooth', block:'start'})
+    return
+  }
+  if (tab === 'estimador') {
+    closeDocPanel()
+    const calcBody = el('calcBody')
+    if (!calcBody.classList.contains('open')) toggleSection('calc')
+    el('calcTrigger').scrollIntoView({behavior:'smooth', block:'start'})
+    return
+  }
+  if (tab === 'perfil') {
+    el('docPanel').classList.add('open')
+    document.body.style.overflow = 'hidden'
+    return
+  }
+}
+
 function mobTab(tab) {
   document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'))
   el('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active')
