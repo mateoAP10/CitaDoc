@@ -26,12 +26,16 @@ nav{position:absolute;top:0;left:0;right:0;z-index:100;background:transparent;pa
 nav.scrolled{position:fixed;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .nav-inner{max-width:1100px;margin:0 auto;height:64px;display:flex;align-items:center;gap:1.5rem}
 .nav-logo{display:flex;align-items:center;gap:.55rem;text-decoration:none;flex-shrink:0}
-.nav-logo svg{width:28px;height:28px}
-.nav-logo-text{font-size:1rem;font-weight:800;color:var(--ink);line-height:1.1;letter-spacing:-.01em}
-.nav-logo-text span{display:block;font-size:.6rem;font-weight:500;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav-star{width:30px;height:30px;color:#fff;flex-shrink:0;transition:color .2s}
+nav.scrolled .nav-star{color:var(--ink)}
+.nav-logo-text{font-size:.78rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:.09em;text-transform:uppercase;transition:color .2s}
+.nav-logo-text span{display:block;letter-spacing:.09em}
+nav.scrolled .nav-logo-text{color:var(--ink)}
 .nav-links{display:flex;gap:1.5rem;flex:1;justify-content:center}
-.nav-links a{font-size:.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .15s}
-.nav-links a:hover{color:var(--ink)}
+.nav-links a{font-size:.82rem;font-weight:500;color:rgba(255,255,255,.8);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:#fff}
+nav.scrolled .nav-links a{color:var(--muted)}
+nav.scrolled .nav-links a:hover{color:var(--ink)}
 .nav-right{display:flex;align-items:center;gap:.75rem;flex-shrink:0}
 .nav-tel{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.9);text-decoration:none}
 nav.scrolled .nav-tel{color:var(--ink)}
@@ -41,8 +45,23 @@ nav.scrolled .nav-tel{color:var(--ink)}
 
 /* ── HERO COVER ───────────────────────────────────────────────────────────── */
 .hero{position:relative;width:100%;height:72vh;min-height:480px;max-height:700px;overflow:hidden;display:flex;align-items:flex-end}
-.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-.hero-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.18) 0%,rgba(0,0,0,.15) 40%,rgba(0,0,0,.72) 100%)}
+
+/* foto con blur — se siente como fondo branded, no foto literal */
+.hero-bg{position:absolute;inset:-12px;width:calc(100% + 24px);height:calc(100% + 24px);object-fit:cover;object-position:center;filter:blur(5px) brightness(.8) saturate(1.15);transform:scale(1.04)}
+
+/* gradiente en dos capas: oscuro abajo + tinte rojo muy sutil arriba */
+.hero-gradient{position:absolute;inset:0;background:
+  linear-gradient(to bottom,
+    rgba(180,20,30,.25) 0%,
+    rgba(0,0,0,.05)     35%,
+    rgba(0,0,0,.65)     80%,
+    rgba(0,0,0,.82)     100%
+  )
+}
+
+/* estrella de marca — watermark enorme en el fondo */
+.hero-star{position:absolute;right:-4vw;top:-10%;width:55vw;max-width:520px;opacity:.07;pointer-events:none;z-index:1;transform:rotate(12deg)}
+@media(max-width:600px){.hero-star{width:90vw;right:-20vw;top:0;opacity:.06}}
 .hero-content{position:relative;z-index:2;width:100%;max-width:1100px;margin:0 auto;padding:0 5vw 52px;display:flex;flex-direction:column;align-items:flex-start}
 .hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:#fff;font-size:.72rem;font-weight:700;padding:.3rem .85rem;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.1rem;border:1px solid rgba(255,255,255,.2)}
 h1{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:800;line-height:1.1;letter-spacing:-.02em;color:#fff;margin-bottom:.75rem;text-shadow:0 2px 20px rgba(0,0,0,.3)}
@@ -167,6 +186,49 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 /* ── UTILS ────────────────────────────────────────────────────────────────── */
 .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:6px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── MOBILE BOTTOM NAV ────────────────────────────────────────────────────── */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:0 0 env(safe-area-inset-bottom,0px)}
+@media(max-width:680px){.mob-nav{display:flex}body{padding-bottom:72px}}
+.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.65rem 0 .5rem;gap:.22rem;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted2);transition:color .15s;-webkit-tap-highlight-color:transparent}
+.mob-tab.active{color:var(--red)}
+.mob-tab svg{width:22px;height:22px}
+.mob-tab-label{font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+/* ── DOCTOR PANEL ─────────────────────────────────────────────────────────── */
+.doc-panel{display:none;position:fixed;inset:0;z-index:190;background:#fff;overflow-y:auto;padding-bottom:90px}
+.doc-panel.open{display:block}
+.doc-panel-head{position:sticky;top:0;z-index:2;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:1rem 5vw;display:flex;align-items:center;justify-content:space-between}
+.doc-panel-title{font-size:1rem;font-weight:800;color:var(--ink)}
+.doc-panel-close{background:none;border:none;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--muted);font-size:1.15rem}
+.doc-panel-body{padding:1.5rem 5vw}
+.doc-login-hint{font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:1.5rem;line-height:1.5}
+.doc-login-form{display:flex;flex-direction:column;gap:.75rem;max-width:360px;margin:0 auto}
+.doc-field{display:flex;flex-direction:column;gap:.3rem}
+.doc-field label{font-size:.75rem;font-weight:600;color:var(--ink2)}
+.doc-field input,.doc-field textarea{padding:.7rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);outline:none;transition:border-color .15s;resize:vertical}
+.doc-field input:focus,.doc-field textarea:focus{border-color:var(--red)}
+.btn-doc-login{background:var(--red);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .15s;margin-top:.25rem}
+.btn-doc-login:disabled{opacity:.6;cursor:not-allowed}
+.doc-err{font-size:.78rem;color:#dc2626;text-align:center;display:none}
+.doc-welcome{font-size:.85rem;color:var(--muted);margin-bottom:.5rem}
+.doc-welcome strong{color:var(--ink);font-weight:700}
+.btn-signout{float:right;background:none;border:1px solid var(--border);border-radius:8px;padding:.35rem .85rem;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;color:var(--muted);cursor:pointer}
+.doc-section-title{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:1.5rem 0 .75rem}
+.lead-item{background:var(--bg2);border-radius:10px;padding:.9rem 1rem;display:flex;gap:.75rem;margin-bottom:.55rem;align-items:flex-start}
+.lead-dot{width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:.35rem;flex-shrink:0}
+.lead-name{font-size:.88rem;font-weight:700;color:var(--ink)}
+.lead-meta{font-size:.73rem;color:var(--muted);margin-top:.1rem}
+.doc-actions{display:flex;flex-direction:column;gap:.6rem;margin-top:1.5rem}
+.btn-doc-action{display:flex;align-items:center;gap:.65rem;padding:.85rem 1rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;color:var(--ink);cursor:pointer;transition:all .15s;text-align:left;width:100%}
+.btn-doc-action:hover,.btn-doc-action.active{border-color:var(--red);color:var(--red);background:var(--red-lite)}
+.btn-doc-action svg{width:20px;height:20px;flex-shrink:0}
+.doc-form{background:var(--bg2);border-radius:12px;padding:1rem;margin-top:.75rem;display:none;flex-direction:column;gap:.65rem}
+.doc-form.open{display:flex}
+.doc-form .doc-field input,.doc-form .doc-field textarea{background:#fff}
+.btn-doc-save{background:var(--red);color:#fff;border:none;border-radius:8px;padding:.65rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer}
+.btn-doc-save:disabled{opacity:.6;cursor:not-allowed}
+.doc-toast{display:none;text-align:center;font-size:.8rem;font-weight:600;color:#166534;background:#dcfce7;border-radius:8px;padding:.55rem;margin-top:.25rem}
 </style>
 </head>
 <body>
@@ -175,7 +237,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 <nav>
   <div class="nav-inner">
     <a class="nav-logo" href="#">
-      <img src="https://raw.githubusercontent.com/mateoAP10/CitaDoc/main/DoctorCenter/AF_Doctor_Center_Editable%20(1).png" alt="Doctor Center" style="height:36px;width:auto;object-fit:contain">
+      <!-- 6-arm asterisk mark — extracted from Doctor Center identity -->
+      <svg class="nav-star" viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
+        <rect x="18" y="2" width="4" height="36" rx="2"/>
+        <rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(60 20 20)"/>
+        <rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(120 20 20)"/>
+      </svg>
+      <div class="nav-logo-text">DOCTOR<span>CENTER</span></div>
     </a>
     <div class="nav-links">
       <a href="#servicios">Servicios</a>
@@ -193,6 +261,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 <section class="hero">
   <img class="hero-bg" id="heroImg" src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1600&q=85" alt="Doctor Center" loading="eager">
   <div class="hero-gradient"></div>
+  <!-- 6-arm asterisk watermark — brand context, not decoration -->
+  <svg class="hero-star" viewBox="0 0 40 40" fill="white" aria-hidden="true">
+    <rect x="18" y="2" width="4" height="36" rx="2"/>
+    <rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(60 20 20)"/>
+    <rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(120 20 20)"/>
+  </svg>
   <div class="hero-content">
     <div class="hero-badge">Guayaquil · Urdesa Norte</div>
     <h1 id="heroTitle">Tu salud,<br><em>nuestra prioridad</em></h1>
@@ -324,6 +398,69 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   </div>
 </footer>
 
+<!-- DOCTOR PANEL -->
+<div class="doc-panel" id="docPanel">
+  <div class="doc-panel-head">
+    <div class="doc-panel-title" id="docPanelTitle">Acceso médico</div>
+    <button class="doc-panel-close" onclick="closeDocPanel()">✕</button>
+  </div>
+  <div class="doc-panel-body">
+
+    <!-- LOGIN STATE -->
+    <div id="docLoginView">
+      <p class="doc-login-hint">Ingresá con tu cuenta CitaDoc para ver tus citas y registrar consultas.</p>
+      <div class="doc-login-form">
+        <div class="doc-field"><label>Email</label><input id="docEmail" type="email" placeholder="tu@email.com" autocomplete="email"></div>
+        <div class="doc-field"><label>Contraseña</label><input id="docPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+        <div class="doc-err" id="docErr">Usuario o contraseña incorrectos</div>
+        <button class="btn-doc-login" id="btnDocLogin" onclick="docLogin()">Entrar →</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD STATE -->
+    <div id="docDashView" style="display:none">
+      <div style="overflow:hidden">
+        <button class="btn-signout" onclick="docSignOut()">Cerrar sesión</button>
+        <div class="doc-welcome">Bienvenido, <strong id="docDrName">Dr.</strong></div>
+      </div>
+
+      <div class="doc-section-title">Solicitudes de hoy</div>
+      <div id="docLeads"><div style="font-size:.82rem;color:var(--muted2)">Cargando...</div></div>
+
+      <div class="doc-actions">
+        <!-- Nueva consulta -->
+        <button class="btn-doc-action" id="btnConsulta" onclick="toggleDocForm('consulta')">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 000 2H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2h-.01a1 1 0 000-2V3a2 2 0 012 2v10a4 4 0 01-4 4H6a4 4 0 01-4-4V5z" clip-rule="evenodd"/></svg>
+          + Nueva consulta
+        </button>
+        <div class="doc-form" id="formConsulta">
+          <div class="doc-field"><label>Paciente</label><input id="cPaciente" placeholder="Nombre completo"></div>
+          <div class="doc-field"><label>Teléfono</label><input id="cTel" type="tel" placeholder="+593..."></div>
+          <div class="doc-field"><label>Motivo de consulta</label><input id="cMotivo" placeholder="Ej: dolor abdominal, control glucosa..."></div>
+          <div class="doc-field"><label>Diagnóstico / notas</label><textarea id="cDiag" rows="3" placeholder="Diagnóstico, indicaciones, receta..."></textarea></div>
+          <button class="btn-doc-save" id="btnSaveConsulta" onclick="saveConsulta()">Guardar consulta</button>
+          <div class="doc-toast" id="toastConsulta">✓ Consulta guardada</div>
+        </div>
+
+        <!-- Nuevo paciente -->
+        <button class="btn-doc-action" id="btnPaciente" onclick="toggleDocForm('paciente')">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/></svg>
+          + Nuevo paciente
+        </button>
+        <div class="doc-form" id="formPaciente">
+          <div class="doc-field"><label>Nombre</label><input id="pNombre" placeholder="Nombre"></div>
+          <div class="doc-field"><label>Apellido</label><input id="pApellido" placeholder="Apellido"></div>
+          <div class="doc-field"><label>Teléfono / WhatsApp</label><input id="pTel" type="tel" placeholder="+593..."></div>
+          <div class="doc-field"><label>Email</label><input id="pEmail" type="email" placeholder="opcional"></div>
+          <button class="btn-doc-save" id="btnSavePaciente" onclick="savePaciente()">Registrar paciente</button>
+          <div class="doc-toast" id="toastPaciente">✓ Paciente registrado</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- BOOKING MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBg(event)">
   <div class="modal">
@@ -374,6 +511,22 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
     </div>
   </div>
 </div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mob-nav" aria-label="Navegación principal">
+  <button class="mob-tab active" id="tabInicio" onclick="mobTab('inicio')">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v6a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-6h1a1 1 0 00.707-1.707l-7-7z"/></svg>
+    <span class="mob-tab-label">Inicio</span>
+  </button>
+  <button class="mob-tab" id="tabEstimador" onclick="mobTab('estimador')">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm0 6a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2zm0 6a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2h-2a2 2 0 01-2-2v0z"/></svg>
+    <span class="mob-tab-label">Estimador</span>
+  </button>
+  <button class="mob-tab" id="tabPerfil" onclick="mobTab('perfil')">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+    <span class="mob-tab-label">Perfil</span>
+  </button>
+</nav>
 
 <script>
 const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
@@ -658,6 +811,216 @@ function hexToRgba(hex, a) {
   return `rgba(${n>>16},${(n>>8)&0xff},${n&0xff},${a})`
 }
 
+// ── MOBILE BOTTOM NAV ────────────────────────────────────────────────────────
+function mobTab(tab) {
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'))
+  el('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active')
+
+  if (tab === 'inicio') {
+    closeDocPanel()
+    window.scrollTo({top: 0, behavior: 'smooth'})
+  } else if (tab === 'estimador') {
+    closeDocPanel()
+    const calcBody = el('calcBody')
+    if (!calcBody.classList.contains('open')) toggleSection('calc')
+    el('calcTrigger').scrollIntoView({behavior:'smooth', block:'start'})
+  } else if (tab === 'perfil') {
+    el('docPanel').classList.add('open')
+    document.body.style.overflow = 'hidden'
+  }
+}
+
+// ── DOCTOR PANEL AUTH ─────────────────────────────────────────────────────────
+let _docUser = null
+let _docMedico = null
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    _docUser = session.user
+    await loadDocMedico()
+  } else {
+    _docUser = null
+    _docMedico = null
+    showDocLogin()
+  }
+})
+
+function openDocPanel() {
+  el('docPanel').classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function closeDocPanel() {
+  el('docPanel').classList.remove('open')
+  document.body.style.overflow = ''
+  // Reset active tab to inicio if closing panel
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'))
+  el('tabInicio').classList.add('active')
+}
+
+async function docLogin() {
+  const email = el('docEmail').value.trim()
+  const pass  = el('docPass').value
+  if (!email || !pass) return
+  const btn = el('btnDocLogin')
+  btn.disabled = true
+  btn.textContent = 'Entrando...'
+  el('docErr').style.display = 'none'
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+  if (error) {
+    el('docErr').style.display = 'block'
+    btn.disabled = false
+    btn.textContent = 'Entrar →'
+  }
+}
+
+async function docSignOut() {
+  await sb.auth.signOut()
+  closeDocPanel()
+}
+
+async function loadDocMedico() {
+  // Find medico record linked to this auth user
+  const { data: medico } = await sb
+    .from('medicos')
+    .select('id,nombre,apellido,titulo')
+    .eq('user_id', _docUser.id)
+    .single()
+
+  if (!medico) { showDocLogin(); return }
+
+  // Check if medico belongs to this center
+  if (_center) {
+    const { data: link } = await sb
+      .from('center_doctors')
+      .select('medico_id')
+      .eq('center_id', _center.id)
+      .eq('medico_id', medico.id)
+      .single()
+    if (!link) {
+      el('docErr').textContent = 'No tenés acceso a este centro'
+      el('docErr').style.display = 'block'
+      el('docLoginView').style.display = 'block'
+      el('docDashView').style.display = 'none'
+      return
+    }
+  }
+
+  _docMedico = medico
+  showDocDash()
+}
+
+function showDocLogin() {
+  el('docLoginView').style.display = 'block'
+  el('docDashView').style.display = 'none'
+  el('docPanelTitle').textContent = 'Acceso médico'
+  const btn = el('btnDocLogin')
+  btn.disabled = false
+  btn.textContent = 'Entrar →'
+}
+
+function showDocDash() {
+  el('docLoginView').style.display = 'none'
+  el('docDashView').style.display = 'block'
+  const titulo = _docMedico.titulo || 'Dr.'
+  el('docDrName').textContent = titulo + ' ' + _docMedico.nombre + ' ' + _docMedico.apellido
+  el('docPanelTitle').textContent = 'Panel médico'
+  loadTodayLeads()
+}
+
+async function loadTodayLeads() {
+  if (!_center) return
+  const hoy = new Date().toISOString().split('T')[0]
+  const { data: leads } = await sb
+    .from('center_leads')
+    .select('id,nombre,telefono,servicios,created_at')
+    .eq('center_id', _center.id)
+    .gte('created_at', hoy + 'T00:00:00')
+    .order('created_at', { ascending: false })
+
+  const wrap = el('docLeads')
+  if (!leads || !leads.length) {
+    wrap.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin solicitudes hoy</div>'
+    return
+  }
+  wrap.innerHTML = leads.map(l => {
+    const hora = new Date(l.created_at).toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'})
+    const svcs = l.servicios ? JSON.parse(l.servicios) : []
+    const meta = svcs.length ? svcs.map(s=>s.nombre).join(' · ') : l.telefono
+    return `<div class="lead-item">
+      <div class="lead-dot"></div>
+      <div><div class="lead-name">${esc(l.nombre)}</div><div class="lead-meta">${hora} · ${esc(meta)}</div></div>
+    </div>`
+  }).join('')
+}
+
+// ── DOCTOR FORMS ──────────────────────────────────────────────────────────────
+function toggleDocForm(key) {
+  const form = el('form' + key.charAt(0).toUpperCase() + key.slice(1))
+  const btn  = el('btn'  + key.charAt(0).toUpperCase() + key.slice(1))
+  const open = form.classList.toggle('open')
+  btn.classList.toggle('active', open)
+}
+
+async function saveConsulta() {
+  const paciente = el('cPaciente').value.trim()
+  const tel      = el('cTel').value.trim()
+  const motivo   = el('cMotivo').value.trim()
+  const diag     = el('cDiag').value.trim()
+  if (!paciente) { el('cPaciente').focus(); return }
+
+  const btn = el('btnSaveConsulta')
+  btn.disabled = true
+
+  await sb.from('center_consultations').insert({
+    center_id:       _center?.id,
+    medico_id:       _docMedico?.id,
+    paciente_nombre: paciente,
+    paciente_tel:    tel || null,
+    motivo:          motivo || null,
+    diagnostico:     diag || null,
+    fecha:           new Date().toISOString().split('T')[0]
+  }).catch(() => {})
+
+  el('cPaciente').value = ''
+  el('cTel').value = ''
+  el('cMotivo').value = ''
+  el('cDiag').value = ''
+  btn.disabled = false
+
+  const toast = el('toastConsulta')
+  toast.style.display = 'block'
+  setTimeout(() => { toast.style.display = 'none' }, 2500)
+}
+
+async function savePaciente() {
+  const nombre   = el('pNombre').value.trim()
+  const apellido = el('pApellido').value.trim()
+  const tel      = el('pTel').value.trim()
+  const email    = el('pEmail').value.trim()
+  if (!nombre || !tel) { el(!nombre ? 'pNombre' : 'pTel').focus(); return }
+
+  const btn = el('btnSavePaciente')
+  btn.disabled = true
+
+  await sb.from('pacientes').insert({
+    nombre, apellido: apellido || null,
+    telefono: tel, email: email || null
+  }).catch(() => {})
+
+  el('pNombre').value = ''
+  el('pApellido').value = ''
+  el('pTel').value = ''
+  el('pEmail').value = ''
+  btn.disabled = false
+
+  const toast = el('toastPaciente')
+  toast.style.display = 'block'
+  setTimeout(() => { toast.style.display = 'none' }, 2500)
+}
+
+// ── STICKY NAV ────────────────────────────────────────────────────────────────
 // Sticky nav on scroll
 const navEl = document.querySelector('nav')
 window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 60), {passive:true})
