@@ -481,6 +481,32 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .pac-rec-btn-fill{background:var(--red);border-color:var(--red);color:#fff}
 .pac-rec-btn-fill:hover{background:var(--red-dark)}
 
+/* ── POSOLOGÍA PANEL ─────────────────────────────────────────────────────── */
+.mc-pos-panel{background:var(--red-lite);border:1.5px solid color-mix(in srgb,var(--red) 22%,transparent);border-radius:12px;padding:.85rem 1rem;margin-top:.5rem}
+.mc-pos-drug{font-size:.72rem;font-weight:700;color:var(--red-dark);margin-bottom:.7rem}
+.mc-pos-group{margin-bottom:.55rem}
+.mc-pos-group:last-of-type{margin-bottom:.7rem}
+.mc-pos-group-label{font-size:.6rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem}
+.mc-pos-btns{display:flex;flex-wrap:wrap;gap:.3rem}
+.mc-pos-btn{
+  padding:.3rem .65rem;border-radius:20px;border:1.5px solid var(--border);
+  background:#fff;color:var(--ink2);font-size:.72rem;font-weight:600;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s
+}
+.mc-pos-btn:hover{border-color:var(--red)}
+.mc-pos-btn.sel{background:var(--red);border-color:var(--red);color:#fff}
+.mc-pos-actions{display:flex;gap:.4rem;margin-top:.15rem}
+.mc-pos-confirm{
+  flex:1;padding:.45rem;background:linear-gradient(135deg,var(--red),var(--red-dark));
+  color:#fff;border:none;border-radius:9px;font-size:.78rem;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;opacity:.4;transition:opacity .15s
+}
+.mc-pos-confirm:not(:disabled){opacity:1}
+.mc-pos-cancel{
+  padding:.45rem .85rem;background:none;border:1.5px solid var(--border);
+  border-radius:9px;font-size:.78rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif
+}
+
 /* ── CARPETAS DE PACIENTES ───────────────────────────────────────────────── */
 .doc-folder-track{
   display:flex;gap:.65rem;overflow-x:auto;scroll-snap-type:x mandatory;
@@ -1147,31 +1173,34 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       <div class="cm-step" id="mc_step2" style="display:none">
 
         <div class="cm-field">
-          <label>Medicamentos</label>
+          <label>💊 Medicamentos</label>
           <div class="cm-rx-wrap">
             <input type="text" id="mc_med_search" autocomplete="off" placeholder="Buscar medicamento..." oninput="mcMedBuscar(this.value)" onkeydown="mcMedKeyNav(event)">
             <div class="cm-drop" id="mc_med_drop" style="display:none"></div>
           </div>
+          <div id="mc_med_posologia" style="display:none"></div>
           <div class="cm-tags" id="mc_med_tags"></div>
           <input type="hidden" id="c_plan">
         </div>
 
         <div class="cm-field">
-          <label>Laboratorios</label>
+          <label>🔬 Laboratorios</label>
           <div class="cm-rx-wrap">
             <input type="text" id="mc_lab_search" autocomplete="off" placeholder="Buscar examen de laboratorio..." oninput="mcLabBuscar(this.value)" onkeydown="mcLabKeyNav(event)">
             <div class="cm-drop" id="mc_lab_drop" style="display:none"></div>
           </div>
+          <div id="mc_lab_posologia" style="display:none"></div>
           <div class="cm-tags" id="mc_lab_tags"></div>
           <input type="hidden" id="c_estudios">
         </div>
 
         <div class="cm-field">
-          <label>Imágenes diagnósticas</label>
+          <label>🩻 Imágenes diagnósticas</label>
           <div class="cm-rx-wrap">
             <input type="text" id="mc_img_search" autocomplete="off" placeholder="Buscar imagen diagnóstica..." oninput="mcImgBuscar(this.value)" onkeydown="mcImgKeyNav(event)">
             <div class="cm-drop" id="mc_img_drop" style="display:none"></div>
           </div>
+          <div id="mc_img_posologia" style="display:none"></div>
           <div class="cm-tags" id="mc_img_tags"></div>
           <input type="hidden" id="c_imagenes">
         </div>
@@ -2641,120 +2670,180 @@ function fDiagSync() {
   el('c_diagnostico').value = _fichadiags.map(d=>d.c+' — '+d.l).join('; ')
 }
 
+// ── POSOLOGÍA — utilidades compartidas ────────────────────────────────────────
+var _mcMedPending = null, _mcLabPending = null, _mcImgPending = null
+
+function _posBtn(group, val, label) {
+  return '<button type="button" class="mc-pos-btn" data-group="'+group+'" data-val="'+val+'" onclick="mcPosBtnClick(this,\''+group+'\')">'+label+'</button>'
+}
+function mcPosBtnClick(btn, group) {
+  const panel = btn.closest('.mc-pos-panel')
+  panel.querySelectorAll('.mc-pos-btn[data-group="'+group+'"]').forEach(b=>b.classList.remove('sel'))
+  btn.classList.add('sel')
+  const required = JSON.parse(panel.dataset.required)
+  const allSel = required.every(g => panel.querySelector('.mc-pos-btn.sel[data-group="'+g+'"]'))
+  const conf = panel.querySelector('.mc-pos-confirm')
+  if (conf) conf.disabled = !allSel
+}
+function _posGroup(label, group, btns) {
+  return '<div class="mc-pos-group"><div class="mc-pos-group-label">'+label+'</div><div class="mc-pos-btns">'+btns+'</div></div>'
+}
+function _getSel(panel, group) {
+  const btn = panel.querySelector('.mc-pos-btn.sel[data-group="'+group+'"]')
+  return btn ? btn.dataset.val : null
+}
+
 // ── MEDICAMENTOS ──────────────────────────────────────────────────────────────
 function mcMedBuscar(q) {
-  const drop = el('mc_med_drop')
-  if (!q.trim()) { drop.style.display='none'; return }
-  const nq = _norm(q)
-  const hits = _mcMeds.filter(m => _norm(m).includes(nq)).slice(0,14)
-  if (!hits.length) { drop.style.display='none'; return }
-  _cmMedIdx = -1
-  drop.innerHTML = hits.map((m,i) =>
-    `<div class="cm-drop-med" data-i="${i}" onmousedown="mcMedAgregar('${m.replace(/'/g,'&#39;')}')">💊 ${m}</div>`
-  ).join('')
-  posicionarDrop('mc_med_search', 'mc_med_drop')
-  drop.style.display = 'block'
+  const drop=el('mc_med_drop')
+  if(!q.trim()){drop.style.display='none';return}
+  const nq=_norm(q),hits=_mcMeds.filter(m=>_norm(m).includes(nq)).slice(0,14)
+  if(!hits.length){drop.style.display='none';return}
+  _cmMedIdx=-1
+  drop.innerHTML=hits.map((m,i)=>'<div class="cm-drop-med" data-i="'+i+'" onmousedown="mcMedSeleccionar(\''+m.replace(/'/g,"&#39;")+'\')">💊 '+m+'</div>').join('')
+  posicionarDrop('mc_med_search','mc_med_drop'); drop.style.display='block'
 }
-
 function mcMedKeyNav(ev) {
-  const rows = el('mc_med_drop').querySelectorAll('.cm-drop-med')
-  if (!rows.length) return
-  if (ev.key==='ArrowDown'){ev.preventDefault();_cmMedIdx=Math.min(_cmMedIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmMedIdx))}
-  else if (ev.key==='ArrowUp'){ev.preventDefault();_cmMedIdx=Math.max(_cmMedIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmMedIdx))}
-  else if (ev.key==='Enter'&&_cmMedIdx>=0){ev.preventDefault();rows[_cmMedIdx].dispatchEvent(new MouseEvent('mousedown'))}
-  else if (ev.key==='Escape'){el('mc_med_drop').style.display='none'}
+  const rows=el('mc_med_drop').querySelectorAll('.cm-drop-med'); if(!rows.length)return
+  if(ev.key==='ArrowDown'){ev.preventDefault();_cmMedIdx=Math.min(_cmMedIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmMedIdx))}
+  else if(ev.key==='ArrowUp'){ev.preventDefault();_cmMedIdx=Math.max(_cmMedIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmMedIdx))}
+  else if(ev.key==='Enter'&&_cmMedIdx>=0){ev.preventDefault();rows[_cmMedIdx].dispatchEvent(new MouseEvent('mousedown'))}
+  else if(ev.key==='Escape'){el('mc_med_drop').style.display='none'}
 }
-
-function mcMedAgregar(name) {
-  if (!_cmMedItems.includes(name)) { _cmMedItems.push(name) }
-  el('mc_med_drop').style.display = 'none'
-  el('mc_med_search').value = ''
-  mcMedRender(); mcMedSync()
+function mcMedSeleccionar(name) {
+  el('mc_med_drop').style.display='none'; el('mc_med_search').value=''
+  _mcMedPending=name
+  const wrap=el('mc_med_posologia')
+  wrap.innerHTML='<div class="mc-pos-panel" data-required=\'["forma","via","freq","dias"]\'>'
+    +'<div class="mc-pos-drug">💊 '+name+'</div>'
+    +_posGroup('Dosis / Forma','forma',
+      ['1 comprimido','2 comprimidos','1 cápsula','1 ampolla','½ comprimido','5 ml','10 gotas','1 supositorio'].map(v=>_posBtn('forma',v,v)).join(''))
+    +_posGroup('Vía de administración','via',
+      [['oral','Oral'],['IM','IM'],['EV','EV / IV'],['SL','Sublingual'],['topica','Tópica'],['inhalatoria','Inhalatoria']].map(([v,l])=>_posBtn('via',v,l)).join(''))
+    +_posGroup('Frecuencia (cada)','freq',
+      [['4h','4 horas'],['6h','6 horas'],['8h','8 horas'],['12h','12 horas'],['24h','24 horas'],['sos','SOS / si dolor']].map(([v,l])=>_posBtn('freq',v,l)).join(''))
+    +_posGroup('Duración (por)','dias',
+      [['3 días','3 días'],['5 días','5 días'],['7 días','7 días'],['10 días','10 días'],['14 días','14 días'],['1 mes','1 mes'],['continuo','Continuo']].map(([v,l])=>_posBtn('dias',v,l)).join(''))
+    +'<div class="mc-pos-actions"><button class="mc-pos-confirm" disabled onclick="mcMedConfirmar()">Agregar →</button><button class="mc-pos-cancel" onclick="mcMedCancelar()">Cancelar</button></div></div>'
+  wrap.style.display='block'
 }
-
-function mcMedRemover(i) {
-  _cmMedItems.splice(i,1); mcMedRender(); mcMedSync()
+function mcMedConfirmar() {
+  const panel=el('mc_med_posologia').querySelector('.mc-pos-panel')
+  const forma=_getSel(panel,'forma'),via=_getSel(panel,'via'),freq=_getSel(panel,'freq'),dias=_getSel(panel,'dias')
+  if(!forma||!via||!freq||!dias)return
+  const entry=_mcMedPending+' — '+forma+' · '+via+' · cada '+freq+' · por '+dias
+  if(!_cmMedItems.includes(entry))_cmMedItems.push(entry)
+  mcMedCancelar(); mcMedRender(); el('c_plan').value=_cmMedItems.join('\n')
 }
-
+function mcMedCancelar() { _mcMedPending=null; el('mc_med_posologia').innerHTML=''; el('mc_med_posologia').style.display='none' }
+function mcMedRemover(i) { _cmMedItems.splice(i,1); mcMedRender(); el('c_plan').value=_cmMedItems.join('\n') }
 function mcMedRender() {
-  el('mc_med_tags').innerHTML = _cmMedItems.map((m,i) =>
-    `<span class="cm-tag cm-tag-med">💊 ${m}
-      <button class="cm-tag-rm" onmousedown="mcMedRemover(${i})">✕</button>
-    </span>`
+  el('mc_med_tags').innerHTML=_cmMedItems.map((m,i)=>
+    '<span class="cm-tag cm-tag-med" style="display:flex;align-items:flex-start;gap:.35rem;border-radius:10px;padding:.38rem .65rem;white-space:normal;line-height:1.4">'
+    +'💊 <span style="flex:1">'+m+'</span>'
+    +'<button class="cm-tag-rm" onmousedown="mcMedRemover('+i+')">✕</button></span>'
   ).join('')
-}
-
-function mcMedSync() {
-  el('c_plan').value = _cmMedItems.join(' | ')
 }
 
 // ── LABORATORIOS ──────────────────────────────────────────────────────────────
 function mcLabBuscar(q) {
-  const drop = el('mc_lab_drop')
-  if (!q.trim()) { drop.style.display='none'; return }
-  const nq = _norm(q)
-  const hits = _mcLabs.filter(m => _norm(m).includes(nq)).slice(0,14)
-  if (!hits.length) { drop.style.display='none'; return }
-  _cmLabIdx = -1
-  drop.innerHTML = hits.map((m,i) =>
-    `<div class="cm-drop-med" data-i="${i}" onmousedown="mcLabAgregar('${m.replace(/'/g,'&#39;')}')">🔬 ${m}</div>`
-  ).join('')
-  posicionarDrop('mc_lab_search', 'mc_lab_drop')
-  drop.style.display = 'block'
+  const drop=el('mc_lab_drop')
+  if(!q.trim()){drop.style.display='none';return}
+  const nq=_norm(q),hits=_mcLabs.filter(m=>_norm(m).includes(nq)).slice(0,14)
+  if(!hits.length){drop.style.display='none';return}
+  _cmLabIdx=-1
+  drop.innerHTML=hits.map((m,i)=>'<div class="cm-drop-med" data-i="'+i+'" onmousedown="mcLabSeleccionar(\''+m.replace(/'/g,"&#39;")+'\')">🔬 '+m+'</div>').join('')
+  posicionarDrop('mc_lab_search','mc_lab_drop'); drop.style.display='block'
 }
 function mcLabKeyNav(ev) {
-  const rows = el('mc_lab_drop').querySelectorAll('.cm-drop-med')
-  if (!rows.length) return
-  if (ev.key==='ArrowDown'){ev.preventDefault();_cmLabIdx=Math.min(_cmLabIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmLabIdx))}
-  else if (ev.key==='ArrowUp'){ev.preventDefault();_cmLabIdx=Math.max(_cmLabIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmLabIdx))}
-  else if (ev.key==='Enter'&&_cmLabIdx>=0){ev.preventDefault();rows[_cmLabIdx].dispatchEvent(new MouseEvent('mousedown'))}
-  else if (ev.key==='Escape'){el('mc_lab_drop').style.display='none'}
+  const rows=el('mc_lab_drop').querySelectorAll('.cm-drop-med'); if(!rows.length)return
+  if(ev.key==='ArrowDown'){ev.preventDefault();_cmLabIdx=Math.min(_cmLabIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmLabIdx))}
+  else if(ev.key==='ArrowUp'){ev.preventDefault();_cmLabIdx=Math.max(_cmLabIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmLabIdx))}
+  else if(ev.key==='Enter'&&_cmLabIdx>=0){ev.preventDefault();rows[_cmLabIdx].dispatchEvent(new MouseEvent('mousedown'))}
+  else if(ev.key==='Escape'){el('mc_lab_drop').style.display='none'}
 }
-function mcLabAgregar(name) {
-  if (!_cmLabItems.includes(name)) _cmLabItems.push(name)
+function mcLabSeleccionar(name) {
   el('mc_lab_drop').style.display='none'; el('mc_lab_search').value=''
-  mcLabRender(); el('c_estudios').value = _cmLabItems.join(' | ')
+  _mcLabPending=name
+  const wrap=el('mc_lab_posologia')
+  wrap.innerHTML='<div class="mc-pos-panel" data-required=\'["prioridad","prep"]\'>'
+    +'<div class="mc-pos-drug">🔬 '+name+'</div>'
+    +_posGroup('Prioridad','prioridad',
+      [['rutina','Rutina'],['urgente','Urgente ⚠️']].map(([v,l])=>_posBtn('prioridad',v,l)).join(''))
+    +_posGroup('Preparación del paciente','prep',
+      [['sin_ayunas','Sin ayunas'],['ayunas_4h','Ayunas 4h'],['ayunas_8h','Ayunas 8h'],['ayunas_12h','Ayunas 12h'],['primera_orina','1ª orina']].map(([v,l])=>_posBtn('prep',v,l)).join(''))
+    +'<div class="mc-pos-actions"><button class="mc-pos-confirm" disabled onclick="mcLabConfirmar()">Agregar →</button><button class="mc-pos-cancel" onclick="mcLabCancelar()">Cancelar</button></div></div>'
+  wrap.style.display='block'
 }
-function mcLabRemover(i) { _cmLabItems.splice(i,1); mcLabRender(); el('c_estudios').value=_cmLabItems.join(' | ') }
+function mcLabConfirmar() {
+  const panel=el('mc_lab_posologia').querySelector('.mc-pos-panel')
+  const prior=_getSel(panel,'prioridad'),prep=_getSel(panel,'prep'); if(!prior||!prep)return
+  const prepLbl={'sin_ayunas':'sin ayunas','ayunas_4h':'ayunas 4h','ayunas_8h':'ayunas 8h','ayunas_12h':'ayunas 12h','primera_orina':'1ª orina'}
+  const name=_mcLabPending
+  const full=name+' — '+prior+' · '+(prepLbl[prep]||prep)
+  if(!_cmLabItems.find(x=>x.startsWith(name)))_cmLabItems.push(full)
+  mcLabCancelar(); mcLabRender(); el('c_estudios').value=_cmLabItems.join('\n')
+}
+function mcLabCancelar() { _mcLabPending=null; el('mc_lab_posologia').innerHTML=''; el('mc_lab_posologia').style.display='none' }
+function mcLabRemover(i) { _cmLabItems.splice(i,1); mcLabRender(); el('c_estudios').value=_cmLabItems.join('\n') }
 function mcLabRender() {
-  el('mc_lab_tags').innerHTML = _cmLabItems.map((m,i) =>
-    `<span class="cm-tag" style="background:#e0f5f2;border:1px solid rgba(11,124,110,.2);color:#065f46">🔬 ${m}
-      <button class="cm-tag-rm" onmousedown="mcLabRemover(${i})">✕</button></span>`
+  el('mc_lab_tags').innerHTML=_cmLabItems.map((m,i)=>
+    '<span class="cm-tag" style="background:#e0f5f2;border:1px solid rgba(11,124,110,.2);color:#065f46;display:flex;align-items:flex-start;gap:.35rem;border-radius:10px;padding:.38rem .65rem;white-space:normal;line-height:1.4">'
+    +'🔬 <span style="flex:1">'+m+'</span>'
+    +'<button class="cm-tag-rm" onmousedown="mcLabRemover('+i+')" style="color:#065f46">✕</button></span>'
   ).join('')
 }
 
-// ── IMÁGENES ───────────────────────────────────────────────────────────────────
+// ── IMÁGENES ──────────────────────────────────────────────────────────────────
 function mcImgBuscar(q) {
-  const drop = el('mc_img_drop')
-  if (!q.trim()) { drop.style.display='none'; return }
-  const nq = _norm(q)
-  const hits = _mcImgs.filter(m => _norm(m).includes(nq)).slice(0,14)
-  if (!hits.length) { drop.style.display='none'; return }
-  _cmImgIdx = -1
-  drop.innerHTML = hits.map((m,i) =>
-    `<div class="cm-drop-med" data-i="${i}" onmousedown="mcImgAgregar('${m.replace(/'/g,'&#39;')}')">🩻 ${m}</div>`
-  ).join('')
-  posicionarDrop('mc_img_search', 'mc_img_drop')
-  drop.style.display = 'block'
+  const drop=el('mc_img_drop')
+  if(!q.trim()){drop.style.display='none';return}
+  const nq=_norm(q),hits=_mcImgs.filter(m=>_norm(m).includes(nq)).slice(0,14)
+  if(!hits.length){drop.style.display='none';return}
+  _cmImgIdx=-1
+  drop.innerHTML=hits.map((m,i)=>'<div class="cm-drop-med" data-i="'+i+'" onmousedown="mcImgSeleccionar(\''+m.replace(/'/g,"&#39;")+'\')">🩻 '+m+'</div>').join('')
+  posicionarDrop('mc_img_search','mc_img_drop'); drop.style.display='block'
 }
 function mcImgKeyNav(ev) {
-  const rows = el('mc_img_drop').querySelectorAll('.cm-drop-med')
-  if (!rows.length) return
-  if (ev.key==='ArrowDown'){ev.preventDefault();_cmImgIdx=Math.min(_cmImgIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmImgIdx))}
-  else if (ev.key==='ArrowUp'){ev.preventDefault();_cmImgIdx=Math.max(_cmImgIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmImgIdx))}
-  else if (ev.key==='Enter'&&_cmImgIdx>=0){ev.preventDefault();rows[_cmImgIdx].dispatchEvent(new MouseEvent('mousedown'))}
-  else if (ev.key==='Escape'){el('mc_img_drop').style.display='none'}
+  const rows=el('mc_img_drop').querySelectorAll('.cm-drop-med'); if(!rows.length)return
+  if(ev.key==='ArrowDown'){ev.preventDefault();_cmImgIdx=Math.min(_cmImgIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmImgIdx))}
+  else if(ev.key==='ArrowUp'){ev.preventDefault();_cmImgIdx=Math.max(_cmImgIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmImgIdx))}
+  else if(ev.key==='Enter'&&_cmImgIdx>=0){ev.preventDefault();rows[_cmImgIdx].dispatchEvent(new MouseEvent('mousedown'))}
+  else if(ev.key==='Escape'){el('mc_img_drop').style.display='none'}
 }
-function mcImgAgregar(name) {
-  if (!_cmImgItems.includes(name)) _cmImgItems.push(name)
+function mcImgSeleccionar(name) {
   el('mc_img_drop').style.display='none'; el('mc_img_search').value=''
-  mcImgRender(); el('c_imagenes').value = _cmImgItems.join(' | ')
+  _mcImgPending=name
+  const wrap=el('mc_img_posologia')
+  wrap.innerHTML='<div class="mc-pos-panel" data-required=\'["lateral","contraste","prioridad"]\'>'
+    +'<div class="mc-pos-drug">🩻 '+name+'</div>'
+    +_posGroup('Lateralidad','lateral',
+      [['bilateral','Bilateral'],['derecho','Derecho'],['izquierdo','Izquierdo'],['na','N/A']].map(([v,l])=>_posBtn('lateral',v,l)).join(''))
+    +_posGroup('Contraste','contraste',
+      [['sin_contraste','Sin contraste'],['con_contraste','Con contraste']].map(([v,l])=>_posBtn('contraste',v,l)).join(''))
+    +_posGroup('Prioridad','prioridad',
+      [['rutina','Rutina'],['urgente','Urgente ⚠️']].map(([v,l])=>_posBtn('prioridad',v,l)).join(''))
+    +'<div class="mc-pos-actions"><button class="mc-pos-confirm" disabled onclick="mcImgConfirmar()">Agregar →</button><button class="mc-pos-cancel" onclick="mcImgCancelar()">Cancelar</button></div></div>'
+  wrap.style.display='block'
 }
-function mcImgRemover(i) { _cmImgItems.splice(i,1); mcImgRender(); el('c_imagenes').value=_cmImgItems.join(' | ') }
+function mcImgConfirmar() {
+  const panel=el('mc_img_posologia').querySelector('.mc-pos-panel')
+  const lat=_getSel(panel,'lateral'),cont=_getSel(panel,'contraste'),prior=_getSel(panel,'prioridad'); if(!lat||!cont||!prior)return
+  const name=_mcImgPending
+  const contLbl={'sin_contraste':'sin contraste','con_contraste':'con contraste'}
+  const latLbl={bilateral:'bilateral',derecho:'derecho',izquierdo:'izquierdo',na:''}
+  const parts=[name,lat!=='na'?latLbl[lat]:null,contLbl[cont],prior].filter(Boolean)
+  const entry=parts.join(' — ')
+  if(!_cmImgItems.find(x=>x.startsWith(name)))_cmImgItems.push(entry)
+  mcImgCancelar(); mcImgRender(); el('c_imagenes').value=_cmImgItems.join('\n')
+}
+function mcImgCancelar() { _mcImgPending=null; el('mc_img_posologia').innerHTML=''; el('mc_img_posologia').style.display='none' }
+function mcImgRemover(i) { _cmImgItems.splice(i,1); mcImgRender(); el('c_imagenes').value=_cmImgItems.join('\n') }
 function mcImgRender() {
-  el('mc_img_tags').innerHTML = _cmImgItems.map((m,i) =>
-    `<span class="cm-tag" style="background:#fef3c7;border:1px solid rgba(251,191,36,.2);color:#92400e">🩻 ${m}
-      <button class="cm-tag-rm" onmousedown="mcImgRemover(${i})">✕</button></span>`
+  el('mc_img_tags').innerHTML=_cmImgItems.map((m,i)=>
+    '<span class="cm-tag" style="background:#fef3c7;border:1px solid rgba(251,191,36,.2);color:#92400e;display:flex;align-items:flex-start;gap:.35rem;border-radius:10px;padding:.38rem .65rem;white-space:normal;line-height:1.4">'
+    +'🩻 <span style="flex:1">'+m+'</span>'
+    +'<button class="cm-tag-rm" onmousedown="mcImgRemover('+i+')" style="color:#92400e">✕</button></span>'
   ).join('')
 }
 
