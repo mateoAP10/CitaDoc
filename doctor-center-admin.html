@@ -277,7 +277,42 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       <div class="upload-progress" id="logoProgress" style="color:var(--muted);margin-top:.5rem"></div>
     </div>
 
-    <!-- 2. INFO BÁSICA -->
+    <!-- 2. PORTADA — burbujas + Google Maps -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Portada · Burbujas y ubicación</div>
+          <div class="section-sub">Los chips que aparecen en el hero y el link de Google Maps</div>
+        </div>
+      </div>
+      <div class="fields-grid">
+        <div class="field-group">
+          <div class="field-label">Burbuja 1</div>
+          <input class="field-input" id="fChip1" placeholder="Atención inmediata">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Burbuja 2</div>
+          <input class="field-input" id="fChip2" placeholder="Múltiples especialidades">
+        </div>
+        <div class="field-group full">
+          <div class="field-label">Burbuja 3</div>
+          <input class="field-input" id="fChip3" placeholder="Lab · Imágenes · Consultas">
+        </div>
+        <div class="field-group full">
+          <div class="field-label">Link Google Maps (pill de dirección)</div>
+          <input class="field-input" id="fMapsUrl" type="url" placeholder="https://maps.google.com/maps?q=...">
+        </div>
+      </div>
+      <button class="btn-save" id="btnSaveChips" onclick="saveChips()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
+        Guardar cambios
+      </button>
+    </div>
+
+    <!-- 3. INFO BÁSICA -->
     <div class="section-card">
       <div class="section-header">
         <div class="section-icon">
@@ -319,41 +354,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         </div>
       </div>
       <button class="btn-save" id="btnSaveInfo" onclick="saveInfo()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
-        Guardar cambios
-      </button>
-    </div>
-
-    <!-- 3. PORTADA — burbujas + Google Maps -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-icon">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
-        </div>
-        <div>
-          <div class="section-title">Portada · Burbujas y ubicación</div>
-          <div class="section-sub">Los chips que aparecen en el hero y el link de Google Maps</div>
-        </div>
-      </div>
-      <div class="fields-grid">
-        <div class="field-group">
-          <div class="field-label">Burbuja 1</div>
-          <input class="field-input" id="fChip1" placeholder="Atención inmediata">
-        </div>
-        <div class="field-group">
-          <div class="field-label">Burbuja 2</div>
-          <input class="field-input" id="fChip2" placeholder="Múltiples especialidades">
-        </div>
-        <div class="field-group full">
-          <div class="field-label">Burbuja 3</div>
-          <input class="field-input" id="fChip3" placeholder="Lab · Imágenes · Consultas">
-        </div>
-        <div class="field-group full">
-          <div class="field-label">Link Google Maps (pill de dirección)</div>
-          <input class="field-input" id="fMapsUrl" type="url" placeholder="https://maps.google.com/maps?q=...">
-        </div>
-      </div>
-      <button class="btn-save" id="btnSaveChips" onclick="saveChips()">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
         Guardar cambios
       </button>
