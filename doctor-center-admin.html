@@ -111,6 +111,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .svc-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:1.5rem;border:1.5px dashed var(--border);border-radius:10px}
 @media(max-width:600px){.add-service-form{grid-template-columns:1fr 1fr;}.svc-select,.btn-add-svc{grid-column:1/-1}}
 
+/* PHOTO EDITOR */
+.photo-editor{margin-top:1.1rem;display:flex;flex-direction:column;gap:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.pe-label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem}
+.filter-pills{display:flex;flex-wrap:wrap;gap:.4rem}
+.filter-pill{padding:.32rem .78rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.73rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;outline:none}
+.filter-pill:hover{border-color:var(--red);color:var(--red)}
+.filter-pill.active{background:var(--red);border-color:var(--red);color:#fff}
+.blur-row{display:flex;align-items:center;gap:.85rem}
+.blur-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;accent-color:var(--red)}
+.blur-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--red);cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1.5px var(--red)}
+.blur-val{font-size:.78rem;font-weight:700;color:var(--ink);min-width:36px;text-align:right}
+.btn-save-photo{background:var(--red);color:#fff;border:none;border-radius:9px;padding:.5rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:.35rem}
+.btn-save-photo:hover{background:var(--red-dark)}
+
+/* LOGO */
+.logo-row{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
+.logo-drop{position:relative;width:180px;height:80px;border:2px dashed var(--border);border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color .2s;flex-shrink:0}
+.logo-drop:hover{border-color:var(--red)}
+.logo-drop img{max-width:100%;max-height:100%;object-fit:contain;display:none}
+.logo-placeholder{display:flex;flex-direction:column;align-items:center;gap:.3rem;color:var(--muted)}
+.logo-placeholder svg{width:22px;height:22px}
+.logo-placeholder span{font-size:.72rem;font-weight:600}
+.logo-drop-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border-radius:10px}
+.logo-drop:hover .logo-drop-overlay{opacity:1}
+.logo-hint{font-size:.78rem;color:var(--muted);line-height:1.5;flex:1}
+#logoInput{display:none}
+.btn-remove-logo{background:none;border:1.5px solid var(--border);color:var(--muted);border-radius:7px;padding:.3rem .65rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s;margin-top:.35rem;display:none}
+.btn-remove-logo:hover{border-color:#fca5a5;color:var(--red);background:#fee2e2}
+
 /* TOAST */
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.82rem;font-weight:600;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s}
 .toast.show{transform:translateY(0);opacity:1}
@@ -177,6 +206,64 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       </div>
       <input type="file" id="portadaInput" accept="image/jpeg,image/png,image/webp" onchange="uploadPortada(this)">
       <div class="upload-progress" id="uploadProgress" style="color:var(--muted)"></div>
+
+      <!-- PHOTO EDITOR -->
+      <div class="photo-editor">
+        <div>
+          <div class="pe-label">Filtro de color</div>
+          <div class="filter-pills">
+            <button class="filter-pill active" data-f="none"     onclick="setFilter('none')">Original</button>
+            <button class="filter-pill"         data-f="bw"      onclick="setFilter('bw')">B&amp;N</button>
+            <button class="filter-pill"         data-f="sepia"   onclick="setFilter('sepia')">Sepia</button>
+            <button class="filter-pill"         data-f="warm"    onclick="setFilter('warm')">Cálido</button>
+            <button class="filter-pill"         data-f="cool"    onclick="setFilter('cool')">Frío</button>
+            <button class="filter-pill"         data-f="fade"    onclick="setFilter('fade')">Fade</button>
+            <button class="filter-pill"         data-f="dramatic" onclick="setFilter('dramatic')">Dramático</button>
+          </div>
+        </div>
+        <div>
+          <div class="pe-label">Intensidad de blur</div>
+          <div class="blur-row">
+            <input type="range" id="blurSlider" min="0" max="20" value="0" oninput="setBlur(this.value)">
+            <span class="blur-val"><span id="blurVal">0</span>px</span>
+          </div>
+        </div>
+        <button class="btn-save-photo" onclick="savePhotoSettings()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
+          Guardar apariencia
+        </button>
+      </div>
+    </div>
+
+    <!-- 1b. LOGO -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4zm7 5a1 1 0 10-2 0v1H8a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Logo del centro</div>
+          <div class="section-sub">Aparece sobre la foto de portada en la web pública</div>
+        </div>
+      </div>
+      <div class="logo-row">
+        <div>
+          <div class="logo-drop" id="logoDrop" onclick="el('logoInput').click()">
+            <img id="logoPreview" alt="Logo">
+            <div class="logo-placeholder" id="logoPlaceholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+              <span>Subir logo</span>
+            </div>
+            <div class="logo-drop-overlay">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+            </div>
+          </div>
+          <button class="btn-remove-logo" id="btnRemoveLogo" onclick="removeLogo()">✕ Quitar logo</button>
+        </div>
+        <div class="logo-hint">PNG o SVG con fondo transparente recomendado.<br>Se muestra centrado sobre la foto de portada con fondo suave.</div>
+      </div>
+      <input type="file" id="logoInput" accept="image/png,image/svg+xml,image/webp,image/jpeg" onchange="uploadLogo(this)">
+      <div class="upload-progress" id="logoProgress" style="color:var(--muted);margin-top:.5rem"></div>
     </div>
 
     <!-- 2. INFO BÁSICA -->
@@ -369,6 +456,7 @@ async function ensureCenter() {
       if (error || !data || !data.length) return false
       _center = data[0]
       fillInfoForm(_center)
+      fillPhotoSettings(_center)
       if (_center.portada_url) showPortada(_center.portada_url)
       return true
     } catch(e) { return false }
@@ -432,6 +520,111 @@ function showPortada(url) {
   img.src = url
   img.style.display = 'block'
   el('portadaPlaceholder').style.display = 'none'
+}
+
+// ── PHOTO EDITOR ──────────────────────────────────────────────────────────────
+const FILTERS = {
+  none:     '',
+  bw:       'grayscale(100%)',
+  sepia:    'sepia(70%) contrast(1.05)',
+  warm:     'sepia(22%) saturate(1.5) brightness(1.04)',
+  cool:     'hue-rotate(22deg) saturate(0.85) brightness(1.05)',
+  fade:     'brightness(1.18) contrast(0.82) saturate(0.65)',
+  dramatic: 'contrast(1.3) saturate(1.2) brightness(0.9)'
+}
+let _currentFilter = 'none'
+let _currentBlur   = 0
+
+function fillPhotoSettings(c) {
+  _currentFilter = c.portada_filter || 'none'
+  _currentBlur   = c.portada_blur   || 0
+  el('blurSlider').value   = _currentBlur
+  el('blurVal').textContent = _currentBlur
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.f === _currentFilter))
+  applyPortadaPreview()
+  if (c.logo_url) showLogo(c.logo_url)
+}
+
+function applyPortadaPreview() {
+  const img = el('portadaImg')
+  if (!img || img.style.display === 'none') return
+  const f = FILTERS[_currentFilter] || ''
+  const b = _currentBlur > 0 ? 'blur(' + _currentBlur + 'px)' : ''
+  img.style.filter = [f, b].filter(Boolean).join(' ') || ''
+}
+
+function setFilter(f) {
+  _currentFilter = f
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.f === f))
+  applyPortadaPreview()
+}
+
+function setBlur(v) {
+  _currentBlur = parseInt(v)
+  el('blurVal').textContent = _currentBlur
+  applyPortadaPreview()
+}
+
+async function savePhotoSettings() {
+  const ok = await ensureCenter()
+  if (!ok) { toast('No se pudo conectar al centro', 'err'); return }
+  const btn = event.currentTarget
+  btn.textContent = 'Guardando...'
+  btn.disabled = true
+  const { error } = await sbPatch('centers', 'id=eq.' + _center.id, {
+    portada_filter: _currentFilter,
+    portada_blur:   _currentBlur
+  })
+  btn.disabled = false
+  if (error) { toast('Error: ' + error.message, 'err'); btn.innerHTML = '✕ Error'; }
+  else { toast('Apariencia guardada', 'ok'); btn.textContent = '✓ Guardado'; }
+  setTimeout(() => { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar apariencia' }, 2000)
+}
+
+// ── LOGO ──────────────────────────────────────────────────────────────────────
+function showLogo(url) {
+  const img = el('logoPreview')
+  img.src = url
+  img.style.display = 'block'
+  el('logoPlaceholder').style.display = 'none'
+  el('btnRemoveLogo').style.display = 'inline-block'
+}
+
+async function uploadLogo(input) {
+  const file = input.files[0]
+  if (!file) return
+  const prog = el('logoProgress')
+  prog.textContent = 'Subiendo logo...'
+  const ok = await ensureCenter()
+  if (!ok) { prog.textContent = 'Error: no se pudo conectar'; return }
+
+  const ext  = file.name.split('.').pop().toLowerCase()
+  const path = CENTER_SLUG + '/logo.' + ext
+
+  await stgDelete('centers', [CENTER_SLUG+'/logo.png', CENTER_SLUG+'/logo.jpg', CENTER_SLUG+'/logo.svg', CENTER_SLUG+'/logo.webp'])
+  const { error: upErr } = await stgUpload('centers', path, file)
+  if (upErr) { prog.textContent = 'Error: ' + upErr.message; return }
+
+  const url = stgPublicUrl('centers', path) + '?v=' + Date.now()
+  await sbPatch('centers', 'id=eq.' + _center.id, { logo_url: url })
+  _center.logo_url = url
+  showLogo(url)
+  prog.textContent = '✓ Logo guardado'
+  setTimeout(() => prog.textContent = '', 2500)
+  toast('Logo actualizado', 'ok')
+  input.value = ''
+}
+
+async function removeLogo() {
+  if (!_center) return
+  await stgDelete('centers', [CENTER_SLUG+'/logo.png', CENTER_SLUG+'/logo.jpg', CENTER_SLUG+'/logo.svg', CENTER_SLUG+'/logo.webp'])
+  await sbPatch('centers', 'id=eq.' + _center.id, { logo_url: null })
+  _center.logo_url = null
+  el('logoPreview').style.display = 'none'
+  el('logoPreview').src = ''
+  el('logoPlaceholder').style.display = 'flex'
+  el('btnRemoveLogo').style.display = 'none'
+  toast('Logo removido', 'ok')
 }
 
 // ── INFO ──────────────────────────────────────────────────────────────────────
