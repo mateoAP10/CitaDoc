@@ -1755,7 +1755,6 @@ function renderDoctors(docs) {
       ${esp ? `<div class="doctor-spec">${esp}</div>` : ''}
       ${d.senescyt ? `<div class="doctor-registro"><strong>Reg. médico</strong> ${esc(d.senescyt)}</div>` : ''}
       ${rating ? `<div class="doctor-rating"><span class="doctor-stars">${stars}</span>${rating} · ${d.total_resenas} reseñas</div>` : ''}
-      ${precio !== null ? `<div class="doctor-price">$${precio} <span>consulta</span></div>` : ''}
       <button class="btn-agendar-sm" onclick="openModalForDoctor('${docData}')">Agendar consulta</button>
     </div>`
   }).join('')
