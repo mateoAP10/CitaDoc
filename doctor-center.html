@@ -219,13 +219,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:6px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* ── MOBILE BOTTOM NAV ────────────────────────────────────────────────────── */
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:0 0 env(safe-area-inset-bottom,0px)}
-@media(max-width:680px){.mob-nav{display:flex}body{padding-bottom:72px}}
-.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.65rem 0 .5rem;gap:.22rem;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted2);transition:color .15s;-webkit-tap-highlight-color:transparent}
-.mob-tab.active{color:var(--red)}
-.mob-tab svg{width:22px;height:22px}
-.mob-tab-label{font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 
 /* ── DOCTOR PANEL ─────────────────────────────────────────────────────────── */
 /* ── DOCTOR PORTAL — full-screen, CitaDoc-level ──────────────────────────── */
@@ -789,7 +782,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 
 /* ── MOBILE — mismo patrón que citadoc-perfil ──────────────────────────── */
 @media(max-width:768px){
-  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 
   /* Hero */
   .hero-ctas{flex-direction:column;gap:.5rem}
@@ -1517,21 +1509,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   </div>
 </div>
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mob-nav" aria-label="Navegación principal">
-  <button class="mob-tab active" id="tabInicio" onclick="mobTab('inicio')">
-    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v6a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-6h1a1 1 0 00.707-1.707l-7-7z"/></svg>
-    <span class="mob-tab-label">Inicio</span>
-  </button>
-  <button class="mob-tab" id="tabEstimador" onclick="mobTab('estimador')">
-    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm0 6a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2zm0 6a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2h-2a2 2 0 01-2-2v0z"/></svg>
-    <span class="mob-tab-label">Estimador</span>
-  </button>
-  <button class="mob-tab" id="tabPerfil" onclick="mobTab('perfil')">
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-    <span class="mob-tab-label">Perfil</span>
-  </button>
-</nav>
 
 <script>
 const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
