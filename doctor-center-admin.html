@@ -262,6 +262,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         </div>
         <div class="logo-hint">PNG o SVG con fondo transparente recomendado.<br>Reemplaza la estrella + "DOCTOR CENTER" en el nav superior.</div>
       </div>
+      <div style="margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--border)">
+        <div class="pe-label">Tamaño en el nav</div>
+        <div class="blur-row">
+          <input type="range" id="logoSizeSlider" min="20" max="56" value="32" oninput="setLogoSize(this.value)">
+          <span class="blur-val"><span id="logoSizeVal">32</span>px</span>
+        </div>
+        <button class="btn-save-photo" style="margin-top:.75rem" onclick="saveLogoSize()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
+          Guardar tamaño
+        </button>
+      </div>
       <input type="file" id="logoInput" accept="image/png,image/svg+xml,image/webp,image/jpeg" onchange="uploadLogo(this)">
       <div class="upload-progress" id="logoProgress" style="color:var(--muted);margin-top:.5rem"></div>
     </div>
@@ -542,6 +553,11 @@ function fillPhotoSettings(c) {
   el('blurVal').textContent = _currentBlur
   document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.dataset.f === _currentFilter))
   applyPortadaPreview()
+  if (c.logo_size) {
+    _currentLogoSize = c.logo_size
+    el('logoSizeSlider').value   = _currentLogoSize
+    el('logoSizeVal').textContent = _currentLogoSize
+  }
   if (c.logo_url) showLogo(c.logo_url)
 }
 
@@ -582,12 +598,37 @@ async function savePhotoSettings() {
 }
 
 // ── LOGO ──────────────────────────────────────────────────────────────────────
+let _currentLogoSize = 32
+
 function showLogo(url) {
   const img = el('logoPreview')
   img.src = url
   img.style.display = 'block'
   el('logoPlaceholder').style.display = 'none'
   el('btnRemoveLogo').style.display = 'inline-block'
+}
+
+function setLogoSize(v) {
+  _currentLogoSize = parseInt(v)
+  el('logoSizeVal').textContent = _currentLogoSize
+  const preview = el('logoPreview')
+  if (preview && preview.style.display !== 'none') {
+    preview.style.height = _currentLogoSize + 'px'
+    preview.style.maxHeight = _currentLogoSize + 'px'
+  }
+}
+
+async function saveLogoSize() {
+  const ok = await ensureCenter()
+  if (!ok) { toast('No se pudo conectar', 'err'); return }
+  const btn = event.currentTarget
+  btn.textContent = 'Guardando...'
+  btn.disabled = true
+  const { error } = await sbPatch('centers', 'id=eq.' + _center.id, { logo_size: _currentLogoSize })
+  btn.disabled = false
+  if (error) { toast('Error: ' + error.message, 'err') }
+  else { toast('Tamaño guardado', 'ok'); btn.textContent = '✓ Guardado' }
+  setTimeout(() => { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar tamaño' }, 2000)
 }
 
 async function uploadLogo(input) {
