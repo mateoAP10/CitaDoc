@@ -2992,10 +2992,21 @@ function mcImgRender() {
 function posicionarDrop(inputId, dropId) {
   const input = el(inputId), drop = el(dropId)
   if (!input || !drop) return
+  // Teleport to <body> to escape backdrop-filter containing block
+  if (drop.parentElement !== document.body) document.body.appendChild(drop)
   const r = input.getBoundingClientRect()
-  drop.style.top    = (r.bottom + 4) + 'px'
-  drop.style.left   = r.left + 'px'
-  drop.style.width  = r.width + 'px'
+  drop.style.position = 'fixed'
+  drop.style.left  = r.left + 'px'
+  drop.style.width = r.width + 'px'
+  // Flip above if not enough space below
+  const spaceBelow = window.innerHeight - r.bottom
+  if (spaceBelow < 180 && r.top > spaceBelow) {
+    drop.style.top    = 'auto'
+    drop.style.bottom = (window.innerHeight - r.top + 4) + 'px'
+  } else {
+    drop.style.bottom = 'auto'
+    drop.style.top    = (r.bottom + 4) + 'px'
+  }
 }
 
 // Close dropdowns when clicking outside
