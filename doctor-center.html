@@ -1418,7 +1418,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
     <div id="modalContent">
       <div class="modal-services" id="modalServices" style="display:none"></div>
       <div class="modal-total" id="modalTotal" style="display:none">
-        <div class="modal-total-label">Total estimado</div>
+        <div class="modal-total-label">Precio consulta</div>
         <div class="modal-total-amount" id="modalTotalAmt">$0</div>
       </div>
 
@@ -1644,7 +1644,7 @@ async function loadDoctors() {
     return
   }
   const ids = links.map(l => l.medico_id)
-  const docs = await dbGet('medicos', 'id=in.('+ids.join(',')+')'+'&select=id,nombre,apellido,titulo,especialidades,foto_url,slug,rating_promedio,total_resenas,senescyt,whatsapp,whatsapp_activo,agendamiento_citadoc')
+  const docs = await dbGet('medicos', 'id=in.('+ids.join(',')+')'+'&select=id,nombre,apellido,titulo,especialidades,foto_url,slug,rating_promedio,total_resenas,senescyt,whatsapp,whatsapp_activo,agendamiento_citadoc,precio')
   if (!docs.length) return
   _doctors = docs
   el('docsSubLabel').textContent = docs.length + ' especialista' + (docs.length !== 1 ? 's' : '')
@@ -1741,7 +1741,7 @@ function renderDoctors(docs) {
     const avatar  = d.foto_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(d.nombre+' '+d.apellido)+'&background=f9fafb&color=6b7280&size=144'
     const stars   = rating ? '★'.repeat(Math.round(parseFloat(rating))) + '☆'.repeat(5-Math.round(parseFloat(rating))) : ''
     const svc     = matchConsultaService(esp)
-    const precio  = svc ? svc.precio : null
+    const precio  = d.precio ?? svc?.precio ?? null
     const docData = encodeURIComponent(JSON.stringify({
       id:d.id, nombre, esp,
       svcId:svc?.id||null, svcNombre:svc?.nombre||esp, precio,
