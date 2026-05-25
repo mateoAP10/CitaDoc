@@ -787,37 +787,40 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   max-height:80px;overflow-y:auto;font-style:italic;margin-top:.15rem
 }
 
-/* ── MOBILE FIRST ──────────────────────────────────────────────────────── */
-/* Modal — bottom sheet */
-@media(max-width:640px){
-  .modal-overlay{align-items:flex-end;padding:0}
-  .modal{border-radius:20px 20px 0 0;padding:1.1rem 1.25rem 1.5rem;max-height:92svh}
-  .form-row{grid-template-columns:1fr}
-  .modal-total-amount{font-size:2.2rem}
-}
-/* Hero CTAs — apiladas */
-@media(max-width:480px){
+/* ── MOBILE — mismo patrón que citadoc-perfil ──────────────────────────── */
+@media(max-width:768px){
+  body,html{overflow-x:hidden;width:100%;min-width:0}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+
+  /* Hero */
   .hero-ctas{flex-direction:column;gap:.5rem}
-  .hero-ctas .btn-primary,.hero-ctas .btn-wa,.hero-ctas .btn-ghost{width:100%;justify-content:center}
+  .btn-primary,.btn-wa,.btn-ghost{width:100%;justify-content:center}
   .hero-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:.3rem}
   .hero-chips::-webkit-scrollbar{display:none}
   .chip{flex-shrink:0}
-}
-/* Directorio médicos — 2 columnas */
-@media(max-width:600px){
+
+  /* Búsqueda */
+  .cat-pills{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .cat-pills::-webkit-scrollbar{display:none}
+  .cat-pill{flex-shrink:0}
+
+  /* Médicos — 2 columnas */
   .doctors-grid{grid-template-columns:1fr 1fr;gap:.6rem}
   .doctor-card{padding:.9rem .6rem}
   .doctor-avatar{width:56px;height:56px;margin-bottom:.6rem}
   .doctor-name{font-size:.82rem}
   .doctor-spec{font-size:.68rem}
   .btn-agendar-sm{font-size:.74rem;padding:.46rem .3rem}
-}
-/* Pills categoría — scroll horizontal */
-@media(max-width:520px){
-  .cat-pills{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
-  .cat-pills::-webkit-scrollbar{display:none}
-  .cat-pill{flex-shrink:0}
+
+  /* Modal — bottom sheet */
+  .modal-overlay{align-items:flex-end;padding:0}
+  .modal{border-radius:20px 20px 0 0;padding:1.1rem 1.25rem 1.5rem;max-height:92svh}
+  .form-row{grid-template-columns:1fr}
+  .modal-total-amount{font-size:2.2rem}
+
+  /* Footer */
   .footer-inner{flex-direction:column;gap:.35rem}
+  footer{padding-bottom:calc(1.5rem + 72px + env(safe-area-inset-bottom))}
 }
 </style>
 </head>
