@@ -75,6 +75,8 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .btn-primary:hover{background:var(--red-dark)}
 .btn-ghost{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);color:#fff;border:1.5px solid rgba(255,255,255,.3);border-radius:10px;padding:.75rem 1.4rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
 .btn-ghost:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5)}
+.btn-wa{background:#25D366;color:#fff;border:none;border-radius:10px;padding:.75rem 1.4rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-wa:hover{background:#1da851}
 /* address pill bottom-right */
 .hero-addr-pill{position:absolute;bottom:1.25rem;right:5vw;z-index:3;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-radius:10px;padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem}
 .hero-addr-pill svg{width:16px;height:16px;color:var(--red);flex-shrink:0}
@@ -238,6 +240,15 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .lead-dot{width:8px;height:8px;border-radius:50%;background:var(--red);margin-top:.35rem;flex-shrink:0}
 .lead-name{font-size:.88rem;font-weight:700;color:var(--ink)}
 .lead-meta{font-size:.73rem;color:var(--muted);margin-top:.1rem}
+.cita-item{display:flex;align-items:center;gap:.75rem;padding:.75rem .9rem;background:#fff;border:1.5px solid var(--border);border-radius:11px;margin-bottom:.45rem}
+.cita-hora{font-size:.95rem;font-weight:800;color:var(--ink);min-width:42px;font-variant-numeric:tabular-nums}
+.cita-info{flex:1;min-width:0}
+.cita-nombre{font-size:.85rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cita-meta{font-size:.72rem;color:var(--muted);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cita-badge{font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;flex-shrink:0}
+.cita-badge.confirmada{background:#dcfce7;color:#166534}
+.cita-badge.pendiente{background:#fef9c3;color:#854d0e}
+.cita-badge.cancelada{background:#fee2e2;color:#991b1b}
 .doc-actions{display:flex;flex-direction:column;gap:.6rem;margin-top:1.5rem}
 .btn-doc-action{display:flex;align-items:center;gap:.65rem;padding:.85rem 1rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;color:var(--ink);cursor:pointer;transition:all .15s;text-align:left;width:100%}
 .btn-doc-action:hover,.btn-doc-action.active{border-color:var(--red);color:var(--red);background:var(--red-lite)}
@@ -303,8 +314,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       <a class="btn-primary" href="#" onclick="openModal();return false">
         📅 Reservar turno
       </a>
-      <a class="btn-ghost" href="https://wa.me/593989173062" target="_blank" id="waHero">
-        💬 Consultar por WhatsApp
+      <a class="btn-wa" href="https://wa.me/593989173062" target="_blank" id="waHero">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Consultar por WhatsApp
       </a>
     </div>
   </div>
@@ -438,19 +450,36 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         <div class="doc-welcome">Bienvenido, <strong id="docDrName">Dr.</strong></div>
       </div>
 
-      <div class="doc-section-title">Solicitudes de hoy</div>
-      <div id="docLeads"><div style="font-size:.82rem;color:var(--muted2)">Cargando...</div></div>
+      <div class="doc-section-title">Citas de hoy</div>
+      <div id="docCitas"><div style="font-size:.82rem;color:var(--muted2)">Cargando...</div></div>
 
       <div class="doc-actions">
+        <!-- Nueva cita -->
+        <button class="btn-doc-action" id="btnCita" onclick="toggleDocForm('cita')">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+          + Nueva cita
+        </button>
+        <div class="doc-form" id="formCita">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">
+            <div class="doc-field" style="grid-column:1/-1"><label>Paciente</label><input id="citaNombre" placeholder="Nombre completo"></div>
+            <div class="doc-field" style="grid-column:1/-1"><label>Teléfono</label><input id="citaTel" type="tel" placeholder="+1 555..."></div>
+            <div class="doc-field"><label>Fecha</label><input id="citaFecha" type="date"></div>
+            <div class="doc-field"><label>Hora</label><input id="citaHora" type="time" step="1800"></div>
+            <div class="doc-field" style="grid-column:1/-1"><label>Motivo (opcional)</label><input id="citaMotivo" placeholder="Consulta general, control..."></div>
+          </div>
+          <button class="btn-doc-save" id="btnSaveCita" onclick="saveCita()">Guardar cita</button>
+          <div class="doc-toast" id="toastCita">✓ Cita registrada</div>
+        </div>
+
         <!-- Nueva consulta -->
         <button class="btn-doc-action" id="btnConsulta" onclick="toggleDocForm('consulta')">
           <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 000 2H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2h-.01a1 1 0 000-2V3a2 2 0 012 2v10a4 4 0 01-4 4H6a4 4 0 01-4-4V5z" clip-rule="evenodd"/></svg>
-          + Nueva consulta
+          + Registrar consulta
         </button>
         <div class="doc-form" id="formConsulta">
           <div class="doc-field"><label>Paciente</label><input id="cPaciente" placeholder="Nombre completo"></div>
-          <div class="doc-field"><label>Teléfono</label><input id="cTel" type="tel" placeholder="+593..."></div>
-          <div class="doc-field"><label>Motivo de consulta</label><input id="cMotivo" placeholder="Ej: dolor abdominal, control glucosa..."></div>
+          <div class="doc-field"><label>Teléfono</label><input id="cTel" type="tel" placeholder="+1 555..."></div>
+          <div class="doc-field"><label>Motivo</label><input id="cMotivo" placeholder="Ej: dolor abdominal, control..."></div>
           <div class="doc-field"><label>Diagnóstico / notas</label><textarea id="cDiag" rows="3" placeholder="Diagnóstico, indicaciones, receta..."></textarea></div>
           <button class="btn-doc-save" id="btnSaveConsulta" onclick="saveConsulta()">Guardar consulta</button>
           <div class="doc-toast" id="toastConsulta">✓ Consulta guardada</div>
@@ -464,7 +493,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         <div class="doc-form" id="formPaciente">
           <div class="doc-field"><label>Nombre</label><input id="pNombre" placeholder="Nombre"></div>
           <div class="doc-field"><label>Apellido</label><input id="pApellido" placeholder="Apellido"></div>
-          <div class="doc-field"><label>Teléfono / WhatsApp</label><input id="pTel" type="tel" placeholder="+593..."></div>
+          <div class="doc-field"><label>Teléfono / WhatsApp</label><input id="pTel" type="tel" placeholder="+1 555..."></div>
           <div class="doc-field"><label>Email</label><input id="pEmail" type="email" placeholder="opcional"></div>
           <button class="btn-doc-save" id="btnSavePaciente" onclick="savePaciente()">Registrar paciente</button>
           <div class="doc-toast" id="toastPaciente">✓ Paciente registrado</div>
@@ -1146,28 +1175,85 @@ function showDocDash() {
   const titulo = _docMedico.titulo || 'Dr.'
   el('docDrName').textContent = titulo + ' ' + _docMedico.nombre + ' ' + _docMedico.apellido
   el('docPanelTitle').textContent = 'Panel médico'
-  loadTodayLeads()
+  loadTodayCitas()
 }
 
-async function loadTodayLeads() {
-  if (!_center) return
+async function loadTodayCitas() {
+  if (!_docMedico) return
   const hoy = new Date().toISOString().split('T')[0]
-  const leads = await dbGet('center_leads', 'center_id=eq.'+_center.id+'&select=id,nombre,telefono,servicios,created_at&created_at=gte.'+hoy+'T00:00:00&order=created_at.desc', _authToken)
-
-  const wrap = el('docLeads')
-  if (!leads || !leads.length) {
-    wrap.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin solicitudes hoy</div>'
+  const citas = await dbGet('citas',
+    'medico_id=eq.'+_docMedico.id+'&fecha=eq.'+hoy+'&select=id,hora,estado,motivo,pacientes(nombre,apellido,telefono)&order=hora',
+    _authToken)
+  const wrap = el('docCitas')
+  if (!citas.length) {
+    wrap.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin citas para hoy</div>'
     return
   }
-  wrap.innerHTML = leads.map(l => {
-    const hora = new Date(l.created_at).toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'})
-    const svcs = l.servicios ? JSON.parse(l.servicios) : []
-    const meta = svcs.length ? svcs.map(s=>s.nombre).join(' · ') : l.telefono
-    return `<div class="lead-item">
-      <div class="lead-dot"></div>
-      <div><div class="lead-name">${esc(l.nombre)}</div><div class="lead-meta">${hora} · ${esc(meta)}</div></div>
+  const LABELS = {confirmada:'Confirmada',pendiente:'Pendiente',cancelada:'Cancelada'}
+  wrap.innerHTML = citas.map(c => {
+    const p      = c.pacientes || {}
+    const nombre = [p.nombre, p.apellido].filter(Boolean).join(' ') || 'Paciente'
+    const hora   = (c.hora||'').slice(0,5) || '--:--'
+    const meta   = c.motivo || p.telefono || ''
+    const badge  = c.estado || 'pendiente'
+    return `<div class="cita-item">
+      <div class="cita-hora">${hora}</div>
+      <div class="cita-info">
+        <div class="cita-nombre">${esc(nombre)}</div>
+        ${meta ? `<div class="cita-meta">${esc(meta)}</div>` : ''}
+      </div>
+      <span class="cita-badge ${badge}">${LABELS[badge]||badge}</span>
     </div>`
   }).join('')
+}
+
+async function saveCita() {
+  const nombre = el('citaNombre').value.trim()
+  const tel    = el('citaTel').value.trim()
+  const fecha  = el('citaFecha').value
+  const hora   = el('citaHora').value
+  if (!nombre || !fecha || !hora) {
+    if (!nombre) el('citaNombre').focus()
+    else if (!fecha) el('citaFecha').focus()
+    else el('citaHora').focus()
+    return
+  }
+  const btn = el('btnSaveCita')
+  btn.disabled = true
+  btn.textContent = 'Guardando...'
+
+  // Find-or-create paciente by phone
+  let pacienteId = null
+  if (tel) {
+    const found = await dbGet('pacientes', 'telefono=eq.'+encodeURIComponent(tel)+'&select=id&limit=1', _authToken)
+    if (found.length) pacienteId = found[0].id
+  }
+  if (!pacienteId) {
+    const parts = nombre.split(' ')
+    const r = await xhrReq('POST', SB_URL+'/rest/v1/pacientes',
+      H(_authToken, {'Content-Type':'application/json','Prefer':'return=representation'}),
+      JSON.stringify({ nombre: parts[0], apellido: parts.slice(1).join(' ')||null, telefono: tel||null }))
+    if (r.ok) {
+      const d = JSON.parse(r.text)
+      pacienteId = (Array.isArray(d) ? d[0] : d)?.id
+    }
+  }
+  if (!pacienteId) { toast('No se pudo crear el paciente', 'err'); btn.disabled=false; btn.textContent='Guardar cita'; return }
+
+  await dbPost('citas', {
+    medico_id:  _docMedico.id,
+    paciente_id: pacienteId,
+    fecha, hora,
+    estado: 'confirmada',
+    motivo: el('citaMotivo').value.trim() || null,
+  }, _authToken)
+
+  ;['citaNombre','citaTel','citaFecha','citaHora','citaMotivo'].forEach(id => { if(el(id)) el(id).value='' })
+  btn.disabled = false
+  btn.textContent = 'Guardar cita'
+  const t = el('toastCita'); t.style.display='block'
+  setTimeout(()=>{ t.style.display='none' }, 2500)
+  loadTodayCitas()
 }
 
 // ── DOCTOR FORMS ──────────────────────────────────────────────────────────────
@@ -1176,6 +1262,8 @@ function toggleDocForm(key) {
   const btn  = el('btn'  + key.charAt(0).toUpperCase() + key.slice(1))
   const open = form.classList.toggle('open')
   btn.classList.toggle('active', open)
+  if (open && key === 'cita' && el('citaFecha') && !el('citaFecha').value)
+    el('citaFecha').value = new Date().toISOString().split('T')[0]
 }
 
 async function saveConsulta() {
