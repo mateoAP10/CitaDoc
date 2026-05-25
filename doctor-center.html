@@ -724,6 +724,27 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 }
 .btn-cm-save:hover{opacity:.9}
 .btn-cm-save:disabled{opacity:.55;cursor:not-allowed}
+/* Voice bar */
+.cm-voice-bar{
+  display:flex;align-items:center;gap:.65rem;padding:.75rem 1rem;
+  background:linear-gradient(135deg,#fff5f5,#ffe4e6);
+  border:1.5px solid rgba(204,41,54,.18);border-radius:12px;margin-bottom:.2rem
+}
+.cm-voice-btn{
+  display:flex;align-items:center;gap:.45rem;padding:.48rem 1rem;
+  background:linear-gradient(135deg,var(--red-dark),var(--red));
+  color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;
+  font-size:.82rem;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .2s
+}
+.cm-voice-btn.rec{background:linear-gradient(135deg,#7f1d1d,#b91c1c)}
+.cm-voice-status{flex:1;font-size:.78rem;color:var(--muted);font-style:italic}
+@keyframes mcPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.cm-voice-dot{width:10px;height:10px;border-radius:50%;background:#ef4444;animation:mcPulse 1s infinite;display:none}
+.cm-voice-transcript{
+  display:none;padding:.65rem .85rem;background:#fff;border:1.5px solid var(--border);
+  border-radius:10px;font-size:.8rem;color:var(--ink2);line-height:1.55;
+  max-height:80px;overflow-y:auto;font-style:italic;margin-top:.15rem
+}
 </style>
 </head>
 <body>
@@ -1136,6 +1157,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 
       <!-- PASO 1 -->
       <div class="cm-step" id="mc_step1">
+
+        <!-- VOICE BAR -->
+        <div class="cm-voice-bar">
+          <button class="cm-voice-btn" id="mc_voice_btn" onclick="mcVoiceToggle()">
+            <span id="mc_voice_icon">🎤</span><span id="mc_voice_label">Dictar consulta</span>
+          </button>
+          <div class="cm-voice-status" id="mc_voice_status">Presiona y dicta — transcripción automática</div>
+          <div class="cm-voice-dot" id="mc_voice_dot"></div>
+        </div>
+        <div class="cm-voice-transcript" id="mc_voice_transcript"></div>
 
         <div class="cm-field">
           <label>Motivo de consulta *</label>
@@ -2520,6 +2551,9 @@ var _cmDiagIdx  = -1
 var _cmMedIdx   = -1
 var _cmLabIdx   = -1
 var _cmImgIdx   = -1
+var _mcVoiceRec    = null
+var _mcVoiceActive = false
+var _mcVoiceText   = ''
 
 function _norm(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase() }
 
@@ -2543,16 +2577,91 @@ function abrirConsultaModal() {
   el('mc_dot1').classList.add('active'); el('mc_dot2').classList.remove('active')
   el('cmOverlay').classList.add('open')
   el('cm_body').scrollTop = 0
+  mcVoiceReset()
+  el('mc_voice_transcript').style.display = 'none'
+  el('mc_voice_transcript').textContent = ''
   setTimeout(()=>el('c_motivo').focus(), 160)
 }
 
 function cmCerrar() {
+  if (_mcVoiceActive) mcVoiceStop()
   el('cmOverlay').classList.remove('open')
   ;['c_diag_drop','mc_med_drop','mc_lab_drop','mc_img_drop'].forEach(id=>{el(id).style.display='none'})
 }
 
 function cmCloseOnBg(e) {
   if (e.target === el('cmOverlay')) cmCerrar()
+}
+
+/* ── VOICE DICTATION ── */
+function mcVoiceToggle() { _mcVoiceActive ? mcVoiceStop() : mcVoiceStart() }
+
+function mcVoiceStart() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (!SR) { el('mc_voice_status').textContent = '⚠ Tu navegador no soporta dictado. Usa Chrome.'; return }
+  _mcVoiceRec = new SR()
+  _mcVoiceRec.lang = 'es-419'
+  _mcVoiceRec.continuous = true
+  _mcVoiceRec.interimResults = true
+  _mcVoiceText = ''
+  _mcVoiceActive = true
+  const btn  = el('mc_voice_btn')
+  const icon = el('mc_voice_icon')
+  const lbl  = el('mc_voice_label')
+  const dot  = el('mc_voice_dot')
+  const sta  = el('mc_voice_status')
+  const tra  = el('mc_voice_transcript')
+  btn.classList.add('rec')
+  icon.textContent = '⏹'
+  lbl.textContent  = 'Detener'
+  dot.style.display = 'block'
+  sta.textContent = 'Grabando... habla con normalidad'
+  tra.style.display = 'block'
+  tra.textContent = '...'
+  _mcVoiceRec.onresult = function(e) {
+    let interim = ''
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) _mcVoiceText += e.results[i][0].transcript + ' '
+      else interim = e.results[i][0].transcript
+    }
+    tra.textContent = (_mcVoiceText + interim).trim() || '...'
+  }
+  _mcVoiceRec.onerror = function(e) {
+    const msgs = {'not-allowed':'Permiso de micrófono denegado.','no-speech':'No se detectó voz.','network':'Error de red.'}
+    sta.textContent = '⚠ ' + (msgs[e.error] || 'Error de grabación.')
+    mcVoiceReset()
+  }
+  _mcVoiceRec.onend = function() { if (_mcVoiceActive) mcVoiceReset() }
+  _mcVoiceRec.start()
+}
+
+function mcVoiceStop() {
+  _mcVoiceActive = false
+  if (_mcVoiceRec) try { _mcVoiceRec.stop() } catch(e) {}
+  const text = _mcVoiceText.trim()
+  mcVoiceReset()
+  if (text.length > 5) {
+    el('mc_voice_status').textContent = '✓ Transcripción lista — revisa y completa los campos'
+    el('mc_voice_transcript').textContent = text
+    el('mc_voice_transcript').style.display = 'block'
+    // Auto-fill enfermedad actual if empty
+    const enf = el('c_enfermedad')
+    if (enf && !enf.value.trim()) enf.value = text
+  } else {
+    el('mc_voice_status').textContent = 'Presiona y dicta — transcripción automática'
+  }
+}
+
+function mcVoiceReset() {
+  _mcVoiceActive = false
+  const btn  = el('mc_voice_btn')
+  const icon = el('mc_voice_icon')
+  const lbl  = el('mc_voice_label')
+  const dot  = el('mc_voice_dot')
+  if (btn)  btn.classList.remove('rec')
+  if (icon) icon.textContent = '🎤'
+  if (lbl)  lbl.textContent  = 'Dictar consulta'
+  if (dot)  dot.style.display = 'none'
 }
 
 function cmIrPaso2() {
