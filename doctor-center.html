@@ -6,7 +6,7 @@
 <title>Doctor Center — Tu salud, nuestra prioridad</title>
 <meta name="description" content="Medicina de excelencia, tecnología avanzada y atención humana en un solo lugar. Reserva tu cita en Doctor Center.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,::after,::before{box-sizing:border-box;margin:0;padding:0}
@@ -217,81 +217,176 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .mob-tab-label{font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 
 /* ── DOCTOR PANEL ─────────────────────────────────────────────────────────── */
-/* ── DOCTOR DRAWER ───────────────────────────────────────────────────────── */
-.doc-overlay{display:none;position:fixed;inset:0;z-index:190;background:rgba(0,0,0,.45);backdrop-filter:blur(4px)}
+/* ── DOCTOR DRAWER — CitaDoc style ──────────────────────────────────────── */
+.doc-overlay{display:none;position:fixed;inset:0;z-index:190;background:rgba(15,26,24,.55);backdrop-filter:blur(8px)}
 .doc-overlay.open{display:block}
-.doc-drawer{position:fixed;top:0;right:0;bottom:0;z-index:191;width:min(420px,100vw);background:#fff;box-shadow:-8px 0 40px rgba(0,0,0,.12);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .32s cubic-bezier(.22,.61,.36,1)}
+.doc-drawer{
+  --dt:#0b7c6e;--dt-mid:#0e9d8c;--dt-lite:#e0f5f2;--dt-dark:#085f54;
+  --dt-cream:#f7f4ef;--dt-ink:#0f1a18;--dt-ink2:#2c3a38;
+  --dt-muted:#6b7c79;--dt-muted2:#a0b0ae;
+  --dt-border:rgba(11,124,110,.13);
+  --dt-shadow:0 2px 12px rgba(15,26,24,.07);
+  --dt-shadow-md:0 8px 32px rgba(15,26,24,.10);
+  position:fixed;top:0;right:0;bottom:0;z-index:191;width:min(440px,100vw);
+  background:var(--dt-cream);display:flex;flex-direction:column;
+  box-shadow:-8px 0 48px rgba(15,26,24,.18);
+  transform:translateX(100%);transition:transform .32s cubic-bezier(.22,.61,.36,1)
+}
 .doc-drawer.open{transform:translateX(0)}
-.doc-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);flex-shrink:0;background:#fff}
+.doc-drawer-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 1.4rem;border-bottom:1px solid var(--dt-border);
+  flex-shrink:0;background:#fff
+}
 .doc-drawer-brand{display:flex;align-items:center;gap:.5rem}
-.doc-drawer-brand svg{width:22px;height:22px;color:var(--red)}
-.doc-drawer-brand-name{font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
-.doc-drawer-close{width:34px;height:34px;border:none;background:var(--bg2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1rem;transition:background .15s}
-.doc-drawer-close:hover{background:var(--border)}
+.doc-drawer-brand svg{width:20px;height:20px;color:var(--dt)}
+.doc-drawer-brand-name{font-size:.78rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--dt-ink)}
+.doc-drawer-close{
+  width:32px;height:32px;border:none;background:var(--dt-cream);border-radius:8px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--dt-muted);font-size:.9rem;transition:background .15s
+}
+.doc-drawer-close:hover{background:var(--dt-lite);color:var(--dt)}
 .doc-drawer-body{flex:1;overflow-y:auto;padding:1.5rem 1.4rem;display:flex;flex-direction:column;gap:0}
 
-/* Login state */
-.doc-login-wrap{display:flex;flex-direction:column;align-items:center;padding:1.5rem 0 0}
-.doc-login-icon{width:64px;height:64px;border-radius:50%;background:var(--red-lite);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem}
-.doc-login-icon svg{width:30px;height:30px;color:var(--red)}
-.doc-login-title{font-size:1.25rem;font-weight:800;color:var(--ink);text-align:center;margin-bottom:.35rem}
-.doc-login-sub{font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:1.75rem;line-height:1.55}
-.doc-login-form{display:flex;flex-direction:column;gap:.8rem;width:100%}
+/* Login */
+.doc-login-wrap{display:flex;flex-direction:column;align-items:center;padding:2rem 0 0}
+.doc-login-icon{
+  width:68px;height:68px;border-radius:20px;
+  background:linear-gradient(135deg,var(--dt),var(--dt-mid));
+  display:flex;align-items:center;justify-content:center;margin-bottom:1.4rem;
+  box-shadow:0 8px 24px rgba(11,124,110,.25)
+}
+.doc-login-icon svg{width:32px;height:32px;color:#fff}
+.doc-login-title{font-family:Fraunces,serif;font-size:1.4rem;font-weight:700;color:var(--dt-ink);text-align:center;margin-bottom:.35rem;letter-spacing:-.01em}
+.doc-login-sub{font-size:.82rem;color:var(--dt-muted);text-align:center;margin-bottom:1.75rem;line-height:1.55;max-width:300px}
+.doc-login-form{display:flex;flex-direction:column;gap:.85rem;width:100%}
 .doc-field{display:flex;flex-direction:column;gap:.3rem}
-.doc-field label{font-size:.72rem;font-weight:700;color:var(--ink2);letter-spacing:.03em}
-.doc-field input,.doc-field textarea{padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;resize:vertical}
-.doc-field input:focus,.doc-field textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,41,54,.09)}
-.btn-doc-login{background:var(--red);color:#fff;border:none;border-radius:11px;padding:.85rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .15s;margin-top:.25rem;width:100%}
-.btn-doc-login:hover{background:var(--red-dark)}
+.doc-field label{font-size:.72rem;font-weight:700;color:var(--dt-ink2);letter-spacing:.04em;text-transform:uppercase}
+.doc-field input,.doc-field textarea{
+  padding:.75rem 1rem;border:1.5px solid var(--dt-border);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--dt-ink);
+  background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;resize:vertical
+}
+.doc-field input:focus,.doc-field textarea:focus{
+  border-color:var(--dt-mid);box-shadow:0 0 0 3px rgba(11,124,110,.1)
+}
+.btn-doc-login{
+  background:linear-gradient(135deg,var(--dt),var(--dt-mid));
+  color:#fff;border:none;border-radius:11px;padding:.85rem;
+  font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;
+  transition:opacity .15s;margin-top:.25rem;width:100%;
+  box-shadow:0 4px 14px rgba(11,124,110,.25)
+}
+.btn-doc-login:hover{opacity:.9}
 .btn-doc-login:disabled{opacity:.6;cursor:not-allowed}
-.doc-err{font-size:.78rem;color:#dc2626;text-align:center;display:none;background:#fff0f0;border-radius:8px;padding:.5rem .75rem}
+.doc-err{
+  font-size:.78rem;color:#dc2626;text-align:center;display:none;
+  background:#fff0f0;border-radius:9px;padding:.5rem .75rem;
+  border:1px solid rgba(220,38,38,.15)
+}
 
-/* Doctor avatar card */
-.doc-avatar-card{display:flex;align-items:center;gap:.85rem;padding:1.1rem;background:linear-gradient(135deg,var(--red) 0%,#a01d28 100%);border-radius:14px;margin-bottom:1.35rem}
-.doc-avatar{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.02em;border:2px solid rgba(255,255,255,.35)}
+/* Avatar card — dark teal sidebar style */
+.doc-avatar-card{
+  display:flex;align-items:center;gap:.85rem;padding:1.1rem 1.2rem;
+  background:linear-gradient(180deg,#062e2b 0,#021b1a 100%);
+  border-radius:16px;margin-bottom:1.35rem;
+  box-shadow:0 4px 20px rgba(15,26,24,.18)
+}
+.doc-avatar{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--dt),var(--dt-mid));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;font-weight:800;color:#fff;flex-shrink:0;
+  letter-spacing:-.02em;border:2px solid rgba(255,255,255,.15)
+}
 .doc-avatar-info{flex:1;min-width:0}
-.doc-avatar-name{font-size:.92rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.doc-avatar-role{font-size:.7rem;color:rgba(255,255,255,.7);margin-top:.1rem;font-weight:500}
-.btn-signout{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:.35rem .85rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s}
-.btn-signout:hover{background:rgba(255,255,255,.28)}
+.doc-avatar-name{font-size:.9rem;font-weight:700;color:#d1fae5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-avatar-role{font-size:.68rem;color:rgba(209,250,229,.55);margin-top:.15rem;font-weight:500}
+.btn-signout{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  border-radius:8px;padding:.32rem .75rem;font-family:'DM Sans',sans-serif;
+  font-size:.7rem;font-weight:700;color:rgba(209,250,229,.7);cursor:pointer;
+  white-space:nowrap;flex-shrink:0;transition:all .15s
+}
+.btn-signout:hover{background:rgba(255,255,255,.18);color:#d1fae5}
 
-/* Section headers */
+/* Sections */
 .doc-section{margin-bottom:1.5rem}
-.doc-section-label{display:flex;align-items:center;gap:.45rem;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem}
-.doc-section-label svg{width:14px;height:14px;flex-shrink:0}
+.doc-section-title{font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:var(--dt-ink);margin-bottom:.75rem;letter-spacing:-.01em}
+.doc-section-label{
+  display:flex;align-items:center;gap:.4rem;font-size:.68rem;font-weight:700;
+  color:var(--dt-muted2);text-transform:uppercase;letter-spacing:.09em;margin-bottom:.65rem
+}
+.doc-section-label svg{width:13px;height:13px;flex-shrink:0}
 
-/* Cita cards — timeline style */
-.cita-item{display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;background:#fff;border:1.5px solid var(--border);border-radius:12px;margin-bottom:.45rem;transition:border-color .15s}
-.cita-item:hover{border-color:var(--red)}
-.cita-hora{font-size:.95rem;font-weight:800;color:var(--ink);min-width:44px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.cita-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0}
-.cita-dot.confirmada{background:#22c55e}
-.cita-dot.pendiente{background:#eab308}
-.cita-dot.cancelada{background:#ef4444}
+/* Cita cards — pac-rec-card style */
+.cita-item{
+  display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;
+  background:#fff;border:1.5px solid var(--dt-border);border-radius:14px;
+  margin-bottom:.55rem;cursor:default;
+  transition:all .2s;box-shadow:var(--dt-shadow)
+}
+.cita-item:hover{border-color:var(--dt);box-shadow:0 4px 16px rgba(11,124,110,.1);transform:translateY(-1px)}
+.cita-avatar{
+  width:40px;height:40px;border-radius:11px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.88rem;color:#fff;
+  background:linear-gradient(135deg,var(--dt),var(--dt-mid))
+}
 .cita-info{flex:1;min-width:0}
-.cita-nombre{font-size:.85rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cita-meta{font-size:.72rem;color:var(--muted);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cita-badge{font-size:.6rem;font-weight:700;padding:.2rem .6rem;border-radius:20px;flex-shrink:0;letter-spacing:.03em}
+.cita-nombre{font-size:.88rem;font-weight:700;color:var(--dt-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cita-meta{font-size:.73rem;color:var(--dt-muted);margin-top:.12rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cita-hora-badge{
+  display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:.25rem
+}
+.cita-hora{font-size:.85rem;font-weight:800;color:var(--dt-ink);font-variant-numeric:tabular-nums}
+.cita-badge{font-size:.58rem;font-weight:700;padding:.18rem .55rem;border-radius:20px;letter-spacing:.03em}
 .cita-badge.confirmada{background:#dcfce7;color:#166534}
 .cita-badge.pendiente{background:#fef9c3;color:#854d0e}
 .cita-badge.cancelada{background:#fee2e2;color:#991b1b}
-.doc-citas-empty{font-size:.82rem;color:var(--muted2);padding:.65rem .2rem;display:flex;align-items:center;gap:.5rem}
+.doc-citas-empty{
+  font-size:.82rem;color:var(--dt-muted2);padding:.85rem 1rem;
+  display:flex;align-items:center;gap:.55rem;
+  background:#fff;border:1.5px dashed var(--dt-border);border-radius:12px
+}
 
-/* Tab bar */
-.doc-tabs{display:flex;gap:.4rem;background:var(--bg2);border-radius:12px;padding:.3rem;margin-bottom:1rem}
-.doc-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:.38rem;padding:.55rem .4rem;border:none;background:transparent;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;white-space:nowrap}
-.doc-tab svg{width:14px;height:14px;flex-shrink:0}
-.doc-tab.active{background:#fff;color:var(--red);box-shadow:0 1px 6px rgba(0,0,0,.08)}
+/* Tabs */
+.doc-tabs{
+  display:flex;gap:.4rem;background:#fff;border-radius:14px;
+  padding:.35rem;margin-bottom:1rem;border:1px solid var(--dt-border)
+}
+.doc-tab{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:.35rem;
+  padding:.55rem .4rem;border:none;background:transparent;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;
+  color:var(--dt-muted);cursor:pointer;transition:all .18s;white-space:nowrap
+}
+.doc-tab svg{width:13px;height:13px;flex-shrink:0}
+.doc-tab.active{
+  background:linear-gradient(135deg,var(--dt),var(--dt-mid));
+  color:#fff;box-shadow:0 3px 10px rgba(11,124,110,.25)
+}
 
 /* Forms */
-.doc-tab-panel{display:none;flex-direction:column;gap:.7rem;background:var(--bg2);border-radius:12px;padding:1.1rem}
+.doc-tab-panel{display:none;flex-direction:column;gap:.75rem;background:#fff;border-radius:14px;padding:1.2rem;border:1px solid var(--dt-border);box-shadow:var(--dt-shadow)}
 .doc-tab-panel.active{display:flex}
-.doc-tab-panel .doc-field input,.doc-tab-panel .doc-field textarea{background:#fff}
 .doc-field-row{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
-.btn-doc-save{background:var(--red);color:#fff;border:none;border-radius:10px;padding:.75rem;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:background .15s;width:100%}
-.btn-doc-save:hover{background:var(--red-dark)}
+.btn-doc-save{
+  background:linear-gradient(135deg,var(--dt),var(--dt-mid));
+  color:#fff;border:none;border-radius:10px;padding:.75rem;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:opacity .15s;width:100%;
+  box-shadow:0 4px 14px rgba(11,124,110,.22)
+}
+.btn-doc-save:hover{opacity:.9}
 .btn-doc-save:disabled{opacity:.6;cursor:not-allowed}
-.doc-toast{display:none;align-items:center;justify-content:center;gap:.45rem;font-size:.8rem;font-weight:600;color:#166534;background:#dcfce7;border-radius:9px;padding:.6rem .9rem;margin-top:.15rem}
+.doc-toast{
+  display:none;align-items:center;justify-content:center;gap:.45rem;
+  font-size:.8rem;font-weight:600;color:#166534;background:#dcfce7;
+  border-radius:9px;padding:.6rem .9rem;margin-top:.1rem;
+  border:1px solid rgba(22,163,74,.15)
+}
 .doc-toast.show{display:flex}
 </style>
 </head>
@@ -1299,18 +1394,22 @@ async function loadTodayCitas() {
 
   const LABELS = {confirmada:'Confirmada', pendiente:'Pendiente', cancelada:'Cancelada'}
   wrap.innerHTML = citas.map(c => {
-    const p      = pacMap[c.paciente_id] || {}
-    const nombre = [p.nombre, p.apellido].filter(Boolean).join(' ') || 'Paciente'
-    const hora   = (c.hora||'').slice(0,5) || '--:--'
-    const meta   = c.motivo || p.telefono || ''
-    const badge  = c.estado || 'pendiente'
+    const p       = pacMap[c.paciente_id] || {}
+    const nombre  = [p.nombre, p.apellido].filter(Boolean).join(' ') || 'Paciente'
+    const initials= nombre.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()
+    const hora    = (c.hora||'').slice(0,5) || '--:--'
+    const meta    = c.motivo || p.telefono || ''
+    const badge   = c.estado || 'pendiente'
     return `<div class="cita-item">
-      <div class="cita-hora">${hora}</div>
+      <div class="cita-avatar">${esc(initials)}</div>
       <div class="cita-info">
         <div class="cita-nombre">${esc(nombre)}</div>
         ${meta ? `<div class="cita-meta">${esc(meta)}</div>` : ''}
       </div>
-      <span class="cita-badge ${badge}">${LABELS[badge]||badge}</span>
+      <div class="cita-hora-badge">
+        <div class="cita-hora">${hora}</div>
+        <span class="cita-badge ${badge}">${LABELS[badge]||badge}</span>
+      </div>
     </div>`
   }).join('')
 }
