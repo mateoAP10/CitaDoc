@@ -786,6 +786,93 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   border-radius:10px;font-size:.8rem;color:var(--ink2);line-height:1.55;
   max-height:80px;overflow-y:auto;font-style:italic;margin-top:.15rem
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE FIRST — todo lo de abajo es refinamiento para pantallas pequeñas
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media(max-width:640px){
+
+  /* ── HERO ── */
+  .hero{height:88svh;min-height:520px}
+  .hero-content{padding:0 5vw 80px}
+  .hero-badge{font-size:.65rem;padding:.25rem .7rem;margin-bottom:.85rem}
+  h1{font-size:clamp(1.9rem,8vw,2.8rem);margin-bottom:.6rem}
+  .hero-sub{font-size:.88rem;margin-bottom:1.25rem;max-width:100%}
+  /* chips — scroll horizontal sin wrap */
+  .hero-chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:.35rem;margin-bottom:1.5rem;gap:.35rem;scrollbar-width:none}
+  .hero-chips::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0;font-size:.72rem;padding:.28rem .65rem}
+  /* CTAs apilados full-width */
+  .hero-ctas{flex-direction:column;gap:.5rem}
+  .btn-primary,.btn-wa,.btn-ghost{width:100%;justify-content:center;padding:.8rem 1rem}
+
+  /* ── BÚSQUEDA ── */
+  .search-section{padding:16px 4vw}
+  .search-inner{gap:.55rem}
+  .cat-pills{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;padding:.05rem 0 .1rem}
+  .cat-pills::-webkit-scrollbar{display:none}
+  .cat-pill{flex-shrink:0;font-size:.74rem;padding:.35rem .8rem}
+
+  /* ── EXPAND SECTIONS ── */
+  .expand-section{padding:0 4vw}
+  .expand-trigger{padding:18px 0}
+  .expand-label{font-size:.9rem}
+  .expand-sub{font-size:.74rem}
+  .expand-content{padding:18px 0 24px}
+
+  /* ── DIRECTORIO MÉDICOS — 2 columnas ── */
+  .doctors-grid{grid-template-columns:1fr 1fr;gap:.6rem}
+  .doctor-card{padding:.9rem .65rem;border-radius:12px}
+  .doctor-avatar{width:58px;height:58px;margin-bottom:.65rem}
+  .doctor-name{font-size:.82rem}
+  .doctor-spec{font-size:.68rem;margin-bottom:.35rem}
+  .doctor-rating{font-size:.68rem}
+  .doctor-registro{font-size:.62rem}
+  .btn-agendar-sm{font-size:.75rem;padding:.48rem .4rem;margin-top:.6rem}
+
+  /* ── MODAL — bottom sheet ── */
+  .modal-overlay{align-items:flex-end;padding:0}
+  .modal{
+    border-radius:20px 20px 0 0;
+    padding:1.4rem 1.25rem 1.25rem;
+    max-height:92svh;
+    /* handle visual */
+    padding-top:1.2rem
+  }
+  .modal::before{
+    content:'';display:block;width:36px;height:4px;
+    background:var(--border);border-radius:2px;
+    margin:0 auto .9rem
+  }
+  .modal-header{margin-bottom:1.1rem}
+  .modal-title{font-size:1rem}
+  .modal-total{padding:1rem 1.15rem 1.1rem;border-radius:14px;margin-bottom:1.1rem}
+  .modal-total-amount{font-size:2.2rem}
+  /* form stack completo */
+  .form-row{grid-template-columns:1fr;gap:.6rem}
+  .form-group{margin-bottom:.75rem}
+  .form-control{font-size:.88rem;padding:.6rem .85rem}
+  .btn-submit{padding:.78rem;font-size:.88rem}
+  /* slot pills más compactos */
+  .slot-btn{padding:.35rem .55rem;font-size:.74rem}
+  .day-pill{min-width:42px;padding:.35rem .45rem}
+
+  /* ── CALCULADORA ── */
+  .calc-grid{gap:1rem}
+  .calc-col h3{font-size:.65rem;margin-bottom:.65rem}
+  .calc-item{padding:.5rem .6rem}
+  .calc-item-name{font-size:.78rem}
+  .calc-item-price{font-size:.75rem}
+  .calc-summary{padding:1.1rem 1.1rem;border-radius:12px}
+  .calc-total-amount{font-size:1.75rem}
+
+  /* ── FOOTER ── */
+  footer{margin-top:40px;padding:20px 4vw}
+  .footer-inner{flex-direction:column;gap:.4rem}
+  .footer-left{font-size:.75rem}
+  .footer-powered{font-size:.68rem}
+}
 </style>
 </head>
 <body>
