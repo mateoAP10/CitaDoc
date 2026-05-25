@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel — Doctor Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*,::after,::before{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#CC2936;--red-dark:#a8212c;--red-lite:#fff0f1;--ink:#0d0d0d;--muted:#6b7280;--border:#e5e7eb;--bg:#f9fafb;--white:#fff;--green:#16a34a;--green-lite:#f0fdf4}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100svh}
+
+/* GATE */
+#gate{position:fixed;inset:0;background:#0d0d0d;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem}
+.gate-logo{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.gate-logo svg{width:24px;height:24px}
+.gate-logo-text{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:-.01em}
+.gate-logo-sub{font-size:.65rem;color:rgba(255,255,255,.35);font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem}
+#gate input{width:240px;padding:.75rem 1rem;text-align:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;letter-spacing:.08em}
+#gate input:focus{border-color:var(--red)}
+#gate button{padding:.65rem 1.5rem;background:var(--red);border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer}
+.gate-err{font-size:.75rem;color:rgba(248,113,113,.8);min-height:1rem}
+
+/* LAYOUT */
+#app{display:none}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 5vw;position:sticky;top:0;z-index:50}
+.topbar-inner{max-width:860px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between}
+.topbar-logo{display:flex;align-items:center;gap:.5rem}
+.topbar-logo svg{width:22px;height:22px}
+.topbar-logo-text{font-size:.9rem;font-weight:800;color:var(--ink)}
+.topbar-logo-sub{font-size:.6rem;color:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:.75rem}
+.btn-view{font-size:.78rem;font-weight:600;color:var(--red);text-decoration:none;border:1.5px solid var(--red);padding:.35rem .8rem;border-radius:7px;transition:all .15s}
+.btn-view:hover{background:var(--red);color:#fff}
+
+/* MAIN */
+.main{max-width:860px;margin:0 auto;padding:2rem 5vw 5rem}
+
+/* SECTION CARD */
+.section-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.25rem}
+.section-header{display:flex;align-items:center;gap:.65rem;margin-bottom:1.25rem}
+.section-icon{width:38px;height:38px;border-radius:10px;background:var(--red-lite);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-icon svg{width:20px;height:20px;color:var(--red)}
+.section-title{font-size:1rem;font-weight:800;color:var(--ink)}
+.section-sub{font-size:.75rem;color:var(--muted);margin-top:.1rem}
+
+/* PORTADA */
+.portada-wrap{position:relative;border-radius:12px;overflow:hidden;background:var(--bg);border:2px dashed var(--border);cursor:pointer;transition:border-color .2s;aspect-ratio:16/5;display:flex;align-items:center;justify-content:center}
+.portada-wrap:hover{border-color:var(--red)}
+.portada-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.portada-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;opacity:0;transition:opacity .2s}
+.portada-wrap:hover .portada-overlay{opacity:1}
+.portada-placeholder{display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--muted)}
+.portada-placeholder svg{width:32px;height:32px}
+.portada-placeholder span{font-size:.82rem;font-weight:500}
+.portada-btn{background:#fff;color:var(--ink);border:none;border-radius:8px;padding:.5rem 1rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer}
+#portadaInput{display:none}
+.upload-progress{font-size:.75rem;color:var(--muted);margin-top:.5rem;text-align:center;min-height:1.2rem}
+
+/* FORM FIELDS */
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.field-group{display:flex;flex-direction:column;gap:.3rem}
+.field-group.full{grid-column:1/-1}
+.field-label{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.field-input{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .15s;background:#fff}
+.field-input:focus{border-color:var(--red)}
+.btn-save{background:var(--red);color:#fff;border:none;border-radius:9px;padding:.6rem 1.25rem;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:background .15s;margin-top:.5rem;display:inline-flex;align-items:center;gap:.4rem}
+.btn-save:hover{background:var(--red-dark)}
+.btn-save.saved{background:var(--green)}
+@media(max-width:560px){.fields-grid{grid-template-columns:1fr}}
+
+/* MÉDICOS */
+.search-docs{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;margin-bottom:1rem;transition:border-color .15s}
+.search-docs:focus{border-color:var(--red)}
+.docs-lists{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.docs-col-label{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+.doc-row{display:flex;align-items:center;gap:.65rem;padding:.6rem .7rem;border-radius:10px;border:1.5px solid var(--border);background:#fff;margin-bottom:.4rem;transition:border-color .15s}
+.doc-row:hover{border-color:var(--red)}
+.doc-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--bg);flex-shrink:0;border:1px solid var(--border)}
+.doc-info{flex:1;min-width:0}
+.doc-name{font-size:.82rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc-spec{font-size:.68rem;color:var(--muted)}
+.btn-add{background:var(--red);color:#fff;border:none;border-radius:7px;width:28px;height:28px;font-size:1.1rem;line-height:1;cursor:pointer;flex-shrink:0;transition:background .15s;display:flex;align-items:center;justify-content:center}
+.btn-add:hover{background:var(--red-dark)}
+.btn-remove{background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:7px;width:28px;height:28px;font-size:1rem;line-height:1;cursor:pointer;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.btn-remove:hover{background:#fee2e2;border-color:#fca5a5;color:var(--red)}
+.docs-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:1.5rem;border:1.5px dashed var(--border);border-radius:10px}
+@media(max-width:600px){.docs-lists{grid-template-columns:1fr}}
+
+/* SERVICIOS */
+.add-service-form{display:grid;grid-template-columns:1fr auto auto auto;gap:.6rem;align-items:end;margin-bottom:1rem}
+.svc-input{padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;transition:border-color .15s;background:#fff;width:100%}
+.svc-input:focus{border-color:var(--red)}
+.svc-select{padding:.6rem .75rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;background:#fff;cursor:pointer}
+.svc-price{width:90px;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;background:#fff}
+.btn-add-svc{background:var(--red);color:#fff;border:none;border-radius:9px;padding:.6rem 1rem;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
+.btn-add-svc:hover{background:var(--red-dark)}
+.svc-list{display:flex;flex-direction:column;gap:.35rem}
+.svc-row{display:flex;align-items:center;gap:.65rem;padding:.55rem .75rem;border-radius:9px;border:1.5px solid var(--border);background:#fff;transition:border-color .15s}
+.svc-row:hover{border-color:var(--border)}
+.svc-cat-pill{font-size:.62rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.svc-cat-pill.consulta{background:#eff6ff;color:#1d4ed8}
+.svc-cat-pill.laboratorio{background:#f0fdf4;color:#15803d}
+.svc-cat-pill.imagen{background:#fdf4ff;color:#7e22ce}
+.svc-name{flex:1;font-size:.83rem;font-weight:600;color:var(--ink)}
+.svc-price-label{font-size:.83rem;font-weight:700;color:var(--muted);margin-left:.25rem}
+.btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:.25rem;line-height:1;border-radius:5px;transition:color .15s}
+.btn-del:hover{color:var(--red)}
+.svc-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:1.5rem;border:1.5px dashed var(--border);border-radius:10px}
+@media(max-width:600px){.add-service-form{grid-template-columns:1fr 1fr;}.svc-select,.btn-add-svc{grid-column:1/-1}}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.82rem;font-weight:600;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--green)}
+.toast.err{background:#dc2626}
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="gate-logo">
+    <svg viewBox="0 0 28 28" fill="none"><path d="M14 2L16.8 8.2L23.5 6.5L21.8 13.2L28 16L21.8 18.8L23.5 25.5L16.8 23.8L14 30L11.2 23.8L4.5 25.5L6.2 18.8L0 16L6.2 13.2L4.5 6.5L11.2 8.2L14 2Z" fill="#CC2936"/></svg>
+    <div>
+      <div class="gate-logo-text">Doctor Center</div>
+      <div class="gate-logo-sub">Panel de administración</div>
+    </div>
+  </div>
+  <input id="keyInput" type="password" placeholder="Contraseña" autocomplete="current-password">
+  <button onclick="checkKey()">Entrar</button>
+  <div class="gate-err" id="gateErr"></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-logo">
+        <svg viewBox="0 0 28 28" fill="none"><path d="M14 2L16.8 8.2L23.5 6.5L21.8 13.2L28 16L21.8 18.8L23.5 25.5L16.8 23.8L14 30L11.2 23.8L4.5 25.5L6.2 18.8L0 16L6.2 13.2L4.5 6.5L11.2 8.2L14 2Z" fill="#CC2936"/></svg>
+        <div>
+          <div class="topbar-logo-text">Doctor Center</div>
+          <div class="topbar-logo-sub">Panel del centro</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <a class="btn-view" href="doctor-center.html" target="_blank">Ver página pública →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- 1. PORTADA -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Foto de portada</div>
+          <div class="section-sub">La imagen principal que ven los pacientes al entrar</div>
+        </div>
+      </div>
+      <div class="portada-wrap" onclick="el('portadaInput').click()">
+        <img id="portadaImg" src="" alt="Portada" style="display:none">
+        <div class="portada-placeholder" id="portadaPlaceholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 18h16.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Tocá para subir una foto</span>
+        </div>
+        <div class="portada-overlay">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 20M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span style="color:#fff;font-size:.78rem;font-weight:700">Cambiar foto</span>
+        </div>
+      </div>
+      <input type="file" id="portadaInput" accept="image/jpeg,image/png,image/webp" onchange="uploadPortada(this)">
+      <div class="upload-progress" id="uploadProgress"></div>
+    </div>
+
+    <!-- 2. INFO BÁSICA -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Información del centro</div>
+          <div class="section-sub">Lo que aparece en la página y en los mensajes automáticos</div>
+        </div>
+      </div>
+      <div class="fields-grid">
+        <div class="field-group">
+          <div class="field-label">Nombre del centro</div>
+          <input class="field-input" id="fNombre" placeholder="Doctor Center">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Teléfono / WhatsApp</div>
+          <input class="field-input" id="fTelefono" placeholder="+593 98 917 3062">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Ciudad</div>
+          <input class="field-input" id="fCiudad" placeholder="Guayaquil">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Instagram</div>
+          <input class="field-input" id="fInstagram" placeholder="@doctorcenterec">
+        </div>
+        <div class="field-group full">
+          <div class="field-label">Dirección</div>
+          <input class="field-input" id="fDireccion" placeholder="Urdesa Norte AV 24, Villa B15">
+        </div>
+        <div class="field-group full">
+          <div class="field-label">Frase del centro (tagline)</div>
+          <input class="field-input" id="fTagline" placeholder="Tu salud, nuestra prioridad">
+        </div>
+        <div class="field-group full">
+          <div class="field-label">Descripción breve</div>
+          <input class="field-input" id="fDesc" placeholder="Medicina de excelencia, tecnología avanzada...">
+        </div>
+      </div>
+      <button class="btn-save" id="btnSaveInfo" onclick="saveInfo()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
+        Guardar cambios
+      </button>
+    </div>
+
+    <!-- 3. MÉDICOS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Médicos del centro</div>
+          <div class="section-sub">Buscá un médico de CitaDoc y tocá + para agregarlo</div>
+        </div>
+      </div>
+      <input class="search-docs" id="searchDocs" placeholder="Buscar médico por nombre o especialidad..." oninput="filterDocs()">
+      <div class="docs-lists">
+        <div>
+          <div class="docs-col-label">En el centro</div>
+          <div id="docsInCenter"><div class="docs-empty">Sin médicos aún</div></div>
+        </div>
+        <div>
+          <div class="docs-col-label">Agregar de CitaDoc</div>
+          <div id="docsAvailable"><div class="docs-empty">Cargando médicos...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. SERVICIOS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Servicios y precios</div>
+          <div class="section-sub">Los pacientes ven estos servicios en la calculadora</div>
+        </div>
+      </div>
+      <div class="add-service-form">
+        <input class="svc-input" id="svcNombre" placeholder="Ej: Ecografía abdominal">
+        <select class="svc-select" id="svcCat">
+          <option value="consulta">Consulta</option>
+          <option value="laboratorio">Laboratorio</option>
+          <option value="imagen">Imagen</option>
+        </select>
+        <input class="svc-price" id="svcPrecio" type="number" min="0" placeholder="$0" step="0.50">
+        <button class="btn-add-svc" onclick="addServicio()">+ Agregar</button>
+      </div>
+      <div class="svc-list" id="svcList">
+        <div class="svc-empty">Cargando servicios...</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
+const ADMIN_PASS = 'doctorcenter2026'
+const CENTER_SLUG = 'doctor-center'
+const sb = supabase.createClient(SB_URL, SB_ANON)
+
+let _center   = null
+let _allDocs  = []  // all citadoc doctors
+let _inCenter = []  // medico_ids in this center
+let _services = []
+
+// ── GATE ──────────────────────────────────────────────────────────────────────
+document.getElementById('keyInput').addEventListener('keydown', e => { if(e.key==='Enter') checkKey() })
+function checkKey() {
+  if (document.getElementById('keyInput').value === ADMIN_PASS) {
+    document.getElementById('gate').style.display = 'none'
+    document.getElementById('app').style.display  = 'block'
+    init()
+  } else {
+    document.getElementById('gateErr').textContent = 'Contraseña incorrecta'
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const [cRes, docsRes, sRes] = await Promise.all([
+    sb.from('centers').select('*').eq('slug', CENTER_SLUG).single(),
+    sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url').eq('activo', true).order('apellido'),
+    sb.from('center_services').select('*').order('categoria').order('orden')
+  ])
+
+  if (cRes.data) {
+    _center = cRes.data
+    fillInfoForm(_center)
+    if (_center.portada_url) showPortada(_center.portada_url)
+
+    // Load which doctors are in this center
+    const { data: links } = await sb.from('center_doctors').select('medico_id').eq('center_id', _center.id)
+    _inCenter = (links || []).map(l => l.medico_id)
+  }
+
+  _allDocs = docsRes.data || []
+  _services = sRes.data?.filter(s => s.center_id === _center?.id) || []
+
+  renderDocs()
+  renderServices()
+}
+
+// ── PORTADA ───────────────────────────────────────────────────────────────────
+async function uploadPortada(input) {
+  const file = input.files[0]
+  if (!file) return
+  const prog = el('uploadProgress')
+  prog.textContent = 'Subiendo...'
+
+  const ext  = file.name.split('.').pop()
+  const path = CENTER_SLUG + '/portada.' + ext
+  const { data, error } = await sb.storage.from('centers').upload(path, file, { upsert: true, contentType: file.type })
+
+  if (error) { prog.textContent = 'Error al subir la foto.'; return }
+
+  const url = sb.storage.from('centers').getPublicUrl(path).data.publicUrl + '?t=' + Date.now()
+  await sb.from('centers').update({ portada_url: url }).eq('id', _center.id)
+  _center.portada_url = url
+  showPortada(url)
+  prog.textContent = '✓ Foto guardada'
+  setTimeout(() => prog.textContent = '', 2500)
+  toast('Portada actualizada', 'ok')
+}
+
+function showPortada(url) {
+  const img = el('portadaImg')
+  img.src = url
+  img.style.display = 'block'
+  el('portadaPlaceholder').style.display = 'none'
+}
+
+// ── INFO ──────────────────────────────────────────────────────────────────────
+function fillInfoForm(c) {
+  const set = (id, val) => { if (el(id)) el(id).value = val || '' }
+  set('fNombre',    c.nombre)
+  set('fTelefono',  c.telefono)
+  set('fCiudad',    c.ciudad)
+  set('fInstagram', c.instagram)
+  set('fDireccion', c.direccion)
+  set('fTagline',   c.tagline)
+  set('fDesc',      c.descripcion)
+}
+
+async function saveInfo() {
+  const btn = el('btnSaveInfo')
+  btn.disabled = true
+  btn.textContent = 'Guardando...'
+
+  const upd = {
+    nombre:      el('fNombre').value.trim()    || _center.nombre,
+    telefono:    el('fTelefono').value.trim()  || null,
+    ciudad:      el('fCiudad').value.trim()    || null,
+    instagram:   el('fInstagram').value.trim() || null,
+    direccion:   el('fDireccion').value.trim() || null,
+    tagline:     el('fTagline').value.trim()   || null,
+    descripcion: el('fDesc').value.trim()      || null,
+    whatsapp:    (el('fTelefono').value.trim() || '').replace(/[^0-9]/g,'') || null,
+  }
+
+  const { error } = await sb.from('centers').update(upd).eq('id', _center.id)
+
+  if (error) {
+    toast('Error al guardar', 'err')
+  } else {
+    Object.assign(_center, upd)
+    btn.classList.add('saved')
+    btn.innerHTML = '✓ Guardado'
+    toast('Información actualizada', 'ok')
+    setTimeout(() => {
+      btn.classList.remove('saved')
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar cambios'
+    }, 2500)
+  }
+  btn.disabled = false
+}
+
+// ── MÉDICOS ───────────────────────────────────────────────────────────────────
+function filterDocs() { renderDocs() }
+
+function renderDocs() {
+  const q = (el('searchDocs').value || '').toLowerCase()
+
+  const inCenter  = _allDocs.filter(d => _inCenter.includes(d.id))
+  const available = _allDocs.filter(d => {
+    if (_inCenter.includes(d.id)) return false
+    if (!q) return true
+    const text = (d.nombre + ' ' + d.apellido + ' ' + (d.especialidades||[]).join(' ')).toLowerCase()
+    return text.includes(q)
+  })
+
+  el('docsInCenter').innerHTML = inCenter.length
+    ? inCenter.map(d => docRowHtml(d, 'in')).join('')
+    : '<div class="docs-empty">Sin médicos aún — agregá uno →</div>'
+
+  el('docsAvailable').innerHTML = available.length
+    ? available.slice(0, 12).map(d => docRowHtml(d, 'out')).join('')
+    : '<div class="docs-empty">No hay resultados</div>'
+}
+
+function docRowHtml(d, mode) {
+  const nombre  = (d.titulo||'Dr.') + ' ' + d.nombre + ' ' + d.apellido
+  const esp     = (d.especialidades||[])[0] || ''
+  const avatar  = d.foto_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(d.nombre+'+'+d.apellido)+'&background=f9fafb&color=6b7280&size=72'
+  const btn     = mode === 'out'
+    ? `<button class="btn-add" title="Agregar" onclick="addDoctor('${d.id}')">+</button>`
+    : `<button class="btn-remove" title="Quitar" onclick="removeDoctor('${d.id}')">×</button>`
+  return `<div class="doc-row" id="docrow-${d.id}">
+    <img class="doc-avatar" src="${avatar}" alt="${nombre}" loading="lazy">
+    <div class="doc-info">
+      <div class="doc-name">${nombre}</div>
+      ${esp ? `<div class="doc-spec">${esp}</div>` : ''}
+    </div>
+    ${btn}
+  </div>`
+}
+
+async function addDoctor(medicoId) {
+  if (!_center) return
+  await sb.from('center_doctors').insert({ center_id: _center.id, medico_id: medicoId }).catch(()=>{})
+  _inCenter.push(medicoId)
+  renderDocs()
+  toast('Médico agregado al centro', 'ok')
+}
+
+async function removeDoctor(medicoId) {
+  if (!_center) return
+  await sb.from('center_doctors').delete().eq('center_id', _center.id).eq('medico_id', medicoId)
+  _inCenter = _inCenter.filter(id => id !== medicoId)
+  renderDocs()
+  toast('Médico removido', 'ok')
+}
+
+// ── SERVICIOS ─────────────────────────────────────────────────────────────────
+function renderServices() {
+  if (!_services.length) {
+    el('svcList').innerHTML = '<div class="svc-empty">Sin servicios aún — agregá el primero</div>'
+    return
+  }
+  const catOrder = ['consulta','laboratorio','imagen']
+  const sorted = [..._services].sort((a,b) => catOrder.indexOf(a.categoria) - catOrder.indexOf(b.categoria))
+  el('svcList').innerHTML = sorted.map(s => `
+    <div class="svc-row" id="svc-${s.id}">
+      <span class="svc-cat-pill ${s.categoria}">${{consulta:'Consulta',laboratorio:'Lab',imagen:'Imagen'}[s.categoria]||s.categoria}</span>
+      <span class="svc-name">${esc(s.nombre)}</span>
+      <span class="svc-price-label">$${s.precio||0}</span>
+      <button class="btn-del" title="Eliminar" onclick="deleteServicio('${s.id}')">✕</button>
+    </div>`).join('')
+}
+
+async function addServicio() {
+  const nombre = el('svcNombre').value.trim()
+  const cat    = el('svcCat').value
+  const precio = parseFloat(el('svcPrecio').value) || 0
+  if (!nombre) { toast('Escribí el nombre del servicio', 'err'); return }
+  if (!_center) return
+
+  const btype = cat === 'consulta' ? 'doctor' : 'request'
+  const { data, error } = await sb.from('center_services').insert({
+    center_id:   _center.id,
+    nombre,
+    categoria:   cat,
+    precio,
+    booking_type: btype,
+    orden:       _services.filter(s=>s.categoria===cat).length + 1,
+  }).select().single()
+
+  if (error) { toast('Error al agregar', 'err'); return }
+  _services.push(data)
+  renderServices()
+  el('svcNombre').value = ''
+  el('svcPrecio').value = ''
+  toast('Servicio agregado', 'ok')
+}
+
+async function deleteServicio(id) {
+  await sb.from('center_services').delete().eq('id', id)
+  _services = _services.filter(s => s.id !== id)
+  renderServices()
+  toast('Servicio eliminado', 'ok')
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function el(id) { return document.getElementById(id) }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+let _toastTimer
+function toast(msg, type='ok') {
+  const t = el('toast')
+  t.textContent = msg
+  t.className = 'toast show ' + type
+  clearTimeout(_toastTimer)
+  _toastTimer = setTimeout(() => t.className = 'toast', 2800)
+}
+</script>
+</body>
+</html>

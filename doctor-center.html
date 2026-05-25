@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Doctor Center — Tu salud, nuestra prioridad</title>
+<meta name="description" content="Medicina de excelencia, tecnología avanzada y atención humana en un solo lugar. Reserva tu cita en Doctor Center.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*,::after,::before{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#CC2936;--red-dark:#a8212c;--red-lite:#fff0f1;
+  --ink:#0d0d0d;--ink2:#3d3d3d;--muted:#6b7280;--muted2:#9ca3af;
+  --border:#e5e7eb;--bg:#ffffff;--bg2:#f9fafb;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
+  --shadow-md:0 4px 24px rgba(0,0,0,.09);
+  --r:12px;
+}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100svh}
+
+/* ── NAV ──────────────────────────────────────────────────────────────────── */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 5vw}
+.nav-inner{max-width:1100px;margin:0 auto;height:64px;display:flex;align-items:center;gap:1.5rem}
+.nav-logo{display:flex;align-items:center;gap:.55rem;text-decoration:none;flex-shrink:0}
+.nav-logo svg{width:28px;height:28px}
+.nav-logo-text{font-size:1rem;font-weight:800;color:var(--ink);line-height:1.1;letter-spacing:-.01em}
+.nav-logo-text span{display:block;font-size:.6rem;font-weight:500;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav-links{display:flex;gap:1.5rem;flex:1;justify-content:center}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-right{display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.nav-tel{font-size:.8rem;font-weight:600;color:var(--ink);text-decoration:none}
+.btn-reservar{background:var(--red);color:#fff;border:none;border-radius:8px;padding:.5rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s;white-space:nowrap}
+.btn-reservar:hover{background:var(--red-dark)}
+@media(max-width:680px){.nav-links{display:none}.nav-tel{display:none}}
+
+/* ── HERO ─────────────────────────────────────────────────────────────────── */
+.hero{max-width:1100px;margin:0 auto;padding:64px 5vw 80px;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:var(--red-lite);color:var(--red);font-size:.72rem;font-weight:700;padding:.3rem .75rem;border-radius:20px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:1.25rem}
+.hero-badge svg{width:14px;height:14px}
+h1{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;line-height:1.12;letter-spacing:-.02em;color:var(--ink);margin-bottom:.9rem}
+h1 em{color:var(--red);font-style:normal}
+.hero-sub{font-size:1rem;color:var(--muted);line-height:1.65;margin-bottom:2rem;max-width:420px}
+.hero-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2.25rem}
+.chip{display:flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:500;color:var(--ink2);background:var(--bg2);border:1px solid var(--border);padding:.35rem .75rem;border-radius:20px}
+.chip svg{width:14px;height:14px;color:var(--red);flex-shrink:0}
+.hero-ctas{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-primary{background:var(--red);color:#fff;border:none;border-radius:10px;padding:.75rem 1.5rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-primary:hover{background:var(--red-dark)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--border);border-radius:10px;padding:.75rem 1.4rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-ghost:hover{border-color:var(--ink);background:var(--bg2)}
+.hero-img{border-radius:20px;overflow:hidden;aspect-ratio:4/3;background:var(--bg2);position:relative}
+.hero-img img{width:100%;height:100%;object-fit:cover}
+.hero-img-overlay{position:absolute;bottom:1rem;left:1rem;right:1rem;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:10px;padding:.75rem 1rem;display:flex;align-items:center;gap:.6rem}
+.hero-img-overlay svg{width:18px;height:18px;color:var(--red);flex-shrink:0}
+.hero-img-overlay-text{font-size:.75rem;font-weight:600;color:var(--ink)}
+.hero-img-overlay-sub{font-size:.65rem;color:var(--muted);margin-top:.05rem}
+@media(max-width:768px){.hero{grid-template-columns:1fr;gap:2rem;padding:40px 5vw 48px}.hero-img{order:-1;aspect-ratio:16/9}}
+
+/* ── SEARCH ───────────────────────────────────────────────────────────────── */
+.search-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:28px 5vw}
+.search-inner{max-width:1100px;margin:0 auto;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:240px}
+.search-wrap svg{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted2);pointer-events:none}
+#searchInput{width:100%;padding:.7rem 1rem .7rem 2.6rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:#fff;outline:none;transition:border-color .15s}
+#searchInput:focus{border-color:var(--red)}
+#searchInput::placeholder{color:var(--muted2)}
+.cat-pills{display:flex;gap:.5rem;flex-wrap:wrap}
+.cat-pill{padding:.4rem .9rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cat-pill.active,.cat-pill:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
+
+/* ── EXPAND SECTIONS ──────────────────────────────────────────────────────── */
+.expand-section{max-width:1100px;margin:0 auto;padding:0 5vw}
+.expand-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;padding:22px 0;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:1px solid var(--border)}
+.expand-trigger:last-of-type{border-bottom:none}
+.expand-trigger-left{display:flex;align-items:center;gap:.75rem}
+.expand-icon{width:36px;height:36px;border-radius:10px;background:var(--red-lite);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.expand-icon svg{width:18px;height:18px;color:var(--red)}
+.expand-label{font-size:.95rem;font-weight:700;color:var(--ink);text-align:left}
+.expand-sub{font-size:.78rem;color:var(--muted);margin-top:.1rem;text-align:left}
+.expand-chevron{width:20px;height:20px;color:var(--muted2);transition:transform .3s;flex-shrink:0}
+.expand-trigger[aria-expanded="true"] .expand-chevron{transform:rotate(180deg)}
+.expand-body{overflow:hidden;max-height:0;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.expand-body.open{max-height:2000px}
+.expand-content{padding:24px 0 32px}
+
+/* ── CALCULADORA ──────────────────────────────────────────────────────────── */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1.5rem;align-items:start}
+.calc-col h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.85rem}
+.calc-items{display:flex;flex-direction:column;gap:.35rem}
+.calc-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;transition:all .15s;user-select:none}
+.calc-item:hover{border-color:var(--red);background:var(--red-lite)}
+.calc-item.selected{border-color:var(--red);background:var(--red-lite)}
+.calc-item input[type=checkbox]{accent-color:var(--red);width:16px;height:16px;flex-shrink:0;cursor:pointer}
+.calc-item-name{flex:1;font-size:.82rem;font-weight:500;color:var(--ink);text-align:left}
+.calc-item-price{font-size:.82rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.calc-item.selected .calc-item-price{color:var(--red)}
+.calc-summary{background:var(--ink);border-radius:14px;padding:1.5rem;min-width:220px;position:sticky;top:80px}
+.calc-summary-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1rem}
+.calc-lines{display:flex;flex-direction:column;gap:.5rem;min-height:60px;margin-bottom:1rem}
+.calc-line{display:flex;justify-content:space-between;gap:.5rem;font-size:.78rem;color:rgba(255,255,255,.7)}
+.calc-line-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calc-line-price{font-weight:600;color:#fff;flex-shrink:0}
+.calc-empty{font-size:.78rem;color:rgba(255,255,255,.3);text-align:center;padding:1rem 0}
+.calc-divider{height:1px;background:rgba(255,255,255,.12);margin-bottom:1rem}
+.calc-total-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.25rem}
+.calc-total-amount{font-size:2rem;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:1.25rem}
+.btn-calc-cta{width:100%;background:var(--red);color:#fff;border:none;border-radius:9px;padding:.75rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-calc-cta:hover{background:var(--red-dark)}
+.btn-calc-cta:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:900px){.calc-grid{grid-template-columns:1fr 1fr;}.calc-summary{grid-column:1/-1;position:static}}
+@media(max-width:560px){.calc-grid{grid-template-columns:1fr}}
+
+/* ── DIRECTORIO ───────────────────────────────────────────────────────────── */
+.doctors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.doctor-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center;transition:all .2s;cursor:pointer;text-decoration:none;display:block}
+.doctor-card:hover{border-color:var(--red);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.doctor-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto .85rem;background:var(--bg2);display:block;border:2px solid var(--border)}
+.doctor-name{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:.25rem}
+.doctor-spec{font-size:.75rem;color:var(--red);font-weight:600;margin-bottom:.5rem}
+.doctor-rating{font-size:.72rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:.25rem}
+.doctor-stars{color:#f59e0b;letter-spacing:.05em}
+.btn-agendar-sm{margin-top:.85rem;width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:.5rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-agendar-sm:hover{background:var(--red-dark)}
+
+/* ── FOOTER ───────────────────────────────────────────────────────────────── */
+footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-top:80px}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-left{font-size:.78rem}
+.footer-left strong{color:#fff;display:block;margin-bottom:.2rem;font-size:.85rem}
+.footer-powered{display:flex;align-items:center;gap:.5rem;font-size:.72rem;color:rgba(255,255,255,.35)}
+.footer-powered a{color:rgba(255,255,255,.55);text-decoration:none;font-weight:600}
+.footer-powered a:hover{color:#fff}
+
+/* ── BOOKING MODAL ────────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px;padding:2rem;max-width:480px;width:100%;max-height:90svh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.modal-title{font-size:1.1rem;font-weight:800;color:var(--ink)}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.2rem;line-height:1;padding:.25rem}
+.modal-services{margin-bottom:1.25rem}
+.modal-service-row{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.modal-service-row:last-child{border:none}
+.modal-total{background:var(--bg2);border-radius:10px;padding:.85rem 1rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.modal-total-label{font-size:.78rem;font-weight:600;color:var(--muted)}
+.modal-total-amount{font-size:1.3rem;font-weight:800;color:var(--ink)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--ink2);margin-bottom:.35rem}
+.form-control{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .15s}
+.form-control:focus{border-color:var(--red)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.btn-submit{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;padding:.8rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:.5rem;transition:background .15s}
+.btn-submit:hover{background:var(--red-dark)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.modal-success{text-align:center;padding:1rem 0}
+.modal-success-icon{font-size:3rem;margin-bottom:.75rem}
+.modal-success h3{font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:.5rem}
+.modal-success p{font-size:.85rem;color:var(--muted);line-height:1.6}
+
+/* ── UTILS ────────────────────────────────────────────────────────────────── */
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 2L16.8 8.2L23.5 6.5L21.8 13.2L28 16L21.8 18.8L23.5 25.5L16.8 23.8L14 30L11.2 23.8L4.5 25.5L6.2 18.8L0 16L6.2 13.2L4.5 6.5L11.2 8.2L14 2Z" fill="#CC2936"/>
+      </svg>
+      <div class="nav-logo-text">DOCTOR<span>CENTER</span></div>
+    </a>
+    <div class="nav-links">
+      <a href="#servicios">Servicios</a>
+      <a href="#medicos">Médicos</a>
+      <a href="#nosotros">Nosotros</a>
+    </div>
+    <div class="nav-right">
+      <a class="nav-tel" href="tel:+593989173062" id="navTel">+593 98 917 3062</a>
+      <a class="btn-reservar" href="#" onclick="openModal();return false">Reservar turno</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 4 4.2-.9-1.5 3.9L16 10l-3.5 1.5L14 16l-4-1.7L8 17l-2-2.7L2 16l1.5-4.5L0 10l3.5-1l-1.5-3.9L6.2 5z"/></svg>
+      Guayaquil · Urdesa Norte
+    </div>
+    <h1 id="heroTitle">Tu salud,<br><em>nuestra prioridad</em></h1>
+    <p class="hero-sub" id="heroSub">Medicina de excelencia, tecnología avanzada y atención humana en un solo lugar.</p>
+    <div class="hero-chips">
+      <div class="chip">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14A6 6 0 118 2a6 6 0 010 12zm.5-9.5h-1v4l3.5 2.1.5-.8-3-1.8V4.5z"/></svg>
+        Atención inmediata
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a5 5 0 110 10A5 5 0 018 3zm2.5 3h-2V4.5h-1V7H5v1h2.5v2.5h1V8H11V7z"/></svg>
+        Múltiples especialidades
+      </div>
+      <div class="chip">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 2H5a3 3 0 00-3 3v6a3 3 0 003 3h6a3 3 0 003-3V5a3 3 0 00-3-3zm1 9a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1h6a1 1 0 011 1v6zM8 5a3 3 0 100 6A3 3 0 008 5zm0 5a2 2 0 110-4 2 2 0 010 4z"/></svg>
+        Lab · Imágenes · Consultas
+      </div>
+    </div>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#" onclick="openModal();return false">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13 2h-1V1h-1v1H5V1H4v1H3a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2zm1 11a1 1 0 01-1 1H3a1 1 0 01-1-1V7h12v6zM2 6V4a1 1 0 011-1h1v1h1V3h6v1h1V3h1a1 1 0 011 1v2H2z"/></svg>
+        Reservar turno
+      </a>
+      <a class="btn-ghost" href="https://wa.me/593989173062" target="_blank" id="waHero">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.6 0 0 3.6 0 8c0 1.4.4 2.8 1 4L0 16l4.2-1.1C5.4 15.6 6.7 16 8 16c4.4 0 8-3.6 8-8s-3.6-8-8-8zm3.9 11.1c-.2.5-1 1-1.4 1-.4.1-.8.1-2.5-.5-2.1-.8-3.4-3-3.5-3.1-.1-.2-.9-1.2-.9-2.3 0-1.1.6-1.6.8-1.8.2-.2.5-.3.7-.3h.5c.2 0 .4.1.5.4.2.4.7 1.7.8 1.8.1.2.1.4 0 .6-.1.2-.2.3-.3.5-.1.2-.3.4-.1.7.2.3.8 1.3 1.7 2 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.7-.1.2-.2.6-.7.8-1s.4-.2.7-.1c.3.1 1.9.9 2.2 1.1.3.1.5.2.6.4.1.4-.1 1.3-.3 1.8z"/></svg>
+        Consultar por WhatsApp
+      </a>
+    </div>
+  </div>
+  <div class="hero-img">
+    <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80" alt="Doctor Center" id="heroImg" loading="eager">
+    <div class="hero-img-overlay">
+      <svg viewBox="0 0 18 18" fill="currentColor"><path d="M9 1l1.7 4.8H16l-4.1 3 1.5 4.8L9 11l-4.4 2.6 1.5-4.8L2 5.8h5.3z"/></svg>
+      <div>
+        <div class="hero-img-overlay-text" id="heroAddr">Urdesa Norte AV 24, Villa B15</div>
+        <div class="hero-img-overlay-sub">Guayaquil · Abierto hoy</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH -->
+<div class="search-section" id="servicios">
+  <div class="search-inner">
+    <div class="search-wrap">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+      <input id="searchInput" type="text" placeholder="¿Qué servicio necesita? Ej: ecografía, pediatría...">
+    </div>
+    <div class="cat-pills">
+      <button class="cat-pill active" data-cat="all">Todos</button>
+      <button class="cat-pill" data-cat="consulta">Consultas</button>
+      <button class="cat-pill" data-cat="laboratorio">Laboratorio</button>
+      <button class="cat-pill" data-cat="imagen">Imágenes</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPAND: CALCULADORA -->
+<div class="expand-section">
+  <button class="expand-trigger" onclick="toggleSection('calc')" aria-expanded="false" id="calcTrigger">
+    <div class="expand-trigger-left">
+      <div class="expand-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm0 6a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2zm0 6a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2h-2a2 2 0 01-2-2v0z"/></svg>
+      </div>
+      <div>
+        <div class="expand-label">Estimador médico</div>
+        <div class="expand-sub">Seleccioná servicios y ve el costo estimado al instante</div>
+      </div>
+    </div>
+    <svg class="expand-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+  </button>
+  <div class="expand-body" id="calcBody">
+    <div class="expand-content">
+      <div class="calc-grid" id="calcGrid">
+        <div class="calc-col" id="colConsulta">
+          <h3>Consultas médicas</h3>
+          <div class="calc-items" id="itemsConsulta"></div>
+        </div>
+        <div class="calc-col" id="colLab">
+          <h3>Laboratorio</h3>
+          <div class="calc-items" id="itemsLaboratorio"></div>
+        </div>
+        <div class="calc-col" id="colImagen">
+          <h3>Imágenes diagnósticas</h3>
+          <div class="calc-items" id="itemsImagen"></div>
+        </div>
+        <div class="calc-summary">
+          <div class="calc-summary-title">Resumen estimado</div>
+          <div class="calc-lines" id="calcLines"><div class="calc-empty">Seleccioná un servicio</div></div>
+          <div class="calc-divider"></div>
+          <div class="calc-total-label">Total estimado</div>
+          <div class="calc-total-amount" id="calcTotal">$0</div>
+          <button class="btn-calc-cta" id="btnCalcCta" disabled onclick="openModalFromCalc()">Continuar con reserva →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPAND: DIRECTORIO -->
+  <button class="expand-trigger" onclick="toggleSection('docs')" aria-expanded="false" id="docsTrigger" id="medicos">
+    <div class="expand-trigger-left">
+      <div class="expand-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+      </div>
+      <div>
+        <div class="expand-label">Nuestros médicos</div>
+        <div class="expand-sub" id="docsSubLabel">Especialistas del centro</div>
+      </div>
+    </div>
+    <svg class="expand-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+  </button>
+  <div class="expand-body" id="docsBody">
+    <div class="expand-content">
+      <div class="doctors-grid" id="doctorsGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Cargando médicos...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer id="nosotros">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <strong id="footerName">Doctor Center</strong>
+      <div id="footerAddr">Urdesa Norte AV 24, Villa B15 · Guayaquil</div>
+      <div style="margin-top:.3rem"><a href="tel:+593989173062" id="footerTel" style="color:rgba(255,255,255,.5);text-decoration:none">+593 98 917 3062</a></div>
+    </div>
+    <div class="footer-powered">
+      Powered by
+      <a href="https://citadoc.lat" target="_blank">CitaDoc</a>
+      · Health Network
+    </div>
+  </div>
+</footer>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBg(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Solicitar atención</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalContent">
+      <div class="modal-services" id="modalServices" style="display:none"></div>
+      <div class="modal-total" id="modalTotal" style="display:none">
+        <div class="modal-total-label">Total estimado</div>
+        <div class="modal-total-amount" id="modalTotalAmt">$0</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input class="form-control" id="fNombre" placeholder="Tu nombre" autocomplete="given-name">
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <input class="form-control" id="fApellido" placeholder="Tu apellido" autocomplete="family-name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Teléfono / WhatsApp</label>
+        <input class="form-control" id="fTelefono" type="tel" placeholder="+593..." autocomplete="tel">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input class="form-control" id="fEmail" type="email" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>¿Cuándo preferís atenderte?</label>
+        <input class="form-control" id="fFecha" type="date">
+      </div>
+      <div class="form-group">
+        <label>Comentario adicional <span style="color:var(--muted);font-weight:400">(opcional)</span></label>
+        <input class="form-control" id="fNota" placeholder="Ej: tengo historia previa, vendré con un familiar...">
+      </div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitReserva()">Solicitar reserva →</button>
+    </div>
+    <div id="modalSuccessContent" style="display:none">
+      <div class="modal-success">
+        <div class="modal-success-icon">✅</div>
+        <h3>¡Solicitud enviada!</h3>
+        <p>Nos comunicaremos con vos a la brevedad para confirmar tu turno.<br>También te llegará un mensaje por WhatsApp.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
+const sb      = supabase.createClient(SB_URL, SB_ANON)
+
+// Detect center slug from subdomain or default to 'doctor-center'
+const host   = window.location.hostname
+const parts  = host.split('.')
+const slug   = (parts.length >= 3 && parts[0] !== 'www') ? parts[0] : 'doctor-center'
+
+let _center   = null
+let _services = []
+let _doctors  = []
+let _selected = [] // {id, nombre, precio}
+let _filterCat = 'all'
+let _searchQ   = ''
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const [cRes, sRes] = await Promise.all([
+    sb.from('centers').select('*').eq('slug', slug).single(),
+    sb.from('center_services').select('*').eq('activo', true).order('orden')
+  ])
+
+  if (cRes.data) {
+    _center = cRes.data
+    applyBranding(_center)
+  }
+
+  if (sRes.data) {
+    _services = sRes.data
+    renderServices()
+  }
+
+  loadDoctors()
+}
+
+function applyBranding(c) {
+  document.title = c.nombre + ' — ' + (c.tagline || 'Tu salud, nuestra prioridad')
+  if (c.color_primary) {
+    document.documentElement.style.setProperty('--red', c.color_primary)
+    document.documentElement.style.setProperty('--red-dark', shadeColor(c.color_primary, -15))
+    document.documentElement.style.setProperty('--red-lite', hexToRgba(c.color_primary, .07))
+  }
+  if (c.tagline)     el('heroTitle').innerHTML = c.tagline.replace(',', ',<br><em>') + '</em>'
+  if (c.descripcion) el('heroSub').textContent = c.descripcion
+  if (c.direccion)   el('heroAddr').textContent = c.direccion
+  if (c.telefono) {
+    el('navTel').textContent = c.telefono
+    el('navTel').href = 'tel:' + c.telefono.replace(/\s/g,'')
+    el('footerTel').textContent = c.telefono
+    el('footerTel').href = 'tel:' + c.telefono.replace(/\s/g,'')
+  }
+  if (c.whatsapp) el('waHero').href = 'https://wa.me/' + c.whatsapp
+  if (c.nombre)   el('footerName').textContent = c.nombre
+  if (c.direccion && c.ciudad) el('footerAddr').textContent = c.direccion + ' · ' + c.ciudad
+  if (c.portada_url) el('heroImg').src = c.portada_url
+}
+
+async function loadDoctors() {
+  const { data: links } = await sb
+    .from('center_doctors')
+    .select('medico_id, orden')
+    .eq('center_id', _center?.id || '')
+    .order('orden')
+
+  if (!links || !links.length) {
+    el('docsSubLabel').textContent = 'Próximamente'
+    el('doctorsGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Médicos próximamente</div>'
+    return
+  }
+
+  const ids = links.map(l => l.medico_id)
+  const { data: docs } = await sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url,slug,rating_promedio,total_resenas').in('id', ids)
+
+  if (!docs) return
+  _doctors = docs
+  el('docsSubLabel').textContent = docs.length + ' especialista' + (docs.length !== 1 ? 's' : '')
+  renderDoctors(docs)
+}
+
+// ── SERVICES ──────────────────────────────────────────────────────────────────
+function renderServices() {
+  const filtered = _services.filter(s => {
+    const matchCat = _filterCat === 'all' || s.categoria === _filterCat
+    const matchQ   = !_searchQ || s.nombre.toLowerCase().includes(_searchQ.toLowerCase())
+    return matchCat && matchQ
+  })
+
+  const cats = ['consulta','laboratorio','imagen']
+  const labels = {consulta:'Consultas médicas', laboratorio:'Laboratorio', imagen:'Imágenes diagnósticas'}
+  const ids    = {consulta:'itemsConsulta', laboratorio:'itemsLaboratorio', imagen:'itemsImagen'}
+
+  cats.forEach(cat => {
+    const items = filtered.filter(s => s.categoria === cat)
+    const wrap  = el(ids[cat])
+    if (!wrap) return
+    if (!items.length) {
+      wrap.innerHTML = '<div style="color:var(--muted2);font-size:.78rem;padding:.5rem 0">Sin resultados</div>'
+      return
+    }
+    wrap.innerHTML = items.map(s => {
+      const sel = _selected.find(x => x.id === s.id)
+      return `<label class="calc-item${sel?' selected':''}" data-id="${s.id}">
+        <input type="checkbox" ${sel?'checked':''} onchange="toggleService('${s.id}','${esc(s.nombre)}',${s.precio||0})" onclick="event.stopPropagation()">
+        <span class="calc-item-name">${esc(s.nombre)}</span>
+        <span class="calc-item-price">$${s.precio||0}</span>
+      </label>`
+    }).join('')
+
+    // Make whole label clickable
+    wrap.querySelectorAll('.calc-item').forEach(item => {
+      item.addEventListener('click', e => {
+        if (e.target.tagName === 'INPUT') return
+        const cb = item.querySelector('input[type=checkbox]')
+        cb.checked = !cb.checked
+        const id = item.dataset.id
+        const svc = _services.find(s=>s.id===id)
+        if (svc) toggleService(id, svc.nombre, svc.precio||0)
+      })
+    })
+  })
+}
+
+function toggleService(id, nombre, precio) {
+  const idx = _selected.findIndex(x => x.id === id)
+  if (idx >= 0) _selected.splice(idx, 1)
+  else _selected.push({ id, nombre, precio })
+  renderServices()
+  updateCalcSummary()
+}
+
+function updateCalcSummary() {
+  const lines  = el('calcLines')
+  const total  = el('calcTotal')
+  const btn    = el('btnCalcCta')
+  const sum    = _selected.reduce((a, s) => a + s.precio, 0)
+
+  if (!_selected.length) {
+    lines.innerHTML = '<div class="calc-empty">Seleccioná un servicio</div>'
+    total.textContent = '$0'
+    btn.disabled = true
+    return
+  }
+
+  lines.innerHTML = _selected.map(s =>
+    `<div class="calc-line"><span class="calc-line-name">${esc(s.nombre)}</span><span class="calc-line-price">$${s.precio}</span></div>`
+  ).join('')
+  total.textContent = '$' + sum
+  btn.disabled = false
+}
+
+// ── DOCTORS ───────────────────────────────────────────────────────────────────
+function renderDoctors(docs) {
+  el('doctorsGrid').innerHTML = docs.map(d => {
+    const nombre = (d.titulo||'Dr.') + ' ' + d.nombre + ' ' + d.apellido
+    const esp    = (d.especialidades||[])[0] || ''
+    const rating = d.rating_promedio ? parseFloat(d.rating_promedio).toFixed(1) : null
+    const avatar = d.foto_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(d.nombre+' '+d.apellido)+'&background=f9fafb&color=6b7280&size=144'
+    const stars  = rating ? '★'.repeat(Math.round(parseFloat(rating))) + '☆'.repeat(5-Math.round(parseFloat(rating))) : ''
+    return `<a class="doctor-card" href="https://citadoc.lat/citadoc-perfil.html?slug=${d.slug||''}" target="_blank">
+      <img class="doctor-avatar" src="${avatar}" alt="${nombre}" loading="lazy">
+      <div class="doctor-name">${nombre}</div>
+      ${esp ? `<div class="doctor-spec">${esp}</div>` : ''}
+      ${rating ? `<div class="doctor-rating"><span class="doctor-stars">${stars}</span>${rating} · ${d.total_resenas} reseñas</div>` : ''}
+      <button class="btn-agendar-sm" onclick="event.preventDefault();openModal()">Agendar consulta</button>
+    </a>`
+  }).join('')
+}
+
+// ── TOGGLE SECTIONS ───────────────────────────────────────────────────────────
+function toggleSection(key) {
+  const body    = el(key + 'Body')
+  const trigger = el(key + 'Trigger')
+  const isOpen  = body.classList.contains('open')
+  body.classList.toggle('open', !isOpen)
+  trigger.setAttribute('aria-expanded', String(!isOpen))
+}
+
+// ── SEARCH & FILTER ───────────────────────────────────────────────────────────
+el('searchInput').addEventListener('input', e => {
+  _searchQ = e.target.value
+  renderServices()
+  // Auto-open calc if typing
+  if (_searchQ && !el('calcBody').classList.contains('open')) toggleSection('calc')
+})
+
+document.querySelectorAll('.cat-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    _filterCat = btn.dataset.cat
+    renderServices()
+    if (!el('calcBody').classList.contains('open')) toggleSection('calc')
+  })
+})
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal() {
+  el('modalOverlay').classList.add('open')
+  el('modalServices').style.display = 'none'
+  el('modalTotal').style.display    = 'none'
+  document.body.style.overflow = 'hidden'
+}
+
+function openModalFromCalc() {
+  if (!_selected.length) return
+  const sum = _selected.reduce((a,s) => a+s.precio, 0)
+  el('modalServices').style.display = 'block'
+  el('modalTotal').style.display    = 'flex'
+  el('modalTotalAmt').textContent   = '$' + sum
+  el('modalServices').innerHTML = _selected.map(s =>
+    `<div class="modal-service-row"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`
+  ).join('')
+  el('modalOverlay').classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function closeModal() {
+  el('modalOverlay').classList.remove('open')
+  document.body.style.overflow = ''
+  el('modalContent').style.display = 'block'
+  el('modalSuccessContent').style.display = 'none'
+}
+
+function closeModalOnBg(e) { if (e.target === el('modalOverlay')) closeModal() }
+
+async function submitReserva() {
+  const nombre   = el('fNombre').value.trim()
+  const apellido = el('fApellido').value.trim()
+  const telefono = el('fTelefono').value.trim()
+  const email    = el('fEmail').value.trim()
+  const fecha    = el('fFecha').value
+  const nota     = el('fNota').value.trim()
+
+  if (!nombre || !telefono) {
+    alert('Por favor completá nombre y teléfono.')
+    return
+  }
+
+  const btn = el('btnSubmit')
+  btn.disabled = true
+  btn.textContent = 'Enviando...'
+
+  // Save lead to Supabase
+  await sb.from('center_leads').insert({
+    center_id:  _center?.id,
+    nombre:     nombre + ' ' + apellido,
+    telefono,
+    email:      email || null,
+    fecha_pref: fecha || null,
+    nota:       nota || null,
+    servicios:  _selected.length ? JSON.stringify(_selected) : null,
+    total_est:  _selected.reduce((a,s)=>a+s.precio,0) || null,
+  }).catch(()=>{})
+
+  // WhatsApp auto-message
+  const waNum = _center?.whatsapp || '593989173062'
+  const svcs  = _selected.length ? '\n\nServicios de interés:\n' + _selected.map(s=>'• '+s.nombre+' ($'+s.precio+')').join('\n') : ''
+  const msg   = encodeURIComponent(`Hola Doctor Center, soy ${nombre} ${apellido}. Quisiera solicitar un turno.${svcs}${fecha?'\n\nFecha preferida: '+fecha:''}${nota?'\n\nNota: '+nota:''}`)
+
+  el('modalContent').style.display      = 'none'
+  el('modalSuccessContent').style.display = 'block'
+
+  // Open WhatsApp after brief delay
+  setTimeout(() => window.open('https://wa.me/' + waNum + '?text=' + msg, '_blank'), 1200)
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function el(id) { return document.getElementById(id) }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function shadeColor(hex, pct) {
+  const n = parseInt(hex.replace('#',''), 16)
+  const r = Math.max(0, Math.min(255, (n>>16) + pct))
+  const g = Math.max(0, Math.min(255, ((n>>8)&0xff) + pct))
+  const b = Math.max(0, Math.min(255, (n&0xff) + pct))
+  return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('')
+}
+function hexToRgba(hex, a) {
+  const n = parseInt(hex.replace('#',''), 16)
+  return `rgba(${n>>16},${(n>>8)&0xff},${n&0xff},${a})`
+}
+
+// Set min date for fecha input
+const today = new Date().toISOString().split('T')[0]
+el('fFecha').min = today
+
+init()
+</script>
+</body>
+</html>
