@@ -416,6 +416,49 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   .doc-stat{padding:.85rem .6rem}
   .doc-stat-num{font-size:1.55rem}
 }
+
+/* ── FICHA DEL PACIENTE ──────────────────────────────────────────────────── */
+.ficha-back{display:inline-flex;align-items:center;gap:.45rem;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;padding:.35rem 0;margin-bottom:1rem;transition:color .15s}
+.ficha-back:hover{color:var(--ink)}
+.ficha-back svg{width:16px;height:16px}
+.ficha-hero{background:#fff;border-radius:16px;padding:1.3rem 1.5rem;border:1.5px solid var(--border);display:flex;align-items:center;gap:1.1rem;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.ficha-avatar{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:#fff;flex-shrink:0}
+.ficha-hero-info{flex:1;min-width:0}
+.ficha-hero-name{font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.ficha-hero-sub{font-size:.78rem;color:var(--muted);margin-top:.2rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.ficha-wa-btn{display:inline-flex;align-items:center;gap:.35rem;background:#25D366;color:#fff;border:none;border-radius:8px;padding:.38rem .8rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;text-decoration:none;flex-shrink:0;transition:background .15s}
+.ficha-wa-btn:hover{background:#1da851}
+.ficha-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:#fff;border-radius:14px;border:1.5px solid var(--border);overflow:hidden}
+.ficha-stat{padding:.85rem 1rem;border-right:1.5px solid var(--border);display:flex;flex-direction:column;justify-content:center}
+.ficha-stat:last-child{border-right:none}
+.ficha-stat-label{font-size:.6rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem}
+.ficha-stat-val{font-family:Fraunces,serif;font-size:1.1rem;font-weight:700;color:var(--ink);line-height:1.2}
+.ficha-stat-val.accent{color:var(--red)}
+.ficha-tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:1rem}
+.ficha-tab{flex:1;padding:.75rem .5rem;border:none;border-bottom:2.5px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;margin-bottom:-2px}
+.ficha-tab.active{color:var(--red);border-bottom-color:var(--red)}
+.ficha-consulta-item{border:1.5px solid var(--border);border-radius:12px;margin-bottom:.6rem;overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .2s;cursor:pointer;background:#fff}
+.ficha-consulta-item:hover{border-color:var(--red);box-shadow:0 4px 16px rgba(204,41,54,.08);transform:translateY(-1px)}
+.ficha-consulta-header{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem}
+.ficha-consulta-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--red)}
+.ficha-consulta-fecha{font-size:.72rem;font-weight:700;color:var(--muted2);min-width:80px}
+.ficha-consulta-motivo{flex:1;font-size:.85rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ficha-consulta-chevron{width:16px;height:16px;color:var(--muted2);transition:transform .2s;flex-shrink:0}
+.ficha-consulta-item.open .ficha-consulta-chevron{transform:rotate(180deg)}
+.ficha-consulta-body{border-top:1px solid var(--border);padding:.9rem 1rem 1rem;background:#fafafa;display:none}
+.ficha-consulta-item.open .ficha-consulta-body{display:block}
+.ficha-consulta-section{margin-bottom:.75rem}
+.ficha-consulta-section:last-child{margin-bottom:0}
+.ficha-consulta-section-label{font-size:.62rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem}
+.ficha-consulta-section-val{font-size:.82rem;color:var(--ink2);line-height:1.55;white-space:pre-wrap}
+.ficha-empty{text-align:center;padding:2.5rem 1rem;font-size:.84rem;color:var(--muted2);background:#fff;border:1.5px dashed var(--border);border-radius:14px}
+.ficha-empty svg{display:block;margin:0 auto .65rem;width:28px;height:28px;opacity:.3}
+.ficha-ante-card{background:#fff;border-radius:14px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:.6rem}
+.ficha-ante-title{font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;padding:.85rem 1rem .55rem}
+.ficha-ante-val{font-size:.84rem;color:var(--ink2);padding:.1rem 1rem 1rem;line-height:1.55;white-space:pre-wrap}
+.ficha-ante-empty{font-size:.82rem;color:var(--muted2);padding:.1rem 1rem 1rem;font-style:italic}
+.ficha-consulta-form{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;margin-top:.75rem;display:none;flex-direction:column;gap:.75rem}
+.ficha-consulta-form.open{display:flex}
 </style>
 </head>
 <body>
@@ -630,10 +673,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         </div>
       </div>
 
-      <!-- ── DASHBOARD ── -->
-      <div id="docDashView" style="display:none">
+      <!-- ── AGENDA (dashboard principal) ── -->
+      <div id="docAgendaView" style="display:none">
 
-        <!-- Hero greeting -->
+        <!-- Hero -->
         <div class="doc-hero-card">
           <div class="doc-hero-left">
             <div class="doc-hero-date" id="docHeroDate">Lunes, 25 de mayo</div>
@@ -645,28 +688,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 
         <!-- Stats -->
         <div class="doc-stats">
-          <div class="doc-stat">
-            <div class="doc-stat-label">Citas hoy</div>
-            <div class="doc-stat-num accent" id="statHoy">—</div>
-            <div class="doc-stat-sub">agendadas</div>
-          </div>
-          <div class="doc-stat">
-            <div class="doc-stat-label">Confirmadas</div>
-            <div class="doc-stat-num" id="statConf">—</div>
-            <div class="doc-stat-sub">listas</div>
-          </div>
-          <div class="doc-stat">
-            <div class="doc-stat-label">Pendientes</div>
-            <div class="doc-stat-num" id="statPend">—</div>
-            <div class="doc-stat-sub">por confirmar</div>
-          </div>
+          <div class="doc-stat"><div class="doc-stat-label">Citas hoy</div><div class="doc-stat-num accent" id="statHoy">—</div><div class="doc-stat-sub">agendadas</div></div>
+          <div class="doc-stat"><div class="doc-stat-label">Confirmadas</div><div class="doc-stat-num" id="statConf">—</div><div class="doc-stat-sub">listas</div></div>
+          <div class="doc-stat"><div class="doc-stat-label">Pendientes</div><div class="doc-stat-num" id="statPend">—</div><div class="doc-stat-sub">por confirmar</div></div>
         </div>
 
-        <!-- Citas de hoy -->
+        <!-- Agenda de hoy -->
         <div>
           <div class="doc-section-header">
             <div class="doc-section-title">Agenda de hoy</div>
-            <button class="doc-section-action" onclick="switchDocTab('cita');el('panelCita').querySelector('input').focus()">+ Nueva cita</button>
+            <button class="doc-section-action" onclick="switchDocTab('cita')">+ Nueva cita</button>
           </div>
           <div id="docCitas">
             <div class="doc-citas-empty">
@@ -676,11 +707,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
           </div>
         </div>
 
-        <!-- Registrar — tabs -->
+        <!-- Registrar -->
         <div>
-          <div class="doc-section-header">
-            <div class="doc-section-title">Registrar</div>
-          </div>
+          <div class="doc-section-header"><div class="doc-section-title">Registrar</div></div>
           <div class="doc-register-card">
             <div class="doc-tabs">
               <button class="doc-tab active" id="tabCita" onclick="switchDocTab('cita')">
@@ -696,8 +725,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
                 Paciente
               </button>
             </div>
-
-            <!-- Form: Cita -->
             <div class="doc-tab-panel active" id="panelCita">
               <div class="doc-field"><label>Paciente</label><input id="citaNombre" placeholder="Nombre completo" autocomplete="off"></div>
               <div class="doc-field"><label>Teléfono</label><input id="citaTel" type="tel" placeholder="+1 555 0000"></div>
@@ -707,44 +734,99 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
               </div>
               <div class="doc-field"><label>Motivo <span style="font-weight:400;color:var(--muted2)">(opcional)</span></label><input id="citaMotivo" placeholder="Consulta general, control..."></div>
               <button class="btn-doc-save" id="btnSaveCita" onclick="saveCita()">Guardar cita</button>
-              <div class="doc-toast" id="toastCita">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Cita registrada correctamente
-              </div>
+              <div class="doc-toast" id="toastCita"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Cita registrada correctamente</div>
             </div>
-
-            <!-- Form: Consulta -->
             <div class="doc-tab-panel" id="panelConsulta">
               <div class="doc-field"><label>Paciente</label><input id="cPaciente" placeholder="Nombre completo" autocomplete="off"></div>
               <div class="doc-field"><label>Teléfono</label><input id="cTel" type="tel" placeholder="+1 555 0000"></div>
               <div class="doc-field"><label>Motivo</label><input id="cMotivo" placeholder="Ej: control, dolor abdominal..."></div>
-              <div class="doc-field"><label>Diagnóstico / notas</label><textarea id="cDiag" rows="3" placeholder="Diagnóstico, indicaciones, receta..."></textarea></div>
+              <div class="doc-field"><label>Diagnóstico</label><textarea id="cDiag" rows="2" placeholder="Diagnóstico principal..."></textarea></div>
+              <div class="doc-field"><label>Plan / Indicaciones</label><textarea id="cPlan" rows="2" placeholder="Tratamiento, indicaciones, receta..."></textarea></div>
+              <div class="doc-field"><label>Notas</label><textarea id="cNotas" rows="2" placeholder="Observaciones adicionales..."></textarea></div>
               <button class="btn-doc-save" id="btnSaveConsulta" onclick="saveConsulta()">Guardar consulta</button>
-              <div class="doc-toast" id="toastConsulta">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Consulta guardada
-              </div>
+              <div class="doc-toast" id="toastConsulta"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Consulta guardada</div>
             </div>
-
-            <!-- Form: Paciente -->
             <div class="doc-tab-panel" id="panelPaciente">
-              <div class="doc-field-row">
-                <div class="doc-field"><label>Nombre</label><input id="pNombre" placeholder="Nombre" autocomplete="off"></div>
-                <div class="doc-field"><label>Apellido</label><input id="pApellido" placeholder="Apellido"></div>
-              </div>
+              <div class="doc-field"><label>Nombre completo</label><input id="pNombre" placeholder="Nombre y apellido" autocomplete="off"></div>
               <div class="doc-field"><label>Teléfono / WhatsApp</label><input id="pTel" type="tel" placeholder="+1 555 0000"></div>
               <div class="doc-field"><label>Email <span style="font-weight:400;color:var(--muted2)">(opcional)</span></label><input id="pEmail" type="email" placeholder="paciente@email.com"></div>
               <button class="btn-doc-save" id="btnSavePaciente" onclick="savePaciente()">Registrar paciente</button>
-              <div class="doc-toast" id="toastPaciente">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                Paciente registrado
-              </div>
+              <div class="doc-toast" id="toastPaciente"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Paciente registrado</div>
             </div>
-
           </div>
         </div>
 
-      </div><!-- /docDashView -->
+      </div><!-- /docAgendaView -->
+
+      <!-- ── FICHA DEL PACIENTE ── -->
+      <div id="docFichaView" style="display:none">
+
+        <button class="ficha-back" onclick="switchDocView('agenda')">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          Volver a la agenda
+        </button>
+
+        <!-- Patient hero -->
+        <div class="ficha-hero">
+          <div class="ficha-avatar" id="fichaAvatar">P</div>
+          <div class="ficha-hero-info">
+            <div class="ficha-hero-name" id="fichaNombre">Paciente</div>
+            <div class="ficha-hero-sub">
+              <span id="fichaTel">—</span>
+              <span id="fichaEmail" style="display:none"></span>
+            </div>
+          </div>
+          <a class="ficha-wa-btn" id="fichaWa" href="#" target="_blank" style="display:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.025.507 3.933 1.395 5.6L0 24l6.615-1.376A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.37l-.36-.214-3.724.776.793-3.632-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="ficha-stats">
+          <div class="ficha-stat"><div class="ficha-stat-label">Consultas</div><div class="ficha-stat-val accent" id="fichaStatConsultas">—</div></div>
+          <div class="ficha-stat"><div class="ficha-stat-label">Citas totales</div><div class="ficha-stat-val" id="fichaStatCitas">—</div></div>
+          <div class="ficha-stat"><div class="ficha-stat-label">Última visita</div><div class="ficha-stat-val" id="fichaStatUltima">—</div></div>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="ficha-tab-bar">
+          <button class="ficha-tab active" id="ftabHist" onclick="fichaTabSwitch('hist')">Historial clínico</button>
+          <button class="ficha-tab" id="ftabAnte" onclick="fichaTabSwitch('ante')">Antecedentes</button>
+        </div>
+
+        <!-- Historial clínico -->
+        <div id="ftabPaneHist">
+          <div class="doc-section-header" style="margin-bottom:.85rem">
+            <div class="doc-section-title">Historial clínico</div>
+            <button class="doc-section-action" onclick="toggleFichaConsultaForm()">+ Nueva consulta</button>
+          </div>
+
+          <!-- Nueva consulta inline form -->
+          <div class="ficha-consulta-form" id="fichaConsultaForm">
+            <div class="doc-field"><label>Motivo</label><input id="fcMotivo" placeholder="Motivo de consulta..." autocomplete="off"></div>
+            <div class="doc-field"><label>Enfermedad actual</label><textarea id="fcEnfermedad" rows="2" placeholder="Descripción de la enfermedad actual..."></textarea></div>
+            <div class="doc-field"><label>Diagnóstico</label><textarea id="fcDiagnostico" rows="2" placeholder="Diagnóstico principal..."></textarea></div>
+            <div class="doc-field"><label>Plan / Indicaciones</label><textarea id="fcPlan" rows="2" placeholder="Tratamiento, medicamentos, indicaciones..."></textarea></div>
+            <div class="doc-field"><label>Notas</label><textarea id="fcNotas" rows="2" placeholder="Observaciones adicionales..."></textarea></div>
+            <button class="btn-doc-save" id="btnSaveFichaConsulta" onclick="saveFichaConsulta()">Guardar consulta</button>
+            <div class="doc-toast" id="toastFichaConsulta"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Consulta guardada</div>
+          </div>
+
+          <div id="fichaConsultas">
+            <div class="ficha-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Sin historial clínico aún</div>
+          </div>
+        </div>
+
+        <!-- Antecedentes -->
+        <div id="ftabPaneAnte" style="display:none">
+          <div class="ficha-ante-card"><div class="ficha-ante-title">Alergias</div><div id="anteAlergias" class="ficha-ante-empty">Sin datos registrados</div></div>
+          <div class="ficha-ante-card"><div class="ficha-ante-title">Medicación actual</div><div id="anteMedicacion" class="ficha-ante-empty">Sin datos registrados</div></div>
+          <div class="ficha-ante-card"><div class="ficha-ante-title">Antecedentes médicos</div><div id="anteAntecedentes" class="ficha-ante-empty">Sin datos registrados</div></div>
+          <div class="ficha-ante-card"><div class="ficha-ante-title">Cirugías previas</div><div id="anteCirugias" class="ficha-ante-empty">Sin datos registrados</div></div>
+        </div>
+
+      </div><!-- /docFichaView -->
     </div><!-- /doc-portal-inner -->
   </div><!-- /doc-portal-body -->
 </div><!-- /doc-portal -->
@@ -1403,17 +1485,16 @@ async function loadDocMedico() {
 }
 
 function showDocLogin() {
-  el('docLoginView').style.display = 'block'
-  el('docDashView').style.display = 'none'
-  el('docTopbarDoc').style.display = 'none'
+  el('docLoginView').style.display   = 'block'
+  el('docAgendaView').style.display  = 'none'
+  el('docFichaView').style.display   = 'none'
+  el('docTopbarDoc').style.display   = 'none'
   const btn = el('btnDocLogin')
   btn.disabled = false
   btn.textContent = 'Ingresar al panel'
 }
 
 function showDocDash() {
-  el('docLoginView').style.display = 'none'
-  el('docDashView').style.display = 'block'
   const titulo   = _docMedico.titulo  || 'Dr.'
   const nombre   = _docMedico.nombre  || ''
   const apellido = _docMedico.apellido|| ''
@@ -1422,12 +1503,9 @@ function showDocDash() {
   const hour     = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
 
-  // Hero card
   el('docHeroTitle').textContent = greeting + ', ' + titulo + ' ' + nombre
   el('docAvatar').textContent    = initials
   el('docHeroDate').textContent  = new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})
-
-  // Top bar
   el('docTopbarDoc').style.display = 'flex'
   el('docTopAvatar').textContent   = initials
   el('docTopName').textContent     = fullName
@@ -1435,7 +1513,16 @@ function showDocDash() {
   if (el('citaFecha') && !el('citaFecha').value)
     el('citaFecha').value = new Date().toISOString().split('T')[0]
 
-  loadTodayCitas()
+  switchDocView('agenda')
+}
+
+function switchDocView(view) {
+  el('docLoginView').style.display  = view === 'login'  ? 'block' : 'none'
+  el('docAgendaView').style.display = view === 'agenda' ? 'block' : 'none'
+  el('docFichaView').style.display  = view === 'ficha'  ? 'block' : 'none'
+  el('doc-portal-body') && el('doc-portal-body').scrollTo(0, 0)
+  document.querySelector('.doc-portal-body')?.scrollTo(0, 0)
+  if (view === 'agenda') loadTodayCitas()
 }
 
 async function loadTodayCitas() {
@@ -1476,20 +1563,22 @@ async function loadTodayCitas() {
   const LABELS = {confirmada:'Confirmada', pendiente:'Pendiente', cancelada:'Cancelada'}
   wrap.innerHTML = citas.map(c => {
     const p       = pacMap[c.paciente_id] || {}
-    const nombre  = [p.nombre, p.apellido].filter(Boolean).join(' ') || 'Paciente'
+    const nombre  = p.nombre || 'Paciente'
     const initials= nombre.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()
     const hora    = (c.hora||'').slice(0,5) || '--:--'
-    const meta    = c.motivo || p.telefono || ''
+    const sub     = c.motivo || p.telefono || ''
     const badge   = c.estado || 'pendiente'
+    const pid     = c.paciente_id || ''
     return `<div class="cita-item">
       <div class="cita-avatar">${esc(initials)}</div>
       <div class="cita-info">
         <div class="cita-nombre">${esc(nombre)}</div>
-        ${meta ? `<div class="cita-meta">${esc(meta)}</div>` : ''}
+        ${sub ? `<div class="cita-meta">${esc(sub)}</div>` : ''}
       </div>
-      <div class="cita-hora-badge">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0">
         <div class="cita-hora">${hora}</div>
         <span class="cita-badge ${badge}">${LABELS[badge]||badge}</span>
+        ${pid ? `<button onclick="abrirFichaDoc('${pid}','${esc(nombre)}')" style="background:none;border:1.5px solid var(--border);border-radius:7px;padding:.2rem .6rem;font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Ver ficha</button>` : ''}
       </div>
     </div>`
   }).join('')
@@ -1544,6 +1633,141 @@ async function saveCita() {
   loadTodayCitas()
 }
 
+// ── FICHA DEL PACIENTE ────────────────────────────────────────────────────────
+let _fichaDoc = null  // current patient in ficha view
+
+async function abrirFichaDoc(pacienteId, nombre) {
+  switchDocView('ficha')
+  _fichaDoc = { id: pacienteId, nombre }
+
+  // Reset view
+  el('fichaNombre').textContent = nombre
+  el('fichaAvatar').textContent = nombre.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase()
+  el('fichaTel').textContent    = '…'
+  el('fichaStatConsultas').textContent = '—'
+  el('fichaStatCitas').textContent     = '—'
+  el('fichaStatUltima').textContent    = '—'
+  el('fichaConsultas').innerHTML = '<div class="ficha-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Cargando historial...</div>'
+  fichaTabSwitch('hist')
+
+  const [pacs, consultas, citas] = await Promise.all([
+    dbGet('pacientes', 'id=eq.'+pacienteId+'&select=*&limit=1', _authToken),
+    dbGet('consultas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken),
+    dbGet('citas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,fecha,hora,estado&order=fecha.desc', _authToken)
+  ])
+
+  const pac = pacs[0] || {}
+  _fichaDoc.paciente = pac
+
+  // Hero
+  el('fichaNombre').textContent = pac.nombre || nombre
+  el('fichaTel').textContent    = pac.telefono || '—'
+  if (pac.email) { el('fichaEmail').textContent = pac.email; el('fichaEmail').style.display='inline' }
+  if (pac.telefono) {
+    const wa = el('fichaWa')
+    wa.href = 'https://wa.me/'+pac.telefono.replace(/\D/g,'')
+    wa.style.display = 'inline-flex'
+  }
+
+  // Stats
+  el('fichaStatConsultas').textContent = consultas.length || '0'
+  el('fichaStatCitas').textContent     = citas.length || '0'
+  const ultima = consultas[0]?.created_at ? new Date(consultas[0].created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—'
+  el('fichaStatUltima').textContent    = ultima
+
+  // Antecedentes
+  const anteMap = {alergias:'anteAlergias', medicacion:'anteMedicacion', antecedentes:'anteAntecedentes', cirugias:'anteCirugias'}
+  Object.entries(anteMap).forEach(([field, id]) => {
+    const val = pac[field]
+    const wrap = el(id)
+    if (val && val.trim()) { wrap.className='ficha-ante-val'; wrap.textContent = val }
+    else { wrap.className='ficha-ante-empty'; wrap.textContent = 'Sin datos registrados' }
+  })
+
+  // Historial
+  renderFichaHistorial(consultas)
+}
+
+function renderFichaHistorial(consultas) {
+  const wrap = el('fichaConsultas')
+  if (!consultas.length) {
+    wrap.innerHTML = `<div class="ficha-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Sin historial clínico aún.<br>Registrá la primera consulta.
+    </div>`
+    return
+  }
+  wrap.innerHTML = consultas.map((c, i) => {
+    const fecha  = new Date(c.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})
+    const motivo = c.motivo || 'Consulta'
+    const fields = [
+      {label:'Enfermedad actual', val:c.enfermedad_actual},
+      {label:'Diagnóstico',       val:c.diagnostico},
+      {label:'Plan / Indicaciones',val:c.plan || c.indicaciones},
+      {label:'Notas',             val:c.notas},
+    ].filter(f => f.val && f.val.trim())
+    return `<div class="ficha-consulta-item" id="consulta-${i}" onclick="toggleConsulta(${i})">
+      <div class="ficha-consulta-header">
+        <div class="ficha-consulta-dot"></div>
+        <div class="ficha-consulta-fecha">${fecha}</div>
+        <div class="ficha-consulta-motivo">${esc(motivo)}</div>
+        <svg class="ficha-consulta-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </div>
+      <div class="ficha-consulta-body">
+        ${fields.length ? fields.map(f=>`<div class="ficha-consulta-section"><div class="ficha-consulta-section-label">${f.label}</div><div class="ficha-consulta-section-val">${esc(f.val)}</div></div>`).join('') : '<div style="font-size:.82rem;color:var(--muted2)">Sin detalles adicionales</div>'}
+      </div>
+    </div>`
+  }).join('')
+}
+
+function toggleConsulta(i) {
+  const item = document.getElementById('consulta-'+i)
+  if (item) item.classList.toggle('open')
+}
+
+function fichaTabSwitch(tab) {
+  ;['hist','ante'].forEach(t => {
+    el('ftabPane'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab ? 'block' : 'none'
+    const btn = el('ftab'+t.charAt(0).toUpperCase()+t.slice(1))
+    if (btn) btn.classList.toggle('active', t===tab)
+  })
+}
+
+function toggleFichaConsultaForm() {
+  const form = el('fichaConsultaForm')
+  form.classList.toggle('open')
+}
+
+async function saveFichaConsulta() {
+  if (!_fichaDoc?.id) return
+  const motivo = el('fcMotivo').value.trim()
+  if (!motivo) { el('fcMotivo').focus(); return }
+  const btn = el('btnSaveFichaConsulta')
+  btn.disabled = true
+
+  await dbPost('consultas', {
+    medico_id:        _docMedico.id,
+    paciente_id:      _fichaDoc.id,
+    motivo,
+    enfermedad_actual: el('fcEnfermedad').value.trim() || null,
+    diagnostico:       el('fcDiagnostico').value.trim() || null,
+    plan:              el('fcPlan').value.trim() || null,
+    notas:             el('fcNotas').value.trim() || null,
+    estado:            'completada'
+  }, _authToken)
+
+  ;['fcMotivo','fcEnfermedad','fcDiagnostico','fcPlan','fcNotas'].forEach(id=>{el(id).value=''})
+  btn.disabled = false
+  el('fichaConsultaForm').classList.remove('open')
+  const t = el('toastFichaConsulta'); t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'), 2500)
+
+  // Reload historial
+  const consultas = await dbGet('consultas', 'paciente_id=eq.'+_fichaDoc.id+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken)
+  renderFichaHistorial(consultas)
+  el('fichaStatConsultas').textContent = consultas.length
+}
+
 // ── DOCTOR FORMS ──────────────────────────────────────────────────────────────
 function switchDocTab(key) {
   const cap = key.charAt(0).toUpperCase() + key.slice(1)
@@ -1556,53 +1780,61 @@ function switchDocTab(key) {
 }
 
 async function saveConsulta() {
-  const paciente = el('cPaciente').value.trim()
-  const tel      = el('cTel').value.trim()
-  const motivo   = el('cMotivo').value.trim()
-  const diag     = el('cDiag').value.trim()
-  if (!paciente) { el('cPaciente').focus(); return }
+  const nombre  = el('cPaciente').value.trim()
+  const tel     = el('cTel').value.trim()
+  const motivo  = el('cMotivo').value.trim()
+  const diag    = el('cDiag').value.trim()
+  const plan    = el('cPlan').value.trim()
+  const notas   = el('cNotas').value.trim()
+  if (!nombre) { el('cPaciente').focus(); return }
 
   const btn = el('btnSaveConsulta')
   btn.disabled = true
 
-  await dbPost('center_consultations', {
-    center_id:       _center?.id,
-    medico_id:       _docMedico?.id,
-    paciente_nombre: paciente,
-    paciente_tel:    tel || null,
-    motivo:          motivo || null,
-    diagnostico:     diag || null,
-    fecha:           new Date().toISOString().split('T')[0]
+  // Find-or-create paciente
+  let pacienteId = null
+  if (tel) {
+    const found = await dbGet('pacientes','telefono=eq.'+encodeURIComponent(tel)+'&select=id&limit=1',_authToken)
+    if (found.length) pacienteId = found[0].id
+  }
+  if (!pacienteId) {
+    const r = await xhrReq('POST', SB_URL+'/rest/v1/pacientes',
+      H(_authToken,{'Content-Type':'application/json','Prefer':'return=representation'}),
+      JSON.stringify({nombre, telefono:tel||null}))
+    if (r.ok) { const d=JSON.parse(r.text); pacienteId=(Array.isArray(d)?d[0]:d)?.id }
+  }
+
+  await dbPost('consultas', {
+    medico_id:   _docMedico.id,
+    paciente_id: pacienteId || null,
+    motivo:      motivo || null,
+    diagnostico: diag   || null,
+    plan:        plan   || null,
+    notas:       notas  || null,
+    estado:      'completada'
   }, _authToken)
 
-  el('cPaciente').value = ''
-  el('cTel').value = ''
-  el('cMotivo').value = ''
-  el('cDiag').value = ''
+  ;['cPaciente','cTel','cMotivo','cDiag','cPlan','cNotas'].forEach(id=>{el(id).value=''})
   btn.disabled = false
-
   const toast = el('toastConsulta')
   toast.classList.add('show')
   setTimeout(() => { toast.classList.remove('show') }, 2500)
 }
 
 async function savePaciente() {
-  const nombre   = el('pNombre').value.trim()
-  const apellido = el('pApellido').value.trim()
-  const tel      = el('pTel').value.trim()
-  const email    = el('pEmail').value.trim()
+  const nombre = el('pNombre').value.trim()
+  const tel    = el('pTel').value.trim()
+  const email  = el('pEmail').value.trim()
   if (!nombre || !tel) { el(!nombre ? 'pNombre' : 'pTel').focus(); return }
 
   const btn = el('btnSavePaciente')
   btn.disabled = true
 
   await dbPost('pacientes', {
-    nombre, apellido: apellido || null,
-    telefono: tel, email: email || null
+    nombre, telefono: tel, email: email || null
   }, _authToken)
 
   el('pNombre').value = ''
-  el('pApellido').value = ''
   el('pTel').value = ''
   el('pEmail').value = ''
   btn.disabled = false
