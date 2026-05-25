@@ -1136,8 +1136,28 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         </div>
 
         <div class="cm-field">
+          <label>Laboratorios</label>
+          <div class="cm-rx-wrap">
+            <input type="text" id="mc_lab_search" autocomplete="off" placeholder="Buscar examen de laboratorio..." oninput="mcLabBuscar(this.value)" onkeydown="mcLabKeyNav(event)">
+            <div class="cm-drop" id="mc_lab_drop" style="display:none"></div>
+          </div>
+          <div class="cm-tags" id="mc_lab_tags"></div>
+          <input type="hidden" id="c_estudios">
+        </div>
+
+        <div class="cm-field">
+          <label>Imágenes diagnósticas</label>
+          <div class="cm-rx-wrap">
+            <input type="text" id="mc_img_search" autocomplete="off" placeholder="Buscar imagen diagnóstica..." oninput="mcImgBuscar(this.value)" onkeydown="mcImgKeyNav(event)">
+            <div class="cm-drop" id="mc_img_drop" style="display:none"></div>
+          </div>
+          <div class="cm-tags" id="mc_img_tags"></div>
+          <input type="hidden" id="c_imagenes">
+        </div>
+
+        <div class="cm-field">
           <label>Indicaciones generales</label>
-          <textarea id="c_indicaciones" rows="4" placeholder="Reposo, dieta, controles de seguimiento, advertencias..."></textarea>
+          <textarea id="c_indicaciones" rows="3" placeholder="Reposo, dieta, controles de seguimiento, advertencias..."></textarea>
         </div>
 
       </div><!-- /mc_step2 -->
@@ -2162,7 +2182,7 @@ async function abrirFichaDoc(pacienteId, nombre) {
 
   const [pacs, consultas, citas] = await Promise.all([
     dbGet('pacientes', 'id=eq.'+pacienteId+'&select=*&limit=1', _authToken),
-    dbGet('consultas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,examen_fisico,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken),
+    dbGet('consultas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,examen_fisico,plan,estudios,imagenes,indicaciones,notas,created_at&order=created_at.desc', _authToken),
     dbGet('citas', 'paciente_id=eq.'+pacienteId+'&medico_id=eq.'+_docMedico.id+'&select=id,fecha,hora,estado&order=fecha.desc', _authToken)
   ])
 
@@ -2212,12 +2232,14 @@ function renderFichaHistorial(consultas) {
     const fecha  = new Date(c.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})
     const motivo = c.motivo || 'Consulta'
     const fields = [
-      {label:'Enfermedad actual', val:c.enfermedad_actual},
-      {label:'Examen físico',     val:c.examen_fisico},
-      {label:'Diagnóstico CIE-10',val:c.diagnostico},
-      {label:'Medicamentos',      val:c.plan},
-      {label:'Indicaciones',      val:c.indicaciones},
-      {label:'Notas',             val:c.notas},
+      {label:'Enfermedad actual',    val:c.enfermedad_actual},
+      {label:'Examen físico',        val:c.examen_fisico},
+      {label:'Diagnóstico CIE-10',   val:c.diagnostico},
+      {label:'Medicamentos',         val:c.plan},
+      {label:'Laboratorios',         val:c.estudios},
+      {label:'Imágenes diagnósticas',val:c.imagenes},
+      {label:'Indicaciones',         val:c.indicaciones},
+      {label:'Notas',                val:c.notas},
     ].filter(f => f.val && f.val.trim())
     return `<div class="ficha-consulta-item" id="consulta-${i}" onclick="toggleConsulta(${i})">
       <div class="ficha-consulta-header">
@@ -2415,12 +2437,18 @@ async function savePaciente() {
 // ── MODAL CONSULTA ────────────────────────────────────────────────────────────
 var CIE10=[{c:"M17.0",l:"Gonartrosis primaria bilateral"},{c:"M17.1",l:"Gonartrosis primaria unilateral"},{c:"M19.0",l:"Artrosis primaria de otras articulaciones"},{c:"M75.1",l:"Síndrome del manguito rotador"},{c:"M75.0",l:"Capsulitis adhesiva del hombro"},{c:"M54.5",l:"Lumbalgia inespecífica"},{c:"M54.4",l:"Lumbociatalgia"},{c:"M47.8",l:"Espondilosis con mielopatía"},{c:"M51.1",l:"Hernia de disco lumbar con radiculopatía"},{c:"M48.0",l:"Estenosis del canal espinal"},{c:"S72.0",l:"Fractura del cuello del fémur"},{c:"S52.5",l:"Fractura distal del radio"},{c:"S82.0",l:"Fractura de la rótula"},{c:"S83.5",l:"Lesión del ligamento cruzado anterior"},{c:"M23.2",l:"Lesión meniscal — crónica"},{c:"M65.3",l:"Tenosinovitis del tendón largo del bíceps"},{c:"M77.1",l:"Epicondilitis lateral — codo de tenista"},{c:"M77.0",l:"Epicondilitis medial — codo de golfista"},{c:"M25.5",l:"Dolor articular"},{c:"M79.0",l:"Reumatismo inespecífico"},{c:"J06.9",l:"Infección aguda de vías respiratorias superiores"},{c:"J00",l:"Rinofaringitis aguda — resfrío común"},{c:"J20.9",l:"Bronquitis aguda"},{c:"J18.9",l:"Neumonía"},{c:"J45.9",l:"Asma bronquial"},{c:"K29.7",l:"Gastritis crónica"},{c:"K21.0",l:"Enfermedad por reflujo gastroesofágico"},{c:"K57.3",l:"Enfermedad diverticular del colon"},{c:"K80.2",l:"Colelitiasis"},{c:"I10",l:"Hipertensión arterial esencial"},{c:"I25.1",l:"Cardiopatía coronaria con angina"},{c:"I50.9",l:"Insuficiencia cardíaca"},{c:"I48",l:"Fibrilación auricular"},{c:"E11.9",l:"Diabetes mellitus tipo 2"},{c:"E10.9",l:"Diabetes mellitus tipo 1"},{c:"E78.5",l:"Hiperlipidemia mixta"},{c:"E03.9",l:"Hipotiroidismo"},{c:"E05.9",l:"Hipertiroidismo"},{c:"E66.9",l:"Obesidad"},{c:"N39.0",l:"Infección urinaria"},{c:"N18.3",l:"Enfermedad renal crónica estadio 3"},{c:"N40",l:"Hiperplasia prostática benigna"},{c:"R05",l:"Tos"},{c:"R51",l:"Cefalea"},{c:"R42",l:"Vértigo"},{c:"R07.4",l:"Dolor torácico inespecífico"},{c:"R10.4",l:"Dolor abdominal inespecífico"},{c:"F41.1",l:"Trastorno de ansiedad generalizada"},{c:"F32.9",l:"Episodio depresivo"},{c:"F43.1",l:"Trastorno de estrés postraumático"},{c:"G43.9",l:"Migraña"},{c:"G40.9",l:"Epilepsia"},{c:"G35",l:"Esclerosis múltiple"},{c:"G62.9",l:"Polineuropatía"},{c:"G57.0",l:"Lesión del nervio ciático"},{c:"G56.0",l:"Síndrome del túnel carpiano"},{c:"G50.0",l:"Neuralgia del trigémino"},{c:"L20.9",l:"Dermatitis atópica"},{c:"L40.0",l:"Psoriasis vulgar"},{c:"L03.9",l:"Celulitis"},{c:"B02.9",l:"Herpes zóster"},{c:"N94.6",l:"Dismenorrea"},{c:"N83.2",l:"Quiste ovárico"},{c:"N76.0",l:"Vaginitis aguda"},{c:"J02.9",l:"Faringoamigdalitis aguda"},{c:"H66.9",l:"Otitis media aguda"},{c:"A09",l:"Gastroenteritis infecciosa"},{c:"J03.9",l:"Amigdalitis aguda"},{c:"I21.9",l:"Infarto agudo de miocardio"},{c:"I20.9",l:"Angina pectoris"},{c:"Z71.1",l:"Consulta de control preventivo"},{c:"Z00.0",l:"Examen médico general"},{c:"T14.9",l:"Traumatismo inespecífico"}]
 
+var _mcImgs=["Radiografía de tórax AP","Radiografía de tórax PA y lateral","Radiografía de columna lumbar AP y lateral","Radiografía de columna cervical","Radiografía de columna torácica","Radiografía de rodilla AP y lateral","Radiografía de hombro","Radiografía de cadera","Radiografía de pelvis","Radiografía de tobillo","Radiografía de pie","Radiografía de mano","Radiografía de muñeca","Radiografía de codo","Radiografía de abdomen simple","Ecografía abdominal completa","Ecografía pélvica","Ecografía de tiroides","Ecografía de mama bilateral","Ecografía musculoesquelética","Ecografía Doppler venoso miembros inferiores","Ecografía renal","Ecografía de próstata","Ecografía obstétrica","Ecocardiograma transtorácico","TAC de abdomen con contraste","TAC de abdomen sin contraste","TAC de tórax","TAC de columna lumbar","TAC de columna cervical","TAC de cráneo sin contraste","TAC de cráneo con contraste","TAC de pelvis","RM de columna lumbar","RM de columna cervical","RM de rodilla","RM de hombro","RM de cadera","RM de cerebro sin contraste","RM de cerebro con contraste","RM de muñeca","RM de tobillo","RM de columna torácica","Mamografía bilateral","Densitometría ósea (DEXA)","Gammagrafía ósea","Endoscopia digestiva alta","Colonoscopia","Electrocardiograma","Holter 24h","Prueba de esfuerzo"]
+var _mcLabs=["Biometría hemática completa (BHC)","Hemograma","Glucosa en ayunas","Glucosa postprandial 2h","HbA1c (hemoglobina glicosilada)","Perfil lipídico completo","Colesterol total","HDL colesterol","LDL colesterol","Triglicéridos","Creatinina sérica","Urea sérica","Ácido úrico","Filtrado glomerular (TFG estimada)","Electrolitos séricos (Na, K, Cl)","Calcio sérico","TGO (AST)","TGP (ALT)","Fosfatasa alcalina","GGT","Bilirrubina total y directa","Albúmina sérica","Tiempo de protrombina (TP/INR)","TSH","T3 libre","T4 libre","Proteína C reactiva (PCR)","PCR ultrasensible","VSG (velocidad de sedimentación)","Factor reumatoide","Anti-CCP","ANA (anticuerpos antinucleares)","Vitamina D (25-OH)","Vitamina B12","Ácido fólico sérico","Ferritina","Hierro sérico","PSA total","CEA","CA 125","CA 19-9","Examen elemental de orina (EMO)","Urocultivo y antibiograma","Microalbuminuria","Coproscopia","Antígeno de H. pylori en heces","Hemocultivo","Cultivo de herida + antibiograma","BAAR (baciloscopia)","HIV (ELISA)","VDRL","HBsAg (hepatitis B)","Anti-HCV (hepatitis C)","Beta-hCG cuantitativa","Prolactina","FSH","LH","Estradiol","Testosterona total","Cortisol basal","Plaquetas","Reticulocitos","Gasometría arterial","Lactato","Procalcitonina","Dímero D","Fibrinógeno","INR"]
 var _mcMeds=["Paracetamol 500mg","Paracetamol 1g","Ibuprofeno 400mg","Ibuprofeno 600mg","Diclofenaco 50mg","Diclofenaco 75mg","Naproxeno 500mg","Ketorolaco 10mg","Ketorolaco 30mg","Tramadol 50mg","Tramadol 100mg","Amoxicilina 500mg","Amoxicilina 875mg","Amoxicilina+Clavulánico 875mg","Azitromicina 500mg","Ciprofloxacino 500mg","Levofloxacino 500mg","Cefalexina 500mg","Clindamicina 300mg","Metronidazol 500mg","Doxiciclina 100mg","Omeprazol 20mg","Omeprazol 40mg","Pantoprazol 40mg","Metoclopramida 10mg","Loperamida 2mg","Enalapril 5mg","Enalapril 10mg","Lisinopril 10mg","Amlodipino 5mg","Amlodipino 10mg","Atenolol 50mg","Metoprolol 50mg","Losartán 50mg","Losartán 100mg","Hidroclorotiazida 25mg","Furosemida 40mg","Metformina 500mg","Metformina 850mg","Metformina 1000mg","Glibenclamida 5mg","Sitagliptina 100mg","Insulina NPH","Insulina Glargina","Levotiroxina 25mcg","Levotiroxina 50mcg","Levotiroxina 75mcg","Levotiroxina 100mcg","Sertralina 50mg","Sertralina 100mg","Fluoxetina 20mg","Escitalopram 10mg","Alprazolam 0.5mg","Clonazepam 0.5mg","Clonazepam 2mg","Diazepam 5mg","Prednisona 5mg","Prednisona 20mg","Dexametasona 4mg","Ciclobenzaprina 5mg","Tizanidina 4mg","Vitamina D 1000UI","Vitamina D 2000UI","Calcio 500mg","Hierro 300mg","Ácido fólico 1mg","Vitamina B12 1000mcg","Loratadina 10mg","Cetirizina 10mg","Montelukast 10mg","Salbutamol inhalador","Budesonida inhalador","Diclofenaco gel 1%","Acetilcisteína 600mg","Ambroxol 30mg","Atorvastatina 10mg","Atorvastatina 20mg","Atorvastatina 40mg","Rosuvastatina 10mg","Gabapentina 300mg","Pregabalina 75mg","Pregabalina 150mg","Carbamazepina 200mg","Allopurinol 100mg","Colchicina 0.5mg","Meloxicam 7.5mg","Meloxicam 15mg","Celecoxib 200mg"]
 
 var _fichadiags = []
 var _cmMedItems = []
+var _cmLabItems = []
+var _cmImgItems = []
 var _cmDiagIdx  = -1
 var _cmMedIdx   = -1
+var _cmLabIdx   = -1
+var _cmImgIdx   = -1
 
 function _norm(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase() }
 
@@ -2428,14 +2456,14 @@ function abrirConsultaModal() {
   const pac = _fichaDoc?.paciente || {}
   el('mc_pacNombre').textContent = pac.nombre || _fichaDoc?.nombre || 'Paciente'
   // Reset state
-  _fichadiags = []; _cmMedItems = []; _cmDiagIdx = -1; _cmMedIdx = -1
-  ;['c_motivo','c_enfermedad','c_examen','c_notas','c_indicaciones','mc_med_search','c_diag_search'].forEach(id=>{const e=el(id);if(e)e.value=''})
-  el('c_diagnostico').value = ''
-  el('c_plan').value = ''
-  el('c_diag_tags').innerHTML = ''
-  el('mc_med_tags').innerHTML = ''
-  el('c_diag_drop').style.display = 'none'
-  el('mc_med_drop').style.display = 'none'
+  _fichadiags=[]; _cmMedItems=[]; _cmLabItems=[]; _cmImgItems=[]
+  _cmDiagIdx=-1; _cmMedIdx=-1; _cmLabIdx=-1; _cmImgIdx=-1
+  ;['c_motivo','c_enfermedad','c_examen','c_notas','c_indicaciones',
+    'mc_med_search','mc_lab_search','mc_img_search','c_diag_search'
+  ].forEach(id=>{const e=el(id);if(e)e.value=''})
+  ;['c_diagnostico','c_plan','c_estudios','c_imagenes'].forEach(id=>{el(id).value=''})
+  ;['c_diag_tags','mc_med_tags','mc_lab_tags','mc_img_tags'].forEach(id=>{el(id).innerHTML=''})
+  ;['c_diag_drop','mc_med_drop','mc_lab_drop','mc_img_drop'].forEach(id=>{el(id).style.display='none'})
   // Step 1
   el('mc_step1').style.display = 'flex'
   el('mc_step2').style.display = 'none'
@@ -2449,8 +2477,7 @@ function abrirConsultaModal() {
 
 function cmCerrar() {
   el('cmOverlay').classList.remove('open')
-  el('c_diag_drop').style.display = 'none'
-  el('mc_med_drop').style.display = 'none'
+  ;['c_diag_drop','mc_med_drop','mc_lab_drop','mc_img_drop'].forEach(id=>{el(id).style.display='none'})
 }
 
 function cmCloseOnBg(e) {
@@ -2493,6 +2520,8 @@ async function cmGuardar() {
 
   const diagStr = _fichadiags.map(d => d.c + ' — ' + d.l).join('; ')
   const medStr  = _cmMedItems.join(' | ')
+  const labStr  = _cmLabItems.join(' | ')
+  const imgStr  = _cmImgItems.join(' | ')
 
   await dbPost('consultas', {
     medico_id:        _docMedico.id,
@@ -2502,6 +2531,8 @@ async function cmGuardar() {
     examen_fisico:    el('c_examen').value.trim()      || null,
     diagnostico:      diagStr                           || null,
     plan:             medStr                            || null,
+    estudios:         labStr                            || null,
+    imagenes:         imgStr                            || null,
     indicaciones:     el('c_indicaciones').value.trim() || null,
     notas:            el('c_notas').value.trim()        || null,
     estado:           'completada'
@@ -2510,7 +2541,7 @@ async function cmGuardar() {
   btn.disabled = false; btn.textContent = 'Guardar consulta ✓'
   cmCerrar()
 
-  const consultas = await dbGet('consultas', 'paciente_id=eq.'+_fichaDoc.id+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,examen_fisico,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken)
+  const consultas = await dbGet('consultas', 'paciente_id=eq.'+_fichaDoc.id+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,examen_fisico,plan,estudios,imagenes,indicaciones,notas,created_at&order=created_at.desc', _authToken)
   renderFichaHistorial(consultas)
   el('fichaStatConsultas').textContent = consultas.length
 }
@@ -2615,6 +2646,76 @@ function mcMedSync() {
   el('c_plan').value = _cmMedItems.join(' | ')
 }
 
+// ── LABORATORIOS ──────────────────────────────────────────────────────────────
+function mcLabBuscar(q) {
+  const drop = el('mc_lab_drop')
+  if (!q.trim()) { drop.style.display='none'; return }
+  const nq = _norm(q)
+  const hits = _mcLabs.filter(m => _norm(m).includes(nq)).slice(0,14)
+  if (!hits.length) { drop.style.display='none'; return }
+  _cmLabIdx = -1
+  drop.innerHTML = hits.map((m,i) =>
+    `<div class="cm-drop-med" data-i="${i}" onmousedown="mcLabAgregar('${m.replace(/'/g,'&#39;')}')">🔬 ${m}</div>`
+  ).join('')
+  posicionarDrop('mc_lab_search', 'mc_lab_drop')
+  drop.style.display = 'block'
+}
+function mcLabKeyNav(ev) {
+  const rows = el('mc_lab_drop').querySelectorAll('.cm-drop-med')
+  if (!rows.length) return
+  if (ev.key==='ArrowDown'){ev.preventDefault();_cmLabIdx=Math.min(_cmLabIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmLabIdx))}
+  else if (ev.key==='ArrowUp'){ev.preventDefault();_cmLabIdx=Math.max(_cmLabIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmLabIdx))}
+  else if (ev.key==='Enter'&&_cmLabIdx>=0){ev.preventDefault();rows[_cmLabIdx].dispatchEvent(new MouseEvent('mousedown'))}
+  else if (ev.key==='Escape'){el('mc_lab_drop').style.display='none'}
+}
+function mcLabAgregar(name) {
+  if (!_cmLabItems.includes(name)) _cmLabItems.push(name)
+  el('mc_lab_drop').style.display='none'; el('mc_lab_search').value=''
+  mcLabRender(); el('c_estudios').value = _cmLabItems.join(' | ')
+}
+function mcLabRemover(i) { _cmLabItems.splice(i,1); mcLabRender(); el('c_estudios').value=_cmLabItems.join(' | ') }
+function mcLabRender() {
+  el('mc_lab_tags').innerHTML = _cmLabItems.map((m,i) =>
+    `<span class="cm-tag" style="background:#e0f5f2;border:1px solid rgba(11,124,110,.2);color:#065f46">🔬 ${m}
+      <button class="cm-tag-rm" onmousedown="mcLabRemover(${i})">✕</button></span>`
+  ).join('')
+}
+
+// ── IMÁGENES ───────────────────────────────────────────────────────────────────
+function mcImgBuscar(q) {
+  const drop = el('mc_img_drop')
+  if (!q.trim()) { drop.style.display='none'; return }
+  const nq = _norm(q)
+  const hits = _mcImgs.filter(m => _norm(m).includes(nq)).slice(0,14)
+  if (!hits.length) { drop.style.display='none'; return }
+  _cmImgIdx = -1
+  drop.innerHTML = hits.map((m,i) =>
+    `<div class="cm-drop-med" data-i="${i}" onmousedown="mcImgAgregar('${m.replace(/'/g,'&#39;')}')">🩻 ${m}</div>`
+  ).join('')
+  posicionarDrop('mc_img_search', 'mc_img_drop')
+  drop.style.display = 'block'
+}
+function mcImgKeyNav(ev) {
+  const rows = el('mc_img_drop').querySelectorAll('.cm-drop-med')
+  if (!rows.length) return
+  if (ev.key==='ArrowDown'){ev.preventDefault();_cmImgIdx=Math.min(_cmImgIdx+1,rows.length-1);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmImgIdx))}
+  else if (ev.key==='ArrowUp'){ev.preventDefault();_cmImgIdx=Math.max(_cmImgIdx-1,0);rows.forEach((r,i)=>r.classList.toggle('focused',i===_cmImgIdx))}
+  else if (ev.key==='Enter'&&_cmImgIdx>=0){ev.preventDefault();rows[_cmImgIdx].dispatchEvent(new MouseEvent('mousedown'))}
+  else if (ev.key==='Escape'){el('mc_img_drop').style.display='none'}
+}
+function mcImgAgregar(name) {
+  if (!_cmImgItems.includes(name)) _cmImgItems.push(name)
+  el('mc_img_drop').style.display='none'; el('mc_img_search').value=''
+  mcImgRender(); el('c_imagenes').value = _cmImgItems.join(' | ')
+}
+function mcImgRemover(i) { _cmImgItems.splice(i,1); mcImgRender(); el('c_imagenes').value=_cmImgItems.join(' | ') }
+function mcImgRender() {
+  el('mc_img_tags').innerHTML = _cmImgItems.map((m,i) =>
+    `<span class="cm-tag" style="background:#fef3c7;border:1px solid rgba(251,191,36,.2);color:#92400e">🩻 ${m}
+      <button class="cm-tag-rm" onmousedown="mcImgRemover(${i})">✕</button></span>`
+  ).join('')
+}
+
 // Position dropdown below its trigger input using fixed positioning
 function posicionarDrop(inputId, dropId) {
   const input = el(inputId), drop = el(dropId)
@@ -2627,10 +2728,11 @@ function posicionarDrop(inputId, dropId) {
 
 // Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
-  if (!el('c_diag_search')?.contains(e.target) && !el('c_diag_drop')?.contains(e.target))
-    el('c_diag_drop') && (el('c_diag_drop').style.display='none')
-  if (!el('mc_med_search')?.contains(e.target) && !el('mc_med_drop')?.contains(e.target))
-    el('mc_med_drop') && (el('mc_med_drop').style.display='none')
+  [['c_diag_search','c_diag_drop'],['mc_med_search','mc_med_drop'],
+   ['mc_lab_search','mc_lab_drop'],['mc_img_search','mc_img_drop']].forEach(([inp,drp])=>{
+    if (!el(inp)?.contains(e.target) && !el(drp)?.contains(e.target))
+      el(drp) && (el(drp).style.display='none')
+  })
 }, true)
 
 // ── STICKY NAV ────────────────────────────────────────────────────────────────
