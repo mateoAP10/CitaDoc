@@ -6,7 +6,6 @@
 <title>Panel — Doctor Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,::after,::before{box-sizing:border-box;margin:0;padding:0}
 :root{--red:#CC2936;--red-dark:#a8212c;--red-lite:#fff0f1;--ink:#0d0d0d;--muted:#6b7280;--border:#e5e7eb;--bg:#f9fafb;--white:#fff;--green:#16a34a;--green-lite:#f0fdf4}
@@ -283,16 +282,69 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 <div class="toast" id="toast"></div>
 
 <script>
-const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
+const SB_URL     = 'https://qxoomcqaafogczrvsyhg.supabase.co'
+const SB_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 const ADMIN_PASS = 'doctorcenter2026'
 const CENTER_SLUG = 'doctor-center'
-const sb = supabase.createClient(SB_URL, SB_ANON)
 
 let _center   = null
-let _allDocs  = []  // all citadoc doctors
-let _inCenter = []  // medico_ids in this center
+let _allDocs  = []
+let _inCenter = []
 let _services = []
+
+// ── HTTP HELPERS (pure XHR — bypasses any service worker intercepting fetch) ──
+function xhr(method, url, headers, body, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const x = new XMLHttpRequest()
+    x.timeout = timeoutMs || 10000
+    x.open(method, url)
+    Object.entries(headers || {}).forEach(([k,v]) => x.setRequestHeader(k, v))
+    x.onload  = () => resolve({ ok: x.status >= 200 && x.status < 300, status: x.status, text: x.responseText })
+    x.onerror = () => reject(new Error('network error'))
+    x.ontimeout = () => reject(new Error('timeout'))
+    x.send(body || null)
+  })
+}
+
+const H = (extra) => ({ 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Accept': 'application/json', ...extra })
+
+async function sbGet(table, query) {
+  const r = await xhr('GET', SB_URL + '/rest/v1/' + table + '?' + query, H())
+  if (!r.ok) return { data: null, error: { message: 'HTTP ' + r.status + ' ' + r.text } }
+  return { data: JSON.parse(r.text), error: null }
+}
+
+async function sbPost(table, body) {
+  const r = await xhr('POST', SB_URL + '/rest/v1/' + table, H({ 'Content-Type': 'application/json', 'Prefer': 'return=representation' }), JSON.stringify(body))
+  if (!r.ok) return { data: null, error: { message: 'HTTP ' + r.status + ' ' + r.text } }
+  const d = JSON.parse(r.text); return { data: Array.isArray(d) ? d[0] : d, error: null }
+}
+
+async function sbPatch(table, query, body) {
+  const r = await xhr('PATCH', SB_URL + '/rest/v1/' + table + '?' + query, H({ 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }), JSON.stringify(body))
+  return { error: r.ok ? null : { message: 'HTTP ' + r.status + ' ' + r.text } }
+}
+
+async function sbDelete(table, query) {
+  await xhr('DELETE', SB_URL + '/rest/v1/' + table + '?' + query, H())
+}
+
+async function stgUpload(bucket, path, file) {
+  const r = await xhr('POST', SB_URL + '/storage/v1/object/' + bucket + '/' + path + '?upsert=true',
+    { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': file.type, 'x-upsert': 'true' },
+    file, 60000)
+  return r.ok ? { error: null } : { error: { message: 'Storage HTTP ' + r.status + ': ' + r.text } }
+}
+
+async function stgDelete(bucket, paths) {
+  await xhr('DELETE', SB_URL + '/storage/v1/object/' + bucket,
+    { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': 'application/json' },
+    JSON.stringify({ prefixes: paths })).catch(()=>{})
+}
+
+function stgPublicUrl(bucket, path) {
+  return SB_URL + '/storage/v1/object/public/' + bucket + '/' + path
+}
 
 // ── GATE ──────────────────────────────────────────────────────────────────────
 document.getElementById('keyInput').addEventListener('keydown', e => { if(e.key==='Enter') checkKey() })
@@ -306,14 +358,14 @@ function checkKey() {
   }
 }
 
-// ── ENSURE CENTER (on-demand) ──────────────────────────────────────────────────
+// ── ENSURE CENTER ─────────────────────────────────────────────────────────────
 let _centerLoading = null
 async function ensureCenter() {
   if (_center) return true
   if (_centerLoading) return _centerLoading
   _centerLoading = (async () => {
     try {
-      const { data, error } = await sb.from('centers').select('*').eq('slug', CENTER_SLUG).limit(1)
+      const { data, error } = await sbGet('centers', 'slug=eq.' + encodeURIComponent(CENTER_SLUG) + '&select=*&limit=1')
       if (error || !data || !data.length) return false
       _center = data[0]
       fillInfoForm(_center)
@@ -327,22 +379,19 @@ async function ensureCenter() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
-  // Load center + secondary data concurrently; UI is always usable
   const ok = await ensureCenter()
-  if (!ok) { toast('No se pudo cargar el centro — revisá la conexión', 'err'); return }
+  if (!ok) { toast('No se pudo cargar el centro', 'err'); return }
 
   try {
-    const [docsRes, sRes, linksRes] = await Promise.all([
-      sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url').eq('activo', true).order('apellido'),
-      sb.from('center_services').select('*').eq('center_id', _center.id).order('categoria').order('orden'),
-      sb.from('center_doctors').select('medico_id').eq('center_id', _center.id)
+    const [dr, sr, lr] = await Promise.all([
+      sbGet('medicos', 'activo=eq.true&select=id,nombre,apellido,titulo,especialidades,foto_url&order=apellido'),
+      sbGet('center_services', 'center_id=eq.' + _center.id + '&select=*&order=categoria,orden'),
+      sbGet('center_doctors', 'center_id=eq.' + _center.id + '&select=medico_id')
     ])
-    _allDocs  = docsRes.data  || []
-    _services = sRes.data     || []
-    _inCenter = (linksRes.data || []).map(l => l.medico_id)
-  } catch(e) {
-    toast('Error cargando datos: ' + e.message, 'err')
-  }
+    _allDocs  = dr.data  || []
+    _services = sr.data  || []
+    _inCenter = (lr.data || []).map(l => l.medico_id)
+  } catch(e) { toast('Error cargando datos: ' + e.message, 'err') }
 
   renderDocs()
   renderServices()
@@ -353,29 +402,29 @@ async function uploadPortada(input) {
   const file = input.files[0]
   if (!file) return
   const prog = el('uploadProgress')
-  prog.textContent = 'Cargando...'
+  prog.textContent = 'Conectando...'
   const ok = await ensureCenter()
-  if (!ok) { prog.textContent = 'Error: no se pudo conectar al centro'; return }
+  if (!ok) { prog.textContent = 'Error: no se pudo conectar'; return }
   prog.textContent = 'Subiendo...'
 
   const ext  = file.name.split('.').pop().toLowerCase()
   const path = CENTER_SLUG + '/portada.' + ext
 
-  // Delete old file first to avoid upsert permission edge cases
-  await sb.storage.from('centers').remove([CENTER_SLUG + '/portada.jpg', CENTER_SLUG + '/portada.jpeg', CENTER_SLUG + '/portada.png', CENTER_SLUG + '/portada.webp']).catch(()=>{})
+  await stgDelete('centers', [CENTER_SLUG+'/portada.jpg',CENTER_SLUG+'/portada.jpeg',CENTER_SLUG+'/portada.png',CENTER_SLUG+'/portada.webp'])
 
-  const { error: upErr } = await sb.storage.from('centers').upload(path, file, { upsert: true, contentType: file.type })
-  if (upErr) { prog.textContent = 'Error: ' + upErr.message; console.error('storage upload:', upErr); return }
+  const { error: upErr } = await stgUpload('centers', path, file)
+  if (upErr) { prog.textContent = 'Error subiendo: ' + upErr.message; return }
 
-  const url = sb.storage.from('centers').getPublicUrl(path).data.publicUrl + '?v=' + Date.now()
-  const { error: dbErr } = await sb.from('centers').update({ portada_url: url }).eq('id', _center.id)
-  if (dbErr) { prog.textContent = 'Foto subida pero no se pudo guardar la URL: ' + dbErr.message; return }
+  const url = stgPublicUrl('centers', path) + '?v=' + Date.now()
+  const { error: dbErr } = await sbPatch('centers', 'id=eq.' + _center.id, { portada_url: url })
+  if (dbErr) { prog.textContent = 'Foto subida pero URL no guardada: ' + dbErr.message; return }
 
   _center.portada_url = url
   showPortada(url)
   prog.textContent = '✓ Foto guardada'
   setTimeout(() => prog.textContent = '', 2500)
   toast('Portada actualizada', 'ok')
+  input.value = ''
 }
 
 function showPortada(url) {
@@ -397,12 +446,14 @@ function fillInfoForm(c) {
   set('fDesc',      c.descripcion)
 }
 
+const SAVE_BTN_HTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar cambios'
+
 async function saveInfo() {
   const btn = el('btnSaveInfo')
   btn.disabled = true
   btn.textContent = 'Guardando...'
   const ok = await ensureCenter()
-  if (!ok) { toast('No se pudo conectar al centro', 'err'); btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar cambios'; return }
+  if (!ok) { toast('No se pudo conectar al centro', 'err'); btn.disabled = false; btn.innerHTML = SAVE_BTN_HTML; return }
 
   const upd = {
     nombre:      el('fNombre').value.trim()    || _center.nombre,
@@ -415,18 +466,14 @@ async function saveInfo() {
     whatsapp:    (el('fTelefono').value.trim() || '').replace(/[^0-9]/g,'') || null,
   }
 
-  const { error } = await sb.from('centers').update(upd).eq('id', _center.id)
-
+  const { error } = await sbPatch('centers', 'id=eq.' + _center.id, upd)
   if (error) {
-    console.error('saveInfo error:', error)
     toast('Error: ' + error.message, 'err')
   } else {
     Object.assign(_center, upd)
     btn.innerHTML = '✓ Guardado'
     toast('Información actualizada', 'ok')
-    setTimeout(() => {
-      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar cambios'
-    }, 2500)
+    setTimeout(() => { btn.innerHTML = SAVE_BTN_HTML }, 2500)
   }
   btn.disabled = false
 }
@@ -436,52 +483,37 @@ function filterDocs() { renderDocs() }
 
 function renderDocs() {
   const q = (el('searchDocs').value || '').toLowerCase()
-
   const inCenter  = _allDocs.filter(d => _inCenter.includes(d.id))
   const available = _allDocs.filter(d => {
     if (_inCenter.includes(d.id)) return false
     if (!q) return true
-    const text = (d.nombre + ' ' + d.apellido + ' ' + (d.especialidades||[]).join(' ')).toLowerCase()
-    return text.includes(q)
+    return (d.nombre+' '+d.apellido+' '+(d.especialidades||[]).join(' ')).toLowerCase().includes(q)
   })
-
-  el('docsInCenter').innerHTML = inCenter.length
-    ? inCenter.map(d => docRowHtml(d, 'in')).join('')
-    : '<div class="docs-empty">Sin médicos aún — agregá uno →</div>'
-
-  el('docsAvailable').innerHTML = available.length
-    ? available.slice(0, 12).map(d => docRowHtml(d, 'out')).join('')
-    : '<div class="docs-empty">No hay resultados</div>'
+  el('docsInCenter').innerHTML  = inCenter.length  ? inCenter.map(d=>docRowHtml(d,'in')).join('')  : '<div class="docs-empty">Sin médicos aún — agregá uno →</div>'
+  el('docsAvailable').innerHTML = available.length ? available.slice(0,12).map(d=>docRowHtml(d,'out')).join('') : '<div class="docs-empty">No hay resultados</div>'
 }
 
 function docRowHtml(d, mode) {
-  const nombre  = (d.titulo||'Dr.') + ' ' + d.nombre + ' ' + d.apellido
-  const esp     = (d.especialidades||[])[0] || ''
-  const avatar  = d.foto_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(d.nombre+'+'+d.apellido)+'&background=f9fafb&color=6b7280&size=72'
-  const btn     = mode === 'out'
+  const nombre = (d.titulo||'Dr.')+' '+d.nombre+' '+d.apellido
+  const esp    = (d.especialidades||[])[0]||''
+  const avatar = d.foto_url||'https://ui-avatars.com/api/?name='+encodeURIComponent(d.nombre+'+'+d.apellido)+'&background=f9fafb&color=6b7280&size=72'
+  const btn    = mode==='out'
     ? `<button class="btn-add" title="Agregar" onclick="addDoctor('${d.id}')">+</button>`
     : `<button class="btn-remove" title="Quitar" onclick="removeDoctor('${d.id}')">×</button>`
-  return `<div class="doc-row" id="docrow-${d.id}">
-    <img class="doc-avatar" src="${avatar}" alt="${nombre}" loading="lazy">
-    <div class="doc-info">
-      <div class="doc-name">${nombre}</div>
-      ${esp ? `<div class="doc-spec">${esp}</div>` : ''}
-    </div>
-    ${btn}
-  </div>`
+  return `<div class="doc-row" id="docrow-${d.id}"><img class="doc-avatar" src="${avatar}" alt="${nombre}" loading="lazy"><div class="doc-info"><div class="doc-name">${nombre}</div>${esp?`<div class="doc-spec">${esp}</div>`:''}</div>${btn}</div>`
 }
 
 async function addDoctor(medicoId) {
   if (!(await ensureCenter())) return
-  await sb.from('center_doctors').insert({ center_id: _center.id, medico_id: medicoId }).catch(()=>{})
+  await sbPost('center_doctors', { center_id: _center.id, medico_id: medicoId })
   _inCenter.push(medicoId)
   renderDocs()
-  toast('Médico agregado al centro', 'ok')
+  toast('Médico agregado', 'ok')
 }
 
 async function removeDoctor(medicoId) {
   if (!(await ensureCenter())) return
-  await sb.from('center_doctors').delete().eq('center_id', _center.id).eq('medico_id', medicoId)
+  await sbDelete('center_doctors', 'center_id=eq.'+_center.id+'&medico_id=eq.'+medicoId)
   _inCenter = _inCenter.filter(id => id !== medicoId)
   renderDocs()
   toast('Médico removido', 'ok')
@@ -489,19 +521,15 @@ async function removeDoctor(medicoId) {
 
 // ── SERVICIOS ─────────────────────────────────────────────────────────────────
 function renderServices() {
-  if (!_services.length) {
-    el('svcList').innerHTML = '<div class="svc-empty">Sin servicios aún — agregá el primero</div>'
-    return
-  }
+  if (!_services.length) { el('svcList').innerHTML = '<div class="svc-empty">Sin servicios aún — agregá el primero</div>'; return }
   const catOrder = ['consulta','laboratorio','imagen']
-  const sorted = [..._services].sort((a,b) => catOrder.indexOf(a.categoria) - catOrder.indexOf(b.categoria))
-  el('svcList').innerHTML = sorted.map(s => `
-    <div class="svc-row" id="svc-${s.id}">
-      <span class="svc-cat-pill ${s.categoria}">${{consulta:'Consulta',laboratorio:'Lab',imagen:'Imagen'}[s.categoria]||s.categoria}</span>
-      <span class="svc-name">${esc(s.nombre)}</span>
-      <span class="svc-price-label">$${s.precio||0}</span>
-      <button class="btn-del" title="Eliminar" onclick="deleteServicio('${s.id}')">✕</button>
-    </div>`).join('')
+  const sorted = [..._services].sort((a,b) => catOrder.indexOf(a.categoria)-catOrder.indexOf(b.categoria))
+  el('svcList').innerHTML = sorted.map(s => `<div class="svc-row" id="svc-${s.id}">
+    <span class="svc-cat-pill ${s.categoria}">${{consulta:'Consulta',laboratorio:'Lab',imagen:'Imagen'}[s.categoria]||s.categoria}</span>
+    <span class="svc-name">${esc(s.nombre)}</span>
+    <span class="svc-price-label">$${s.precio||0}</span>
+    <button class="btn-del" title="Eliminar" onclick="deleteServicio('${s.id}')">✕</button>
+  </div>`).join('')
 }
 
 async function addServicio() {
@@ -511,16 +539,11 @@ async function addServicio() {
   if (!nombre) { toast('Escribí el nombre del servicio', 'err'); return }
   if (!(await ensureCenter())) { toast('No se pudo conectar al centro', 'err'); return }
 
-  const btype = cat === 'consulta' ? 'doctor' : 'request'
-  const { data, error } = await sb.from('center_services').insert({
-    center_id:   _center.id,
-    nombre,
-    categoria:   cat,
-    precio,
-    booking_type: btype,
-    orden:       _services.filter(s=>s.categoria===cat).length + 1,
-  }).select().single()
-
+  const { data, error } = await sbPost('center_services', {
+    center_id: _center.id, nombre, categoria: cat, precio,
+    booking_type: cat==='consulta'?'doctor':'request',
+    orden: _services.filter(s=>s.categoria===cat).length+1
+  })
   if (error) { toast('Error al agregar', 'err'); return }
   _services.push(data)
   renderServices()
@@ -530,7 +553,7 @@ async function addServicio() {
 }
 
 async function deleteServicio(id) {
-  await sb.from('center_services').delete().eq('id', id)
+  await sbDelete('center_services', 'id=eq.'+id)
   _services = _services.filter(s => s.id !== id)
   renderServices()
   toast('Servicio eliminado', 'ok')
