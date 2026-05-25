@@ -993,6 +993,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
             <div class="doc-tab-panel" id="panelPaciente">
               <div class="doc-field"><label>Nombre completo</label><input id="pNombre" placeholder="Nombre y apellido" autocomplete="off"></div>
               <div class="doc-field"><label>Teléfono / WhatsApp</label><input id="pTel" type="tel" placeholder="+1 555 0000"></div>
+              <div class="doc-field"><label>Cédula de identidad <span style="font-weight:400;color:var(--muted2)">(opcional)</span></label><input id="pCedula" placeholder="Número de identificación" autocomplete="off"></div>
               <div class="doc-field"><label>Email <span style="font-weight:400;color:var(--muted2)">(opcional)</span></label><input id="pEmail" type="email" placeholder="paciente@email.com"></div>
               <button class="btn-doc-save" id="btnSavePaciente" onclick="savePaciente()">Registrar paciente</button>
               <div class="doc-toast" id="toastPaciente"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Paciente registrado</div>
@@ -2385,9 +2386,10 @@ async function saveConsulta() {
 }
 
 async function savePaciente() {
-  const nombre = el('pNombre').value.trim()
-  const tel    = el('pTel').value.trim()
-  const email  = el('pEmail').value.trim()
+  const nombre  = el('pNombre').value.trim()
+  const tel     = el('pTel').value.trim()
+  const cedula  = el('pCedula').value.trim()
+  const email   = el('pEmail').value.trim()
   if (!nombre || !tel) { el(!nombre ? 'pNombre' : 'pTel').focus(); return }
 
   const btn = el('btnSavePaciente')
@@ -2395,12 +2397,14 @@ async function savePaciente() {
 
   await dbPost('pacientes', {
     nombre, telefono: tel, email: email || null,
+    cedula: cedula || null,
     medico_id: _docMedico.id
   }, _authToken)
 
   el('pNombre').value = ''
-  el('pTel').value = ''
-  el('pEmail').value = ''
+  el('pTel').value    = ''
+  el('pCedula').value = ''
+  el('pEmail').value  = ''
   btn.disabled = false
 
   const toast = el('toastPaciente')
