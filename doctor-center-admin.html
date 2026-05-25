@@ -308,22 +308,23 @@ function checkKey() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
-  // Step 1: load center only — unlock UI immediately
+  // Step 1: load center via direct fetch (bypasses any Supabase client init issues)
   try {
-    const cRes = await sb.from('centers').select('*').eq('slug', CENTER_SLUG).maybeSingle()
-
-    if (cRes.error) {
-      el('uploadProgress').textContent = 'Error: ' + cRes.error.message
-      toast('Error: ' + cRes.error.message, 'err')
+    const res = await fetch(
+      SB_URL + '/rest/v1/centers?slug=eq.' + CENTER_SLUG + '&select=*&limit=1',
+      { headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON } }
+    )
+    if (!res.ok) {
+      el('uploadProgress').textContent = 'Error HTTP ' + res.status
       return
     }
-    if (!cRes.data) {
-      el('uploadProgress').textContent = 'Centro "' + CENTER_SLUG + '" no encontrado'
-      toast('Centro no encontrado', 'err')
+    const rows = await res.json()
+    if (!rows.length) {
+      el('uploadProgress').textContent = 'Centro "' + CENTER_SLUG + '" no encontrado en la base de datos'
       return
     }
 
-    _center = cRes.data
+    _center = rows[0]
     fillInfoForm(_center)
     if (_center.portada_url) showPortada(_center.portada_url)
 
@@ -334,7 +335,7 @@ async function init() {
     el('btnSaveInfo').style.opacity = '1'
     el('uploadProgress').textContent = ''
   } catch(e) {
-    el('uploadProgress').textContent = 'Error: ' + e.message
+    el('uploadProgress').textContent = 'Error de red: ' + e.message
     return
   }
 
