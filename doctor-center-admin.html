@@ -308,20 +308,17 @@ function checkKey() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
+  // Step 1: load center only — unlock UI immediately
   try {
-    const [cRes, docsRes, sRes] = await Promise.all([
-      sb.from('centers').select('*').eq('slug', CENTER_SLUG).single(),
-      sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url').eq('activo', true).order('apellido'),
-      sb.from('center_services').select('*').order('categoria').order('orden')
-    ])
+    const cRes = await sb.from('centers').select('*').eq('slug', CENTER_SLUG).maybeSingle()
 
     if (cRes.error) {
       el('uploadProgress').textContent = 'Error: ' + cRes.error.message
-      toast('Error cargando centro: ' + cRes.error.message, 'err')
+      toast('Error: ' + cRes.error.message, 'err')
       return
     }
     if (!cRes.data) {
-      el('uploadProgress').textContent = 'Centro no encontrado en la base de datos'
+      el('uploadProgress').textContent = 'Centro "' + CENTER_SLUG + '" no encontrado'
       toast('Centro no encontrado', 'err')
       return
     }
@@ -330,22 +327,29 @@ async function init() {
     fillInfoForm(_center)
     if (_center.portada_url) showPortada(_center.portada_url)
 
-    const { data: links } = await sb.from('center_doctors').select('medico_id').eq('center_id', _center.id)
-    _inCenter = (links || []).map(l => l.medico_id)
-
-    _allDocs  = docsRes.data || []
-    _services = (sRes.data || []).filter(s => s.center_id === _center.id)
-
-    // Unlock UI now that _center is ready
-    const wrap = el('portadaWrap')
-    wrap.style.pointerEvents = ''
-    wrap.style.opacity = '1'
+    // Unlock portada + save
+    el('portadaWrap').style.pointerEvents = ''
+    el('portadaWrap').style.opacity = '1'
     el('btnSaveInfo').disabled = false
     el('btnSaveInfo').style.opacity = '1'
     el('uploadProgress').textContent = ''
   } catch(e) {
     el('uploadProgress').textContent = 'Error: ' + e.message
-    toast('Error de carga: ' + e.message, 'err')
+    return
+  }
+
+  // Step 2: load doctors + services + links in background (non-blocking)
+  try {
+    const [docsRes, sRes, linksRes] = await Promise.all([
+      sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url').eq('activo', true).order('apellido'),
+      sb.from('center_services').select('*').eq('center_id', _center.id).order('categoria').order('orden'),
+      sb.from('center_doctors').select('medico_id').eq('center_id', _center.id)
+    ])
+    _allDocs  = docsRes.data  || []
+    _services = sRes.data     || []
+    _inCenter = (linksRes.data || []).map(l => l.medico_id)
+  } catch(e) {
+    toast('Error cargando médicos: ' + e.message, 'err')
   }
 
   renderDocs()
