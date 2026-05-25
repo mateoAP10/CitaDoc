@@ -1180,18 +1180,29 @@ function showDocDash() {
 
 async function loadTodayCitas() {
   if (!_docMedico) return
-  const hoy = new Date().toISOString().split('T')[0]
-  const citas = await dbGet('citas',
-    'medico_id=eq.'+_docMedico.id+'&fecha=eq.'+hoy+'&select=id,hora,estado,motivo,pacientes(nombre,apellido,telefono)&order=hora',
-    _authToken)
+  const hoy  = new Date().toISOString().split('T')[0]
   const wrap = el('docCitas')
+
+  const citas = await dbGet('citas',
+    'medico_id=eq.'+_docMedico.id+'&fecha=eq.'+hoy+'&select=id,hora,estado,motivo,paciente_id&order=hora',
+    _authToken)
+
   if (!citas.length) {
     wrap.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin citas para hoy</div>'
     return
   }
-  const LABELS = {confirmada:'Confirmada',pendiente:'Pendiente',cancelada:'Cancelada'}
+
+  // Load pacientes in a second query — avoids FK exposure issues
+  const ids = [...new Set(citas.map(c => c.paciente_id).filter(Boolean))]
+  const pacMap = {}
+  if (ids.length) {
+    const pacs = await dbGet('pacientes', 'id=in.('+ids.join(',')+')'+'&select=id,nombre,apellido,telefono', _authToken)
+    pacs.forEach(p => { pacMap[p.id] = p })
+  }
+
+  const LABELS = {confirmada:'Confirmada', pendiente:'Pendiente', cancelada:'Cancelada'}
   wrap.innerHTML = citas.map(c => {
-    const p      = c.pacientes || {}
+    const p      = pacMap[c.paciente_id] || {}
     const nombre = [p.nombre, p.apellido].filter(Boolean).join(' ') || 'Paciente'
     const hora   = (c.hora||'').slice(0,5) || '--:--'
     const meta   = c.motivo || p.telefono || ''
