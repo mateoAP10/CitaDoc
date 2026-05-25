@@ -473,6 +473,91 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .pac-rec-btn-outline:hover{background:var(--red-lite)}
 .pac-rec-btn-fill{background:var(--red);border-color:var(--red);color:#fff}
 .pac-rec-btn-fill:hover{background:var(--red-dark)}
+
+/* ── RECETA MODAL ────────────────────────────────────────────────────────── */
+.receta-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,.52);backdrop-filter:blur(5px);
+  display:none;align-items:center;justify-content:center;padding:1rem
+}
+.receta-overlay.open{display:flex}
+.receta-modal{
+  background:#fff;border-radius:20px;width:100%;max-width:520px;
+  box-shadow:0 24px 64px rgba(0,0,0,.24);overflow:hidden;
+  max-height:92svh;display:flex;flex-direction:column
+}
+.receta-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.3rem .85rem;border-bottom:1.5px solid var(--border);flex-shrink:0
+}
+.receta-modal-brand{display:flex;align-items:center;gap:.7rem;min-width:0}
+.receta-modal-logo{height:32px;max-width:130px;object-fit:contain;display:none}
+.receta-modal-brand-icon svg{width:22px;height:22px;color:var(--red);flex-shrink:0}
+.receta-modal-brand-text{min-width:0}
+.receta-modal-center-name{font-size:.88rem;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.receta-modal-powered{font-size:.6rem;color:var(--muted2);font-weight:500;margin-top:.08rem}
+.receta-modal-powered b{color:var(--red)}
+.receta-modal-close{
+  width:32px;height:32px;border:none;background:var(--bg2);border-radius:9px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:all .15s;font-size:.9rem;flex-shrink:0;margin-left:.5rem
+}
+.receta-modal-close:hover{background:var(--red-lite);color:var(--red)}
+.receta-modal-body{padding:1.2rem 1.3rem;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:.85rem}
+.receta-doc-card{
+  background:var(--bg2);border-radius:12px;padding:.85rem 1rem;
+  border:1px solid var(--border);display:flex;align-items:flex-start;gap:.85rem
+}
+.receta-doc-avatar{
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--red),var(--red-dark));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.9rem;color:#fff
+}
+.receta-doc-name{font-size:.88rem;font-weight:700;color:var(--ink)}
+.receta-doc-esp{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+.receta-fecha-tag{font-size:.68rem;font-weight:600;color:var(--muted2);margin-top:.35rem;padding:.18rem .5rem;background:#fff;border-radius:6px;border:1px solid var(--border);display:inline-block}
+.receta-pac-banner{
+  background:var(--red-lite);border:1.5px solid;border-color:rgba(var(--red),.25);
+  border-color:color-mix(in srgb,var(--red) 30%,transparent);
+  border-radius:12px;padding:.75rem 1rem
+}
+.receta-pac-label{font-size:.6rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem}
+.receta-pac-name{font-family:Fraunces,serif;font-size:.98rem;font-weight:700;color:var(--ink)}
+.receta-field{display:flex;flex-direction:column;gap:.3rem}
+.receta-field-label{font-size:.7rem;font-weight:700;color:var(--ink2);letter-spacing:.05em;text-transform:uppercase}
+.receta-modal textarea{
+  width:100%;padding:.72rem 1rem;border:1.5px solid var(--border);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);
+  background:#fff;outline:none;resize:vertical;transition:border-color .2s,box-shadow .2s;
+  line-height:1.55
+}
+.receta-modal textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-lite)}
+.receta-modal-footer{
+  padding:.85rem 1.3rem 1.1rem;border-top:1.5px solid var(--border);flex-shrink:0
+}
+.btn-receta-wa{
+  width:100%;background:#25D366;color:#fff;border:none;border-radius:11px;
+  padding:.82rem 1rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  box-shadow:0 4px 14px rgba(37,211,102,.3)
+}
+.btn-receta-wa:hover{background:#1da851}
+/* Receta button inside ficha hero */
+.ficha-receta-btn{
+  display:none;align-items:center;gap:.35rem;
+  background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff;
+  border:none;border-radius:8px;padding:.38rem .85rem;
+  font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;
+  cursor:pointer;flex-shrink:0;transition:opacity .15s;
+  box-shadow:0 3px 10px rgba(204,41,54,.28)
+}
+.ficha-receta-btn:hover{opacity:.88}
+.ficha-receta-btn.visible{display:inline-flex}
+/* Topbar center logo */
+.doc-topbar-logo{height:28px;max-width:130px;object-fit:contain;display:none}
+.doc-topbar-center-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;display:none}
+.doc-topbar-center-name{font-size:.72rem;font-weight:700;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:none}
 </style>
 </head>
 <body>
@@ -647,8 +732,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   <!-- Top bar -->
   <div class="doc-topbar">
     <div class="doc-topbar-brand">
-      <svg viewBox="0 0 40 40" fill="currentColor"><rect x="18" y="2" width="4" height="36" rx="2"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(60 20 20)"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(120 20 20)"/></svg>
-      <span class="doc-topbar-brand-name">CitaDoc</span>
+      <img class="doc-topbar-logo" id="docTopbarLogo" alt="">
+      <div id="docTopbarBrandFallback" style="display:flex;align-items:center;gap:.55rem">
+        <svg viewBox="0 0 40 40" fill="currentColor" style="width:22px;height:22px;color:var(--red)"><rect x="18" y="2" width="4" height="36" rx="2"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(60 20 20)"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(120 20 20)"/></svg>
+        <span class="doc-topbar-brand-name">CitaDoc</span>
+      </div>
+      <div class="doc-topbar-center-sep" id="docTopbarSep"></div>
+      <div class="doc-topbar-center-name" id="docTopbarCenterName"></div>
     </div>
     <div class="doc-topbar-spacer"></div>
     <!-- Doctor info — shown when logged in -->
@@ -808,10 +898,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
               <span id="fichaEmail" style="display:none"></span>
             </div>
           </div>
-          <a class="ficha-wa-btn" id="fichaWa" href="#" target="_blank" style="display:none">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.025.507 3.933 1.395 5.6L0 24l6.615-1.376A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.37l-.36-.214-3.724.776.793-3.632-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-            WhatsApp
-          </a>
+          <div style="display:flex;flex-direction:column;gap:.4rem;flex-shrink:0">
+            <a class="ficha-wa-btn" id="fichaWa" href="#" target="_blank" style="display:none">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.025.507 3.933 1.395 5.6L0 24l6.615-1.376A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.37l-.36-.214-3.724.776.793-3.632-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+              WhatsApp
+            </a>
+            <button class="ficha-receta-btn" id="fichaRecetaBtn" onclick="openRecetaModal()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+              Receta
+            </button>
+          </div>
         </div>
 
         <!-- Stats -->
@@ -862,6 +958,68 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
     </div><!-- /doc-portal-inner -->
   </div><!-- /doc-portal-body -->
 </div><!-- /doc-portal -->
+
+<!-- RECETA MODAL -->
+<div class="receta-overlay" id="recetaOverlay" onclick="closeRecetaOnBg(event)">
+  <div class="receta-modal">
+
+    <!-- Header: center logo + powered -->
+    <div class="receta-modal-header">
+      <div class="receta-modal-brand">
+        <img class="receta-modal-logo" id="recetaLogo" alt="">
+        <div class="receta-modal-brand-icon" id="recetaBrandIconFallback">
+          <svg viewBox="0 0 40 40" fill="currentColor"><rect x="18" y="2" width="4" height="36" rx="2"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(60 20 20)"/><rect x="18" y="2" width="4" height="36" rx="2" transform="rotate(120 20 20)"/></svg>
+        </div>
+        <div class="receta-modal-brand-text">
+          <div class="receta-modal-center-name" id="recetaCenterName">Doctor Center</div>
+          <div class="receta-modal-powered">Powered by <b>CitaDoc Health Network</b></div>
+        </div>
+      </div>
+      <button class="receta-modal-close" onclick="closeRecetaModal()">✕</button>
+    </div>
+
+    <div class="receta-modal-body">
+
+      <!-- Doctor card -->
+      <div class="receta-doc-card">
+        <div class="receta-doc-avatar" id="recetaDocAvatar">M</div>
+        <div>
+          <div class="receta-doc-name" id="recetaDocName">Dr. Médico</div>
+          <div class="receta-doc-esp" id="recetaDocEsp"></div>
+          <div class="receta-fecha-tag" id="recetaFecha"></div>
+        </div>
+      </div>
+
+      <!-- Paciente -->
+      <div class="receta-pac-banner" id="recetaPacBanner" style="display:none">
+        <div class="receta-pac-label">Paciente</div>
+        <div class="receta-pac-name" id="recetaPacNombre"></div>
+      </div>
+
+      <!-- Medicamentos -->
+      <div class="receta-field">
+        <div class="receta-field-label">Medicamentos</div>
+        <textarea id="r_medicamentos" rows="6" placeholder="Un medicamento por línea&#10;Ej: Amoxicilina 500mg — 1 cápsula cada 8h x 7 días"></textarea>
+      </div>
+
+      <!-- Indicaciones -->
+      <div class="receta-field">
+        <div class="receta-field-label">Indicaciones generales</div>
+        <textarea id="r_indicaciones" rows="3" placeholder="Reposo, dieta, controles, advertencias..."></textarea>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="receta-modal-footer">
+      <button class="btn-receta-wa" onclick="enviarRecetaWhatsApp()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.025.507 3.933 1.395 5.6L0 24l6.615-1.376A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.37l-.36-.214-3.724.776.793-3.632-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+        Enviar por WhatsApp
+      </button>
+    </div>
+
+  </div>
+</div>
 
 <!-- BOOKING MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBg(event)">
@@ -1545,6 +1703,20 @@ function showDocDash() {
   if (el('citaFecha') && !el('citaFecha').value)
     el('citaFecha').value = new Date().toISOString().split('T')[0]
 
+  // Center logo in topbar
+  if (_center?.logo_url) {
+    const logoEl = el('docTopbarLogo')
+    logoEl.src = _center.logo_url
+    logoEl.style.display = 'block'
+    logoEl.style.height = (_center.logo_size || 28) + 'px'
+    el('docTopbarBrandFallback').style.display = 'none'
+    if (_center.nombre) {
+      el('docTopbarSep').style.display = 'block'
+      el('docTopbarCenterName').textContent = _center.nombre
+      el('docTopbarCenterName').style.display = 'block'
+    }
+  }
+
   switchDocView('agenda')
 }
 
@@ -1743,6 +1915,8 @@ async function abrirFichaDoc(pacienteId, nombre) {
   el('fichaStatConsultas').textContent = '—'
   el('fichaStatCitas').textContent     = '—'
   el('fichaStatUltima').textContent    = '—'
+  el('fichaRecetaBtn').classList.remove('visible')
+  el('fichaWa').style.display = 'none'
   el('fichaConsultas').innerHTML = '<div class="ficha-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Cargando historial...</div>'
   fichaTabSwitch('hist')
 
@@ -1764,6 +1938,7 @@ async function abrirFichaDoc(pacienteId, nombre) {
     wa.href = 'https://wa.me/'+pac.telefono.replace(/\D/g,'')
     wa.style.display = 'inline-flex'
   }
+  el('fichaRecetaBtn').classList.add('visible')
 
   // Stats
   el('fichaStatConsultas').textContent = consultas.length || '0'
@@ -1862,6 +2037,90 @@ async function saveFichaConsulta() {
   const consultas = await dbGet('consultas', 'paciente_id=eq.'+_fichaDoc.id+'&medico_id=eq.'+_docMedico.id+'&select=id,motivo,diagnostico,enfermedad_actual,plan,indicaciones,notas,created_at&order=created_at.desc', _authToken)
   renderFichaHistorial(consultas)
   el('fichaStatConsultas').textContent = consultas.length
+}
+
+// ── RECETA ────────────────────────────────────────────────────────────────────
+function openRecetaModal() {
+  // Doctor
+  const titulo   = _docMedico?.titulo  || 'Dr.'
+  const nombre   = (_docMedico?.nombre || '') + ' ' + (_docMedico?.apellido || '')
+  const fullName = titulo + ' ' + nombre.trim()
+  const initials = ((_docMedico?.nombre||'M')[0] + (_docMedico?.apellido||'')[0]).toUpperCase()
+  el('recetaDocAvatar').textContent = initials
+  el('recetaDocName').textContent   = fullName
+  el('recetaDocEsp').textContent    = (_docMedico?.especialidades||[])[0] || ''
+  el('recetaFecha').textContent     = 'Fecha: ' + new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'})
+
+  // Center logo in modal
+  if (_center?.logo_url) {
+    el('recetaLogo').src = _center.logo_url
+    el('recetaLogo').style.display = 'block'
+    el('recetaBrandIconFallback').style.display = 'none'
+  } else {
+    el('recetaLogo').style.display = 'none'
+    el('recetaBrandIconFallback').style.display = 'flex'
+  }
+  el('recetaCenterName').textContent = _center?.nombre || 'Doctor Center'
+
+  // Patient
+  const pacNombre = _fichaDoc?.paciente?.nombre || _fichaDoc?.nombre || ''
+  if (pacNombre) {
+    el('recetaPacNombre').textContent  = pacNombre
+    el('recetaPacBanner').style.display = 'block'
+  } else {
+    el('recetaPacBanner').style.display = 'none'
+  }
+
+  // Clear fields
+  el('r_medicamentos').value = ''
+  el('r_indicaciones').value = ''
+
+  el('recetaOverlay').classList.add('open')
+  setTimeout(() => el('r_medicamentos').focus(), 120)
+}
+
+function closeRecetaModal() {
+  el('recetaOverlay').classList.remove('open')
+}
+
+function closeRecetaOnBg(e) {
+  if (e.target === el('recetaOverlay')) closeRecetaModal()
+}
+
+function enviarRecetaWhatsApp() {
+  const meds = (el('r_medicamentos').value || '').trim()
+  if (!meds) { el('r_medicamentos').focus(); return }
+  const indic     = (el('r_indicaciones').value || '').trim()
+  const titulo    = _docMedico?.titulo  || 'Dr.'
+  const docNombre = titulo + ' ' + (_docMedico?.nombre||'') + ' ' + (_docMedico?.apellido||'')
+  const esp       = (_docMedico?.especialidades||[])[0] || ''
+  const centerNm  = _center?.nombre || 'Doctor Center'
+  const pacNombre = _fichaDoc?.paciente?.nombre || _fichaDoc?.nombre || ''
+  const fecha     = new Date().toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'})
+
+  const medsLines = meds.split('\n').filter(l=>l.trim()).map((l,i)=>`${i+1}. ${l.trim()}`).join('\n')
+
+  const msg = [
+    `*RECETA MÉDICA — ${centerNm}*`,
+    `_Powered by CitaDoc Health Network_`,
+    ``,
+    `*${docNombre.trim()}*`,
+    esp ? esp : null,
+    `Fecha: ${fecha}`,
+    pacNombre ? `Paciente: ${pacNombre}` : null,
+    ``,
+    `-------------------`,
+    ``,
+    `*MEDICAMENTOS:*`,
+    medsLines,
+    indic ? `\n*INDICACIONES:*\n${indic}` : null,
+    ``,
+    `_citadoc.lat_`
+  ].filter(l => l !== null).join('\n')
+
+  const pacTel = _fichaDoc?.paciente?.telefono || ''
+  const base   = pacTel ? 'https://wa.me/' + pacTel.replace(/\D/g,'') : 'https://wa.me/'
+  window.open(base + '?text=' + encodeURIComponent(msg), '_blank')
 }
 
 // ── DOCTOR FORMS ──────────────────────────────────────────────────────────────
