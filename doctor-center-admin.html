@@ -165,7 +165,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <div class="section-sub">La imagen principal que ven los pacientes al entrar</div>
         </div>
       </div>
-      <div class="portada-wrap" id="portadaWrap" onclick="el('portadaInput').click()" style="pointer-events:none;opacity:.5">
+      <div class="portada-wrap" id="portadaWrap" onclick="el('portadaInput').click()">
         <img id="portadaImg" src="" alt="Portada" style="display:none">
         <div class="portada-placeholder" id="portadaPlaceholder">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 18h16.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -177,7 +177,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         </div>
       </div>
       <input type="file" id="portadaInput" accept="image/jpeg,image/png,image/webp" onchange="uploadPortada(this)">
-      <div class="upload-progress" id="uploadProgress" style="color:var(--muted)">Cargando datos del centro...</div>
+      <div class="upload-progress" id="uploadProgress" style="color:var(--muted)"></div>
     </div>
 
     <!-- 2. INFO BÁSICA -->
@@ -221,7 +221,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <input class="field-input" id="fDesc" placeholder="Medicina de excelencia, tecnología avanzada...">
         </div>
       </div>
-      <button class="btn-save" id="btnSaveInfo" onclick="saveInfo()" disabled style="opacity:.5">
+      <button class="btn-save" id="btnSaveInfo" onclick="saveInfo()">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
         Guardar cambios
       </button>
@@ -306,40 +306,31 @@ function checkKey() {
   }
 }
 
+// ── ENSURE CENTER (on-demand) ──────────────────────────────────────────────────
+let _centerLoading = null
+async function ensureCenter() {
+  if (_center) return true
+  if (_centerLoading) return _centerLoading
+  _centerLoading = (async () => {
+    try {
+      const { data, error } = await sb.from('centers').select('*').eq('slug', CENTER_SLUG).limit(1)
+      if (error || !data || !data.length) return false
+      _center = data[0]
+      fillInfoForm(_center)
+      if (_center.portada_url) showPortada(_center.portada_url)
+      return true
+    } catch(e) { return false }
+    finally { _centerLoading = null }
+  })()
+  return _centerLoading
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
-  // Step 1: load center via direct fetch (bypasses any Supabase client init issues)
-  try {
-    const res = await fetch(
-      SB_URL + '/rest/v1/centers?slug=eq.' + CENTER_SLUG + '&select=*&limit=1',
-      { headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON } }
-    )
-    if (!res.ok) {
-      el('uploadProgress').textContent = 'Error HTTP ' + res.status
-      return
-    }
-    const rows = await res.json()
-    if (!rows.length) {
-      el('uploadProgress').textContent = 'Centro "' + CENTER_SLUG + '" no encontrado en la base de datos'
-      return
-    }
+  // Load center + secondary data concurrently; UI is always usable
+  const ok = await ensureCenter()
+  if (!ok) { toast('No se pudo cargar el centro — revisá la conexión', 'err'); return }
 
-    _center = rows[0]
-    fillInfoForm(_center)
-    if (_center.portada_url) showPortada(_center.portada_url)
-
-    // Unlock portada + save
-    el('portadaWrap').style.pointerEvents = ''
-    el('portadaWrap').style.opacity = '1'
-    el('btnSaveInfo').disabled = false
-    el('btnSaveInfo').style.opacity = '1'
-    el('uploadProgress').textContent = ''
-  } catch(e) {
-    el('uploadProgress').textContent = 'Error de red: ' + e.message
-    return
-  }
-
-  // Step 2: load doctors + services + links in background (non-blocking)
   try {
     const [docsRes, sRes, linksRes] = await Promise.all([
       sb.from('medicos').select('id,nombre,apellido,titulo,especialidades,foto_url').eq('activo', true).order('apellido'),
@@ -350,7 +341,7 @@ async function init() {
     _services = sRes.data     || []
     _inCenter = (linksRes.data || []).map(l => l.medico_id)
   } catch(e) {
-    toast('Error cargando médicos: ' + e.message, 'err')
+    toast('Error cargando datos: ' + e.message, 'err')
   }
 
   renderDocs()
@@ -359,10 +350,12 @@ async function init() {
 
 // ── PORTADA ───────────────────────────────────────────────────────────────────
 async function uploadPortada(input) {
-  if (!_center) { toast('Centro no cargado aún, recargá la página', 'err'); return }
   const file = input.files[0]
   if (!file) return
   const prog = el('uploadProgress')
+  prog.textContent = 'Cargando...'
+  const ok = await ensureCenter()
+  if (!ok) { prog.textContent = 'Error: no se pudo conectar al centro'; return }
   prog.textContent = 'Subiendo...'
 
   const ext  = file.name.split('.').pop().toLowerCase()
@@ -405,10 +398,11 @@ function fillInfoForm(c) {
 }
 
 async function saveInfo() {
-  if (!_center) { toast('Centro no cargado aún, recargá la página', 'err'); return }
   const btn = el('btnSaveInfo')
   btn.disabled = true
   btn.textContent = 'Guardando...'
+  const ok = await ensureCenter()
+  if (!ok) { toast('No se pudo conectar al centro', 'err'); btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg> Guardar cambios'; return }
 
   const upd = {
     nombre:      el('fNombre').value.trim()    || _center.nombre,
@@ -478,7 +472,7 @@ function docRowHtml(d, mode) {
 }
 
 async function addDoctor(medicoId) {
-  if (!_center) return
+  if (!(await ensureCenter())) return
   await sb.from('center_doctors').insert({ center_id: _center.id, medico_id: medicoId }).catch(()=>{})
   _inCenter.push(medicoId)
   renderDocs()
@@ -486,7 +480,7 @@ async function addDoctor(medicoId) {
 }
 
 async function removeDoctor(medicoId) {
-  if (!_center) return
+  if (!(await ensureCenter())) return
   await sb.from('center_doctors').delete().eq('center_id', _center.id).eq('medico_id', medicoId)
   _inCenter = _inCenter.filter(id => id !== medicoId)
   renderDocs()
@@ -515,7 +509,7 @@ async function addServicio() {
   const cat    = el('svcCat').value
   const precio = parseFloat(el('svcPrecio').value) || 0
   if (!nombre) { toast('Escribí el nombre del servicio', 'err'); return }
-  if (!_center) return
+  if (!(await ensureCenter())) { toast('No se pudo conectar al centro', 'err'); return }
 
   const btype = cat === 'consulta' ? 'doctor' : 'request'
   const { data, error } = await sb.from('center_services').insert({
