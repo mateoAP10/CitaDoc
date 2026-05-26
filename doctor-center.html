@@ -1702,9 +1702,14 @@ async function dbPost(table, body, token) {
   catch(e) {}
 }
 
-// Detect center slug from path: /doctor-center/[slug]
-const _pathParts = window.location.pathname.replace(/\/+$/,'').split('/')
-const slug = _pathParts[_pathParts.length - 1] || 'doctor-center'
+// doctor-center.citadoc.lat/[slug]  OR  citadoc.lat/doctor-center/[slug]
+function _detectSlug() {
+  const parts = window.location.pathname.replace(/\/+$/,'').split('/')
+  if (window.location.hostname === 'doctor-center.citadoc.lat') return parts[1] || ''
+  const i = parts.indexOf('doctor-center')
+  return (i !== -1 && parts[i+1]) ? parts[i+1] : ''
+}
+const slug = _detectSlug()
 
 let _center   = null
 let _services = []

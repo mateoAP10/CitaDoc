@@ -9,11 +9,18 @@
       "destination": "/landing.html"
     },
     {
-      "source": "/doctor-center/:slug/admin",
+      "source": "/:slug/admin",
+      "has": [{ "type": "host", "value": "doctor-center.citadoc.lat" }],
       "destination": "/doctor-center-admin.html"
     },
     {
-      "source": "/doctor-center/:slug",
+      "source": "/:slug",
+      "has": [{ "type": "host", "value": "doctor-center.citadoc.lat" }],
+      "destination": "/doctor-center.html"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "doctor-center.citadoc.lat" }],
       "destination": "/doctor-center.html"
     },
     {
@@ -21,7 +28,7 @@
       "has": [
         {
           "type": "host",
-          "value": "(?!www\\.)((?!citadoc\\.lat$).+)\\.citadoc\\.lat"
+          "value": "(?!www\\.)((?!citadoc\\.lat$)(?!doctor-center\\.citadoc\\.lat$).+)\\.citadoc\\.lat"
         }
       ],
       "destination": "/citadoc-web.html"

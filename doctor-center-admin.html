@@ -441,8 +441,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 const SB_URL     = 'https://qxoomcqaafogczrvsyhg.supabase.co'
 const SB_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
 const ADMIN_PASS = 'doctorcenter2026'
-const _ap = window.location.pathname.replace(/\/+$/,'').split('/')
-const CENTER_SLUG = _ap[_ap.length - 1] || 'doctor-center'
+// doctor-center.citadoc.lat/[slug]/admin  OR  citadoc.lat/doctor-center/[slug]/admin
+function _detectSlug() {
+  const parts = window.location.pathname.replace(/\/+$/,'').split('/')
+  if (window.location.hostname === 'doctor-center.citadoc.lat') return parts[1] || ''
+  const i = parts.indexOf('doctor-center')
+  return (i !== -1 && parts[i+1]) ? parts[i+1] : ''
+}
+const CENTER_SLUG = _detectSlug()
 
 let _center   = null
 let _allDocs  = []
