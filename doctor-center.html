@@ -2075,7 +2075,7 @@ const DIAS_K  = ['dom','lun','mar','mie','jue','vie','sab']
 function pad2(n) { return String(n).padStart(2,'0') }
 function hhmm(s) { const [h,m] = s.split(':'); return 60*parseInt(h)+parseInt(m) }
 function genSlots(desde, hasta, date, dayIdx, booked) {
-  const slots = [], nowMin = dayIdx===0 ? 60*(new Date).getHours()+(new Date).getMinutes()+120 : 0
+  const slots = [], nowMin = 0
   let t = hhmm(desde), end = hhmm(hasta)
   while (t < end) {
     const h = pad2(Math.floor(t/60))+':'+pad2(t%60)
@@ -2086,7 +2086,7 @@ function genSlots(desde, hasta, date, dayIdx, booked) {
 }
 async function loadDoctorDisp(medicoId) {
   const today = new Date(); today.setHours(0,0,0,0)
-  const endD  = new Date(today); endD.setDate(today.getDate()+60)
+  const endD  = new Date(today); endD.setDate(today.getDate()+61)
   const t0 = today.toISOString().split('T')[0], t1 = endD.toISOString().split('T')[0]
 
   const [mArr, booked, bloqArr, excArr] = await Promise.all([
@@ -2107,7 +2107,7 @@ async function loadDoctorDisp(medicoId) {
   ;(excArr||[]).forEach(e => { excMap[e.fecha] = e })
 
   const disp = {}
-  for (let i=0; i<60; i++) {
+  for (let i=1; i<=60; i++) {
     const d = new Date(today); d.setDate(today.getDate()+i)
     const date = d.toISOString().split('T')[0]
     if (blocked.has(date)) continue
@@ -3743,9 +3743,11 @@ window.addEventListener('scroll', () => {
   _lastSY = sy
 }, {passive:true})
 
-// Set min date for fecha input
-const today = new Date().toISOString().split('T')[0]
-el('fFecha').min = today
+// Minimum date = tomorrow (no same-day bookings)
+const _tomorrow = new Date(); _tomorrow.setDate(_tomorrow.getDate()+1)
+const _tomorrowStr = _tomorrow.toISOString().split('T')[0]
+el('fFecha').min = _tomorrowStr
+el('fFecha').value = _tomorrowStr
 
 init()
 </script>
