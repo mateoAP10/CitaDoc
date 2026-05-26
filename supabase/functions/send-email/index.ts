@@ -1098,6 +1098,67 @@ function tplGrowthWelcome(nombre: string, state: string, bioGenerada: string | n
 </body></html>`
 }
 
+function tplWebGenerada(d: { nombre: string; especialidad: string; ciudad: string; web_url: string; is_real: boolean }): string {
+  const badge   = d.is_real ? 'PÁGINA WEB ACTIVA' : 'DEMO'
+  const badgeColor = d.is_real ? '#0b7c6e' : '#7c3aed'
+  const badgeBg    = d.is_real ? 'rgba(11,124,110,.12)' : 'rgba(124,58,237,.12)'
+  const headline   = d.is_real
+    ? 'Tu página web médica ya está activa.'
+    : 'Tu demo médica está lista para ver.'
+  const sub = d.is_real
+    ? `Hola <strong>${d.nombre}</strong>, tu presencia digital en CitaDoc está en vivo. Comparte tu enlace con pacientes y empieza a recibir citas.`
+    : `Hola <strong>${d.nombre}</strong>, generamos una demo de tu sitio web médico. Es solo una muestra — escríbenos para activarla con tus datos reales.`
+  const cta = d.is_real ? 'Ver mi sitio web →' : 'Ver mi demo →'
+  const footer = d.is_real
+    ? 'Tu web está activa en citadoc.lat. Para editar información, contáctanos.'
+    : 'Esta es una demo. Para activar tu web real escríbenos a hola@citadoc.lat'
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tu web CitaDoc</title></head>
+<body style="margin:0;padding:0;background:#0a0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1a;padding:48px 16px;">
+<tr><td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;">
+
+  <!-- Header -->
+  <tr><td style="background:linear-gradient(145deg,#0d1b2a 0%,#0b2d26 100%);border-radius:20px 20px 0 0;padding:40px 40px 36px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06);">
+    <div style="display:inline-block;background:${badgeBg};border:1px solid ${badgeColor};border-radius:20px;padding:5px 14px;margin-bottom:24px;">
+      <span style="color:${badgeColor};font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;">${badge}</span>
+    </div>
+    <h1 style="margin:0 0 10px;color:#ffffff;font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-.3px;">${headline}</h1>
+    <p style="margin:0;color:rgba(255,255,255,.4);font-size:13px;">${d.especialidad}${d.ciudad ? ' · ' + d.ciudad : ''}</p>
+  </td></tr>
+
+  <!-- Body -->
+  <tr><td style="background:#111b29;padding:36px 40px;">
+    <p style="margin:0 0 28px;color:rgba(255,255,255,.75);font-size:15px;line-height:1.7;">${sub}</p>
+
+    <!-- URL card -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr><td style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px 20px;">
+        <p style="margin:0 0 6px;color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Tu enlace</p>
+        <a href="${d.web_url}" style="color:#5dba8a;font-size:14px;font-family:monospace;text-decoration:none;word-break:break-all;">${d.web_url}</a>
+      </td></tr>
+    </table>
+
+    <!-- CTA -->
+    <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+      <tr><td style="text-align:center;">
+        <a href="${d.web_url}" style="display:inline-block;background:linear-gradient(135deg,#0b7c6e,#0ea08f);color:#fff;text-decoration:none;padding:15px 36px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:.2px;">${cta}</a>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="background:#0d1520;border-radius:0 0 20px 20px;padding:24px 40px;text-align:center;border-top:1px solid rgba(255,255,255,.05);">
+    <p style="margin:0 0 6px;color:rgba(255,255,255,.18);font-size:12px;line-height:1.6;">${footer}</p>
+    <p style="margin:0;color:rgba(255,255,255,.12);font-size:11px;">CitaDoc Health Network · <a href="https://citadoc.lat" style="color:rgba(255,255,255,.25);text-decoration:none;">citadoc.lat</a></p>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>`
+}
+
 // ── Send via Resend ───────────────────────────────────────────────────────────
 async function sendEmail(to: string, subject: string, html: string) {
   if (!RESEND_API_KEY) { console.warn('[send-email] No RESEND_API_KEY'); return }
@@ -1133,7 +1194,7 @@ serve(async (req) => {
 
     // Public key access: only allow appointment-related types
     if (!authHeader && publicKey === VALID_PUBLIC_KEY) {
-      const PUBLIC_ALLOWED_TYPES = ['appointment', 'reschedule', 'reminder']
+      const PUBLIC_ALLOWED_TYPES = ['appointment', 'reschedule', 'reminder', 'web_generada']
       if (!PUBLIC_ALLOWED_TYPES.includes(type)) {
         return new Response(JSON.stringify({ error: 'Forbidden type for public access' }), { status: 403, headers: CORS })
       }
@@ -1180,6 +1241,21 @@ serve(async (req) => {
       case 'reminder': {
         const subject = `Recordatorio: tu cita con ${data.doctor_name || 'tu médico'} es mañana`
         await sendEmail(to_email, subject, tplReminder(data))
+        break
+      }
+
+      case 'web_generada': {
+        const isReal = data.is_real === true || data.is_real === 'true'
+        const subject = isReal
+          ? `${data.nombre || 'Tu web'} — Tu página web médica ya está activa en CitaDoc`
+          : `${data.nombre || 'Tu web'} — Tu demo médica está lista`
+        await sendEmail(to_email, subject, tplWebGenerada({
+          nombre:      data.nombre      || '',
+          especialidad: data.especialidad || '',
+          ciudad:      data.ciudad      || '',
+          web_url:     data.web_url     || '',
+          is_real:     isReal,
+        }))
         break
       }
 

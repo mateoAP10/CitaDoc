@@ -71,14 +71,26 @@
         <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.28rem">Nombre completo</label>
         <input id="mw-nombre" placeholder="Dr. Ana García López" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:0;box-sizing:border-box">
       </div>
+      <div>
+        <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.28rem">Especialidad</label>
+        <select id="mw-especialidad" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;color-scheme:dark">
+          <option value="">— Seleccionar —</option>
+          <option>Alergia e Inmunología</option><option>Anatomía Patológica</option><option>Anestesiología</option><option>Cardiología</option><option>Cirugía Bucal</option><option>Cirugía Cardiovascular</option><option>Cirugía General</option><option>Cirugía Maxilofacial</option><option>Cirugía Pediátrica</option><option>Cirugía Plástica y Reconstructiva</option><option>Cirugía Torácica</option><option>Cirugía Vascular</option><option>Dermatología</option><option>Endodoncia</option><option>Endocrinología</option><option>Fisiatría</option><option>Gastroenterología</option><option>Genética Médica</option><option>Geriatría</option><option>Ginecología y Obstetricia</option><option>Hematología</option><option>Implantología Oral</option><option>Infectología</option><option>Kinesiología</option><option>Laboratorio Clínico</option><option>Medicina Bucal</option><option>Medicina de Emergencias</option><option>Medicina del Deporte</option><option>Medicina del Dolor</option><option>Medicina del Trabajo</option><option>Medicina Estética</option><option>Medicina Familiar y Comunitaria</option><option>Medicina Física y Rehabilitación</option><option>Medicina Intensiva</option><option>Medicina Interna</option><option>Medicina Legal y Forense</option><option>Medicina Nuclear</option><option>Medicina Paliativa</option><option>Medicina Preventiva</option><option>Medicina Tropical</option><option>Nefrología</option><option>Neumonología</option><option>Neurocirugía</option><option>Neurología</option><option>Neuropsicología</option><option>Nutrición</option><option>Nutrición Clínica</option><option>Oclusión y Disfunción Temporomandibular</option><option>Odontología Estética</option><option>Odontología General</option><option>Odontología Preventiva y Comunitaria</option><option>Odontología Restauradora</option><option>Odontopediatría</option><option>Odontogeriatría</option><option>Oftalmología</option><option>Oncología</option><option>Ortodoncia y Ortopedia Maxilar</option><option>Otorrinolaringología</option><option>Patología Bucal</option><option>Pediatría</option><option>Periodoncia</option><option>Prótesis Dental</option><option>Psicología</option><option>Psicología Clínica</option><option>Psicología Infantil y Adolescente</option><option>Psicología Organizacional</option><option>Psiquiatría</option><option>Radiología e Imágenes</option><option>Radiología Oral y Maxilofacial</option><option>Rehabilitación Oral</option><option>Reumatología</option><option>Terapia Física y Rehabilitación</option><option>Traumatología y Ortopedia</option><option>Urología</option>
+        </select>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
         <div>
-          <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.28rem">Especialidad</label>
-          <input id="mw-especialidad" placeholder="Cardiología" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:0;box-sizing:border-box">
+          <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.28rem">País</label>
+          <select id="mw-pais" onchange="mwPaisChange()" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;color-scheme:dark">
+            <option value="">— País —</option>
+            <option>Ecuador</option><option>Colombia</option><option>México</option><option>Argentina</option><option>Chile</option><option>Perú</option><option>Venezuela</option><option>España</option><option>Estados Unidos</option><option>Bolivia</option><option>Paraguay</option><option>Uruguay</option><option>Costa Rica</option><option>Panamá</option><option>Guatemala</option><option>Honduras</option><option>El Salvador</option><option>Nicaragua</option><option>República Dominicana</option><option>Cuba</option><option>Puerto Rico</option><option>Otro</option>
+          </select>
         </div>
         <div>
           <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.28rem">Ciudad</label>
-          <input id="mw-ciudad" placeholder="Bogotá" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:0;box-sizing:border-box">
+          <select id="mw-ciudad" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;color-scheme:dark">
+            <option value="">— Ciudad —</option>
+          </select>
         </div>
       </div>
       <div>
@@ -89,6 +101,10 @@
         <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.28rem">Slug</label>
         <input id="mw-slug" placeholder="dr-ana-garcia-cardio" oninput="actualizarSlugPreview()" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-size:.88rem;outline:0;box-sizing:border-box;font-family:monospace">
         <div id="mw-slug-preview" style="font-size:.67rem;color:rgba(255,255,255,.22);margin-top:.25rem;font-family:monospace">citadoc.lat/demo/—</div>
+      </div>
+      <div>
+        <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.28rem">Email del médico <span style="color:rgba(255,255,255,.2);font-weight:400;text-transform:none;letter-spacing:0">(recibirá su web)</span></label>
+        <input type="email" id="mw-email" placeholder="doctor@clinica.com" style="width:100%;padding:.6rem .8rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:0;box-sizing:border-box">
       </div>
       <div>
         <label style="font-size:.61rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.35rem">Tipo</label>
@@ -513,6 +529,40 @@ const MW_LAYOUTS = [
   { id: 'aesthetic-luxe',      name: 'Luxe',      mood: 'Elegance · Premium' },
 ];
 
+const _MW_CITIES = {
+  'Ecuador':              ['Quito','Guayaquil','Cuenca','Ambato','Loja','Manta','Portoviejo','Ibarra','Riobamba','Machala'],
+  'Colombia':             ['Bogotá','Medellín','Cali','Barranquilla','Cartagena','Bucaramanga','Cúcuta','Pereira','Santa Marta','Manizales'],
+  'México':               ['Ciudad de México','Guadalajara','Monterrey','Puebla','Tijuana','León','Querétaro','San Luis Potosí','Mérida','Juárez'],
+  'Argentina':            ['Buenos Aires','Córdoba','Rosario','Mendoza','Tucumán','La Plata','Mar del Plata','Salta','Santa Fe','San Juan'],
+  'Chile':                ['Santiago','Valparaíso','Concepción','Antofagasta','Viña del Mar','Temuco','Rancagua','Talca','Arica','Iquique'],
+  'Perú':                 ['Lima','Arequipa','Trujillo','Chiclayo','Piura','Iquitos','Cusco','Huancayo','Tacna','Pucallpa'],
+  'Venezuela':            ['Caracas','Maracaibo','Valencia','Barquisimeto','Maracay','Ciudad Guayana','Barcelona','Maturín','San Cristóbal','Mérida'],
+  'España':               ['Madrid','Barcelona','Valencia','Sevilla','Zaragoza','Málaga','Murcia','Palma','Las Palmas','Bilbao'],
+  'Estados Unidos':       ['Miami','New York','Los Angeles','Houston','Chicago','Phoenix','San Antonio','Dallas','San Diego','New Jersey'],
+  'Bolivia':              ['La Paz','Santa Cruz','Cochabamba','Sucre','Oruro','Tarija','Potosí','Trinidad'],
+  'Paraguay':             ['Asunción','Ciudad del Este','Encarnación','San Lorenzo','Luque','Capiatá','Lambaré'],
+  'Uruguay':              ['Montevideo','Salto','Paysandú','Las Piedras','Rivera','Tacuarembó','Melo'],
+  'Costa Rica':           ['San José','Alajuela','Cartago','Heredia','Liberia','Pérez Zeledón'],
+  'Panamá':               ['Ciudad de Panamá','Colón','David','Penonomé','Santiago','Chitré'],
+  'Guatemala':            ['Ciudad de Guatemala','Quetzaltenango','Escuintla','Cobán','Mazatenango'],
+  'Honduras':             ['Tegucigalpa','San Pedro Sula','La Ceiba','Choloma','El Progreso'],
+  'El Salvador':          ['San Salvador','Santa Ana','San Miguel','Mejicanos','Soyapango'],
+  'Nicaragua':            ['Managua','León','Masaya','Chinandega','Granada'],
+  'República Dominicana': ['Santo Domingo','Santiago','San Pedro de Macorís','La Vega','San Francisco de Macorís'],
+  'Cuba':                 ['La Habana','Santiago de Cuba','Camagüey','Holguín','Santa Clara'],
+  'Puerto Rico':          ['San Juan','Ponce','Bayamón','Carolina','Caguas'],
+  'Otro':                 ['Otra ciudad'],
+};
+
+function mwPaisChange() {
+  var pais = document.getElementById('mw-pais').value;
+  var sel  = document.getElementById('mw-ciudad');
+  var cities = _MW_CITIES[pais] || [];
+  sel.innerHTML = cities.length
+    ? ['<option value="">— Ciudad —</option>'].concat(cities.map(function(c) { return '<option>' + c + '</option>'; })).join('')
+    : '<option value="">— Selecciona país —</option>';
+}
+
 function setWmTab(tab) {
   _wmTab = tab;
   ['medicos','demos','leads','signals'].forEach(function(t) {
@@ -682,10 +732,13 @@ function abrirModalWeb() {
   _mwPhotoFile = null;
   _mwLogoFile = null;
   _mwLayout = 'surgical-authority';
-  ['mw-nombre','mw-especialidad','mw-ciudad','mw-bio','mw-slug'].forEach(function(id) {
+  ['mw-nombre','mw-bio','mw-slug','mw-email'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
+  document.getElementById('mw-especialidad').value = '';
+  document.getElementById('mw-pais').value = '';
+  document.getElementById('mw-ciudad').innerHTML = '<option value="">— Ciudad —</option>';
   document.getElementById('mw-slug-preview').textContent = 'citadoc.lat/demo/—';
   document.getElementById('mw-result').style.display = 'none';
   document.getElementById('mw-error').style.display = 'none';
@@ -715,8 +768,24 @@ function abrirModalWebParaMedico(medicoId) {
   if (!m) return;
   abrirModalWeb();
   document.getElementById('mw-nombre').value = ((m.nombre || '') + ' ' + (m.apellido || '')).trim();
-  document.getElementById('mw-especialidad').value = (m.especialidades || [])[0] || '';
-  document.getElementById('mw-ciudad').value = m.ciudad || '';
+  var espec = (m.especialidades || [])[0] || '';
+  var espSel = document.getElementById('mw-especialidad');
+  espSel.value = espec;
+  if (!espSel.value) { var opt = document.createElement('option'); opt.value = espec; opt.textContent = espec; espSel.appendChild(opt); espSel.value = espec; }
+  if (m.email) document.getElementById('mw-email').value = m.email;
+  var ciudad = m.ciudad || '';
+  var paisSel = document.getElementById('mw-pais');
+  var ciudadSel = document.getElementById('mw-ciudad');
+  var matchedPais = Object.keys(_MW_CITIES).find(function(p) { return (_MW_CITIES[p] || []).some(function(c) { return c.toLowerCase() === ciudad.toLowerCase(); }); }) || '';
+  if (matchedPais) {
+    paisSel.value = matchedPais;
+    mwPaisChange();
+    var opts = Array.from(ciudadSel.options);
+    var match = opts.find(function(o) { return o.text.toLowerCase() === ciudad.toLowerCase(); });
+    if (match) ciudadSel.value = match.value;
+  } else if (ciudad) {
+    var opt2 = document.createElement('option'); opt2.value = ciudad; opt2.textContent = ciudad; ciudadSel.appendChild(opt2); ciudadSel.value = ciudad;
+  }
   if (m.slug) { document.getElementById('mw-slug').value = m.slug; }
   setWebTipo('real');
   document.getElementById('mw-medico-sel').value = medicoId;
@@ -760,9 +829,11 @@ async function generarWeb() {
   }
   var nombre   = document.getElementById('mw-nombre').value.trim();
   var espec    = document.getElementById('mw-especialidad').value.trim();
+  var pais     = document.getElementById('mw-pais').value.trim();
   var ciudad   = document.getElementById('mw-ciudad').value.trim();
   var bio      = document.getElementById('mw-bio').value.trim();
   var slug     = document.getElementById('mw-slug').value.trim();
+  var email    = document.getElementById('mw-email').value.trim();
   var medicoId = document.getElementById('mw-medico-sel').value || null;
   if (!nombre || !espec) {
     document.getElementById('mw-error').textContent = 'Nombre y especialidad son obligatorios.';
@@ -778,7 +849,7 @@ async function generarWeb() {
     if (_mwPhotoFile) { btn.textContent = 'Subiendo foto...'; photo_url = await uploadMwFile(_mwPhotoFile, 'photo'); }
     if (_mwLogoFile)  { btn.textContent = 'Subiendo logo...'; logo_url  = await uploadMwFile(_mwLogoFile,  'logo');  }
     btn.textContent = 'Generando con Claude...';
-    var body = { doctor_name: nombre, specialty: espec, city: ciudad, engine: 'claude', selected_layout_override: _mwLayout };
+    var body = { doctor_name: nombre, specialty: espec, city: ciudad || pais, engine: 'claude', selected_layout_override: _mwLayout };
     if (bio)       body.bio = bio;
     if (photo_url) body.photo_url = photo_url;
     if (logo_url)  body.logo_url  = logo_url;
@@ -793,12 +864,20 @@ async function generarWeb() {
     if (d.error) throw new Error(d.error);
     _mwAttempts++;
     document.getElementById('mw-intentos').textContent = _mwAttempts;
-    var url = 'https://citadoc.lat/demo/' + (d.slug || '');
+    var isReal = _webTipo === 'real';
+    var url = isReal ? 'https://citadoc.lat/' + (d.slug || '') : 'https://citadoc.lat/demo/' + (d.slug || '');
     var resEl = document.getElementById('mw-result');
     resEl.innerHTML = '✦ Web generada — <a href="' + url + '" target="_blank" style="color:#5dba8a">' + url + '</a>';
     resEl.style.display = '';
     btn.textContent = _mwAttempts < 3 ? 'Generar otra ✦' : 'Límite alcanzado';
     btn.disabled = _mwAttempts >= 3;
+    if (email) {
+      fetch(SB_URL + '/functions/v1/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_ANON },
+        body: JSON.stringify({ type: 'web_generada', to_email: email, nombre: nombre, especialidad: espec, ciudad: ciudad || pais, web_url: url, is_real: isReal }),
+      }).catch(function() {});
+    }
     var { data: demos } = await sb.from('generated_demos').select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel').order('created_at', { ascending: false }).limit(15);
     if (demos) { renderDemos(demos); document.getElementById('wm-cnt-demos').textContent = demos.length; }
     if (_webTipo === 'real') { _webMedicosLoaded = false; cargarWebMedicos(); }
