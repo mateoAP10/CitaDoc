@@ -143,6 +143,20 @@
   </div>
   <div id="mwe-slug-lbl" style="font-size:.65rem;color:rgba(255,255,255,.22);margin-bottom:1.1rem;font-family:monospace"></div>
 
+  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Foto y logo</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.15rem">
+    <div onclick="document.getElementById('mwe-photo-input').click()" style="display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;border:1.5px dashed rgba(255,255,255,.11);border-radius:11px;cursor:pointer">
+      <div id="mwe-photo-thumb" style="width:40px;height:40px;border-radius:7px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden">📷</div>
+      <div><div style="font-size:.72rem;color:rgba(255,255,255,.45);font-weight:500">Foto</div><div id="mwe-photo-st" style="font-size:.6rem;color:rgba(255,255,255,.2)">Cambiar</div></div>
+    </div>
+    <input type="file" id="mwe-photo-input" accept="image/*" style="display:none" onchange="mweUploadMedia('photo',this)">
+    <div onclick="document.getElementById('mwe-logo-input').click()" style="display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;border:1.5px dashed rgba(255,255,255,.11);border-radius:11px;cursor:pointer">
+      <div id="mwe-logo-thumb" style="width:40px;height:40px;border-radius:7px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden">🏥</div>
+      <div><div style="font-size:.72rem;color:rgba(255,255,255,.45);font-weight:500">Logo</div><div id="mwe-logo-st" style="font-size:.6rem;color:rgba(255,255,255,.2)">Cambiar</div></div>
+    </div>
+    <input type="file" id="mwe-logo-input" accept="image/*" style="display:none" onchange="mweUploadMedia('logo',this)">
+  </div>
+
   <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Identidad</div>
   <div style="display:grid;gap:.5rem;margin-bottom:1.15rem">
     <input id="mwe-nombre" placeholder="Nombre del médico" style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box">
@@ -164,6 +178,13 @@
     <button onclick="mweAddService()" style="padding:.25rem .65rem;background:rgba(93,186,138,.13);border:1px solid rgba(93,186,138,.25);border-radius:6px;color:#5dba8a;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer">+ Agregar</button>
   </div>
   <div id="mwe-services-list" style="display:grid;gap:.4rem;margin-bottom:1.15rem"></div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
+    <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em">Galería / carrusel</div>
+    <button onclick="document.getElementById('mwe-gallery-input').click()" style="padding:.25rem .65rem;background:rgba(93,186,138,.13);border:1px solid rgba(93,186,138,.25);border-radius:6px;color:#5dba8a;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer">+ Fotos</button>
+  </div>
+  <input type="file" id="mwe-gallery-input" accept="image/*" multiple style="display:none" onchange="mweUploadGallery(this)">
+  <div id="mwe-gallery-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:1.15rem"><div style="grid-column:1/-1;font-size:.72rem;color:rgba(255,255,255,.2);text-align:center;padding:.6rem">Sin imágenes</div></div>
 
   <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Sobre el doctor</div>
   <textarea id="mwe-about" rows="4" placeholder="Texto de presentación del médico..." style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;resize:none;line-height:1.5;margin-bottom:1.15rem"></textarea>
@@ -992,6 +1013,56 @@ async function retractDemo(slug) {
 // ── Edit Web ──────────────────────────────────────────────────────────────────
 
 var _MWE_INP = "width:100%;padding:.45rem .6rem;border-radius:7px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:0;box-sizing:border-box";
+var _mweGallery = [], _mwePhotoUrl = null, _mweLogoUrl = null;
+
+function mweRenderGallery() {
+  var el = document.getElementById('mwe-gallery-grid');
+  if (!_mweGallery.length) { el.innerHTML = '<div style="grid-column:1/-1;font-size:.72rem;color:rgba(255,255,255,.2);text-align:center;padding:.6rem">Sin imágenes — sube fotos para el carrusel</div>'; return; }
+  el.innerHTML = _mweGallery.map(function(url, i) {
+    return '<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.04)">'
+      + '<img src="' + esc(url) + '" style="width:100%;height:100%;object-fit:cover" loading="lazy">'
+      + '<button onclick="mweDeleteGallery(' + i + ')" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.75);border:none;color:#f87171;font-size:.8rem;cursor:pointer;line-height:20px;text-align:center;padding:0">×</button>'
+      + '</div>';
+  }).join('');
+}
+
+function mweDeleteGallery(idx) { _mweGallery.splice(idx, 1); mweRenderGallery(); }
+
+async function mweUploadMedia(type, input) {
+  var file = input.files[0]; if (!file) return;
+  var st = document.getElementById('mwe-' + type + '-st');
+  var th = document.getElementById('mwe-' + type + '-thumb');
+  st.textContent = 'Subiendo...';
+  var ext = file.name.split('.').pop();
+  var path = 'demo-media/' + _editSlug + '/' + type + '-' + Date.now() + '.' + ext;
+  var { error } = await sb.storage.from('growth-creatives').upload(path, file, { upsert: true, contentType: file.type });
+  if (error) { st.textContent = 'Error'; console.error(error); return; }
+  var { data: { publicUrl } } = sb.storage.from('growth-creatives').getPublicUrl(path);
+  th.innerHTML = '<img src="' + publicUrl + '" style="width:100%;height:100%;object-fit:cover">';
+  st.textContent = '✓ Listo';
+  if (type === 'photo') _mwePhotoUrl = publicUrl;
+  else _mweLogoUrl = publicUrl;
+  input.value = '';
+}
+
+async function mweUploadGallery(input) {
+  var files = Array.from(input.files); if (!files.length) return;
+  var btn = document.querySelector('[onclick*="mwe-gallery-input"]');
+  if (btn) { btn.textContent = 'Subiendo...'; btn.disabled = true; }
+  var ts = Date.now();
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var ext = file.name.split('.').pop();
+    var path = 'demo-media/' + _editSlug + '/gallery/' + ts + '_' + i + '.' + ext;
+    var { error } = await sb.storage.from('growth-creatives').upload(path, file, { upsert: true, contentType: file.type });
+    if (error) { console.error(error); continue; }
+    var { data: { publicUrl } } = sb.storage.from('growth-creatives').getPublicUrl(path);
+    _mweGallery.push(publicUrl);
+  }
+  input.value = '';
+  if (btn) { btn.textContent = '+ Fotos'; btn.disabled = false; }
+  mweRenderGallery();
+}
 
 function mweServiceRow(icon, title, desc) {
   var el = document.createElement('div');
@@ -1027,6 +1098,20 @@ function abrirModalEditWeb(slug) {
     var d = result.data || {};
     var config = d.web_config_jsonb || {};
     document.getElementById('mwe-slug-lbl').textContent = '/' + slug;
+    // reset media state
+    _mwePhotoUrl = null; _mweLogoUrl = null;
+    _mweGallery = Array.isArray(config.gallery) ? config.gallery.slice() : [];
+    // photo thumb
+    var pth = document.getElementById('mwe-photo-thumb');
+    var purl = d.photo_url || config.doctor_photo_url || null;
+    pth.innerHTML = purl ? '<img src="'+esc(purl)+'" style="width:100%;height:100%;object-fit:cover">' : '📷';
+    document.getElementById('mwe-photo-st').textContent = purl ? '✓ Cargada' : 'Cambiar';
+    // logo thumb
+    var lth = document.getElementById('mwe-logo-thumb');
+    var lurl = d.logo_url || config.logo_url || null;
+    lth.innerHTML = lurl ? '<img src="'+esc(lurl)+'" style="width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply">' : '🏥';
+    document.getElementById('mwe-logo-st').textContent = lurl ? '✓ Cargado' : 'Cambiar';
+    mweRenderGallery();
     document.getElementById('mwe-nombre').value = d.doctor_name || '';
     document.getElementById('mwe-especialidad').value = d.specialty || '';
     document.getElementById('mwe-ciudad').value = config.city || '';
@@ -1086,7 +1171,13 @@ async function guardarEditWeb() {
     config.primary_color = document.getElementById('mwe-color').value;
     config.services  = services;
     config.servicios = services;
-    await sb.from('generated_demos').update({ doctor_name: nombre, specialty: espec, web_config_jsonb: config }).eq('slug', _editSlug);
+    config.gallery   = _mweGallery;
+    if (_mwePhotoUrl) config.doctor_photo_url = _mwePhotoUrl;
+    if (_mweLogoUrl)  config.logo_url = _mweLogoUrl;
+    var dbUpdate = { doctor_name: nombre, specialty: espec, web_config_jsonb: config };
+    if (_mwePhotoUrl) dbUpdate.photo_url = _mwePhotoUrl;
+    if (_mweLogoUrl)  dbUpdate.logo_url  = _mweLogoUrl;
+    await sb.from('generated_demos').update(dbUpdate).eq('slug', _editSlug);
     document.getElementById('modalEditWeb').style.display = 'none';
     var { data } = await sb.from('generated_demos').select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel,activated_at').order('created_at', { ascending: false }).limit(15);
     if (data) renderDemos(data);
