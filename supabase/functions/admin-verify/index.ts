@@ -136,6 +136,15 @@ serve(async (req) => {
         if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
         return new Response(JSON.stringify({ ok: true }), { headers: CORS })
       }
+      if (body.action === 'toggle_activo') {
+        const { medico_id, activo } = body
+        if (!medico_id || typeof activo !== 'boolean') {
+          return new Response(JSON.stringify({ error: 'invalid params' }), { status: 400, headers: CORS })
+        }
+        const { error } = await sb.from('medicos').update({ activo }).eq('id', medico_id)
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
     }
   }
 

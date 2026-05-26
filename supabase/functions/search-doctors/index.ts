@@ -29,7 +29,6 @@ serve(async (req) => {
       .from('medicos')
       .select('id,nombre,apellido,titulo,especialidades,ciudad,pais,precio,foto_url,plan,whatsapp,whatsapp_activo,seguros,horario_desde,horario_hasta,dias_atencion,slug,activo,email,verificacion_estado')
       .eq('activo', true)
-      .eq('verificacion_estado', 'verificado')
 
     if (country) {
       query = query.eq('pais', country)
