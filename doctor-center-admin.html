@@ -923,17 +923,56 @@ async function patchServicio(id, fields) {
   if (s) Object.assign(s, fields)
 }
 
-async function startAddServicio() {
+let _newSvcCat = 'consulta'
+
+function startAddServicio() {
+  const t = el('svcTable')
+  if (t.querySelector('#svc-new-row')) { t.querySelector('#svc-new-nombre').focus(); return }
+  _newSvcCat = 'consulta'
+  const row = document.createElement('div')
+  row.className = 'svc-tr'; row.id = 'svc-new-row'
+  row.innerHTML = `
+    <div class="svc-td">
+      <button class="svc-cat-pill consulta" id="svc-new-cat" onclick="cycleNewCat()">${CAT_LABEL['consulta']}</button>
+    </div>
+    <div class="svc-td">
+      <input class="svc-inline" id="svc-new-nombre" placeholder="Nombre del servicio"
+        onkeydown="if(event.key==='Enter')commitNewServicio();if(event.key==='Escape')cancelNewServicio()">
+    </div>
+    <div class="svc-td">
+      <div class="svc-price-wrap"><span>$</span>
+        <input class="svc-price-inline" id="svc-new-precio" type="number" min="0" step="0.5" placeholder="0"
+          onkeydown="if(event.key==='Enter')commitNewServicio();if(event.key==='Escape')cancelNewServicio()">
+      </div>
+    </div>
+    <div class="svc-td-del">
+      <button class="btn-del" onclick="cancelNewServicio()">✕</button>
+    </div>`
+  t.appendChild(row)
+  el('svc-new-nombre').focus()
+}
+
+function cycleNewCat() {
+  _newSvcCat = CAT_CYCLE[(CAT_CYCLE.indexOf(_newSvcCat) + 1) % CAT_CYCLE.length]
+  const btn = el('svc-new-cat')
+  btn.className = 'svc-cat-pill ' + _newSvcCat
+  btn.textContent = CAT_LABEL[_newSvcCat]
+}
+
+function cancelNewServicio() {
+  const r = el('svc-new-row')
+  if (r) r.remove()
+}
+
+async function commitNewServicio() {
+  const nombre = (el('svc-new-nombre').value || '').trim()
+  if (!nombre) { el('svc-new-nombre').focus(); return }
+  const precio = parseFloat(el('svc-new-precio').value) || 0
+  const cat = _newSvcCat
+  cancelNewServicio()
   if (!(await ensureCenter())) { toast('No se pudo conectar', 'err'); return }
-  const nombre = prompt('Nombre del servicio:')
-  if (!nombre || !nombre.trim()) return
-  const precioStr = prompt('Precio ($):')
-  const precio = parseFloat(precioStr) || 0
-  const cats = ['consulta','laboratorio','imagen']
-  const catStr = prompt('Categoría (1=Consulta, 2=Lab, 3=Imagen):') || '1'
-  const cat = cats[(parseInt(catStr)-1)] || 'consulta'
   const { data, error } = await sbPost('center_services', {
-    center_id: _center.id, nombre: nombre.trim(), categoria: cat, precio,
+    center_id: _center.id, nombre, categoria: cat, precio,
     booking_type: cat==='consulta'?'doctor':'request',
     orden: _services.filter(s=>s.categoria===cat).length+1,
     seguros: [],
@@ -945,7 +984,6 @@ async function startAddServicio() {
 }
 
 async function deleteServicio(id) {
-  if (!confirm('¿Eliminar este servicio?')) return
   await sbDelete('center_services', 'id=eq.'+id)
   _services = _services.filter(s => s.id !== id)
   renderServices()
