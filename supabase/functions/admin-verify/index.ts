@@ -85,7 +85,7 @@ serve(async (req) => {
   }
 
   // ── VERIFICACIONES ────────────────────────────────────────────────────────
-  if (req.method === 'GET') {
+  if (req.method === 'GET' && resource === 'verificaciones') {
     const { data, error } = await sb
       .from('medicos')
       .select('id, nombre, apellido, titulo, email, especialidades, verificacion_estado, cedula_doc_url, titulo_doc_url, user_id, created_at')
@@ -111,6 +111,32 @@ serve(async (req) => {
     }))
 
     return new Response(JSON.stringify({ data: enriched }), { headers: CORS })
+  }
+
+  // ── MEDICOS (list + plan change) ─────────────────────────────────────────────
+  if (resource === 'medicos') {
+    if (req.method === 'GET') {
+      const { data, error } = await sb
+        .from('medicos')
+        .select('id,nombre,apellido,email,slug,especialidades,ciudad,plan,plan_activo,activo,created_at')
+        .order('created_at', { ascending: false })
+        .limit(100)
+      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+      return new Response(JSON.stringify({ ok: true, data: data || [] }), { headers: CORS })
+    }
+    if (req.method === 'POST') {
+      const body = await req.json()
+      if (body.action === 'cambiar_plan') {
+        const { medico_id, plan } = body
+        if (!medico_id || !['gratuito', 'pro', 'pro_web'].includes(plan)) {
+          return new Response(JSON.stringify({ error: 'invalid params' }), { status: 400, headers: CORS })
+        }
+        const plan_activo = plan !== 'gratuito'
+        const { error } = await sb.from('medicos').update({ plan, plan_activo }).eq('id', medico_id)
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+    }
   }
 
   // ── Leads ──────────────────────────────────────────────────────────────────
