@@ -2429,11 +2429,9 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 })
 
-function openDocPanel() {
-  el('docPanel').classList.add('open')
-  document.body.style.overflow = 'hidden'
+function setNavDoctor() {
   el('floatNav').innerHTML = `
-    <button class="float-tab" onclick="closeDocPanel()">
+    <button class="float-tab active" onclick="closeDocPanel()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span class="float-tab-label">Inicio</span>
     </button>
@@ -2451,16 +2449,7 @@ function openDocPanel() {
     </button>`
 }
 
-function toggleDocMenu() {
-  const m = el('docTopMenu')
-  const open = m.style.display === 'block'
-  m.style.display = open ? 'none' : 'block'
-  if (!open) document.addEventListener('click', () => { m.style.display='none' }, {once:true, capture:true})
-}
-
-function closeDocPanel() {
-  el('docPanel').classList.remove('open')
-  document.body.style.overflow = ''
+function setNavPatient() {
   el('floatNav').innerHTML = `
     <button class="float-tab active" id="fnInicio" onclick="floatTab('inicio')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -2478,6 +2467,23 @@ function closeDocPanel() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span class="float-tab-label">Perfil médico</span>
     </button>`
+}
+
+function openDocPanel() {
+  el('docPanel').classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function toggleDocMenu() {
+  const m = el('docTopMenu')
+  const open = m.style.display === 'block'
+  m.style.display = open ? 'none' : 'block'
+  if (!open) document.addEventListener('click', () => { m.style.display='none' }, {once:true, capture:true})
+}
+
+function closeDocPanel() {
+  el('docPanel').classList.remove('open')
+  document.body.style.overflow = ''
 }
 
 async function docLogin() {
@@ -2499,7 +2505,9 @@ async function docLogin() {
 
 async function docSignOut() {
   await sb.auth.signOut()
+  _docMedico = null
   closeDocPanel()
+  setNavPatient()
 }
 
 
@@ -2520,6 +2528,7 @@ async function loadDocMedico() {
   }
 
   _docMedico = medico
+  setNavDoctor()
   showDocDash()
 }
 
