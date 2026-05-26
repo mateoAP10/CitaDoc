@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>CitaDoc — Ad Creativo 2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #0a0d14;
+  }
+
+  .canvas {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    background: linear-gradient(145deg, #0a0d14 0%, #0f1525 40%, #0a1020 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 72px;
+    overflow: hidden;
+  }
+
+  /* Subtle background elements */
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .bg-circle-1 {
+    width: 600px; height: 600px;
+    top: -150px; right: -150px;
+    background: radial-gradient(circle, rgba(99, 179, 237, 0.06) 0%, transparent 70%);
+  }
+  .bg-circle-2 {
+    width: 400px; height: 400px;
+    bottom: -100px; left: -100px;
+    background: radial-gradient(circle, rgba(99, 179, 237, 0.04) 0%, transparent 70%);
+  }
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99, 179, 237, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Top section */
+  .top {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-mark {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #63b3ed, #4299e1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+  }
+  .logo-text {
+    font-size: 22px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: -0.3px;
+  }
+
+  .badge-gratuito {
+    background: rgba(99, 179, 237, 0.12);
+    border: 1px solid rgba(99, 179, 237, 0.25);
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #63b3ed;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Middle section */
+  .middle {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 0;
+  }
+
+  .eyebrow {
+    font-size: 16px;
+    font-weight: 500;
+    color: #63b3ed;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .headline {
+    font-size: 74px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -2.5px;
+    color: #ffffff;
+    margin-bottom: 32px;
+  }
+
+  .headline .highlight {
+    background: linear-gradient(135deg, #63b3ed 0%, #90cdf4 50%, #63b3ed 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtext {
+    font-size: 24px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.5;
+    max-width: 700px;
+  }
+
+  .subtext strong {
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+  }
+
+  /* Mock UI card */
+  .mock-card {
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 260px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(20px);
+  }
+  .mock-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4299e1, #63b3ed);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: white;
+    font-weight: 700;
+  }
+  .mock-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 4px;
+  }
+  .mock-spec {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 16px;
+  }
+  .mock-stats {
+    display: flex;
+    gap: 12px;
+  }
+  .mock-stat {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .mock-stat-num {
+    font-size: 18px;
+    font-weight: 700;
+    color: #63b3ed;
+    display: block;
+  }
+  .mock-stat-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    display: block;
+    margin-top: 2px;
+  }
+  .mock-bar {
+    margin-top: 14px;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .mock-bar-fill {
+    height: 100%;
+    width: 68%;
+    background: linear-gradient(90deg, #4299e1, #63b3ed);
+    border-radius: 2px;
+  }
+
+  /* Bottom section */
+  .bottom {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cta-button {
+    background: linear-gradient(135deg, #4299e1, #63b3ed);
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 22px 52px;
+    border-radius: 100px;
+    letter-spacing: -0.3px;
+    box-shadow: 0 20px 60px rgba(66, 153, 225, 0.35);
+  }
+
+  .trust-line {
+    font-size: 16px;
+    color: rgba(255,255,255,0.35);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .trust-line strong {
+    color: rgba(255,255,255,0.55);
+    display: block;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="bg-grid"></div>
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+
+  <!-- Top -->
+  <div class="top">
+    <div class="logo">
+      <div class="logo-mark">C</div>
+      <span class="logo-text">CitaDoc</span>
+    </div>
+    <div class="badge-gratuito">✦ Registro Gratuito</div>
+  </div>
+
+  <!-- Middle -->
+  <div class="middle">
+    <div class="eyebrow">Para médicos modernos</div>
+    <h1 class="headline">
+      Tu consulta<br>
+      es <span class="highlight">premium.</span><br>
+      Tu presencia<br>
+      digital también.
+    </h1>
+    <p class="subtext">
+      Perfil médico profesional<br>
+      <strong>+ citas online en 5 minutos.</strong>
+    </p>
+
+    <!-- Floating mock card -->
+    <div class="mock-card">
+      <div class="mock-avatar">Dr</div>
+      <div class="mock-name">Dr. Alejandro Ruiz</div>
+      <div class="mock-spec">Cardiología · 12 años de exp.</div>
+      <div class="mock-stats">
+        <div class="mock-stat">
+          <span class="mock-stat-num">48</span>
+          <span class="mock-stat-label">Citas hoy</span>
+        </div>
+        <div class="mock-stat">
+          <span class="mock-stat-num">4.9</span>
+          <span class="mock-stat-label">Valoración</span>
+        </div>
+      </div>
+      <div class="mock-bar"><div class="mock-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Bottom -->
+  <div class="bottom">
+    <div class="cta-button">Crear mi perfil gratis →</div>
+    <div class="trust-line">
+      <strong>Sin tarjeta de crédito</strong>
+      Sin compromisos · 100% gratis
+    </div>
+  </div>
+</div>
+</body>
+</html>

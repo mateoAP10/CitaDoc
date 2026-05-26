@@ -1,6 +1,4 @@
 {
-  "installCommand": "",
-  "buildCommand": "",
   "rewrites": [
     {
       "source": "/demo/:slug",
