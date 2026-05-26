@@ -25,6 +25,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 nav{position:absolute;top:0;left:0;right:0;z-index:100;background:transparent;padding:0 5vw}
 nav.scrolled{position:fixed;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .nav-inner{max-width:1100px;margin:0 auto;height:64px;display:flex;align-items:center;gap:1.5rem}
+.nav-right{margin-left:auto}
 .nav-logo{display:flex;align-items:center;gap:.55rem;text-decoration:none;flex-shrink:0}
 .nav-star{width:30px;height:30px;color:#fff;flex-shrink:0;transition:color .2s}
 nav.scrolled .nav-star{color:var(--ink)}
@@ -258,25 +259,25 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .float-nav{
   display:none;
   position:fixed;
-  bottom:calc(1.1rem + env(safe-area-inset-bottom,0px));
-  left:50%;transform:translateX(-50%);
+  bottom:0;left:0;right:0;
   z-index:200;
-  background:rgba(255,255,255,.92);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border:1px solid rgba(255,255,255,.6);
-  border-radius:28px;
-  padding:.35rem .4rem;
-  display:none;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  padding:.3rem 1rem calc(.3rem + env(safe-area-inset-bottom,0px));
   gap:.2rem;
-  box-shadow:0 8px 32px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.8);
+  box-shadow:0 -4px 24px rgba(0,0,0,.08);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  justify-content:space-around;
 }
 @media(max-width:768px){.float-nav{display:flex}}
+.float-nav.hidden{transform:translateY(100%)}
 .float-tab{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.22rem;padding:.55rem .9rem;border:none;background:transparent;
-  border-radius:22px;cursor:pointer;font-family:'DM Sans',sans-serif;
+  gap:.22rem;padding:.55rem .5rem;border:none;background:transparent;
+  border-radius:14px;cursor:pointer;font-family:'DM Sans',sans-serif;
   color:var(--muted2);transition:all .2s cubic-bezier(.34,1.56,.64,1);
-  -webkit-tap-highlight-color:transparent;min-width:68px;
+  -webkit-tap-highlight-color:transparent;flex:1;
 }
 .float-tab svg{width:20px;height:20px;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
 .float-tab-label{font-size:.56rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;transition:color .2s}
@@ -3621,9 +3622,16 @@ document.addEventListener('click', function(e) {
 }, true)
 
 // ── STICKY NAV ────────────────────────────────────────────────────────────────
-// Sticky nav on scroll
+// Sticky nav + hide bottom bar on scroll down
 const navEl = document.querySelector('nav')
-window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 60), {passive:true})
+let _lastSY = 0
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY
+  navEl.classList.toggle('scrolled', sy > 60)
+  const fn = el('floatNav')
+  if (fn) fn.classList.toggle('hidden', sy > _lastSY + 8 && sy > 120)
+  _lastSY = sy
+}, {passive:true})
 
 // Set min date for fecha input
 const today = new Date().toISOString().split('T')[0]
