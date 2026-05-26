@@ -21,16 +21,6 @@
       "has": [
         {
           "type": "host",
-          "value": "doctor-center.citadoc.lat"
-        }
-      ],
-      "destination": "/doctor-center.html"
-    },
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
           "value": "(?!www\\.)((?!citadoc\\.lat$).+)\\.citadoc\\.lat"
         }
       ],
