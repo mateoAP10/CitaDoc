@@ -1095,20 +1095,29 @@ async function commitImport() {
   const btn = el('importBox').querySelector('.btn-import-confirm')
   btn.disabled = true; btn.textContent = 'Importando...'
   let ok = 0, fail = 0
-  for (const r of _importRows) {
-    const { error } = await sbPost('center_services', {
-      center_id: _center.id, nombre: r.nombre, categoria: r.cat, precio: r.precio,
-      booking_type: r.cat==='consulta'?'doctor':'request',
-      orden: _services.filter(s=>s.categoria===r.cat).length+1,
-      seguros: [],
-    })
-    if (error) { fail++ } else { ok++ }
+  try {
+    for (const r of _importRows) {
+      try {
+        const orden = _services.filter(s => s.categoria === r.cat).length + ok + 1
+        const res = await sbPost('center_services', {
+          center_id: _center.id, nombre: r.nombre, categoria: r.cat, precio: r.precio,
+          booking_type: r.cat === 'consulta' ? 'doctor' : 'request',
+          orden, seguros: [],
+        })
+        if (res.error) { console.error('svc error', res.error); fail++ } else { ok++ }
+      } catch(e) { console.error('svc exc', e); fail++ }
+    }
+    const svcRes = await sbGet('center_services', 'center_id=eq.' + _center.id + '&select=*&order=categoria,orden')
+    _services = svcRes.data || []
+    renderServices()
+    toggleImport()
+    toast(`${ok} servicio${ok !== 1 ? 's' : ''} importado${ok !== 1 ? 's' : ''}${fail ? ` (${fail} con error)` : ''}`, fail ? 'err' : 'ok')
+  } catch(e) {
+    console.error('commitImport', e)
+    toast('Error al importar: ' + e.message, 'err')
+  } finally {
+    btn.disabled = false; btn.textContent = 'Importar servicios'
   }
-  const [svcRes] = await Promise.all([sbGet('center_services','center_id=eq.'+_center.id+'&select=*&order=categoria,orden')])
-  _services = svcRes.data || []
-  renderServices()
-  toggleImport()
-  toast(`${ok} servicio${ok!==1?'s':''} importado${ok!==1?'s':''}${fail?` (${fail} con error)`:''}`, fail?'err':'ok')
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
