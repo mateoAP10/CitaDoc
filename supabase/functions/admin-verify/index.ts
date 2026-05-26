@@ -145,6 +145,13 @@ serve(async (req) => {
         if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
         return new Response(JSON.stringify({ ok: true }), { headers: CORS })
       }
+      if (body.action === 'delete_medico') {
+        const { medico_id } = body
+        if (!medico_id) return new Response(JSON.stringify({ error: 'missing medico_id' }), { status: 400, headers: CORS })
+        const { error } = await sb.from('medicos').delete().eq('id', medico_id)
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
     }
   }
 
