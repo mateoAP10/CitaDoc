@@ -1125,7 +1125,7 @@ function abrirModalEditWeb(slug) {
     svcs.forEach(function(s) { list.appendChild(mweServiceRow(s.i||s.icon||'✦', s.t||s.title||s.name||'', s.d||s.desc||s.description||'')); });
     if (!svcs.length) list.appendChild(mweServiceRow('','',''));
     var diffs = Array.isArray(config.differentiators) ? config.differentiators : [];
-    document.getElementById('mwe-diffs').value = diffs.map(function(x) { return typeof x === 'string' ? x : (x.title || ''); }).join('\n');
+    document.getElementById('mwe-diffs').value = diffs.map(function(x) { return typeof x === 'string' ? x : (x.t || x.text || x.title || x.name || ''); }).join('\n');
     document.getElementById('mwe-philosophy').value = config.philosophy || '';
     document.getElementById('mwe-cta').value = config.cta_final || '';
     var col = config.primary_color || '#4a4a4a';
