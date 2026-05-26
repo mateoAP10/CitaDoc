@@ -212,7 +212,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         </div>
       </div>
       <div class="topbar-right">
-        <a class="btn-view" href="doctor-center.html" target="_blank">Ver página pública →</a>
+        <a class="btn-view" id="btnVerPublica" href="#" target="_blank">Ver página pública →</a>
+        <script>document.getElementById('btnVerPublica').href='/'+(window.location.pathname.split('/')[1]||'');</script>
       </div>
     </div>
   </div>
