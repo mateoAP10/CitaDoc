@@ -174,6 +174,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .toast.ok{background:var(--green)}
 .toast.err{background:#dc2626}
 </style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js"></script>
 </head>
 <body>
 
@@ -434,7 +435,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         Importar desde Excel / CSV
       </button>
       <div class="import-box" id="importBox">
-        <textarea class="import-textarea" id="importTA" placeholder="Pegá aquí tu tabla de Excel (Ctrl+V) o escribí manualmente&#10;&#10;nombre	categoria	precio&#10;Consulta general	consulta	50&#10;Ecografía abdominal	imagen	80" oninput="parseImport()"></textarea>
+        <div style="display:flex;gap:.5rem;padding:.65rem .75rem;border-bottom:1px solid #f1f1f1;background:#fafafa;align-items:center">
+          <button onclick="el('importFile').click()" style="display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .85rem;background:#fff;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;color:var(--ink);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Seleccionar archivo
+          </button>
+          <input type="file" id="importFile" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleImportFile(this)">
+          <span style="font-size:.75rem;color:var(--muted)">o pegá directo abajo</span>
+        </div>
+        <div id="importDrop" style="margin:.75rem;border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;color:var(--muted);font-size:.8rem;font-weight:600"
+          onclick="el('importFile').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--red)';this.style.background='#fff5f6'"
+          ondragleave="this.style.borderColor='var(--border)';this.style.background=''"
+          ondrop="event.preventDefault();this.style.borderColor='var(--border)';this.style.background='';handleImportDrop(event)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:block;margin:0 auto .5rem;opacity:.4"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Arrastrá tu archivo aquí<br><span style="font-size:.72rem;font-weight:400;opacity:.7">.xlsx · .xls · .csv</span>
+        </div>
+        <textarea class="import-textarea" id="importTA" placeholder="o pegá tu tabla de Excel aquí (Ctrl+V)&#10;&#10;nombre	categoria	precio&#10;Consulta general	consulta	50&#10;Ecografía abdominal	imagen	80" oninput="parseImport()" style="border-top:1px solid #f1f1f1"></textarea>
         <div class="import-hint">Columnas: <strong>nombre</strong> · <strong>categoria</strong> (consulta / laboratorio / imagen) · <strong>precio</strong> — La primera fila puede ser encabezado, se ignora automáticamente.</div>
         <div class="import-preview" id="importPreview" style="display:none"></div>
         <div class="import-actions" id="importActions" style="display:none">
@@ -973,6 +990,34 @@ async function deleteServicio(id) {
 }
 
 // ── IMPORT ────────────────────────────────────────────────────────────────────
+function handleImportDrop(e) {
+  const file = e.dataTransfer.files[0]
+  if (!file) return
+  const fakeInput = { files: [file], value: '', name: file.name }
+  fakeInput.files[0] = file
+  handleImportFile({ files: [file], value: '' })
+}
+
+function handleImportFile(input) {
+  const file = input.files[0]
+  if (!file) return
+  const isXlsx = file.name.match(/\.xlsx?$/i)
+  const reader = new FileReader()
+  reader.onload = e => {
+    if (isXlsx) {
+      const wb = XLSX.read(e.target.result, { type: 'array' })
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const rows = XLSX.utils.sheet_to_csv(ws)
+      el('importTA').value = rows
+    } else {
+      el('importTA').value = e.target.result
+    }
+    parseImport()
+  }
+  if (isXlsx) reader.readAsArrayBuffer(file)
+  else reader.readAsText(file)
+  input.value = ''
+}
 const CAT_VALID = ['consulta','laboratorio','imagen']
 const CAT_ALIAS = {
   consulta:['consulta','cons','consultation','general'],
