@@ -253,10 +253,19 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .slot-btn.sel{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important}
 .slot-btn.booked{opacity:.4;cursor:not-allowed;background:var(--bg2);color:var(--muted2);pointer-events:none}
 .btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.modal-lab-notice{display:flex;align-items:center;gap:.55rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:.65rem .85rem;font-size:.8rem;font-weight:600;color:#92400e;margin-bottom:.85rem}
+.modal-lab-notice svg{flex-shrink:0;width:16px;height:16px;color:#d97706}
+.modal-channel{display:flex;flex-direction:column;gap:.75rem;padding:.5rem 0}
+.modal-channel-title{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.1rem}
+.btn-channel-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:.55rem;padding:.8rem 1rem;background:#25d366;color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-channel-wa:hover{opacity:.88}
+.btn-channel-mail{width:100%;display:flex;align-items:center;justify-content:center;gap:.55rem;padding:.8rem 1rem;background:#fff;color:var(--ink);border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-channel-mail:hover{border-color:var(--ink)}
 .modal-success{text-align:center;padding:1rem 0}
 .modal-success-icon{font-size:3rem;margin-bottom:.75rem}
 .modal-success h3{font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:.5rem}
 .modal-success p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.modal-success-hours{display:inline-flex;align-items:center;gap:.4rem;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;font-weight:700;color:var(--muted);margin-top:.75rem}
 
 /* ── UTILS ────────────────────────────────────────────────────────────────── */
 .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:6px}
@@ -1558,6 +1567,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div id="modalContent">
+      <div class="modal-lab-notice" id="labNotice" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Los laboratorios inician a las <strong>8:00 am</strong>. Tu turno será agendado desde esa hora.
+      </div>
       <div class="modal-services" id="modalServices" style="display:none"></div>
       <div class="modal-total" id="modalTotal" style="display:none">
         <div class="modal-total-label">Precio consulta</div>
@@ -1614,11 +1627,28 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       </div>
       <button class="btn-submit" id="btnSubmit" onclick="submitReserva()">Solicitar turno →</button>
     </div>
+    <div id="modalChannelContent" style="display:none">
+      <div class="modal-channel">
+        <div class="modal-channel-title">¿Cómo querés recibir tu confirmación?</div>
+        <button class="btn-channel-wa" id="btnChannelWa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          Solicitar por WhatsApp
+        </button>
+        <button class="btn-channel-mail" id="btnChannelMail">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Solicitar por email
+        </button>
+      </div>
+    </div>
     <div id="modalSuccessContent" style="display:none">
       <div class="modal-success">
         <div class="modal-success-icon">✅</div>
         <h3>¡Solicitud enviada!</h3>
-        <p>Nos comunicaremos con vos a la brevedad para confirmar tu turno.<br>También te llegará un mensaje por WhatsApp.</p>
+        <p id="modalSuccessMsg">Nos comunicaremos con vos a la brevedad para confirmar tu turno.</p>
+        <div class="modal-success-hours" id="modalSuccessHours" style="display:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Horario de atención: 8:00 am — 5:00 pm
+        </div>
       </div>
     </div>
   </div>
@@ -2278,23 +2308,31 @@ function openModalFromCalc() {
   el('modalServices').innerHTML = _selected.map(s =>
     `<div class="modal-service-row"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`
   ).join('')
+  // Show notice if any service is lab or imagen
+  const selIds = new Set(_selected.map(x=>x.id))
+  const hasLab = _services.filter(s => selIds.has(s.id)).some(s => s.categoria==='laboratorio')
+  el('labNotice').style.display = hasLab ? 'flex' : 'none'
   el('modalOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
 }
 
 function closeModal() {
-  _modalDoctor = null; _modalDisp = {}; _modalDate = null; _modalSlot = null
+  _modalDoctor = null; _modalDisp = {}; _modalDate = null; _modalSlot = null; _pendingReserva = null
   el('modalOverlay').classList.remove('open')
   document.body.style.overflow = ''
   el('modalContent').style.display = 'block'
+  el('modalChannelContent').style.display = 'none'
   el('modalSuccessContent').style.display = 'none'
   el('modalWaOpt').style.display = 'none'
+  el('labNotice').style.display = 'none'
   el('btnSubmit').style.display  = ''
   document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = '' })
   el('fNombre').value = ''; el('fTelefono').value = ''; el('fCedula').value = ''; el('fEmail').value = ''
 }
 
 function closeModalOnBg(e) { if (e.target === el('modalOverlay')) closeModal() }
+
+let _pendingReserva = null
 
 async function submitReserva() {
   const nombre   = el('fNombre').value.trim()
@@ -2303,64 +2341,69 @@ async function submitReserva() {
   const email    = el('fEmail').value.trim()
   const fecha    = _modalDate || el('fFecha').value
 
-  if (!nombre || !telefono) {
-    alert('Por favor completá nombre y teléfono.')
-    return
-  }
-  if (_modalDoctor && _modalDoctor.online && !_modalSlot) {
-    alert('Por favor seleccioná un horario.')
-    return
-  }
+  if (!nombre || !telefono) { alert('Por favor completá nombre y teléfono.'); return }
+  if (_modalDoctor && _modalDoctor.online && !_modalSlot) { alert('Por favor seleccioná un horario.'); return }
 
   const btn = el('btnSubmit')
-  btn.disabled = true
-  btn.textContent = 'Enviando...'
+  btn.disabled = true; btn.textContent = 'Guardando...'
 
-  // Build services list — doctor modal or estimador selection
   const leadsServices = _modalDoctor
     ? [{ id: _modalDoctor.svcId||'', nombre: _modalDoctor.svcNombre, precio: _modalDoctor.precio||0 }]
     : _selected
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
   await dbPost('center_leads', {
-    center_id:    _center?.id,
-    nombre,
-    telefono,
-    cedula:       cedula || null,
-    email:        email || null,
-    fecha_pref:   fecha || null,
-    hora:         _modalSlot || null,
-    nota:         _modalDoctor ? 'Médico: ' + _modalDoctor.nombre : null,
-    servicios:    leadsServices.length ? JSON.stringify(leadsServices) : null,
-    total_est:    leadsTotal || null,
+    center_id: _center?.id, nombre, telefono,
+    cedula: cedula||null, email: email||null,
+    fecha_pref: fecha||null, hora: _modalSlot||null,
+    nota: _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
+    servicios: leadsServices.length ? JSON.stringify(leadsServices) : null,
+    total_est: leadsTotal||null,
   })
 
-  // Confirmation email to patient
-  if (email) {
-    const docName = _modalDoctor?.nombre || _docFullName() || 'tu médico'
-    sendDocEmail({
-      type: 'appointment', to_email: email,
-      patient_name: nombre, doctor_name: docName,
-      appointment_date: fecha || 'Por confirmar',
-      appointment_time: _modalSlot || 'Por confirmar',
-      appointment_location: _center?.nombre || 'Doctor Center',
-      appointment_mode: 'Solicitud de cita',
-    }, true)
+  const waNum   = _center?.whatsapp || '593989173062'
+  const docLine = _modalDoctor ? `\n\nMédico: ${_modalDoctor.nombre}` : ''
+  const slotLine= _modalSlot ? `\nHorario: ${fecha} a las ${_modalSlot}` : (fecha?`\nFecha preferida: ${fecha}`:'')
+  const cedLine = cedula ? `\nCédula: ${cedula}` : ''
+  const svcs    = leadsServices.length ? '\n\nServicios:\n'+leadsServices.map(s=>'• '+s.nombre+(s.precio?(' ($'+s.precio+')'):'') ).join('\n') : ''
+  const waMsg   = encodeURIComponent(`Hola, soy ${nombre}. Quisiera solicitar un turno.${docLine}${cedLine}${slotLine}${svcs}`)
+
+  _pendingReserva = { nombre, email, fecha, cedula, leadsServices, waNum, waMsg, _modalDoctor: _modalDoctor ? {..._modalDoctor} : null }
+
+  btn.disabled = false; btn.textContent = 'Solicitar turno →'
+  el('modalContent').style.display = 'none'
+  el('modalChannelContent').style.display = 'block'
+
+  el('btnChannelWa').onclick = () => {
+    window.open('https://wa.me/'+waNum+'?text='+waMsg, '_blank')
+    showModalSuccess(false)
   }
+  el('btnChannelMail').onclick = () => {
+    if (email) {
+      const docName = _pendingReserva._modalDoctor?.nombre || _docFullName() || 'tu médico'
+      sendDocEmail({
+        type:'appointment', to_email:email,
+        patient_name:nombre, doctor_name:docName,
+        appointment_date:fecha||'Por confirmar',
+        appointment_time:_modalSlot||'Por confirmar',
+        appointment_location:_center?.nombre||'Doctor Center',
+        appointment_mode:'Solicitud de cita',
+      }, true)
+    }
+    showModalSuccess(true)
+  }
+}
 
-  // WhatsApp auto-message
-  const waNum    = _center?.whatsapp || '593989173062'
-  const docLine  = _modalDoctor ? `\n\nMédico: ${_modalDoctor.nombre}` : ''
-  const slotLine = _modalSlot ? `\nHorario solicitado: ${fecha} a las ${_modalSlot}` : (fecha?`\nFecha preferida: ${fecha}`:'')
-  const cedLine  = cedula ? `\nCédula: ${cedula}` : ''
-  const svcs     = leadsServices.length ? '\n\nServicios:\n' + leadsServices.map(s=>'• '+s.nombre+(s.precio?(' ($'+s.precio+')'):'') ).join('\n') : ''
-  const msg      = encodeURIComponent(`Hola Doctor Center, soy ${nombre}. Quisiera solicitar un turno.${docLine}${cedLine}${slotLine}${svcs}`)
-
-  el('modalContent').style.display      = 'none'
+function showModalSuccess(byEmail) {
+  el('modalChannelContent').style.display = 'none'
   el('modalSuccessContent').style.display = 'block'
-
-  // Open WhatsApp after brief delay
-  setTimeout(() => window.open('https://wa.me/' + waNum + '?text=' + msg, '_blank'), 1200)
+  if (byEmail) {
+    el('modalSuccessMsg').textContent = 'Tu solicitud fue enviada por email. Nos contactaremos a la brevedad para confirmar tu turno.'
+    el('modalSuccessHours').style.display = 'inline-flex'
+  } else {
+    el('modalSuccessMsg').textContent = 'Tu solicitud fue enviada por WhatsApp. Nos comunicaremos para confirmar tu turno.'
+    el('modalSuccessHours').style.display = 'none'
+  }
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
