@@ -149,9 +149,16 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .expand-content{padding:24px 0 32px}
 
 /* ── CALCULADORA ──────────────────────────────────────────────────────────── */
-.calc-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1.5rem;align-items:start}
-.calc-col h3{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.85rem}
-.calc-items{display:flex;flex-direction:column;gap:.35rem}
+.calc-grid{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start}
+.calc-left{display:flex;flex-direction:column;gap:.75rem}
+.calc-tabs{display:flex;gap:.4rem}
+.calc-tab{padding:.38rem .9rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.calc-tab:hover{border-color:var(--ink);color:var(--ink)}
+.calc-tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.calc-items{display:flex;flex-direction:column;gap:.35rem;max-height:268px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding-right:2px}
+.calc-items::-webkit-scrollbar{width:4px}
+.calc-items::-webkit-scrollbar-track{background:transparent}
+.calc-items::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 .calc-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;transition:all .15s;user-select:none}
 .calc-item:hover{border-color:var(--red);background:var(--red-lite)}
 .calc-item.selected{border-color:var(--red);background:var(--red-lite)}
@@ -1022,26 +1029,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
             <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
             <input id="searchInput" type="text" placeholder="¿Qué servicio? Ej: ecografía, pediatría...">
           </div>
-          <div class="cat-pills">
-            <button class="cat-pill active" data-cat="all">Todos</button>
-            <button class="cat-pill" data-cat="consulta">Consultas</button>
-            <button class="cat-pill" data-cat="laboratorio">Laboratorio</button>
-            <button class="cat-pill" data-cat="imagen">Imágenes</button>
-          </div>
         </div>
       </div>
       <div class="calc-grid" id="calcGrid">
-        <div class="calc-col" id="colConsulta">
-          <h3>Consultas médicas</h3>
-          <div class="calc-items" id="itemsConsulta"></div>
-        </div>
-        <div class="calc-col" id="colLab">
-          <h3>Laboratorio</h3>
-          <div class="calc-items" id="itemsLaboratorio"></div>
-        </div>
-        <div class="calc-col" id="colImagen">
-          <h3>Imágenes diagnósticas</h3>
-          <div class="calc-items" id="itemsImagen"></div>
+        <div class="calc-left">
+          <div class="calc-tabs" id="calcTabsBar">
+            <button class="calc-tab active" data-cat="consulta" onclick="setCalcTab('consulta')">Consultas</button>
+            <button class="calc-tab" data-cat="laboratorio" onclick="setCalcTab('laboratorio')">Laboratorio</button>
+            <button class="calc-tab" data-cat="imagen" onclick="setCalcTab('imagen')">Imágenes</button>
+          </div>
+          <div class="calc-items" id="calcItemsPanel"></div>
         </div>
         <div class="calc-summary">
           <div class="calc-summary-title">Resumen estimado</div>
@@ -1718,6 +1715,7 @@ let _selected = [] // {id, nombre, precio}
 let _filterCat = 'all'
 let _searchQ   = ''
 let _filterIns = 'all'
+let _calcTab   = 'consulta'
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
@@ -1825,45 +1823,54 @@ async function loadDoctors() {
 }
 
 // ── SERVICES ──────────────────────────────────────────────────────────────────
+function setCalcTab(cat) {
+  _calcTab = cat
+  document.querySelectorAll('.calc-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === cat))
+  renderServices()
+}
+
 function renderServices() {
-  const filtered = _services.filter(s => {
-    const matchCat = _filterCat === 'all' || s.categoria === _filterCat
-    const matchQ   = !_searchQ || s.nombre.toLowerCase().includes(_searchQ.toLowerCase())
-    const matchIns = _filterIns === 'all' || !s.seguros || s.seguros.length === 0 || s.seguros.includes(_filterIns)
-    return matchCat && matchQ && matchIns
+  const panel = el('calcItemsPanel')
+  if (!panel) return
+
+  // auto-switch to first tab that has services matching search/ins filter
+  const hasSvcs = cat => _services.some(s => {
+    return s.categoria === cat
+      && (!_searchQ || s.nombre.toLowerCase().includes(_searchQ.toLowerCase()))
+      && (_filterIns === 'all' || !s.seguros || !s.seguros.length || s.seguros.includes(_filterIns))
+  })
+  if (!hasSvcs(_calcTab)) {
+    const first = ['consulta','laboratorio','imagen'].find(hasSvcs)
+    if (first) { _calcTab = first; document.querySelectorAll('.calc-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === _calcTab)) }
+  }
+
+  const items = _services.filter(s => {
+    return s.categoria === _calcTab
+      && (!_searchQ || s.nombre.toLowerCase().includes(_searchQ.toLowerCase()))
+      && (_filterIns === 'all' || !s.seguros || !s.seguros.length || s.seguros.includes(_filterIns))
   })
 
-  const cats = ['consulta','laboratorio','imagen']
-  const labels = {consulta:'Consultas médicas', laboratorio:'Laboratorio', imagen:'Imágenes diagnósticas'}
-  const ids    = {consulta:'itemsConsulta', laboratorio:'itemsLaboratorio', imagen:'itemsImagen'}
+  if (!items.length) {
+    panel.innerHTML = '<div style="color:var(--muted2);font-size:.82rem;padding:1rem 0;text-align:center">Sin resultados</div>'
+    return
+  }
 
-  cats.forEach(cat => {
-    const items = filtered.filter(s => s.categoria === cat)
-    const wrap  = el(ids[cat])
-    if (!wrap) return
-    if (!items.length) {
-      wrap.innerHTML = '<div style="color:var(--muted2);font-size:.78rem;padding:.5rem 0">Sin resultados</div>'
-      return
-    }
-    wrap.innerHTML = items.map(s => {
-      const sel = _selected.find(x => x.id === s.id)
-      return `<label class="calc-item${sel?' selected':''}" data-id="${s.id}">
-        <input type="checkbox" ${sel?'checked':''} onchange="toggleService('${s.id}','${esc(s.nombre)}',${s.precio||0})" onclick="event.stopPropagation()">
-        <span class="calc-item-name">${esc(s.nombre)}</span>
-        <span class="calc-item-price">$${s.precio||0}</span>
-      </label>`
-    }).join('')
+  panel.innerHTML = items.map(s => {
+    const sel = _selected.find(x => x.id === s.id)
+    return `<label class="calc-item${sel?' selected':''}" data-id="${s.id}">
+      <input type="checkbox" ${sel?'checked':''} onchange="toggleService('${s.id}','${esc(s.nombre)}',${s.precio||0})" onclick="event.stopPropagation()">
+      <span class="calc-item-name">${esc(s.nombre)}</span>
+      <span class="calc-item-price">$${s.precio||0}</span>
+    </label>`
+  }).join('')
 
-    // Make whole label clickable
-    wrap.querySelectorAll('.calc-item').forEach(item => {
-      item.addEventListener('click', e => {
-        if (e.target.tagName === 'INPUT') return
-        const cb = item.querySelector('input[type=checkbox]')
-        cb.checked = !cb.checked
-        const id = item.dataset.id
-        const svc = _services.find(s=>s.id===id)
-        if (svc) toggleService(id, svc.nombre, svc.precio||0)
-      })
+  panel.querySelectorAll('.calc-item').forEach(item => {
+    item.addEventListener('click', e => {
+      if (e.target.tagName === 'INPUT') return
+      const cb = item.querySelector('input[type=checkbox]')
+      cb.checked = !cb.checked
+      const svc = _services.find(s => s.id === item.dataset.id)
+      if (svc) toggleService(svc.id, svc.nombre, svc.precio||0)
     })
   })
 }
@@ -1955,15 +1962,6 @@ function setInsFilter(ins) {
 el('searchInput').addEventListener('input', e => {
   _searchQ = e.target.value
   renderServices()
-})
-
-document.querySelectorAll('.cat-pill').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'))
-    btn.classList.add('active')
-    _filterCat = btn.dataset.cat
-    renderServices()
-  })
 })
 
 // ── DOC SEARCH DROPDOWN ───────────────────────────────────────────────────────
