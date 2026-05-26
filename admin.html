@@ -945,10 +945,8 @@ async function deployDemo(slug) {
   if (error) { alert('Error: ' + error.message); return; }
   var { data } = await sb.from('generated_demos').select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel,activated_at').order('created_at', { ascending: false }).limit(15);
   if (data) { renderDemos(data); document.getElementById('wm-cnt-demos').textContent = data.length; }
-  // refresh activas count
-  var { count } = await sb.from('generated_demos').select('id', { count: 'exact', head: true }).not('activated_at', 'is', null);
-  var el = document.getElementById('wm-cnt-activas');
-  if (el) el.textContent = count || 0;
+  setWmTab('activas');
+  await cargarWebsActivas();
 }
 
 async function cargarWebsActivas() {
