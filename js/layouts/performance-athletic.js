@@ -65,6 +65,12 @@ details[open] .pa2-item-arrow{transform:rotate(90deg)}
 .pa2-nav-item.active .pa2-nav-icon,.pa2-nav-item.active .pa2-nav-label{color:#fff}
 .pa2-nav-cta .pa2-nav-icon{width:38px;height:38px;background:var(--pa2-accent,#2563eb);border-radius:12px;display:flex;align-items:center;justify-content:center}
 .pa2-nav-cta .pa2-nav-label{color:var(--pa2-accent,#2563eb)}
+/* ── MOBILE FIRST — desktop centra el layout móvil ── */
+@media(min-width:500px){
+  .pa2-page{max-width:430px;margin:0 auto;overflow-x:hidden}
+  .pa2-hero{max-width:430px}
+  .pa2-bottom-nav{max-width:430px;left:50%;transform:translateX(-50%);right:auto}
+}
 `;
 
 function injectCSS(){

@@ -86,6 +86,11 @@ details[open] .sa2-item-arrow{transform:rotate(90deg)}
 .sa2-nav-cta .sa2-nav-icon{width:38px;height:38px;background:#1A1A1A;border-radius:12px;display:flex;align-items:center;justify-content:center}
 .sa2-nav-cta .sa2-nav-icon svg{color:#F5F0E8}
 .sa2-nav-cta .sa2-nav-label{color:#1A1A1A}
+/* ── MOBILE FIRST — desktop centra el layout móvil ── */
+@media(min-width:500px){
+  .sa2-page{max-width:430px;margin:0 auto;overflow-x:hidden}
+  .sa2-bottom-nav{max-width:430px;left:50%;transform:translateX(-50%);right:auto}
+}
 `;
 
 // ── INYECTAR CSS ──────────────────────────────────────────────────────

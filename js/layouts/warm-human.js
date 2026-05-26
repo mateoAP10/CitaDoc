@@ -76,6 +76,11 @@ details[open] .wh2-item-arrow{transform:rotate(90deg)}
 .wh2-nav-cta .wh2-nav-icon{width:38px;height:38px;background:#1C1008;border-radius:12px;display:flex;align-items:center;justify-content:center}
 .wh2-nav-cta .wh2-nav-icon svg{color:#FEFCF8}
 .wh2-nav-cta .wh2-nav-label{color:#1C1008}
+/* ── MOBILE FIRST — desktop centra el layout móvil ── */
+@media(min-width:500px){
+  .wh2-page{max-width:430px;margin:0 auto;overflow-x:hidden}
+  .wh2-bottom-nav{max-width:430px;left:50%;transform:translateX(-50%);right:auto}
+}
 `;
 
 function injectCSS(){

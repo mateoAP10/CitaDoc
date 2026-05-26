@@ -31,6 +31,13 @@ function buildSlug(name: string, specialty: string): string {
   return `dr-${namePart}-${specPart}-${hash}`
 }
 
+// ── REGLA PERMANENTE: MOBILE FIRST SIEMPRE ───────────────────────────────────
+// Todas las webs de CitaDoc son mobile-first por diseño. Los layouts renderizan
+// en 430px max-width centrado. La IA genera contenido (copy, colores, servicios)
+// pero los renderers JS controlan el HTML/CSS — que siempre es mobile-first.
+// NUNCA generar layouts wide-first, tablas, columnas multi-columna en hero.
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ── Kimi prompt ─────────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `Eres un AI de branding médico para CitaDoc, plataforma premium para médicos latinoamericanos.
@@ -85,6 +92,7 @@ Campos requeridos:
 - seo_description: 150-160 chars propuesta de valor única
 
 Reglas CRÍTICAS:
+- MOBILE FIRST SIEMPRE: el contenido se renderiza en un layout móvil de 430px max-width. Textos cortos, headlines de máximo 6 palabras en hero, descripciones concisas. Nunca estructuras que requieran pantalla ancha.
 - BIO ES LA FUENTE PRIMARIA: si hay bio, es el insumo más importante. Extrae todos los hechos concretos que mencione: años de experiencia, instituciones donde se formó, técnicas o procedimientos que domina, logros, filosofía de vida, valores. Cada hecho debe aparecer en algún campo del JSON. Nada inventado que contradiga la bio.
 - Si hay logo: extrae su color dominante como primary_color
 - Si hay foto del médico: analiza postura, expresión, vestimenta — úsalo para reforzar el tono del copy

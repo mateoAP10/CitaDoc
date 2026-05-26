@@ -139,6 +139,20 @@ serve(async (req) => {
     }
   }
 
+  // ── DEMOS (delete) ───────────────────────────────────────────────────────────
+  if (resource === 'demos') {
+    if (req.method === 'POST') {
+      const body = await req.json()
+      if (body.action === 'delete') {
+        const { slug } = body
+        if (!slug) return new Response(JSON.stringify({ error: 'missing slug' }), { status: 400, headers: CORS })
+        const { error } = await sb.from('generated_demos').delete().eq('slug', slug)
+        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: CORS })
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+    }
+  }
+
   // ── Leads ──────────────────────────────────────────────────────────────────
   if (resource === 'leads') {
     if (req.method === 'GET') {
