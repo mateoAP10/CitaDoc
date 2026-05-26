@@ -90,30 +90,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 @media(max-width:600px){.docs-lists{grid-template-columns:1fr}}
 
 /* SERVICIOS */
-.add-service-form{display:grid;grid-template-columns:1fr auto auto auto;gap:.6rem;align-items:end;margin-bottom:1rem}
-.svc-input{padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;transition:border-color .15s;background:#fff;width:100%}
-.svc-input:focus{border-color:var(--red)}
-.svc-select{padding:.6rem .75rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;background:#fff;cursor:pointer}
-.svc-price{width:90px;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;background:#fff}
-.btn-add-svc{background:var(--red);color:#fff;border:none;border-radius:9px;padding:.6rem 1rem;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
-.btn-add-svc:hover{background:var(--red-dark)}
-.svc-list{display:flex;flex-direction:column;gap:.35rem}
-.svc-row{display:flex;align-items:center;gap:.65rem;padding:.55rem .75rem;border-radius:9px;border:1.5px solid var(--border);background:#fff;transition:border-color .15s}
-.svc-row:hover{border-color:var(--border)}
-.svc-cat-pill{font-size:.62rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.svc-table{border:1.5px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}
+.svc-tr{display:grid;grid-template-columns:96px 1fr 80px 38px;align-items:center;border-bottom:1px solid #f1f1f1}
+.svc-tr:last-child{border-bottom:none}
+.svc-td{padding:.6rem .75rem}
+.svc-td-del{padding:.6rem .4rem .6rem 0;display:flex;align-items:center;justify-content:center}
+.svc-inline{border:none;outline:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--ink);width:100%;font-weight:600}
+.svc-inline::placeholder{color:var(--muted2);font-weight:400}
+.svc-price-wrap{display:flex;align-items:center;gap:.15rem}
+.svc-price-wrap>span{font-size:.8rem;color:var(--muted);font-weight:600}
+.svc-price-inline{border:none;outline:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--ink);width:52px;font-weight:700}
+.svc-cat-pill{font-size:.62rem;font-weight:700;padding:.2rem .55rem;border-radius:20px;cursor:pointer;white-space:nowrap;border:none;font-family:'DM Sans',sans-serif;transition:opacity .15s}
+.svc-cat-pill:hover{opacity:.75}
 .svc-cat-pill.consulta{background:#eff6ff;color:#1d4ed8}
 .svc-cat-pill.laboratorio{background:#f0fdf4;color:#15803d}
 .svc-cat-pill.imagen{background:#fdf4ff;color:#7e22ce}
-.svc-name{flex:1;font-size:.83rem;font-weight:600;color:var(--ink)}
-.svc-price-label{font-size:.83rem;font-weight:700;color:var(--muted);margin-left:.25rem}
 .btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:.25rem;line-height:1;border-radius:5px;transition:color .15s}
 .btn-del:hover{color:var(--red)}
-.svc-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:1.5rem;border:1.5px dashed var(--border);border-radius:10px}
-.svc-ins-badge{font-size:.6rem;font-weight:700;background:#ecfdf5;color:#059669;border-radius:20px;padding:.1rem .4rem;white-space:nowrap;flex-shrink:0}
-.svc-seguros-row{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;padding:.45rem .65rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;margin-bottom:.5rem}
-.svc-seguros-row-label{font-size:.65rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);flex-shrink:0}
-.svc-seguros-check{display:inline-flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--ink)}
-.svc-seguros-check input{accent-color:var(--red);width:13px;height:13px;cursor:pointer}
+.svc-add-btn{display:flex;align-items:center;gap:.45rem;padding:.65rem .9rem;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:700;color:var(--muted);background:none;border:none;border-top:1.5px solid #f1f1f1;width:100%;cursor:pointer;transition:color .15s;border-radius:0 0 10px 10px}
+.svc-add-btn:hover{color:var(--red)}
+.svc-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:1.5rem}
 .tags-wrap{display:flex;flex-wrap:wrap;gap:.35rem;padding:.45rem .65rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;min-height:42px;cursor:text;transition:border-color .15s}
 .tags-wrap:focus-within{border-color:var(--red)}
 .tag-chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--red-lite);border:1.5px solid rgba(204,41,54,.2);color:var(--red);border-radius:20px;padding:.15rem .55rem;font-size:.72rem;font-weight:700;white-space:nowrap}
@@ -121,7 +117,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .tag-chip button:hover{opacity:1}
 .tag-input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--ink);min-width:140px;flex:1;background:transparent;padding:.1rem 0}
 .tag-input::placeholder{color:var(--muted2)}
-@media(max-width:600px){.add-service-form{grid-template-columns:1fr 1fr;}.svc-select,.btn-add-svc{grid-column:1/-1}}
+@media(max-width:600px){.svc-tr{grid-template-columns:80px 1fr 64px 32px}}
 
 /* PHOTO EDITOR */
 .photo-editor{margin-top:1.1rem;display:flex;flex-direction:column;gap:1rem;padding-top:1rem;border-top:1px solid var(--border)}
@@ -413,23 +409,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <div class="section-sub">Los pacientes ven estos servicios en la calculadora</div>
         </div>
       </div>
-      <div class="add-service-form">
-        <input class="svc-input" id="svcNombre" placeholder="Ej: Ecografía abdominal">
-        <select class="svc-select" id="svcCat">
-          <option value="consulta">Consulta</option>
-          <option value="laboratorio">Laboratorio</option>
-          <option value="imagen">Imagen</option>
-        </select>
-        <input class="svc-price" id="svcPrecio" type="number" min="0" placeholder="$0" step="0.50">
-        <button class="btn-add-svc" onclick="addServicio()">+ Agregar</button>
+      <div class="svc-table" id="svcTable">
+        <div class="svc-empty">Cargando...</div>
       </div>
-      <div class="svc-seguros-row" id="svcSegurosRow" style="display:none">
-        <span class="svc-seguros-row-label">Seguros</span>
-        <div id="svcSegurosChecks" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
-      </div>
-      <div class="svc-list" id="svcList">
-        <div class="svc-empty">Cargando servicios...</div>
-      </div>
+      <button class="svc-add-btn" onclick="startAddServicio()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar servicio
+      </button>
     </div>
 
   </div><!-- /main -->
@@ -765,7 +751,6 @@ function renderSegurosTagInput() {
     chip.innerHTML = esc(seg) + `<button type="button" onclick="removeSeguro(${i})" title="Eliminar">×</button>`
     wrap.insertBefore(chip, input)
   })
-  renderSvcSegurosChecks()
 }
 
 function onSegurosKey(e) {
@@ -790,16 +775,6 @@ function tryAddSeguro() {
 function removeSeguro(i) {
   _seguros.splice(i, 1)
   renderSegurosTagInput()
-}
-
-function renderSvcSegurosChecks() {
-  const row    = el('svcSegurosRow')
-  const checks = el('svcSegurosChecks')
-  if (!_seguros.length) { row.style.display = 'none'; return }
-  row.style.display = 'flex'
-  checks.innerHTML = _seguros.map(seg =>
-    `<label class="svc-seguros-check"><input type="checkbox" name="svcSeguros" value="${esc(seg)}"> ${esc(seg)}</label>`
-  ).join('')
 }
 
 async function saveChips() {
@@ -901,42 +876,76 @@ async function removeDoctor(medicoId) {
 }
 
 // ── SERVICIOS ─────────────────────────────────────────────────────────────────
-function renderServices() {
-  if (!_services.length) { el('svcList').innerHTML = '<div class="svc-empty">Sin servicios aún — agregá el primero</div>'; return }
-  const catOrder = ['consulta','laboratorio','imagen']
-  const sorted = [..._services].sort((a,b) => catOrder.indexOf(a.categoria)-catOrder.indexOf(b.categoria))
-  el('svcList').innerHTML = sorted.map(s => `<div class="svc-row" id="svc-${s.id}">
-    <span class="svc-cat-pill ${s.categoria}">${{consulta:'Consulta',laboratorio:'Lab',imagen:'Imagen'}[s.categoria]||s.categoria}</span>
-    <span class="svc-name">${esc(s.nombre)}</span>
-    ${s.seguros && s.seguros.length ? s.seguros.map(sg => `<span class="svc-ins-badge">${esc(sg)}</span>`).join('') : ''}
-    <span class="svc-price-label">$${s.precio||0}</span>
-    <button class="btn-del" title="Eliminar" onclick="deleteServicio('${s.id}')">✕</button>
-  </div>`).join('')
+const CAT_CYCLE = ['consulta','laboratorio','imagen']
+const CAT_LABEL = {consulta:'Consulta',laboratorio:'Lab',imagen:'Imagen'}
+
+function cycleCat(id) {
+  const s = _services.find(x => x.id === id)
+  if (!s) return
+  const next = CAT_CYCLE[(CAT_CYCLE.indexOf(s.categoria) + 1) % CAT_CYCLE.length]
+  s.categoria = next
+  patchServicio(id, { categoria: next, booking_type: next==='consulta'?'doctor':'request' })
+  const btn = document.querySelector(`#svc-cat-${id}`)
+  if (btn) { btn.className = 'svc-cat-pill ' + next; btn.textContent = CAT_LABEL[next] }
 }
 
-async function addServicio() {
-  const nombre = el('svcNombre').value.trim()
-  const cat    = el('svcCat').value
-  const precio = parseFloat(el('svcPrecio').value) || 0
-  if (!nombre) { toast('Escribí el nombre del servicio', 'err'); return }
-  if (!(await ensureCenter())) { toast('No se pudo conectar al centro', 'err'); return }
+function renderServices() {
+  const t = el('svcTable')
+  if (!_services.length) { t.innerHTML = '<div class="svc-empty">Sin servicios — usá el botón de abajo</div>'; return }
+  const catOrder = ['consulta','laboratorio','imagen']
+  const sorted = [..._services].sort((a,b) => catOrder.indexOf(a.categoria)-catOrder.indexOf(b.categoria))
+  t.innerHTML = sorted.map(s => `
+    <div class="svc-tr" id="svc-${s.id}">
+      <div class="svc-td">
+        <button class="svc-cat-pill ${s.categoria}" id="svc-cat-${s.id}" onclick="cycleCat('${s.id}')">${CAT_LABEL[s.categoria]||s.categoria}</button>
+      </div>
+      <div class="svc-td">
+        <input class="svc-inline" value="${esc(s.nombre)}" placeholder="Nombre del servicio"
+          onblur="if(this.value.trim()&&this.value.trim()!=='${esc(s.nombre)}')patchServicio('${s.id}',{nombre:this.value.trim()})"
+          onkeydown="if(event.key==='Enter')this.blur()">
+      </div>
+      <div class="svc-td">
+        <div class="svc-price-wrap"><span>$</span>
+          <input class="svc-price-inline" type="number" min="0" step="0.5" value="${s.precio||0}"
+            onblur="patchServicio('${s.id}',{precio:parseFloat(this.value)||0})"
+            onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+      </div>
+      <div class="svc-td-del">
+        <button class="btn-del" onclick="deleteServicio('${s.id}')">✕</button>
+      </div>
+    </div>`).join('')
+}
 
-  const svcSeguros = Array.from(document.querySelectorAll('input[name="svcSeguros"]:checked')).map(c => c.value)
+async function patchServicio(id, fields) {
+  await sbPatch('center_services', 'id=eq.'+id, fields)
+  const s = _services.find(x => x.id === id)
+  if (s) Object.assign(s, fields)
+}
+
+async function startAddServicio() {
+  if (!(await ensureCenter())) { toast('No se pudo conectar', 'err'); return }
+  const nombre = prompt('Nombre del servicio:')
+  if (!nombre || !nombre.trim()) return
+  const precioStr = prompt('Precio ($):')
+  const precio = parseFloat(precioStr) || 0
+  const cats = ['consulta','laboratorio','imagen']
+  const catStr = prompt('Categoría (1=Consulta, 2=Lab, 3=Imagen):') || '1'
+  const cat = cats[(parseInt(catStr)-1)] || 'consulta'
   const { data, error } = await sbPost('center_services', {
-    center_id: _center.id, nombre, categoria: cat, precio,
+    center_id: _center.id, nombre: nombre.trim(), categoria: cat, precio,
     booking_type: cat==='consulta'?'doctor':'request',
     orden: _services.filter(s=>s.categoria===cat).length+1,
-    seguros: svcSeguros,
+    seguros: [],
   })
   if (error) { toast('Error al agregar', 'err'); return }
   _services.push(data)
   renderServices()
-  el('svcNombre').value = ''
-  el('svcPrecio').value = ''
   toast('Servicio agregado', 'ok')
 }
 
 async function deleteServicio(id) {
+  if (!confirm('¿Eliminar este servicio?')) return
   await sbDelete('center_services', 'id=eq.'+id)
   _services = _services.filter(s => s.id !== id)
   renderServices()
