@@ -9,6 +9,14 @@
       "destination": "/landing.html"
     },
     {
+      "source": "/doctor-center/:slug/admin",
+      "destination": "/doctor-center-admin.html"
+    },
+    {
+      "source": "/doctor-center/:slug",
+      "destination": "/doctor-center.html"
+    },
+    {
       "source": "/(.*)",
       "has": [
         {

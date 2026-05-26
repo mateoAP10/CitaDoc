@@ -1702,10 +1702,9 @@ async function dbPost(table, body, token) {
   catch(e) {}
 }
 
-// Detect center slug from subdomain or default to 'doctor-center'
-const host   = window.location.hostname
-const parts  = host.split('.')
-const slug   = (parts.length >= 3 && parts[0] !== 'www') ? parts[0] : 'doctor-center'
+// Detect center slug from path: /doctor-center/[slug]
+const _pathParts = window.location.pathname.replace(/\/+$/,'').split('/')
+const slug = _pathParts[_pathParts.length - 1] || 'doctor-center'
 
 let _center   = null
 let _services = []
