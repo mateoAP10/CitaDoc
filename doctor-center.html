@@ -85,9 +85,25 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .hero-addr-sub{font-size:.62rem;color:var(--muted)}
 @media(max-width:600px){.hero{height:85svh;min-height:500px}.hero-content{padding:0 5vw 44px}.hero-addr-pill{display:none}}
 
-/* ── SEARCH ───────────────────────────────────────────────────────────────── */
-.search-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:28px 5vw}
-.search-inner{max-width:1100px;margin:0 auto;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+/* ── DOC SEARCH ────────────────────────────────────────────────────────────── */
+.doc-search-section{background:#fff;border-bottom:1px solid var(--border);padding:1.6rem 5vw 1.4rem}
+.doc-search-inner{max-width:1100px;margin:0 auto}
+.doc-search-label{font-size:.63rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);margin-bottom:.55rem;display:flex;align-items:center;gap:.35rem}
+.doc-search-label svg{width:12px;height:12px}
+.doc-search-bar{position:relative}
+.doc-search-bar svg{position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:19px;height:19px;color:var(--muted2);pointer-events:none;transition:color .2s}
+.doc-search-bar:focus-within svg{color:var(--red)}
+#docSearchInput{width:100%;padding:.8rem 1.1rem .8rem 2.85rem;border:2px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--ink);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box}
+#docSearchInput:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-lite)}
+#docSearchInput::placeholder{color:var(--muted2)}
+.spec-tags{display:flex;gap:.4rem;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:.6rem}
+.spec-tags::-webkit-scrollbar{display:none}
+.spec-tag{padding:.27rem .7rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.spec-tag:hover,.spec-tag.active{border-color:var(--red);color:var(--red);background:var(--red-lite)}
+/* ── SERVICE SEARCH (inside estimador) ─────────────────────────────────────── */
+.svc-search-bar{margin-bottom:1.25rem;display:flex;flex-direction:column;gap:.6rem}
+.search-inner{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:240px}
 .search-wrap{position:relative;flex:1;min-width:240px}
 .search-wrap svg{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted2);pointer-events:none}
 #searchInput{width:100%;padding:.7rem 1rem .7rem 2.6rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:#fff;outline:none;transition:border-color .15s}
@@ -97,7 +113,7 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .cat-pill{padding:.4rem .9rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .cat-pill.active,.cat-pill:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
 /* ── SEGUROS PILLS ─────────────────────────────────────────────────────────── */
-.ins-row{max-width:1100px;margin:.65rem auto 0;display:flex;align-items:center;gap:.7rem;border-top:1px solid var(--border);padding-top:.65rem;overflow:hidden}
+.ins-row{display:flex;align-items:center;gap:.7rem;border-top:1px solid var(--border);padding-top:.65rem;overflow:hidden;margin-top:.6rem}
 .ins-label{font-size:.63rem;font-weight:800;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:.3rem}
 .ins-label svg{width:12px;height:12px;flex-shrink:0}
 .ins-pills-wrap{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -828,10 +844,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   .hero-chips::-webkit-scrollbar{display:none}
   .chip{flex-shrink:0}
 
-  /* Búsqueda */
+  /* Búsqueda servicios */
   .cat-pills{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
   .cat-pills::-webkit-scrollbar{display:none}
   .cat-pill{flex-shrink:0}
+  /* Búsqueda médicos */
+  #docSearchInput{font-size:.9rem}
 
   /* Médicos — 2 columnas */
   .doctors-grid{grid-template-columns:1fr 1fr;gap:.6rem}
@@ -923,26 +941,18 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   </a>
 </section>
 
-<!-- SEARCH -->
-<div class="search-section" id="servicios">
-  <div class="search-inner">
-    <div class="search-wrap">
+<!-- DOCTOR SEARCH -->
+<div class="doc-search-section" id="medicos-search">
+  <div class="doc-search-inner">
+    <div class="doc-search-label">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+      Nuestros médicos
+    </div>
+    <div class="doc-search-bar">
       <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
-      <input id="searchInput" type="text" placeholder="¿Qué servicio necesita? Ej: ecografía, pediatría...">
+      <input id="docSearchInput" type="text" placeholder="Buscar por especialidad o nombre del médico...">
     </div>
-    <div class="cat-pills">
-      <button class="cat-pill active" data-cat="all">Todos</button>
-      <button class="cat-pill" data-cat="consulta">Consultas</button>
-      <button class="cat-pill" data-cat="laboratorio">Laboratorio</button>
-      <button class="cat-pill" data-cat="imagen">Imágenes</button>
-    </div>
-  </div>
-  <div class="ins-row" id="insRow" style="display:none">
-    <span class="ins-label">
-      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg>
-      Seguros
-    </span>
-    <div class="ins-pills-wrap" id="insPills"></div>
+    <div class="spec-tags" id="specTags"></div>
   </div>
 </div>
 
@@ -962,6 +972,27 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   </button>
   <div class="expand-body" id="calcBody">
     <div class="expand-content">
+      <div class="svc-search-bar" id="servicios">
+        <div class="search-inner">
+          <div class="search-wrap">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+            <input id="searchInput" type="text" placeholder="¿Qué servicio? Ej: ecografía, pediatría...">
+          </div>
+          <div class="cat-pills">
+            <button class="cat-pill active" data-cat="all">Todos</button>
+            <button class="cat-pill" data-cat="consulta">Consultas</button>
+            <button class="cat-pill" data-cat="laboratorio">Laboratorio</button>
+            <button class="cat-pill" data-cat="imagen">Imágenes</button>
+          </div>
+        </div>
+        <div class="ins-row" id="insRow" style="display:none">
+          <span class="ins-label">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg>
+            Seguros
+          </span>
+          <div class="ins-pills-wrap" id="insPills"></div>
+        </div>
+      </div>
       <div class="calc-grid" id="calcGrid">
         <div class="calc-col" id="colConsulta">
           <h3>Consultas médicas</h3>
@@ -1731,6 +1762,7 @@ async function loadDoctors() {
   _doctors = docs
   el('docsSubLabel').textContent = docs.length + ' especialista' + (docs.length !== 1 ? 's' : '')
   renderDoctors(docs)
+  renderSpecTags()
 }
 
 // ── SERVICES ──────────────────────────────────────────────────────────────────
@@ -1863,8 +1895,6 @@ function setInsFilter(ins) {
 el('searchInput').addEventListener('input', e => {
   _searchQ = e.target.value
   renderServices()
-  // Auto-open calc if typing
-  if (_searchQ && !el('calcBody').classList.contains('open')) toggleSection('calc')
 })
 
 document.querySelectorAll('.cat-pill').forEach(btn => {
@@ -1873,9 +1903,47 @@ document.querySelectorAll('.cat-pill').forEach(btn => {
     btn.classList.add('active')
     _filterCat = btn.dataset.cat
     renderServices()
-    if (!el('calcBody').classList.contains('open')) toggleSection('calc')
   })
 })
+
+// ── DOC SEARCH ────────────────────────────────────────────────────────────────
+let _docSearchQ = ''
+
+el('docSearchInput').addEventListener('input', e => {
+  _docSearchQ = e.target.value.trim()
+  document.querySelectorAll('.spec-tag').forEach(t => t.classList.remove('active'))
+  filterAndOpenDoctors()
+})
+
+function filterAndOpenDoctors() {
+  const q = _docSearchQ.toLowerCase()
+  const filtered = q
+    ? _doctors.filter(d =>
+        (d.nombre + ' ' + d.apellido).toLowerCase().includes(q) ||
+        (d.especialidades || []).join(' ').toLowerCase().includes(q)
+      )
+    : _doctors
+  renderDoctors(filtered)
+  const docsBody = el('docsBody')
+  if (!docsBody.classList.contains('open')) toggleSection('docs')
+  el('docsTrigger').scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function renderSpecTags() {
+  const specs = [...new Set(_doctors.flatMap(d => d.especialidades || []))].filter(Boolean).slice(0, 8)
+  const wrap = el('specTags')
+  if (!specs.length) { wrap.style.display = 'none'; return }
+  wrap.innerHTML = specs.map(s =>
+    `<button class="spec-tag" onclick="searchBySpec('${s.replace(/'/g,"\\'")}')"> ${s}</button>`
+  ).join('')
+}
+
+function searchBySpec(spec) {
+  el('docSearchInput').value = spec
+  _docSearchQ = spec
+  document.querySelectorAll('.spec-tag').forEach(t => t.classList.toggle('active', t.textContent.trim() === spec))
+  filterAndOpenDoctors()
+}
 
 // ── AVAILABILITY HELPERS (inlined from shared.js logic) ───────────────────────
 const MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
