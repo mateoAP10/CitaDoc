@@ -23,7 +23,7 @@
     .nav{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px)+18px) 20px 0}
     .nav-name{font-family:'Fraunces',serif;font-size:.88rem;font-weight:400;color:#fff;letter-spacing:-.01em;line-height:1}
     .nav-esp{font-size:.5rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.12em}
-    .nav-logo{height:30px;max-width:100px;object-fit:contain}
+    .nav-logo{height:30px;max-width:100px;object-fit:contain;mix-blend-mode:multiply}
 
     /* ── CONTENT ── */
     .content{padding:22px 20px 0;flex:1}
@@ -195,7 +195,7 @@ if(slug){
     document.documentElement.style.setProperty('--accent',pc);
 
     // Nav
-    if(logo){el('navBrand').innerHTML='<img class="nav-logo" src="'+logo+'" alt="'+nombre+'" style="height:30px;max-width:100px;object-fit:contain">';}
+    if(logo){el('navBrand').innerHTML='<img class="nav-logo" src="'+logo+'" alt="'+nombre+'" style="height:30px;max-width:100px;object-fit:contain;mix-blend-mode:multiply">';}
     else{set('navName',nombre);set('navEsp',esp+(ciudad?' · '+ciudad:''));}
 
     // Hero
