@@ -911,11 +911,22 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       <a href="#medicos">Médicos</a>
       <a href="#nosotros">Nosotros</a>
     </div>
-    <div class="nav-right">
-      <a class="btn-nav-login" href="#" onclick="openDocPanel();return false">
+    <div class="nav-right" style="position:relative">
+      <a class="btn-nav-login" id="btnNavAcceso" href="#" onclick="navAccesoClick();return false">
         <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-        Acceso médico
+        <span id="btnNavAccesoLabel">Acceso médico</span>
       </a>
+      <div id="navDocMenu" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);min-width:180px;overflow:hidden;z-index:9999">
+        <button onclick="openDocPanel();closeNavDocMenu()" style="width:100%;padding:.7rem 1rem;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;display:flex;align-items:center;gap:.5rem">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Panel médico
+        </button>
+        <div style="height:1px;background:#f0f0f0;margin:0 .75rem"></div>
+        <button onclick="docSignOut();closeNavDocMenu()" style="width:100%;padding:.7rem 1rem;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;color:#dc2626;cursor:pointer;text-align:left;display:flex;align-items:center;gap:.5rem">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
     </div>
   </div>
 </nav>
@@ -2508,6 +2519,33 @@ async function docSignOut() {
   _docMedico = null
   closeDocPanel()
   setNavPatient()
+  setNavBubbleGuest()
+}
+
+function navAccesoClick() {
+  if (_docMedico) {
+    const m = el('navDocMenu')
+    const open = m.style.display === 'block'
+    m.style.display = open ? 'none' : 'block'
+    if (!open) document.addEventListener('click', () => { m.style.display='none' }, {once:true, capture:true})
+  } else {
+    openDocPanel()
+  }
+}
+
+function closeNavDocMenu() {
+  el('navDocMenu').style.display = 'none'
+}
+
+function setNavBubbleAuth(medico) {
+  const titulo = medico.titulo || 'Dr.'
+  const nombre = (medico.nombre || '').split(' ')[0]
+  const apellido = (medico.apellido || '').split(' ')[0]
+  el('btnNavAccesoLabel').textContent = titulo + ' ' + nombre + ' ' + apellido
+}
+
+function setNavBubbleGuest() {
+  el('btnNavAccesoLabel').textContent = 'Acceso médico'
 }
 
 
@@ -2529,6 +2567,7 @@ async function loadDocMedico() {
 
   _docMedico = medico
   setNavDoctor()
+  setNavBubbleAuth(medico)
   showDocDash()
 }
 
