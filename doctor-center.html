@@ -2380,6 +2380,8 @@ async function submitReserva() {
   }
   el('btnChannelMail').onclick = () => {
     const docName = _pendingReserva._modalDoctor?.nombre || _docFullName() || 'tu médico'
+    const _ls = _pendingReserva.leadsServices || []
+    const _lt = _ls.reduce((a,s)=>a+(s.precio||0), 0)
     const emailPayload = {
       type:'appointment', to_email: email || _center?.email,
       patient_name:nombre, doctor_name:docName,
@@ -2387,6 +2389,8 @@ async function submitReserva() {
       appointment_time:_modalSlot||'Por confirmar',
       appointment_location:_center?.nombre||'Doctor Center',
       appointment_mode:'Solicitud de cita',
+      services: _ls.length ? JSON.stringify(_ls) : '',
+      services_total: _lt > 0 ? String(_lt) : '',
     }
     // Email al paciente
     if (email) sendDocEmail({ ...emailPayload, to_email: email }, true)

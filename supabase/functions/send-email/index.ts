@@ -98,6 +98,27 @@ function tplAppointment(d: Record<string, string>): string {
         </td>` : ''}
       </tr></table>
     </td></tr>` : ''}
+    ${d.services ? (() => {
+      try {
+        const svcs = JSON.parse(d.services) as Array<{nombre: string; precio: number}>
+        if (!svcs.length) return ''
+        return `<tr><td style="padding-top:18px;border-top:1px solid #f1f5f9;">
+          <p style="margin:0 0 10px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Servicios solicitados</p>
+          <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              ${svcs.map((s, i) => `<tr style="background:${i%2===0?'#fff':'#f8fafc'};${i>0?'border-top:1px solid #f1f5f9;':''}">
+                <td style="padding:10px 14px;color:#0f172a;font-size:13px;font-weight:600;">${s.nombre||''}</td>
+                <td style="padding:10px 14px;color:#0891b2;font-size:13px;font-weight:700;text-align:right;">${s.precio>0?'$'+s.precio:''}</td>
+              </tr>`).join('')}
+              ${d.services_total && Number(d.services_total)>0 ? `<tr style="background:#f0f9ff;border-top:2px solid #e0f2fe;">
+                <td style="padding:12px 14px;color:#0f172a;font-size:13px;font-weight:700;">Total estimado</td>
+                <td style="padding:12px 14px;color:#0891b2;font-size:15px;font-weight:800;text-align:right;">$${Number(d.services_total).toFixed(2)}</td>
+              </tr>` : ''}
+            </table>
+          </div>
+        </td></tr>`
+      } catch { return '' }
+    })() : ''}
   </table>
 </td></tr>
 
