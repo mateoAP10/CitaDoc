@@ -2356,15 +2356,13 @@ function floatTab(tab) {
 
   if (tab === 'medicos') {
     closeDocPanel()
-    const docsBody = el('docsBody')
-    if (!docsBody.classList.contains('open')) toggleSection('docs')
-    el('docsTrigger').scrollIntoView({behavior:'smooth', block:'start'})
+    el('medicos-search').scrollIntoView({behavior:'smooth', block:'start'})
+    setTimeout(() => el('docSearchInput').focus(), 400)
     return
   }
   if (tab === 'estimador') {
     closeDocPanel()
-    const calcBody = el('calcBody')
-    if (!calcBody.classList.contains('open')) toggleSection('calc')
+    if (!el('calcBody').classList.contains('open')) toggleSection('calc')
     el('calcTrigger').scrollIntoView({behavior:'smooth', block:'start'})
     return
   }
