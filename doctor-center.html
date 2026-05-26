@@ -91,11 +91,21 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .doc-search-label{font-size:.63rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);margin-bottom:.55rem;display:flex;align-items:center;gap:.35rem}
 .doc-search-label svg{width:12px;height:12px}
 .doc-search-bar{position:relative}
-.doc-search-bar svg{position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:19px;height:19px;color:var(--muted2);pointer-events:none;transition:color .2s}
-.doc-search-bar:focus-within svg{color:var(--red)}
-#docSearchInput{width:100%;padding:.8rem 1.1rem .8rem 2.85rem;border:2px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--ink);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box}
+.doc-search-bar>svg{position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:19px;height:19px;color:var(--muted2);pointer-events:none;transition:color .2s;z-index:1}
+.doc-search-bar:focus-within>svg{color:var(--red)}
+#docSearchInput{width:100%;padding:.82rem 2.6rem .82rem 2.85rem;border:2px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--ink);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box}
 #docSearchInput:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-lite)}
 #docSearchInput::placeholder{color:var(--muted2)}
+.doc-search-clear{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted2);cursor:pointer;width:22px;height:22px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:.85rem;line-height:1;transition:background .15s,color .15s}
+.doc-search-clear:hover{background:var(--border);color:var(--ink)}
+.doc-search-clear.visible{display:flex}
+.doc-dropdown{position:absolute;top:calc(100% + .45rem);left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.06);z-index:200;max-height:272px;overflow-y:auto;display:none;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.doc-dropdown.open{display:block}
+.doc-dropdown-item{padding:.6rem 1rem .6rem 2.85rem;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:500;color:var(--ink);cursor:pointer;transition:background .1s;border-radius:4px}
+.doc-dropdown-item:hover,.doc-dropdown-item.kbfocus{background:var(--red-lite);color:var(--red)}
+.doc-dropdown-item mark{background:none;color:var(--red);font-weight:700}
+.doc-dropdown-empty{padding:.9rem 1rem;font-size:.82rem;color:var(--muted);text-align:center}
+.doc-dropdown-sep{padding:.35rem 1rem .15rem;font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2)}
 .spec-tags{display:flex;gap:.4rem;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:.6rem}
 .spec-tags::-webkit-scrollbar{display:none}
 .spec-tag{padding:.27rem .7rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
@@ -104,7 +114,6 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .svc-search-bar{margin-bottom:1.25rem;display:flex;flex-direction:column;gap:.6rem}
 .search-inner{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
 .search-wrap{position:relative;flex:1;min-width:240px}
-.search-wrap{position:relative;flex:1;min-width:240px}
 .search-wrap svg{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted2);pointer-events:none}
 #searchInput{width:100%;padding:.7rem 1rem .7rem 2.6rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);background:#fff;outline:none;transition:border-color .15s}
 #searchInput:focus{border-color:var(--red)}
@@ -112,14 +121,16 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .cat-pills{display:flex;gap:.5rem;flex-wrap:wrap}
 .cat-pill{padding:.4rem .9rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .cat-pill.active,.cat-pill:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
-/* ── SEGUROS PILLS ─────────────────────────────────────────────────────────── */
-.ins-row{display:flex;align-items:center;gap:.7rem;border-top:1px solid var(--border);padding-top:.65rem;overflow:hidden;margin-top:.6rem}
-.ins-label{font-size:.63rem;font-weight:800;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:.3rem}
-.ins-label svg{width:12px;height:12px;flex-shrink:0}
-.ins-pills-wrap{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.ins-pills-wrap::-webkit-scrollbar{display:none}
-.ins-pill{display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .72rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
-.ins-pill:hover,.ins-pill.active{border-color:var(--red);color:var(--red);background:var(--red-lite)}
+/* ── SEGUROS SUBHEADER ─────────────────────────────────────────────────────── */
+.seguros-section{background:#fff;border-bottom:1px solid var(--border);padding:.9rem 5vw}
+.seguros-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.seguros-label{font-size:.63rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);white-space:nowrap;display:flex;align-items:center;gap:.35rem;flex-shrink:0}
+.seguros-label svg{width:11px;height:11px;flex-shrink:0}
+.seguros-chips{display:flex;gap:.4rem;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.seguros-chips::-webkit-scrollbar{display:none}
+.seg-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .8rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0;border:1.5px solid transparent}
+.seg-chip .seg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.seg-chip.active{box-shadow:0 2px 8px rgba(0,0,0,.12)}
 
 /* ── EXPAND SECTIONS ──────────────────────────────────────────────────────── */
 .expand-section{max-width:1100px;margin:0 auto;padding:0 5vw}
@@ -948,11 +959,24 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
       Nuestros médicos
     </div>
-    <div class="doc-search-bar">
+    <div class="doc-search-bar" id="docSearchWrap">
       <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
-      <input id="docSearchInput" type="text" placeholder="Buscar por especialidad o nombre del médico...">
+      <input id="docSearchInput" type="text" placeholder="Buscar especialidad o nombre del médico..." autocomplete="off">
+      <button class="doc-search-clear" id="docSearchClear" onclick="clearDocSearch()" type="button">✕</button>
+      <div class="doc-dropdown" id="docDropdown"></div>
     </div>
     <div class="spec-tags" id="specTags"></div>
+  </div>
+</div>
+
+<!-- SEGUROS SUBHEADER -->
+<div class="seguros-section" id="segurosSection" style="display:none">
+  <div class="seguros-inner">
+    <div class="seguros-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Seguros aceptados
+    </div>
+    <div class="seguros-chips" id="segurosChips"></div>
   </div>
 </div>
 
@@ -984,13 +1008,6 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
             <button class="cat-pill" data-cat="laboratorio">Laboratorio</button>
             <button class="cat-pill" data-cat="imagen">Imágenes</button>
           </div>
-        </div>
-        <div class="ins-row" id="insRow" style="display:none">
-          <span class="ins-label">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg>
-            Seguros
-          </span>
-          <div class="ins-pills-wrap" id="insPills"></div>
         </div>
       </div>
       <div class="calc-grid" id="calcGrid">
@@ -1712,11 +1729,20 @@ function applyBranding(c) {
   if (c.direccion && c.ciudad) el('footerAddr').textContent = c.direccion + ' · ' + c.ciudad
 
   if (c.seguros && c.seguros.length) {
-    const row  = el('insRow')
-    const wrap = el('insPills')
-    row.style.display = 'flex'
-    wrap.innerHTML = `<button class="ins-pill active" data-ins="all" onclick="setInsFilter('all')">Todos</button>` +
-      c.seguros.map(ins => `<button class="ins-pill" data-ins="${esc(ins)}" onclick="setInsFilter('${esc(ins)}')">${esc(ins)}</button>`).join('')
+    const SEC = {
+      'IESS':'#065f46','MAPFRE':'#dc2626','Equivida':'#2563eb','BMI':'#0891b2',
+      'Humana':'#7c3aed','Saludsa':'#0b7c6e','Sura':'#ea580c','AXA':'#1d4ed8',
+      'GNP':'#0b7c6e','Sanitas':'#dc2626','Coomeva':'#2563eb','Rimac':'#0b7c6e',
+      'Swiss Medical':'#2563eb','OSDE':'#0b7c6e','Galeno':'#dc2626','OMINT':'#7c3aed',
+      'Medicus':'#ea580c','Medife':'#059669','PAMI':'#065f46','default':'#6b7c79'
+    }
+    el('segurosSection').style.display = 'block'
+    const wrap = el('segurosChips')
+    wrap.innerHTML = `<button class="seg-chip active" data-ins="all" onclick="setInsFilter('all')" style="background:#f1f5f9;border-color:#e2e8f0;color:#374151"><span class="seg-dot" style="background:#6b7c79"></span>Todos</button>` +
+      c.seguros.map(ins => {
+        const col = SEC[ins] || SEC.default
+        return `<button class="seg-chip" data-ins="${esc(ins)}" onclick="setInsFilter('${esc(ins)}')" style="background:${col}18;border-color:${col}33;color:${col}"><span class="seg-dot" style="background:${col}"></span>${esc(ins)}</button>`
+      }).join('')
   }
 
   if (c.portada_url) {
@@ -1887,9 +1913,10 @@ function toggleSection(key) {
 // ── SEARCH & FILTER ───────────────────────────────────────────────────────────
 function setInsFilter(ins) {
   _filterIns = ins
-  document.querySelectorAll('.ins-pill').forEach(p => p.classList.toggle('active', p.dataset.ins === ins))
+  document.querySelectorAll('.seg-chip').forEach(p => p.classList.toggle('active', p.dataset.ins === ins))
   renderServices()
   if (!el('calcBody').classList.contains('open')) toggleSection('calc')
+  if (ins !== 'all') el('calcTrigger').scrollIntoView({ behavior:'smooth', block:'start' })
 }
 
 el('searchInput').addEventListener('input', e => {
@@ -1906,43 +1933,108 @@ document.querySelectorAll('.cat-pill').forEach(btn => {
   })
 })
 
-// ── DOC SEARCH ────────────────────────────────────────────────────────────────
-let _docSearchQ = ''
+// ── DOC SEARCH DROPDOWN ───────────────────────────────────────────────────────
+const ALL_SPECIALTIES = [
+  'Alergia e Inmunología','Anestesiología','Cardiología','Cirugía Cardiovascular',
+  'Cirugía General','Cirugía Plástica y Reconstructiva','Dermatología','Endocrinología',
+  'Gastroenterología','Ginecología y Obstetricia','Hematología','Infectología',
+  'Kinesiología','Medicina de Emergencias','Medicina del Deporte','Medicina del Dolor',
+  'Medicina Familiar y Comunitaria','Medicina Física y Rehabilitación','Medicina Interna',
+  'Nefrología','Neumonología','Neurocirugía','Neurología','Nutrición',
+  'Oftalmología','Oncología','Otorrinolaringología','Pediatría',
+  'Psicología Clínica','Psiquiatría','Radiología e Imágenes','Reumatología',
+  'Traumatología y Ortopedia','Urología'
+]
 
+let _docSearchQ = ''
+let _kbIdx = -1
+
+el('docSearchInput').addEventListener('focus', () => renderDropdown(true))
 el('docSearchInput').addEventListener('input', e => {
-  _docSearchQ = e.target.value.trim()
-  document.querySelectorAll('.spec-tag').forEach(t => t.classList.remove('active'))
-  filterAndOpenDoctors()
+  _docSearchQ = e.target.value
+  el('docSearchClear').classList.toggle('visible', !!_docSearchQ.trim())
+  renderDropdown(true)
+})
+el('docSearchInput').addEventListener('keydown', e => {
+  const items = el('docDropdown').querySelectorAll('.doc-dropdown-item')
+  if (e.key === 'ArrowDown') { e.preventDefault(); _kbIdx = Math.min(_kbIdx+1, items.length-1); updateKb(items) }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); _kbIdx = Math.max(_kbIdx-1, 0); updateKb(items) }
+  else if (e.key === 'Enter') {
+    if (_kbIdx >= 0 && items[_kbIdx]) items[_kbIdx].click()
+    else { closeDropdown(); filterAndOpenDoctors() }
+  } else if (e.key === 'Escape') closeDropdown()
+})
+document.addEventListener('click', e => {
+  if (!el('docSearchWrap').contains(e.target)) closeDropdown()
 })
 
+function renderDropdown(open) {
+  const q = (_docSearchQ || '').trim().toLowerCase()
+  const docSpecs = [...new Set(_doctors.flatMap(d => d.especialidades || []))]
+  const merged   = [...new Set([...ALL_SPECIALTIES, ...docSpecs])].sort()
+  const list     = q ? merged.filter(s => s.toLowerCase().includes(q)) : merged
+  const dd = el('docDropdown')
+  if (open) dd.classList.add('open')
+  if (!list.length) {
+    dd.innerHTML = `<div class="doc-dropdown-empty">Sin resultados para "${esc(q)}"</div>`
+    return
+  }
+  const re = q ? new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi') : null
+  dd.innerHTML = (!q ? '<div class="doc-dropdown-sep">Especialidades</div>' : '') +
+    list.slice(0, 12).map(s => {
+      const hi = re ? s.replace(re, '<mark>$1</mark>') : s
+      return `<div class="doc-dropdown-item" data-spec="${esc(s)}" onclick="selectSpec('${esc(s)}')">${hi}</div>`
+    }).join('')
+  _kbIdx = -1
+}
+
+function updateKb(items) {
+  items.forEach((it, i) => it.classList.toggle('kbfocus', i === _kbIdx))
+}
+
+function closeDropdown() {
+  el('docDropdown').classList.remove('open')
+  _kbIdx = -1
+}
+
+function selectSpec(spec) {
+  el('docSearchInput').value = spec
+  _docSearchQ = spec
+  el('docSearchClear').classList.add('visible')
+  closeDropdown()
+  document.querySelectorAll('.spec-tag').forEach(t => t.classList.toggle('active', t.dataset.spec === spec))
+  filterAndOpenDoctors()
+}
+
+function clearDocSearch() {
+  el('docSearchInput').value = ''
+  _docSearchQ = ''
+  el('docSearchClear').classList.remove('visible')
+  document.querySelectorAll('.spec-tag').forEach(t => t.classList.remove('active'))
+  renderDoctors(_doctors)
+}
+
 function filterAndOpenDoctors() {
-  const q = _docSearchQ.toLowerCase()
+  const q = _docSearchQ.trim().toLowerCase()
   const filtered = q
     ? _doctors.filter(d =>
-        (d.nombre + ' ' + d.apellido).toLowerCase().includes(q) ||
-        (d.especialidades || []).join(' ').toLowerCase().includes(q)
+        (d.nombre+' '+d.apellido).toLowerCase().includes(q) ||
+        (d.especialidades||[]).some(e => e.toLowerCase().includes(q))
       )
     : _doctors
   renderDoctors(filtered)
   const docsBody = el('docsBody')
   if (!docsBody.classList.contains('open')) toggleSection('docs')
-  el('docsTrigger').scrollIntoView({ behavior: 'smooth', block: 'start' })
+  el('docsTrigger').scrollIntoView({ behavior:'smooth', block:'start' })
 }
 
 function renderSpecTags() {
-  const specs = [...new Set(_doctors.flatMap(d => d.especialidades || []))].filter(Boolean).slice(0, 8)
+  const specs = [...new Set(_doctors.flatMap(d => d.especialidades||[]))].filter(Boolean).slice(0, 8)
   const wrap = el('specTags')
   if (!specs.length) { wrap.style.display = 'none'; return }
   wrap.innerHTML = specs.map(s =>
-    `<button class="spec-tag" onclick="searchBySpec('${s.replace(/'/g,"\\'")}')"> ${s}</button>`
+    `<button class="spec-tag" data-spec="${esc(s)}" onclick="selectSpec('${s.replace(/'/g,"\\'")}'">${s}</button>`
   ).join('')
-}
-
-function searchBySpec(spec) {
-  el('docSearchInput').value = spec
-  _docSearchQ = spec
-  document.querySelectorAll('.spec-tag').forEach(t => t.classList.toggle('active', t.textContent.trim() === spec))
-  filterAndOpenDoctors()
 }
 
 // ── AVAILABILITY HELPERS (inlined from shared.js logic) ───────────────────────
