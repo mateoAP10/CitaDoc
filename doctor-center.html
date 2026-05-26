@@ -1647,7 +1647,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         <p id="modalSuccessMsg">Nos comunicaremos con vos a la brevedad para confirmar tu turno.</p>
         <div class="modal-success-hours" id="modalSuccessHours" style="display:none">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Horario de atención: 8:00 am — 5:00 pm
+          Laboratorios desde las 8:00 am
         </div>
       </div>
     </div>
@@ -2379,17 +2379,19 @@ async function submitReserva() {
     showModalSuccess(false)
   }
   el('btnChannelMail').onclick = () => {
-    if (email) {
-      const docName = _pendingReserva._modalDoctor?.nombre || _docFullName() || 'tu médico'
-      sendDocEmail({
-        type:'appointment', to_email:email,
-        patient_name:nombre, doctor_name:docName,
-        appointment_date:fecha||'Por confirmar',
-        appointment_time:_modalSlot||'Por confirmar',
-        appointment_location:_center?.nombre||'Doctor Center',
-        appointment_mode:'Solicitud de cita',
-      }, true)
+    const docName = _pendingReserva._modalDoctor?.nombre || _docFullName() || 'tu médico'
+    const emailPayload = {
+      type:'appointment', to_email: email || _center?.email,
+      patient_name:nombre, doctor_name:docName,
+      appointment_date:fecha||'Por confirmar',
+      appointment_time:_modalSlot||'Por confirmar',
+      appointment_location:_center?.nombre||'Doctor Center',
+      appointment_mode:'Solicitud de cita',
     }
+    // Email al paciente
+    if (email) sendDocEmail({ ...emailPayload, to_email: email }, true)
+    // Email al centro
+    if (_center?.email) sendDocEmail({ ...emailPayload, to_email: _center.email }, true)
     showModalSuccess(true)
   }
 }

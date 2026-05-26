@@ -370,6 +370,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <input class="field-input" id="fTelefono" placeholder="+593 98 917 3062">
         </div>
         <div class="field-group">
+          <div class="field-label">Email del centro</div>
+          <input class="field-input" id="fEmailCentro" type="email" placeholder="contacto@doctorcenter.com">
+        </div>
+        <div class="field-group">
           <div class="field-label">Ciudad</div>
           <input class="field-input" id="fCiudad" placeholder="Guayaquil">
         </div>
@@ -798,9 +802,10 @@ async function removeLogo() {
 // ── INFO ──────────────────────────────────────────────────────────────────────
 function fillInfoForm(c) {
   const set = (id, val) => { if (el(id)) el(id).value = val || '' }
-  set('fNombre',    c.nombre)
-  set('fTelefono',  c.telefono)
-  set('fCiudad',    c.ciudad)
+  set('fNombre',      c.nombre)
+  set('fTelefono',    c.telefono)
+  set('fEmailCentro', c.email)
+  set('fCiudad',      c.ciudad)
   set('fInstagram', c.instagram)
   set('fDireccion', c.direccion)
   set('fTagline',   c.tagline)
@@ -895,9 +900,10 @@ async function saveInfo() {
 
   tryAddSeguro()
   const upd = {
-    nombre:      el('fNombre').value.trim()    || _center.nombre,
-    telefono:    el('fTelefono').value.trim()  || null,
-    ciudad:      el('fCiudad').value.trim()    || null,
+    nombre:      el('fNombre').value.trim()       || _center.nombre,
+    telefono:    el('fTelefono').value.trim()     || null,
+    email:       el('fEmailCentro').value.trim()  || null,
+    ciudad:      el('fCiudad').value.trim()       || null,
     instagram:   el('fInstagram').value.trim() || null,
     direccion:   el('fDireccion').value.trim() || null,
     tagline:     el('fTagline').value.trim()   || null,
