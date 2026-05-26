@@ -1606,6 +1606,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 
 <!-- FLOATING NAV -->
 <div class="float-nav" id="floatNav">
+  <button class="float-tab" id="fnInicio" onclick="floatTab('inicio')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="float-tab-label">Inicio</span>
+  </button>
   <button class="float-tab active" id="fnMedicos" onclick="floatTab('medicos')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
     <span class="float-tab-label">Médicos</span>
@@ -2354,6 +2358,11 @@ function floatTab(tab) {
   document.querySelectorAll('.float-tab').forEach(t => t.classList.remove('active'))
   el('fn' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active')
 
+  if (tab === 'inicio') {
+    closeDocPanel()
+    window.scrollTo({top:0, behavior:'smooth'})
+    return
+  }
   if (tab === 'medicos') {
     closeDocPanel()
     el('medicos-search').scrollIntoView({behavior:'smooth', block:'start'})
