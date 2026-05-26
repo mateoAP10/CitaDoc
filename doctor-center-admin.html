@@ -109,6 +109,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:.25rem;line-height:1;border-radius:5px;transition:color .15s}
 .btn-del:hover{color:var(--red)}
 .svc-empty{font-size:.78rem;color:var(--muted);text-align:center;padding:1.5rem;border:1.5px dashed var(--border);border-radius:10px}
+.svc-ins-badge{font-size:.6rem;font-weight:700;background:#ecfdf5;color:#059669;border-radius:20px;padding:.1rem .4rem;white-space:nowrap;flex-shrink:0}
+.svc-seguros-row{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;padding:.45rem .65rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;margin-bottom:.5rem}
+.svc-seguros-row-label{font-size:.65rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);flex-shrink:0}
+.svc-seguros-check{display:inline-flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--ink)}
+.svc-seguros-check input{accent-color:var(--red);width:13px;height:13px;cursor:pointer}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:.35rem;padding:.45rem .65rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;min-height:42px;cursor:text;transition:border-color .15s}
+.tags-wrap:focus-within{border-color:var(--red)}
+.tag-chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--red-lite);border:1.5px solid rgba(204,41,54,.2);color:var(--red);border-radius:20px;padding:.15rem .55rem;font-size:.72rem;font-weight:700;white-space:nowrap}
+.tag-chip button{background:none;border:none;cursor:pointer;color:var(--red);padding:0;line-height:1;font-size:.9rem;opacity:.7}
+.tag-chip button:hover{opacity:1}
+.tag-input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--ink);min-width:140px;flex:1;background:transparent;padding:.1rem 0}
+.tag-input::placeholder{color:var(--muted2)}
 @media(max-width:600px){.add-service-form{grid-template-columns:1fr 1fr;}.svc-select,.btn-add-svc{grid-column:1/-1}}
 
 /* PHOTO EDITOR */
@@ -352,6 +364,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <div class="field-label">Descripción breve</div>
           <input class="field-input" id="fDesc" placeholder="Medicina de excelencia, tecnología avanzada...">
         </div>
+        <div class="field-group full">
+          <div class="field-label">Seguros aceptados</div>
+          <div class="tags-wrap" id="segurosWrap" onclick="el('segurosInput').focus()">
+            <input class="tag-input" id="segurosInput" placeholder="IESS, MAPFRE, Equivida... (Enter para agregar)" onkeydown="onSegurosKey(event)" onblur="tryAddSeguro()">
+          </div>
+          <div style="font-size:.67rem;color:var(--muted);margin-top:.3rem">Escribí el nombre y presioná Enter o coma para agregar</div>
+        </div>
       </div>
       <button class="btn-save" id="btnSaveInfo" onclick="saveInfo()">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
@@ -404,6 +423,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         <input class="svc-price" id="svcPrecio" type="number" min="0" placeholder="$0" step="0.50">
         <button class="btn-add-svc" onclick="addServicio()">+ Agregar</button>
       </div>
+      <div class="svc-seguros-row" id="svcSegurosRow" style="display:none">
+        <span class="svc-seguros-row-label">Seguros</span>
+        <div id="svcSegurosChecks" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
+      </div>
       <div class="svc-list" id="svcList">
         <div class="svc-empty">Cargando servicios...</div>
       </div>
@@ -424,6 +447,7 @@ let _center   = null
 let _allDocs  = []
 let _inCenter = []
 let _services = []
+let _seguros  = []
 
 // ── HTTP HELPERS (pure XHR — bypasses any service worker intercepting fetch) ──
 function xhr(method, url, headers, body, timeoutMs) {
@@ -719,6 +743,56 @@ function fillInfoForm(c) {
   set('fChip2',     c.chip2)
   set('fChip3',     c.chip3)
   set('fMapsUrl',   c.maps_url)
+  _seguros = Array.isArray(c.seguros) ? [...c.seguros] : []
+  renderSegurosTagInput()
+}
+
+// ── SEGUROS TAG INPUT ─────────────────────────────────────────────────────────
+function renderSegurosTagInput() {
+  const wrap  = el('segurosWrap')
+  const input = el('segurosInput')
+  wrap.querySelectorAll('.tag-chip').forEach(c => c.remove())
+  _seguros.forEach((seg, i) => {
+    const chip = document.createElement('span')
+    chip.className = 'tag-chip'
+    chip.innerHTML = esc(seg) + `<button type="button" onclick="removeSeguro(${i})" title="Eliminar">×</button>`
+    wrap.insertBefore(chip, input)
+  })
+  renderSvcSegurosChecks()
+}
+
+function onSegurosKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault()
+    tryAddSeguro()
+  } else if (e.key === 'Backspace' && !e.target.value && _seguros.length) {
+    removeSeguro(_seguros.length - 1)
+  }
+}
+
+function tryAddSeguro() {
+  const input = el('segurosInput')
+  const val = input.value.replace(/,/g, '').trim()
+  if (val && !_seguros.includes(val)) {
+    _seguros.push(val)
+    renderSegurosTagInput()
+  }
+  input.value = ''
+}
+
+function removeSeguro(i) {
+  _seguros.splice(i, 1)
+  renderSegurosTagInput()
+}
+
+function renderSvcSegurosChecks() {
+  const row    = el('svcSegurosRow')
+  const checks = el('svcSegurosChecks')
+  if (!_seguros.length) { row.style.display = 'none'; return }
+  row.style.display = 'flex'
+  checks.innerHTML = _seguros.map(seg =>
+    `<label class="svc-seguros-check"><input type="checkbox" name="svcSeguros" value="${esc(seg)}"> ${esc(seg)}</label>`
+  ).join('')
 }
 
 async function saveChips() {
@@ -753,6 +827,7 @@ async function saveInfo() {
   const ok = await ensureCenter()
   if (!ok) { toast('No se pudo conectar al centro', 'err'); btn.disabled = false; btn.innerHTML = SAVE_BTN_HTML; return }
 
+  tryAddSeguro()
   const upd = {
     nombre:      el('fNombre').value.trim()    || _center.nombre,
     telefono:    el('fTelefono').value.trim()  || null,
@@ -762,6 +837,7 @@ async function saveInfo() {
     tagline:     el('fTagline').value.trim()   || null,
     descripcion: el('fDesc').value.trim()      || null,
     whatsapp:    (el('fTelefono').value.trim() || '').replace(/[^0-9]/g,'') || null,
+    seguros:     _seguros,
   }
 
   const { error } = await sbPatch('centers', 'id=eq.' + _center.id, upd)
@@ -825,6 +901,7 @@ function renderServices() {
   el('svcList').innerHTML = sorted.map(s => `<div class="svc-row" id="svc-${s.id}">
     <span class="svc-cat-pill ${s.categoria}">${{consulta:'Consulta',laboratorio:'Lab',imagen:'Imagen'}[s.categoria]||s.categoria}</span>
     <span class="svc-name">${esc(s.nombre)}</span>
+    ${s.seguros && s.seguros.length ? s.seguros.map(sg => `<span class="svc-ins-badge">${esc(sg)}</span>`).join('') : ''}
     <span class="svc-price-label">$${s.precio||0}</span>
     <button class="btn-del" title="Eliminar" onclick="deleteServicio('${s.id}')">✕</button>
   </div>`).join('')
@@ -837,10 +914,12 @@ async function addServicio() {
   if (!nombre) { toast('Escribí el nombre del servicio', 'err'); return }
   if (!(await ensureCenter())) { toast('No se pudo conectar al centro', 'err'); return }
 
+  const svcSeguros = Array.from(document.querySelectorAll('input[name="svcSeguros"]:checked')).map(c => c.value)
   const { data, error } = await sbPost('center_services', {
     center_id: _center.id, nombre, categoria: cat, precio,
     booking_type: cat==='consulta'?'doctor':'request',
-    orden: _services.filter(s=>s.categoria===cat).length+1
+    orden: _services.filter(s=>s.categoria===cat).length+1,
+    seguros: svcSeguros,
   })
   if (error) { toast('Error al agregar', 'err'); return }
   _services.push(data)
