@@ -2365,15 +2365,15 @@ function floatTab(tab) {
   }
   if (tab === 'medicos') {
     closeDocPanel()
+    el('docSearchInput').focus()
     el('medicos-search').scrollIntoView({behavior:'smooth', block:'start'})
-    setTimeout(() => el('docSearchInput').focus(), 400)
     return
   }
   if (tab === 'estimador') {
     closeDocPanel()
     if (!el('calcBody').classList.contains('open')) toggleSection('calc')
+    el('searchInput').focus()
     el('calcTrigger').scrollIntoView({behavior:'smooth', block:'start'})
-    setTimeout(() => el('searchInput').focus(), 400)
     return
   }
   if (tab === 'perfil') {
