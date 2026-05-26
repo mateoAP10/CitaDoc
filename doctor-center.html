@@ -849,6 +849,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 /* ── MOBILE — mismo patrón que citadoc-perfil ──────────────────────────── */
 @media(max-width:768px){
 
+  /* Doctor panel topbar — ocultar texto y botón cerrar sesión, queda solo avatar */
+  .doc-topbar-name,.doc-topbar-role,.btn-signout,.doc-topbar-close{display:none}
+  .doc-topbar{padding:0 4vw;gap:.6rem}
+
   /* Hero */
   .hero-ctas{flex-direction:column;gap:.5rem}
   .btn-primary,.btn-wa,.btn-ghost{width:100%;justify-content:center}
