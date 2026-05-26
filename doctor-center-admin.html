@@ -444,9 +444,9 @@ const ADMIN_PASS = 'doctorcenter2026'
 // doctor-center.citadoc.lat/[slug]/admin  OR  citadoc.lat/doctor-center/[slug]/admin
 function _detectSlug() {
   const parts = window.location.pathname.replace(/\/+$/,'').split('/')
-  if (window.location.hostname === 'doctor-center.citadoc.lat') return parts[1] || ''
+  if (window.location.hostname === 'doctor-center.citadoc.lat') return parts[1] || 'doctor-center'
   const i = parts.indexOf('doctor-center')
-  return (i !== -1 && parts[i+1]) ? parts[i+1] : ''
+  return (i !== -1 && parts[i+1]) ? parts[i+1] : 'doctor-center'
 }
 const CENTER_SLUG = _detectSlug()
 
