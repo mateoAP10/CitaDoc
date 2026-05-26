@@ -26,20 +26,22 @@ const I18N_EMAIL: Record<string, Record<string, string>> = {
 function tplAppointment(d: Record<string, string>): string {
   const lang         = d.lang && I18N_EMAIL[d.lang] ? d.lang : 'es'
   const T            = I18N_EMAIL[lang]
-  const isDoctor     = (d.appointment_mode || '').includes('Dashboard')
-  const isReschedule = (d.appointment_mode || '').includes('reprogramada') || (d.appointment_mode || '').includes('rescheduled')
-  const badge        = isReschedule ? T.rescheduled : isDoctor ? T.new : T.confirmed
-  const headline     = isReschedule ? T.headline_r : isDoctor ? T.headline_n : T.headline_c
-  const modeClean    = (d.appointment_mode || '')
+  const isDoctor      = (d.appointment_mode || '').includes('Dashboard')
+  const isReschedule  = (d.appointment_mode || '').includes('reprogramada') || (d.appointment_mode || '').includes('rescheduled')
+  const isDoctorCenter = (d.appointment_mode || '') === 'Solicitud de cita'
+  const centerName    = d.brand_name || 'Doctor Center'
+  const badge         = isDoctorCenter ? centerName : isReschedule ? T.rescheduled : isDoctor ? T.new : T.confirmed
+  const headline      = isDoctorCenter ? `Tu turno en ${centerName}.` : isReschedule ? T.headline_r : isDoctor ? T.headline_n : T.headline_c
+  const modeClean     = (d.appointment_mode || '')
     .replace('📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html', 'Panel médico')
     .replace(/^[^\w]+ /, '')
-  const badgeBg      = isReschedule ? '#fef9c3' : '#dbeafe'
-  const badgeColor   = isReschedule ? '#92400e' : '#1d4ed8'
-  const headerGrad   = isReschedule
+  const badgeBg       = isDoctorCenter ? '#f0f9ff' : isReschedule ? '#fef9c3' : '#dbeafe'
+  const badgeColor    = isDoctorCenter ? '#0891b2' : isReschedule ? '#92400e' : '#1d4ed8'
+  const headerGrad    = isReschedule
     ? 'linear-gradient(135deg,#fffbeb 0%,#fef9c3 100%)'
     : 'linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%)'
-  const ctaColor     = isDoctor ? '#1d4ed8' : '#0891b2'
-  const ctaLabel     = isDoctor ? T.view_panel : T.view_doctor
+  const ctaColor      = isDoctor ? '#1d4ed8' : '#0891b2'
+  const ctaLabel      = isDoctor ? T.view_panel : T.view_doctor
 
   return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">

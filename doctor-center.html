@@ -2383,6 +2383,7 @@ async function submitReserva() {
     const _ls = _pendingReserva.leadsServices || []
     const _lt = _ls.reduce((a,s)=>a+(s.precio||0), 0)
     const emailPayload = {
+      ..._brand(),
       type:'appointment', to_email: email || _center?.email,
       patient_name:nombre, doctor_name:docName,
       appointment_date:fecha||'Por confirmar',
