@@ -60,6 +60,92 @@ Reglas:
 - Verbos resultado: recupera, retoma, libera, regresa (no conquista, domina)
 - Muy específico a la especialidad`
 
+// ── Claude prompt ────────────────────────────────────────────────────────────
+
+const CLAUDE_SYSTEM_PROMPT = `Eres el director creativo de identidad médica premium de CitaDoc LATAM.
+Si recibes imágenes del médico o logo: analízalas y úsalas para hacer la identidad ÚNICA de esta persona.
+Devuelve SOLO JSON válido. Sin markdown. Sin texto fuera del JSON. Todo en español latino.
+
+Campos requeridos:
+- headline: titular orientado al resultado del paciente, máx 75 chars, verbo acción (Recupera, Retoma, Libera, Vuelve, Restaura)
+- subheadline: 1-2 oraciones de valor real y específico, máx 130 chars
+- about_text: 2 párrafos historia profesional — debe mencionar hechos reales de la bio
+- philosophy: frase manifesto exactamente 10-15 palabras — debe resonar con lo que la bio revela de este médico
+- doctor_story: 1 párrafo origen y formación — extraído de la bio, con hechos específicos
+- differentiators: array 5 ventajas técnicas concretas y verificables — cada una basada en un hecho de la bio o la especialidad
+- treatment_approach: metodología clínica específica a este médico
+- patient_experience: cómo se siente el paciente desde la primera consulta
+- visual_dna: uno de: clinic, sports, luxury, authority, warm, modern
+- tone: uno de: confianza-clinica, cercania-humana, elegancia-premium, innovacion-tecnica
+- primary_color: hex de identidad derivado del logo (si hay) o la especialidad (#rrggbb)
+- services: array 4 objetos {t: nombre servicio, d: descripción 10-15 palabras, i: emoji} — basados en lo que menciona la bio
+- cta_primary: "Agendar cita"
+- cta_final: frase cierre máx 60 chars con autoridad o calidez
+- seo_title: "Dr/Dra. [Nombre] — [Especialidad] en [Ciudad o LATAM]"
+- seo_description: 150-160 chars propuesta de valor única
+
+Reglas CRÍTICAS:
+- BIO ES LA FUENTE PRIMARIA: si hay bio, es el insumo más importante. Extrae todos los hechos concretos que mencione: años de experiencia, instituciones donde se formó, técnicas o procedimientos que domina, logros, filosofía de vida, valores. Cada hecho debe aparecer en algún campo del JSON. Nada inventado que contradiga la bio.
+- Si hay logo: extrae su color dominante como primary_color
+- Si hay foto del médico: analiza postura, expresión, vestimenta — úsalo para reforzar el tono del copy
+- Nunca frases genéricas. Todo específico a esta especialidad y este médico en particular
+- powered_by: incluir este campo con valor "claude"`
+
+// ── Claude API call ──────────────────────────────────────────────────────────
+
+async function callClaudeAPI(
+  name: string, spec: string, cityStr: string, bio: string,
+  photo_url: string | null, logo_url: string | null,
+  apiKey: string
+): Promise<Record<string, unknown>> {
+  const contentBlocks: unknown[] = []
+
+  if (photo_url) {
+    contentBlocks.push({ type: 'image', source: { type: 'url', url: photo_url } })
+    contentBlocks.push({ type: 'text', text: 'Foto profesional del médico.' })
+  }
+  if (logo_url) {
+    contentBlocks.push({ type: 'image', source: { type: 'url', url: logo_url } })
+    contentBlocks.push({ type: 'text', text: 'Logo de la práctica médica.' })
+  }
+
+  const bioBlock = bio
+    ? `\n\nBIO DEL MÉDICO (fuente primaria — extraer todos los hechos para construir la identidad):\n"${bio}"\n\nTodo lo que dice la bio debe reflejarse en algún campo: about_text, doctor_story, differentiators, philosophy, services o headline. No inventar hechos. No ignorar ningún dato de la bio.`
+    : ''
+
+  const info = [
+    `MÉDICO: ${name}`,
+    `ESPECIALIDAD: ${spec}`,
+    cityStr && `CIUDAD: ${cityStr}`,
+  ].filter(Boolean).join('\n') + bioBlock + '\n\nDevuelve SOLO JSON válido. Sin markdown.'
+
+  contentBlocks.push({ type: 'text', text: info })
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2200,
+      system: CLAUDE_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: contentBlocks }],
+    }),
+  })
+
+  if (!res.ok) {
+    const txt = await res.text()
+    throw new Error(`Claude API ${res.status}: ${txt.slice(0, 300)}`)
+  }
+
+  const data = await res.json()
+  const text = (data.content?.[0]?.text || '').replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+  return JSON.parse(text)
+}
+
 // ── Fallback config ──────────────────────────────────────────────────────────
 
 // ── Legacy DNA → nuevo sistema de layouts ────────────────────────────────────
@@ -140,7 +226,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const { doctor_name, specialty, city, logo_url, photo_url } = body
+    const { doctor_name, specialty, city, logo_url, photo_url, custom_slug, medico_id, is_real, bio, engine, selected_layout_override } = body
 
     if (!doctor_name?.trim() || !specialty?.trim()) {
       return json({ error: 'doctor_name and specialty son requeridos' }, 400)
@@ -152,46 +238,53 @@ serve(async (req) => {
 
     const SUPABASE_URL      = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SVCKEY   = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const KIMI_API_KEY      = Deno.env.get('KIMI_API_KEY')!
+    const KIMI_API_KEY      = Deno.env.get('KIMI_API_KEY')
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
 
     const sb = createClient(SUPABASE_URL, SUPABASE_SVCKEY)
 
-    // ── Generar web_config con Kimi ─────────────────────────────────────────
+    const useClaude = engine === 'claude' && !!ANTHROPIC_API_KEY
     let web_config: Record<string, unknown>
-    let source = 'kimi'
+    let source = useClaude ? 'claude' : 'kimi'
 
     try {
-      if (!KIMI_API_KEY) throw new Error('KIMI_API_KEY missing')
+      if (useClaude) {
+        // ── Generar con Claude ─────────────────────────────────────────────
+        web_config = await callClaudeAPI(name, spec, cityStr, bio || '', photo_url || null, logo_url || null, ANTHROPIC_API_KEY!)
+      } else {
+        // ── Generar con Kimi ───────────────────────────────────────────────
+        if (!KIMI_API_KEY) throw new Error('KIMI_API_KEY missing')
 
-      const res = await fetch('https://api.moonshot.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${KIMI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'moonshot-v1-8k',
-          temperature: 0.8,
-          max_tokens: 2000,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            {
-              role: 'user',
-              content: `Médico: ${name}\nEspecialidad: ${spec}${cityStr ? `\nCiudad: ${cityStr}` : ''}\n\nGenera el web config JSON premium.`,
-            },
-          ],
-        }),
-      })
+        const res = await fetch('https://api.moonshot.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${KIMI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: 'moonshot-v1-8k',
+            temperature: 0.8,
+            max_tokens: 2000,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              {
+                role: 'user',
+                content: `Médico: ${name}\nEspecialidad: ${spec}${cityStr ? `\nCiudad: ${cityStr}` : ''}${bio ? `\nBio: ${bio}` : ''}\n\nGenera el web config JSON premium.`,
+              },
+            ],
+          }),
+        })
 
-      if (!res.ok) throw new Error(`Kimi ${res.status}`)
+        if (!res.ok) throw new Error(`Kimi ${res.status}`)
 
-      const data = await res.json()
-      const raw  = data.choices?.[0]?.message?.content || ''
-      const clean = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      web_config = JSON.parse(clean)
+        const data = await res.json()
+        const raw  = data.choices?.[0]?.message?.content || ''
+        const clean = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+        web_config = JSON.parse(clean)
+      }
 
     } catch (e) {
-      console.warn('Kimi fallback:', e)
+      console.warn(`${source} fallback:`, e)
       web_config = buildFallback(name, spec, cityStr)
       source = 'fallback'
     }
@@ -201,18 +294,24 @@ serve(async (req) => {
     if (!web_config.visual_dna)  web_config.visual_dna  = 'authority'
     web_config.generated_at = new Date().toISOString()
     web_config.source       = source
+    web_config.powered_by   = source
 
-    const dna             = String(web_config.visual_dna || 'surgical-authority')
-    const selected_layout = LAYOUT_BY_DNA[dna] || 'surgical-authority'
+    const dna = String(web_config.visual_dna || 'surgical-authority')
+
+    // Layout: respetar override manual del admin, sino derivar del DNA
+    const selected_layout = selected_layout_override
+      ? String(selected_layout_override)
+      : (LAYOUT_BY_DNA[dna] || 'surgical-authority')
+
     const hero_title      = String(web_config.headline || '')
     const generation_time_ms = Date.now() - t0
 
-    // Inyectar selected_layout en web_config para que el renderer lo use
     web_config.selected_layout = selected_layout
     web_config.visual_dna      = dna
 
     // ── Insertar en DB ──────────────────────────────────────────────────────
-    const slug = buildSlug(name, spec)
+    const slug = custom_slug ? String(custom_slug).trim().toLowerCase().replace(/[^a-z0-9-]/g, '-') : buildSlug(name, spec)
+    const demoStatus = (is_real || medico_id) ? 'active' : 'demo'
 
     const { data: demo, error } = await sb
       .from('generated_demos')
@@ -228,7 +327,9 @@ serve(async (req) => {
         selected_layout,
         hero_title,
         generation_time_ms,
-        payment_status:   'pending',
+        payment_status:   is_real ? 'paid' : 'pending',
+        status:           demoStatus,
+        medico_id:        medico_id || null,
       })
       .select('id, slug, created_at')
       .single()
