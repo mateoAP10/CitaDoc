@@ -97,6 +97,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .svc-price{width:90px;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--ink);outline:none;background:#fff}
 .btn-add-svc{background:var(--red);color:#fff;border:none;border-radius:9px;padding:.6rem 1rem;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
 .btn-add-svc:hover{background:var(--red-dark)}
+.svc-tabs{display:flex;gap:.35rem;margin-bottom:.85rem}
+.svc-tab{padding:.38rem .85rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.4rem}
+.svc-tab:hover{border-color:var(--ink);color:var(--ink)}
+.svc-tab.active{border-color:transparent;color:#fff}
+.svc-tab.active.consulta{background:#1d4ed8}
+.svc-tab.active.laboratorio{background:#15803d}
+.svc-tab.active.imagen{background:#7e22ce}
+.svc-tab-count{font-size:.65rem;opacity:.75}
 .svc-list{display:flex;flex-direction:column;gap:.35rem}
 .svc-row{display:flex;align-items:center;gap:.65rem;padding:.55rem .75rem;border-radius:9px;border:1.5px solid var(--border);background:#fff;transition:border-color .15s}
 .svc-row:hover{border-color:var(--border)}
@@ -472,6 +480,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       <div class="svc-seguros-row" id="svcSegurosRow" style="display:none">
         <span class="svc-seguros-row-label">Seguros</span>
         <div id="svcSegurosChecks" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
+      </div>
+      <div class="svc-tabs" id="svcTabs" style="display:none">
+        <button class="svc-tab active consulta" data-cat="consulta" onclick="setSvcTab('consulta')">Consulta <span class="svc-tab-count" id="cnt-consulta"></span></button>
+        <button class="svc-tab laboratorio"     data-cat="laboratorio" onclick="setSvcTab('laboratorio')">Lab <span class="svc-tab-count" id="cnt-laboratorio"></span></button>
+        <button class="svc-tab imagen"          data-cat="imagen" onclick="setSvcTab('imagen')">Imagen <span class="svc-tab-count" id="cnt-imagen"></span></button>
       </div>
       <div class="svc-list" id="svcList">
         <div class="svc-empty">Cargando servicios...</div>
@@ -947,17 +960,51 @@ async function removeDoctor(medicoId) {
 }
 
 // ── SERVICIOS ─────────────────────────────────────────────────────────────────
+let _svcTab = 'consulta'
+
+function setSvcTab(cat) {
+  _svcTab = cat
+  document.querySelectorAll('.svc-tab').forEach(b => {
+    const isActive = b.dataset.cat === cat
+    b.classList.toggle('active', isActive)
+    ;['consulta','laboratorio','imagen'].forEach(c => b.classList.toggle(c, isActive && b.dataset.cat === c))
+  })
+  renderSvcList()
+}
+
 function renderServices() {
-  if (!_services.length) { el('svcList').innerHTML = '<div class="svc-empty">Sin servicios aún — agregá el primero</div>'; return }
-  const catOrder = ['consulta','laboratorio','imagen']
-  const sorted = [..._services].sort((a,b) => catOrder.indexOf(a.categoria)-catOrder.indexOf(b.categoria))
-  el('svcList').innerHTML = sorted.map(s => `<div class="svc-row" id="svc-${s.id}">
-    <span class="svc-cat-pill ${s.categoria}">${{consulta:'Consulta',laboratorio:'Lab',imagen:'Imagen'}[s.categoria]||s.categoria}</span>
-    <span class="svc-name">${esc(s.nombre)}</span>
-    ${s.seguros && s.seguros.length ? s.seguros.map(sg => `<span class="svc-ins-badge">${esc(sg)}</span>`).join('') : ''}
-    <span class="svc-price-label">$${s.precio||0}</span>
-    <button class="btn-del" title="Eliminar" onclick="deleteServicio('${s.id}')">✕</button>
-  </div>`).join('')
+  const tabs = el('svcTabs')
+  if (!_services.length) {
+    tabs.style.display = 'none'
+    el('svcList').innerHTML = '<div class="svc-empty">Sin servicios aún — agregá el primero</div>'
+    return
+  }
+  tabs.style.display = 'flex'
+  ;['consulta','laboratorio','imagen'].forEach(c => {
+    const cnt = _services.filter(s => s.categoria === c).length
+    el('cnt-' + c).textContent = cnt ? cnt : ''
+  })
+  // si el tab activo no tiene servicios, cambiar al primero que sí tenga
+  if (!_services.some(s => s.categoria === _svcTab)) {
+    _svcTab = ['consulta','laboratorio','imagen'].find(c => _services.some(s => s.categoria === c)) || 'consulta'
+    document.querySelectorAll('.svc-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.cat === _svcTab)
+      ;['consulta','laboratorio','imagen'].forEach(c => { if(b.dataset.cat===c) b.classList.toggle(c, b.dataset.cat===_svcTab) })
+    })
+  }
+  renderSvcList()
+}
+
+function renderSvcList() {
+  const visible = _services.filter(s => s.categoria === _svcTab)
+  el('svcList').innerHTML = visible.length
+    ? visible.map(s => `<div class="svc-row" id="svc-${s.id}">
+        <span class="svc-name">${esc(s.nombre)}</span>
+        ${s.seguros && s.seguros.length ? s.seguros.map(sg => `<span class="svc-ins-badge">${esc(sg)}</span>`).join('') : ''}
+        <span class="svc-price-label">$${s.precio||0}</span>
+        <button class="btn-del" title="Eliminar" onclick="deleteServicio('${s.id}')">✕</button>
+      </div>`).join('')
+    : '<div class="svc-empty">Sin servicios en esta categoría</div>'
 }
 
 async function addServicio() {
@@ -976,6 +1023,7 @@ async function addServicio() {
   })
   if (error) { toast('Error al agregar', 'err'); return }
   _services.push(data)
+  _svcTab = cat
   renderServices()
   el('svcNombre').value = ''
   el('svcPrecio').value = ''
