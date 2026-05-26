@@ -209,7 +209,7 @@ window.renderLayoutSurgical = function(config, doctor, locs, container) {
     + '<div class="sa2-sections">'
     + '<details class="sa2-item"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">01</span><span class="sa2-item-label">Servicios ofrecidos</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body">'+srvHTML+'</div></details>'
     + '<details class="sa2-item"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">02</span><span class="sa2-item-label">Formación y logros académicos</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body">'+frmHTML+'</div></details>'
-    + '<details class="sa2-item"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">03</span><span class="sa2-item-label">Imágenes</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body"><div class="sa2-img-grid">'+(photo?'<img src="'+e(photo)+'" alt=""><img src="'+e(photo)+'" alt="">':'')+'</div></div></details>'
+    + (((wc.gallery&&wc.gallery.length)||(photo))?'<details class="sa2-item"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">03</span><span class="sa2-item-label">Imágenes</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body"><div class="sa2-img-grid">'+(wc.gallery&&wc.gallery.length?wc.gallery.slice(0,4).map(function(u){return'<img src="'+e(u)+'" alt="">';}).join(''):photo?'<img src="'+e(photo)+'" alt="" style="grid-column:1/-1;aspect-ratio:16/9">':'')+'</div></div></details>':'')
     + '</div>'
 
     // Credentials list
