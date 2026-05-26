@@ -2373,6 +2373,7 @@ function floatTab(tab) {
     closeDocPanel()
     if (!el('calcBody').classList.contains('open')) toggleSection('calc')
     el('calcTrigger').scrollIntoView({behavior:'smooth', block:'start'})
+    setTimeout(() => el('searchInput').focus(), 400)
     return
   }
   if (tab === 'perfil') {
