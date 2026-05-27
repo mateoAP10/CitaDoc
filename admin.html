@@ -1223,7 +1223,7 @@ function mweRenderGallery_LEGACY() {
   }).join('');
 }
 
-function mweDeleteGallery(idx) { _mweGallery.splice(idx, 1); mweRenderGallery(); }
+function mweDeleteGallery(idx) { _mweGallery.splice(idx, 1); mweRenderGallery_LEGACY(); }
 
 async function mweUploadMedia(type, input) {
   var file = input.files[0]; if (!file) return;
@@ -1258,7 +1258,7 @@ async function mweUploadGallery(input) {
   }
   input.value = '';
   if (btn) { btn.textContent = '+ Fotos'; btn.disabled = false; }
-  mweRenderGallery();
+  mweRenderGallery_LEGACY();
 }
 
 function mweServiceRow(icon, title, desc) {
@@ -1437,153 +1437,4 @@ function wbeUpdateStatusUI() {
   }
 }
 
-// ─── Main modal functions ─────────────────────────────────────────────────────
-
-function abrirModalEditWeb(slug) {
-  _editSlug = slug;
-  sb.from('generated_demos').select('slug,doctor_name,specialty,photo_url,logo_url,dna,web_config_jsonb,web_settings,activated_at').eq('slug', slug).single().then(function(result) {
-    var d = result.data || {};
-    var config = d.web_config_jsonb || {};
-    var ws = d.web_settings || {};
-    _wsSettings = Object.assign({ show_whatsapp: true, show_booking: true, show_carousel: true, show_calculator: false, show_services: true, show_doctors: false, show_instagram: false, show_map: false, show_insurance: false, show_cta: true, hero_layout: 'split', services_layout: 'grid', navbar_style: 'transparent', dna: d.dna || 'authority' }, ws);
-    _wbeIsLive = !!d.activated_at;
-    _mwePhotoUrl = null; _mweLogoUrl = null;
-    _mweGallery = Array.isArray(config.gallery) ? config.gallery.slice() : [];
-
-    // Slug / status
-    document.getElementById('mwe-slug-lbl').textContent = '/' + slug;
-    wbeUpdateStatusUI();
-
-    // Media
-    var purl = d.photo_url || config.doctor_photo_url || null;
-    document.getElementById('mwe-photo-thumb').innerHTML = purl ? '<img src="'+esc(purl)+'" style="width:100%;height:100%;object-fit:cover">' : '📷';
-    document.getElementById('mwe-photo-st').textContent = purl ? '✓ Cargada' : 'Cambiar';
-    var lurl = d.logo_url || config.logo_url || null;
-    document.getElementById('mwe-logo-thumb').innerHTML = lurl ? '<img src="'+esc(lurl)+'" style="width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply">' : '🏥';
-    document.getElementById('mwe-logo-st').textContent = lurl ? '✓ Cargado' : 'Cambiar';
-    mweRenderGallery();
-
-    // Contenido
-    document.getElementById('mwe-nombre').value = d.doctor_name || '';
-    document.getElementById('mwe-especialidad').value = d.specialty || '';
-    document.getElementById('mwe-ciudad').value = config.city || '';
-    document.getElementById('mwe-headline').value = config.headline || '';
-    document.getElementById('mwe-subheadline').value = config.subheadline || '';
-    document.getElementById('mwe-bio').value = config.hero_text || config.tagline || '';
-    document.getElementById('mwe-about').value = config.about_text || '';
-    var list = document.getElementById('mwe-services-list');
-    list.innerHTML = '';
-    var svcs = Array.isArray(config.services) ? config.services : (Array.isArray(config.servicios) ? config.servicios : []);
-    svcs.forEach(function(s) { list.appendChild(mweServiceRow(s.i||s.icon||'✦', s.t||s.title||s.name||'', s.d||s.desc||s.description||'')); });
-    if (!svcs.length) list.appendChild(mweServiceRow('','',''));
-    var diffs = Array.isArray(config.differentiators) ? config.differentiators : [];
-    document.getElementById('mwe-diffs').value = diffs.map(function(x) { return typeof x === 'string' ? x : (x.t || x.text || x.title || x.name || ''); }).join('\n');
-    document.getElementById('mwe-philosophy').value = config.philosophy || '';
-    document.getElementById('mwe-cta').value = config.cta_final || '';
-    var col = config.primary_color || '#1e5c3a';
-    document.getElementById('mwe-color').value = col;
-    document.getElementById('mwe-color-val').textContent = col;
-
-    // Módulos toggles
-    ['show_whatsapp','show_booking','show_carousel','show_calculator','show_services','show_doctors','show_instagram','show_map','show_insurance','show_cta'].forEach(function(k) {
-      var el = document.getElementById('ws-' + k);
-      if (el) el.checked = _wsSettings[k] !== false;
-    });
-
-    // Layout buttons
-    ['centered','split','fullscreen'].forEach(function(v) {
-      var b = document.getElementById('wbl-hero-' + v);
-      if (b) b.classList.toggle('sel', (_wsSettings.hero_layout || 'split') === v);
-    });
-    ['grid','list'].forEach(function(v) {
-      var b = document.getElementById('wbl-services-' + v);
-      if (b) b.classList.toggle('sel', (_wsSettings.services_layout || 'grid') === v);
-    });
-    ['transparent','solid'].forEach(function(v) {
-      var b = document.getElementById('wbs-nav-' + v);
-      if (b) b.classList.toggle('sel', (_wsSettings.navbar_style || 'transparent') === v);
-    });
-
-    // DNA select
-    var dnaEl = document.getElementById('wbe-dna');
-    if (dnaEl) dnaEl.value = _wsSettings.dna || d.dna || 'authority';
-
-    // UI state
-    document.getElementById('mwe-error-edit').style.display = 'none';
-    document.getElementById('mwe-btn-save').textContent = 'Guardar';
-    document.getElementById('mwe-btn-save').disabled = false;
-    wbeSetTab('contenido');
-    wbeSetPreview('desktop');
-
-    // Show modal
-    var modal = document.getElementById('modalEditWeb');
-    modal.style.display = 'flex';
-
-    // Load preview
-    setTimeout(wbeRefreshPreview, 300);
-    wbeUpdateScore();
-  });
-}
-
-function cerrarModalEditWeb() {
-  document.getElementById('modalEditWeb').style.display = 'none';
-  if (_wbeRefreshTimer) { clearTimeout(_wbeRefreshTimer); _wbeRefreshTimer = null; }
-}
-
-async function guardarEditWeb(silent) {
-  var btn = document.getElementById('mwe-btn-save');
-  if (!silent) { btn.textContent = 'Guardando...'; btn.disabled = true; }
-  try {
-    var { data: current } = await sb.from('generated_demos').select('web_config_jsonb').eq('slug', _editSlug).single();
-    var config = (current && current.web_config_jsonb) || {};
-    var nombre      = document.getElementById('mwe-nombre').value.trim();
-    var espec       = document.getElementById('mwe-especialidad').value.trim();
-    var ciudad      = document.getElementById('mwe-ciudad').value.trim();
-    var headline    = document.getElementById('mwe-headline').value.trim();
-    var subheadline = document.getElementById('mwe-subheadline').value.trim();
-    var bio         = document.getElementById('mwe-bio').value.trim();
-    var about       = document.getElementById('mwe-about').value.trim();
-    var diffs       = document.getElementById('mwe-diffs').value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-    var philosophy  = document.getElementById('mwe-philosophy').value.trim();
-    var cta         = document.getElementById('mwe-cta').value.trim();
-    var services    = mweGetServices();
-    if (ciudad)       config.city            = ciudad;
-    if (headline)     config.headline        = headline;
-    if (subheadline)  config.subheadline     = subheadline;
-    if (bio)          config.hero_text       = bio;
-    if (about)        config.about_text      = about;
-    if (diffs.length) config.differentiators = diffs;
-    if (philosophy)   config.philosophy      = philosophy;
-    if (cta)          config.cta_final       = cta;
-    config.primary_color = document.getElementById('mwe-color').value;
-    config.services  = services;
-    config.servicios = services;
-    config.gallery   = _mweGallery;
-    if (_mwePhotoUrl) config.doctor_photo_url = _mwePhotoUrl;
-    if (_mweLogoUrl)  config.logo_url = _mweLogoUrl;
-
-    // Sync dna from settings
-    if (_wsSettings.dna) config.dna = _wsSettings.dna;
-
-    var dbUpdate = { doctor_name: nombre, specialty: espec, web_config_jsonb: config, web_settings: _wsSettings };
-    if (_mwePhotoUrl) dbUpdate.photo_url = _mwePhotoUrl;
-    if (_mweLogoUrl)  dbUpdate.logo_url  = _mweLogoUrl;
-    if (_wsSettings.dna) dbUpdate.dna = _wsSettings.dna;
-
-    await sb.from('generated_demos').update(dbUpdate).eq('slug', _editSlug);
-
-    if (!silent) {
-      document.getElementById('modalEditWeb').style.display = 'none';
-      var { data } = await sb.from('generated_demos').select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel,activated_at').order('created_at', { ascending: false }).limit(15);
-      if (data) renderDemos(data);
-    } else {
-      wbeUpdateScore();
-    }
-  } catch(e) {
-    var errEl = document.getElementById('mwe-error-edit');
-    errEl.textContent = 'Error: ' + e.message;
-    errEl.style.display = '';
-    if (!silent) { btn.textContent = 'Guardar'; btn.disabled = false; }
-  }
-}
 </script></body></html>
