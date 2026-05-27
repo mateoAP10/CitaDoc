@@ -23,9 +23,89 @@
 
 <div id="wm-panel-activas" style="display:none">
   <div id="activasList"><div class="loading">Cargando...</div></div>
+</div><div class="panel" id="panel-promos" style="display:none"><div class="sec-title" style="margin-bottom:.75rem">🎟 Códigos Promo</div><div style="display:flex;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap"><input id="promoCode" placeholder="CÓDIGO" maxlength="20" style="flex:1;min-width:120px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem;text-transform:uppercase"> <input id="promoDiscount" type="number" min="1" max="100" placeholder="% desc." style="width:90px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem"> <input id="promoMaxUses" type="number" min="1" placeholder="Usos (∞)" style="width:100px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem"> <input id="promoExpires" type="date" style="padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem"> <button onclick="crearPromo()" style="padding:.55rem 1rem;background:#5dba8a;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer">Crear</button> <button onclick="generarCodigoAleatorio()" style="padding:.55rem .9rem;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer">Generar</button></div><div id="promoMsg" style="font-size:.78rem;margin-bottom:.75rem;color:#5dba8a"></div><div id="promoList"><div class="loading">Cargando...</div></div></div><div class="panel" id="panel-verificaciones" style="display:none"><div class="sec-title" style="margin-bottom:.75rem">Verificaciones médicas</div><div class="tabs" id="verTabsRow" style="margin-bottom:.75rem"><div class="tab active" data-vertab="en_revision" onclick='setVerTab("en_revision")'>Pendientes <span class="count" id="vcnt-en_revision">0</span></div><div class="tab" data-vertab="verificado" onclick='setVerTab("verificado")'>Aprobados <span class="count" id="vcnt-verificado">0</span></div><div class="tab" data-vertab="rechazado" onclick='setVerTab("rechazado")'>Rechazados <span class="count" id="vcnt-rechazado">0</span></div></div><div id="verList"><div class="loading">Cargando...</div></div></div><div class="panel" id="panel-datos" style="display:none"><div class="sec-title" style="margin-bottom:.25rem">Mapa de datos CitaDoc</div><div class="sec-sub" style="margin-bottom:1.2rem">Población real, flujos clínicos y métricas de crecimiento.</div><div id="datosKPIs" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem"><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Especialidades más solicitadas</div><div id="chartEsp"></div></div><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Distribución por edad</div><div id="chartEdad"></div></div></div><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1.5rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">Flujo del paciente en CitaDoc</div><div id="flujoMapa" style="display:flex;align-items:center;gap:0;overflow-x:auto;padding:.5rem 0"></div></div><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Base de conocimiento clínico — Kimi</div><div id="chartGuias"></div></div>
+<div style="margin-top:2rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+    <div>
+      <div class="sec-title" style="margin-bottom:.1rem">Leads Instagram</div>
+      <div class="sec-sub">Médicos que escribieron por DM desde la campaña</div>
+    </div>
+    <button onclick="cargarLeads()" style="padding:.4rem .9rem;background:#0b7c6e;color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">↻ Actualizar</button>
+  </div>
+  <div id="leadsStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem"></div>
+  <div id="leadsTable" style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden">
+    <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:.88rem">Cargando leads...</div>
+  </div>
+</div>
+</div>
+<div class="panel" id="panel-campanas" style="display:none">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+  <div>
+    <div style="font-size:1.2rem;font-weight:700;color:#0f172a">📣 Campañas Meta</div>
+    <div style="font-size:.8rem;color:#64748b;margin-top:.2rem">Facebook & Instagram Ads — Ecuador</div>
+  </div>
+  <button onclick="abrirNuevaCampana()" style="padding:.5rem 1.2rem;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">+ Nueva campaña</button>
+</div>
+<div id="metaInsights" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.5rem"></div>
+<div id="metaAnalysis" style="display:none;background:#0f172a;border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+    <div style="font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em">🤖 Análisis de campaña</div>
+    <button onclick="analizarCampana()" id="btnAnalizar" style="padding:.3rem .7rem;background:rgba(167,139,250,.2);color:#c4b5fd;border:1px solid rgba(167,139,250,.3);border-radius:6px;font-size:.75rem;cursor:pointer;font-family:DM Sans,sans-serif">↻ Actualizar</button>
+  </div>
+  <div id="metaAnalysisText" style="font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.7;white-space:pre-wrap"></div>
+</div>
+<div id="campanasGrid" style="display:grid;gap:.75rem"><div style="text-align:center;padding:2rem;color:#94a3b8">Cargando campañas...</div></div>
+
+<div style="margin-top:2rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+    <div>
+      <div style="font-size:1rem;font-weight:700;color:#0f172a">📊 Rendimiento</div>
+      <div style="font-size:.78rem;color:#64748b;margin-top:.1rem">Automático cada 72h — alerta por email si hay problema</div>
+    </div>
+    <span style="font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:.3rem .8rem;border-radius:20px;font-weight:600">🤖 Activo · cada 72h</span>
+  </div>
+  <div id="rendimientoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">CTR mínimo</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a">0.5%</div></div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Días sin mensajes</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a">2 días</div></div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.9rem;text-align:center"><div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">Costo/mensaje max</div><div style="font-size:1.2rem;font-weight:700;color:#0f172a"></div></div>
+  </div>
+  <div id="rendimientoStatus" style="background:#f0fdf4;border-radius:10px;padding:1rem 1.2rem;font-size:.85rem;color:#16a34a">✅ Agente activo desde 21/05/2026. Próximo chequeo automático en 72h. Si hay bajo rendimiento recibes alerta por email.</div>
+</div>
+
+<!-- Modal nueva campaña -->
+<div id="modalCampana" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:1.8rem;max-width:520px;width:90%;max-height:90vh;overflow-y:auto">
+    <div style="font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:1.2rem">Nueva campaña — Ecuador</div>
+    <div style="display:grid;gap:.8rem">
+      <div><label style="font-size:.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:.3rem">NOMBRE</label><input id="c-name" value="CitaDoc — Adquisición Médicos Ecuador" style="width:100%;padding:.6rem .8rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;box-sizing:border-box"></div>
+      <div><label style="font-size:.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:.3rem">PRESUPUESTO DIARIO (USD)</label><input id="c-budget" type="number" value="6.5" style="width:100%;padding:.6rem .8rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;box-sizing:border-box"></div>
+      <div><label style="font-size:.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:.3rem">VIDEO (URL Instagram post)</label><input id="c-video" placeholder="https://www.instagram.com/p/..." style="width:100%;padding:.6rem .8rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;box-sizing:border-box"></div>
+      <div><label style="font-size:.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:.3rem">COPY DEL AD</label><textarea id="c-desc" rows="3" style="width:100%;padding:.6rem .8rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;box-sizing:border-box;resize:vertical">¿Eres médico? Gestiona tus citas, historias clínicas y presencia digital desde CitaDoc. Gratis para comenzar.</textarea></div>
+      <div><label style="font-size:.72rem;font-weight:700;color:#64748b;display:block;margin-bottom:.3rem">URL DESTINO</label><input id="c-url" value="https://citadoc.lat/citadoc-registro.html" style="width:100%;padding:.6rem .8rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;box-sizing:border-box"></div>
+    </div>
+    <div id="campanaError" style="display:none;color:#dc2626;font-size:.82rem;margin-top:.8rem;padding:.5rem .8rem;background:#fef2f2;border-radius:8px"></div>
+    <div style="display:flex;gap:.6rem;margin-top:1.2rem">
+      <button onclick="cerrarModalCampana()" style="flex:1;padding:.7rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.88rem;cursor:pointer;background:#fff;font-family:DM Sans,sans-serif">Cancelar</button>
+      <button onclick="crearCampana()" id="btnCrearCampana" style="flex:2;padding:.7rem;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">Crear campaña →</button>
+    </div>
+  </div>
 </div>
 </div>
 
+
+<div class="panel" id="panel-agentes" style="display:none">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+  <div>
+    <div style="display:flex;align-items:center;gap:.6rem"><div style="font-size:1.2rem;font-weight:700;color:#0f172a">⚡ Agentes CitaDoc</div><span id="agentesTotal" style="font-size:.72rem;font-weight:700;padding:.2rem .6rem;background:#0b7c6e;color:#fff;border-radius:20px">—</span></div>
+    <div style="font-size:.8rem;color:#64748b;margin-top:.2rem">Estado en tiempo real de todos los agentes</div>
+  </div>
+  <div style="display:flex;gap:.5rem"><button onclick="conectarMeta()" id="btnMetaConnect" style="padding:.5rem 1rem;background:#1877f2;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">🔗 Conectar Meta</button><button onclick="cargarAgentes()" style="padding:.5rem 1rem;background:#0b7c6e;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif">↻ Actualizar</button></div>
+</div>
+<div id="metaStatus" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#1e40af;display:none"></div><div id="agentesGrid" style="display:grid;gap:.75rem">
+  <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:.9rem">Cargando agentes...</div>
+</div>
+<div style="margin-top:1.5rem"><div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#3d9970;margin-bottom:.6rem">Growth Agent — Actividad en tiempo real</div><div id="growthAgentStats" style="background:rgba(255,255,255,.03);border:1px solid rgba(61,153,112,.15);border-radius:12px;padding:1rem"><div style="color:rgba(255,255,255,.25);font-size:.8rem;text-align:center;padding:.5rem">Cargando...</div></div></div>
+</div></div><!-- #app -->
 <!-- Modal Nueva Web — 2 pasos -->
 <div id="modalWeb" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;align-items:center;justify-content:center;padding:1rem">
 <div style="background:#111820;border:1px solid rgba(255,255,255,.1);border-radius:16px;width:100%;max-width:500px;max-height:92svh;overflow-y:auto">
