@@ -129,6 +129,7 @@ var DEFAULT_JOURNEY = [
 window.renderLayoutSandWellness = function(config, doctor, locs, container) {
   injectCSS();
   var m = doctor, wc = config || {};
+  var ws = config._ws || {};
   var titulo = m.titulo || 'Dr.';
   var fullName = titulo + ' ' + m.nombre + ' ' + m.apellido;
   var firstName = m.nombre || '';
@@ -187,19 +188,19 @@ window.renderLayoutSandWellness = function(config, doctor, locs, container) {
 
   var html =
     '<div class="sw">'
-    + '<nav class="sw-nav">'+navBrand+'<a class="sw-nav-btn" href="#" onclick="event.preventDefault();abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar</a></nav>'
+    + '<nav class="sw-nav">'+navBrand+(ws.show_booking!==false?'<a class="sw-nav-btn" data-ws="booking" href="#" onclick="event.preventDefault();abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar</a>':'')+'</nav>'
     + '<section class="sw-hero">'
     + '<div class="sw-hero-label">'+esc(esp)+(ciudad?' · '+esc(ciudad):'')+'</div>'
     + '<h1 class="sw-hero-hl">'+esc(hl1)+(hl2?'<br><em>'+esc(hl2)+'</em>':'')+'</h1>'
     + '<div class="sw-hero-name">'+esc(titulo)+' '+esc(m.nombre)+' '+esc(m.apellido)+'</div>'
     + (ciudad ? '<div class="sw-hero-city">'+esc(ciudad)+'</div>' : '')
-    + '<div class="sw-hero-btns"><button class="sw-btn-terra" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Reservar consulta</button>'+(wa?'<a class="sw-btn-sage" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' WhatsApp</a>':'')+'</div>'
+    + '<div class="sw-hero-btns">'+(ws.show_booking!==false?'<button class="sw-btn-terra" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Reservar consulta</button>':'')+(wa&&ws.show_whatsapp!==false?'<a class="sw-btn-sage" data-ws="whatsapp" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' WhatsApp</a>':'')+'</div>'
     + '</section>'
-    + '<div class="sw-sec sw-r"><div class="sw-sec-lbl">Áreas de atención</div><div class="sw-pills-grid">'+pillsHTML+'</div></div>'
+    + (ws.show_services!==false?'<div class="sw-sec sw-r" data-ws="services"><div class="sw-sec-lbl">Áreas de atención</div><div class="sw-pills-grid">'+pillsHTML+'</div></div>':'')
     + storyHTML
     + '<div class="sw-sec sw-r"><div class="sw-sec-lbl">Tu camino con nosotros</div><div class="sw-journey-scroll">'+journeyHTML+'</div></div>'
     + '<div class="sw-phi sw-r"><div class="sw-phi-sage"></div><p class="sw-phi-txt">'+esc(phi)+'</p><div class="sw-phi-autor">'+esc(titulo)+' '+esc(firstName)+'</div></div>'
-    + '<div class="sw-cta sw-r"><div class="sw-cta-tag">Dar el primer paso</div><div class="sw-cta-hl">Tu salud en manos que realmente escuchan</div><button class="sw-cta-btn" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar mi consulta</button>'+(wa?'<a class="sw-cta-wa" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' Escribir por WhatsApp</a>':'')+'</div>'
+    + (ws.show_cta!==false?'<div class="sw-cta sw-r" data-ws="cta"><div class="sw-cta-tag">Dar el primer paso</div><div class="sw-cta-hl">Tu salud en manos que realmente escuchan</div>'+(ws.show_booking!==false?'<button class="sw-cta-btn" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar mi consulta</button>':'')+(wa&&ws.show_whatsapp!==false?'<a class="sw-cta-wa" data-ws="whatsapp" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' Escribir por WhatsApp</a>':'')+'</div>':'')
     + '<div class="sw-foot"><div class="sw-foot-txt">Powered by <a href="https://citadoc.lat" target="_blank">CitaDoc</a></div></div>'
     + '<nav class="sw-bnav">'
     + '<a class="sw-ni active" href="#" onclick="window.scrollTo({top:0,behavior:\'smooth\'});return false"><div class="sw-ni-ic">'+SVG.home+'</div><span class="sw-ni-lb">Inicio</span></a>'

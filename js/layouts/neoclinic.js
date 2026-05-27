@@ -124,6 +124,7 @@ var DEFAULT_SVCS = [
 window.renderLayoutNeoClinic = function(config, doctor, locs, container) {
   injectCSS();
   var m = doctor, wc = config || {};
+  var ws = config._ws || {};
   var titulo = m.titulo || 'Dr.';
   var fullName = titulo + ' ' + m.nombre + ' ' + m.apellido;
   var firstName = m.nombre || '';
@@ -162,7 +163,7 @@ window.renderLayoutNeoClinic = function(config, doctor, locs, container) {
     ? '<div class="nc-photo-wrap nc-r"><img class="nc-photo" src="'+esc(photo)+'" alt="'+esc(fullName)+'"><div class="nc-photo-badge"><div class="nc-photo-badge-name">'+esc(fullName)+'</div><div class="nc-photo-badge-esp">'+esc(esp)+'</div></div></div>'
     : '';
 
-  var svcsHTML = '<div class="nc-section nc-r">'
+  var svcsHTML = '<div class="nc-section nc-r" data-ws="services">'
     + '<div class="nc-section-header"><div class="nc-section-title">Servicios</div><div class="nc-section-count">0'+srvs.length+' disponibles</div></div>'
     + '<div class="nc-svc-list">'
     + srvs.map(function(s, i) {
@@ -187,19 +188,19 @@ window.renderLayoutNeoClinic = function(config, doctor, locs, container) {
 
   var html =
     '<div class="nc">'
-    + '<nav class="nc-nav">'+navBrand+'<button class="nc-nav-book" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Reservar</button></nav>'
+    + '<nav class="nc-nav">'+navBrand+(ws.show_booking!==false?'<button class="nc-nav-book" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Reservar</button>':'')+'</nav>'
     + '<div class="nc-hero">'
     + '<div class="nc-hero-chip">'+esc(esp)+(ciudad?' · '+esc(ciudad):'')+'</div>'
     + '<h1 class="nc-hero-name"><span class="nc-first">'+esc(titulo)+' '+esc(firstName)+'</span><span class="nc-last">'+esc(lastName)+'</span></h1>'
     + '<p class="nc-hero-sub">'+esc(sub)+'</p>'
-    + '<div class="nc-hero-btns"><button class="nc-btn-primary" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar consulta</button>'+(wa?'<a class="nc-btn-ghost" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' WhatsApp</a>':'')+'</div>'
+    + '<div class="nc-hero-btns">'+(ws.show_booking!==false?'<button class="nc-btn-primary" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar consulta</button>':'')+(wa&&ws.show_whatsapp!==false?'<a class="nc-btn-ghost" data-ws="whatsapp" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' WhatsApp</a>':'')+'</div>'
     + '</div>'
     + statsHTML
     + photoHTML
-    + svcsHTML
+    + (ws.show_services!==false?svcsHTML:'')
     + diffsHTML
     + (phi ? '<div class="nc-section nc-r" style="padding-bottom:20px"><div style="font-family:\'Fraunces\',serif;font-size:clamp(16px,4.8vw,20px);font-weight:300;font-style:italic;color:#3A4A6B;line-height:1.6;border-left:3px solid #1D4ED8;padding-left:16px">'+esc(phi)+'</div></div>' : '')
-    + '<div class="nc-cta-band nc-r"><div class="nc-cta-band-label">Próximo paso</div><div class="nc-cta-band-hl">Tu salud merece al mejor especialista</div><button class="nc-cta-band-btn" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar mi consulta</button>'+(wa?'<a class="nc-cta-band-wa" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' Escribir por WhatsApp</a>':'')+'</div>'
+    + (ws.show_cta!==false?'<div class="nc-cta-band nc-r" data-ws="cta"><div class="nc-cta-band-label">Próximo paso</div><div class="nc-cta-band-hl">Tu salud merece al mejor especialista</div>'+(ws.show_booking!==false?'<button class="nc-cta-band-btn" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG.cal+' Agendar mi consulta</button>':'')+(wa&&ws.show_whatsapp!==false?'<a class="nc-cta-band-wa" data-ws="whatsapp" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVG.wa+' Escribir por WhatsApp</a>':'')+'</div>':'')
     + '<div class="nc-foot"><div class="nc-foot-txt">Powered by <a href="https://citadoc.lat" target="_blank">CitaDoc</a></div></div>'
     + '<nav class="nc-bnav">'
     + '<a class="nc-ni active" href="#" onclick="window.scrollTo({top:0,behavior:\'smooth\'});return false"><div class="nc-ni-ic">'+SVG.home+'</div><span class="nc-ni-lb">Inicio</span></a>'
