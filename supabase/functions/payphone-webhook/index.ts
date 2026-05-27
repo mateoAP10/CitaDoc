@@ -396,10 +396,6 @@ serve(async (req) => {
 
     if (plan === 'pro_web') {
       update.web_status = 'active'
-      if (medico?.web_config_draft && !medico?.web_config) {
-        update.web_config = medico.web_config_draft
-        console.log('[webhook] Promoting web_config_draft → web_config for:', medicoId)
-      }
     }
 
     const { error } = await sb.from('medicos').update(update).eq('id', medicoId)
@@ -409,6 +405,38 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500, headers: { 'Content-Type': 'application/json' }
       })
+    }
+
+    // ── PRO+WEB: activate generated_demos snapshot ───────────────────────────
+    if (plan === 'pro_web' && medico?.slug) {
+      try {
+        const { data: demo, error: demoErr } = await sb
+          .from('generated_demos')
+          .select('id, medico_id, activated_at')
+          .eq('slug', medico.slug)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (demo && !demoErr) {
+          const demoUpd: Record<string, unknown> = {
+            status:         'active',
+            payment_status: 'paid',
+          }
+          // Link medico_id if missing
+          if (!demo.medico_id) demoUpd.medico_id = medicoId
+          // Activate only if not already live (idempotent)
+          if (!demo.activated_at) demoUpd.activated_at = new Date().toISOString()
+
+          await sb.from('generated_demos').update(demoUpd).eq('id', demo.id)
+          console.log('[webhook] generated_demos activated for slug:', medico.slug, '| medico_id linked:', !demo.medico_id)
+        } else {
+          console.log('[webhook] No generated_demos found for slug:', medico.slug, '— skipping web activation')
+        }
+      } catch (webErr) {
+        // Never block payment confirmation for this
+        console.warn('[webhook] generated_demos activation error (non-fatal):', webErr)
+      }
     }
 
     // Send activation email — fallback to auth user email if medico.email is null

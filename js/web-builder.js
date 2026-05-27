@@ -545,7 +545,21 @@
     } else {
       if (btn) { btn.textContent = 'Publicando...'; btn.disabled = true; }
       await _save(true);
-      await _sb().from('generated_demos').update({ activated_at: new Date().toISOString() }).eq('slug', _slug);
+
+      // Auto-resolve medico_id if missing (link snapshot → operational layer)
+      var _deployUpd = { activated_at: new Date().toISOString(), status: 'active' };
+      try {
+        var _cur = await _sb().from('generated_demos').select('medico_id').eq('slug', _slug).maybeSingle();
+        if (_cur.data && !_cur.data.medico_id) {
+          var _mRes = await _sb().from('medicos').select('id').eq('slug', _slug).maybeSingle();
+          if (_mRes.data && _mRes.data.id) {
+            _deployUpd.medico_id = _mRes.data.id;
+            console.log('[Builder] medico_id auto-resolved:', _mRes.data.id);
+          }
+        }
+      } catch(_e) { /* non-fatal */ }
+
+      await _sb().from('generated_demos').update(_deployUpd).eq('slug', _slug);
       _isLive = true;
     }
     _updateStatusUI();
