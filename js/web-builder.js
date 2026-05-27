@@ -18,7 +18,7 @@
     show_calculator: false, show_services: true, show_doctors: false,
     show_instagram: false, show_map: false, show_insurance: false,
     show_cta: true, hero_layout: 'split', services_layout: 'grid',
-    navbar_style: 'transparent', dna: 'authority'
+    navbar_style: 'transparent', dna: 'surgical-authority'
   };
 
   /* ── Helpers ────────────────────────────────────────────────────────────── */
@@ -182,11 +182,12 @@
     +   '<div class="wbe-card-body">'
     +     '<div><label class="wbe-label">DNA / Estilo visual</label>'
     +       '<select id="wbe-dna" class="wbe-inp" onchange="_wbe.settings()">'
-    +         '<option value="authority">Authority — oscuro, clínico, experto</option>'
-    +         '<option value="clinic">Clinic — azul, limpio, moderno</option>'
-    +         '<option value="warm">Warm — cálido, humano, cercano</option>'
-    +         '<option value="modern">Modern — dinámico, colorido</option>'
-    +         '<option value="luxury">Luxury — premium, estético</option>'
+    +         '<option value="surgical-authority">Surgical Authority — clínico, oscuro, experto</option>'
+    +         '<option value="performance-athletic">Performance Athletic — dinámico, deportivo</option>'
+    +         '<option value="warm-human-care">Warm Human Care — cálido, cercano, humano</option>'
+    +         '<option value="aesthetic-luxe">Aesthetic Luxe — lujo, transformación, editorial</option>'
+    +         '<option value="neoclinic">Neoclinic — moderno, tecnológico, minimalista</option>'
+    +         '<option value="sand-wellness">Sand Wellness — bienestar, naturaleza, calma</option>'
     +       '</select>'
     +     '</div>'
     +     '<div><label class="wbe-label">Layout del Hero</label>'
@@ -463,7 +464,9 @@
     ['grid','list'].forEach(function(v) { var b = _el('wbl-services-' + v); if (b) b.classList.toggle('sel', (_wsSettings.services_layout || 'grid') === v); });
     ['transparent','solid'].forEach(function(v) { var b = _el('wbs-nav-' + v); if (b) b.classList.toggle('sel', (_wsSettings.navbar_style || 'transparent') === v); });
 
-    var dnaEl = _el('wbe-dna'); if (dnaEl) dnaEl.value = _wsSettings.dna || d.dna || 'authority';
+    var _dnaRaw = _wsSettings.dna || d.dna || 'surgical-authority';
+    var _dnaAliases = {authority:'surgical-authority',clinic:'surgical-authority',warm:'warm-human-care',modern:'performance-athletic',luxury:'aesthetic-luxe',sports:'performance-athletic',bienestar:'sand-wellness',estetica:'aesthetic-luxe'};
+    var dnaEl = _el('wbe-dna'); if (dnaEl) dnaEl.value = _dnaAliases[_dnaRaw] || _dnaRaw || 'surgical-authority';
 
     var saveBtn = _el('wbe-btn-save'); if (saveBtn) { saveBtn.textContent = 'Guardar'; saveBtn.disabled = false; }
     var errEl = _el('wbe-error'); if (errEl) errEl.style.display = 'none';
