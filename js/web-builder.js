@@ -546,15 +546,26 @@
       if (btn) { btn.textContent = 'Publicando...'; btn.disabled = true; }
       await _save(true);
 
-      // Auto-resolve medico_id if missing (link snapshot → operational layer)
-      var _deployUpd = { activated_at: new Date().toISOString(), status: 'active' };
+      // Auto-resolve medico_id if missing — slug → doctor_name fuzzy
+      var _deployUpd = { activated_at: new Date().toISOString(), status: 'active', payment_status: 'paid' };
       try {
-        var _cur = await _sb().from('generated_demos').select('medico_id').eq('slug', _slug).maybeSingle();
+        var _cur = await _sb().from('generated_demos').select('medico_id,doctor_name').eq('slug', _slug).maybeSingle();
         if (_cur.data && !_cur.data.medico_id) {
+          // Try slug match first
           var _mRes = await _sb().from('medicos').select('id').eq('slug', _slug).maybeSingle();
           if (_mRes.data && _mRes.data.id) {
             _deployUpd.medico_id = _mRes.data.id;
-            console.log('[Builder] medico_id auto-resolved:', _mRes.data.id);
+            console.log('[Builder] medico_id resolved by slug:', _mRes.data.id);
+          } else if (_cur.data.doctor_name) {
+            // Fuzzy: extract first name from doctor_name and match medico
+            var _fn = (_cur.data.doctor_name || '').replace(/^(dra?\.?\s+)/i, '').trim().split(' ')[0];
+            if (_fn) {
+              var _mRes2 = await _sb().from('medicos').select('id').ilike('nombre', _fn + '%').limit(1).maybeSingle();
+              if (_mRes2.data && _mRes2.data.id) {
+                _deployUpd.medico_id = _mRes2.data.id;
+                console.log('[Builder] medico_id resolved by name:', _fn, '→', _mRes2.data.id);
+              }
+            }
           }
         }
       } catch(_e) { /* non-fatal */ }

@@ -408,30 +408,52 @@ serve(async (req) => {
     }
 
     // ── PRO+WEB: activate generated_demos snapshot ───────────────────────────
-    if (plan === 'pro_web' && medico?.slug) {
+    if (plan === 'pro_web') {
       try {
-        const { data: demo, error: demoErr } = await sb
-          .from('generated_demos')
-          .select('id, medico_id, activated_at')
-          .eq('slug', medico.slug)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
+        // Resolution strategy: medico_id → slug → email (handles slug mismatches)
+        let demo: { id: string; medico_id: string | null; activated_at: string | null } | null = null
 
-        if (demo && !demoErr) {
+        // 1. Already linked by medico_id
+        const byId = await sb.from('generated_demos')
+          .select('id, medico_id, activated_at')
+          .eq('medico_id', medicoId)
+          .order('created_at', { ascending: false })
+          .limit(1).maybeSingle()
+        if (byId.data) demo = byId.data
+
+        // 2. Slug match
+        if (!demo && medico?.slug) {
+          const bySlug = await sb.from('generated_demos')
+            .select('id, medico_id, activated_at')
+            .eq('slug', medico.slug)
+            .order('created_at', { ascending: false })
+            .limit(1).maybeSingle()
+          if (bySlug.data) demo = bySlug.data
+        }
+
+        // 3. Email match (catches slug mismatches from Kimi-generated slugs)
+        if (!demo && medico?.email) {
+          const byEmail = await sb.from('generated_demos')
+            .select('id, medico_id, activated_at, doctor_name')
+            .ilike('doctor_name', `%${medico.nombre || ''}%`)
+            .is('medico_id', null)
+            .order('created_at', { ascending: false })
+            .limit(1).maybeSingle()
+          if (byEmail.data) demo = byEmail.data
+        }
+
+        if (demo) {
           const demoUpd: Record<string, unknown> = {
             status:         'active',
             payment_status: 'paid',
           }
-          // Link medico_id if missing
           if (!demo.medico_id) demoUpd.medico_id = medicoId
-          // Activate only if not already live (idempotent)
           if (!demo.activated_at) demoUpd.activated_at = new Date().toISOString()
 
           await sb.from('generated_demos').update(demoUpd).eq('id', demo.id)
-          console.log('[webhook] generated_demos activated for slug:', medico.slug, '| medico_id linked:', !demo.medico_id)
+          console.log('[webhook] generated_demos activated | id:', demo.id, '| medico_id linked:', !demo.medico_id)
         } else {
-          console.log('[webhook] No generated_demos found for slug:', medico.slug, '— skipping web activation')
+          console.log('[webhook] No generated_demos found for medico:', medicoId, medico?.slug)
         }
       } catch (webErr) {
         // Never block payment confirmation for this
