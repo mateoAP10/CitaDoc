@@ -220,6 +220,7 @@ window.renderLayoutNeoClinic = function(config, doctor, locs, container) {
 };
 
 window.LAYOUT_RENDERERS = window.LAYOUT_RENDERERS || {};
-window.LAYOUT_RENDERERS['v2-4'] = window.renderLayoutNeoClinic;
-console.log('[Layouts] neoclinic (v2-4) renderer registrado ✓');
+window.LAYOUT_RENDERERS['neoclinic'] = window.renderLayoutNeoClinic;
+window.LAYOUT_RENDERERS['v2-4'] = window.renderLayoutNeoClinic; // legacy alias
+console.log('[Layouts] neoclinic renderer registrado ✓');
 })();

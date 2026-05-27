@@ -220,6 +220,7 @@ window.renderLayoutSandWellness = function(config, doctor, locs, container) {
 };
 
 window.LAYOUT_RENDERERS = window.LAYOUT_RENDERERS || {};
-window.LAYOUT_RENDERERS['v3-3'] = window.renderLayoutSandWellness;
-console.log('[Layouts] sand-wellness (v3-3) renderer registrado ✓');
+window.LAYOUT_RENDERERS['sand-wellness'] = window.renderLayoutSandWellness;
+window.LAYOUT_RENDERERS['v3-3'] = window.renderLayoutSandWellness; // legacy alias
+console.log('[Layouts] sand-wellness renderer registrado ✓');
 })();
