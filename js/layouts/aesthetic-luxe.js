@@ -133,10 +133,25 @@ function buildCSS(p) { return `
 .al-r{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
 .al-r.on{opacity:1;transform:none}
 
-/* MOBILE FIRST — centra en desktop */
-@media(min-width:500px){
-  .al{max-width:430px;margin:0 auto;overflow-x:hidden}
-  .al-bnav{max-width:430px;left:50%;transform:translateX(-50%);right:auto}
+/* ── DESKTOP ── */
+@media(min-width:768px){
+  .al{max-width:960px;margin:0 auto;padding-bottom:0;overflow-x:hidden}
+  .al-nav{border-radius:0;padding:0 32px;height:64px}
+  .al-hero{min-height:calc(100vh - 64px);padding:0 32px 48px}
+  .al-hero-img img{opacity:${p.dark?'.4':'.22'}}
+  .al-hero-name{font-size:clamp(40px,6vw,64px)}
+  .al-hero-btns{flex-direction:row;gap:12px}
+  .al-btn-p,.al-btn-o{flex:none;width:auto;padding:0 28px}
+  .al-sec{padding:36px 32px}
+  .al-treats{margin:0 -32px;padding-left:32px;padding-right:32px}
+  .al-treat-card{flex:0 0 200px}
+  .al-phi{padding:48px 32px}
+  .al-cta-wrap{margin:8px 24px 28px}
+  .al-bnav{max-width:960px;left:50%;transform:translateX(-50%);right:auto}
+}
+@media(min-width:1100px){
+  .al{max-width:1100px}
+  .al-bnav{max-width:1100px}
 }
 `;}
 

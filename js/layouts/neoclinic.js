@@ -100,6 +100,34 @@ var CSS = `
   .nc{max-width:430px;margin:0 auto;overflow-x:hidden}
   .nc-bnav{max-width:430px;left:50%;transform:translateX(-50%);right:auto}
 }
+@media(min-width:768px){
+  .nc{max-width:none;padding-bottom:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto;min-height:100vh}
+  .nc-nav{grid-column:1/-1;position:sticky;top:0;z-index:90;background:rgba(255,255,255,.97);border-bottom:1.5px solid #E8EDF5;padding:0 5%;height:68px;display:flex;align-items:center;justify-content:space-between}
+  .nc-hero{grid-column:1;grid-row:2;padding:52px 56px 0;overflow-y:auto}
+  .nc-stats-row{grid-column:1;grid-row:3;margin:28px 56px;align-self:end}
+  .nc-photo-wrap{grid-column:2;grid-row:2/4;margin:0;border-radius:0;position:sticky;top:68px;height:calc(100vh - 68px);overflow:hidden}
+  .nc-photo{aspect-ratio:unset;height:100%;width:100%;object-fit:cover;border-radius:0}
+  .nc-section,.nc-doctor-card,.nc-cta-band,.nc-foot{grid-column:1/-1}
+  .nc-section{padding:0 56px 28px}
+  .nc-doctor-card{margin:0 56px 28px}
+  .nc-cta-band{padding:44px 56px}
+  .nc-cta-band-btn,.nc-cta-band-wa{width:auto;padding:0 28px;display:inline-flex}
+  .nc-foot{padding:16px 56px}
+  .nc-hero-name{font-size:clamp(36px,4.5vw,56px)}
+  .nc-hero-sub{max-width:480px}
+  .nc-hero-btns{flex-direction:row;gap:12px}
+  .nc-btn-primary,.nc-btn-ghost{flex:none;width:auto;padding:0 28px}
+  .nc-bnav{display:none}
+}
+@media(min-width:1100px){
+  .nc-hero{padding:64px 72px 0}
+  .nc-stats-row{margin:28px 72px}
+  .nc-section{padding:0 72px 28px}
+  .nc-doctor-card{margin:0 72px 28px}
+  .nc-cta-band{padding:48px 72px}
+  .nc-foot{padding:16px 72px}
+  .nc-hero-name{font-size:clamp(44px,4vw,64px)}
+}
 `;
 
 var SVG = {

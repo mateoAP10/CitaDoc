@@ -65,11 +65,31 @@ details[open] .pa2-item-arrow{transform:rotate(90deg)}
 .pa2-nav-item.active .pa2-nav-icon,.pa2-nav-item.active .pa2-nav-label{color:#fff}
 .pa2-nav-cta .pa2-nav-icon{width:38px;height:38px;background:var(--pa2-accent,#2563eb);border-radius:12px;display:flex;align-items:center;justify-content:center}
 .pa2-nav-cta .pa2-nav-label{color:var(--pa2-accent,#2563eb)}
-/* ── MOBILE FIRST — desktop centra el layout móvil ── */
-@media(min-width:500px){
-  .pa2-page{max-width:430px;margin:0 auto;overflow-x:hidden}
-  .pa2-hero{max-width:430px}
-  .pa2-bottom-nav{max-width:430px;left:50%;transform:translateX(-50%);right:auto}
+/* ── DESKTOP ── */
+@media(min-width:768px){
+  .pa2-page{max-width:none;padding-bottom:0;overflow-x:hidden}
+  .pa2-hero{
+    max-width:none;min-height:calc(100vh - 68px);
+    display:grid;grid-template-columns:1fr 1fr;align-items:center;
+    padding:0 5%;gap:0;
+  }
+  .pa2-hero-img{
+    grid-column:2;grid-row:1;
+    position:relative;height:calc(100vh - 68px);
+    overflow:hidden;border-radius:0;
+  }
+  .pa2-hero-img img{height:100%;width:100%;object-fit:cover;border-radius:0}
+  .pa2-hero-body{grid-column:1;grid-row:1;padding:48px 48px 48px 0;z-index:2}
+  .pa2-hero-title{font-size:clamp(36px,4vw,60px)}
+  .pa2-hero-btns{flex-direction:row;gap:12px}
+  .pa2-btn,.pa2-btn-wa{flex:none;width:auto;padding:0 28px}
+  .pa2-section{padding:48px 5%;max-width:1200px;margin:0 auto}
+  .pa2-srv-grid{grid-template-columns:repeat(3,1fr)}
+  .pa2-bottom-nav{display:none}
+}
+@media(min-width:1100px){
+  .pa2-hero{padding:0 7%}
+  .pa2-hero-title{font-size:clamp(44px,4vw,68px)}
 }
 `;
 

@@ -99,6 +99,38 @@ var CSS = `
   .sw{max-width:430px;margin:0 auto;overflow-x:hidden}
   .sw-bnav{max-width:430px;left:50%;transform:translateX(-50%);right:auto}
 }
+@media(min-width:768px){
+  .sw{max-width:960px;margin:0 auto;padding-bottom:0;overflow-x:hidden}
+  .sw-nav{padding:0 40px;height:64px;display:flex;align-items:center}
+  .sw-hero{padding:56px 48px 52px}
+  .sw-hero-hl{font-size:clamp(32px,4vw,52px)}
+  .sw-hero-btns{flex-direction:row;gap:12px;max-width:none}
+  .sw-btn-terra,.sw-btn-sage{flex:none;width:auto;padding:0 28px}
+  .sw-sec{padding:36px 48px}
+  .sw-story{margin:0 48px 28px;display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+  .sw-story-photo{margin-bottom:0;aspect-ratio:3/4;object-fit:cover;grid-column:1;grid-row:1/5}
+  .sw-story-lbl{grid-column:2;grid-row:1;margin-top:8px}
+  .sw-story-hl{grid-column:2;grid-row:2;font-size:clamp(20px,2.5vw,28px)}
+  .sw-story-txt{grid-column:2;grid-row:3}
+  .sw-story-tags{grid-column:2;grid-row:4}
+  .sw-sec .sw-sec-lbl + .sw-pills-grid{justify-content:flex-start}
+  .sw-journey-scroll{flex-direction:row;overflow-x:visible;flex-wrap:nowrap;margin:0 48px;padding:0 0 6px;gap:16px}
+  .sw-step{flex:1;max-width:none}
+  .sw-phi{padding:52px 56px}
+  .sw-phi-txt{max-width:520px}
+  .sw-cta{margin:8px 48px 28px;padding:40px 48px}
+  .sw-cta-btn,.sw-cta-wa{width:auto;padding:0 28px;display:inline-flex;flex:none}
+  .sw-foot{padding:16px 48px}
+  .sw-bnav{max-width:960px;left:50%;transform:translateX(-50%);right:auto}
+}
+@media(min-width:1100px){
+  .sw{max-width:1100px}
+  .sw-hero{padding:64px 56px 60px}
+  .sw-story{margin:0 56px 28px}
+  .sw-journey-scroll{margin:0 56px}
+  .sw-cta{margin:8px 56px 28px}
+  .sw-bnav{max-width:1100px}
+}
 `;
 
 var SVG = {
