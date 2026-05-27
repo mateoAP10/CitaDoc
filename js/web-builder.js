@@ -494,6 +494,9 @@
       var phi      = (_el('wbe-philosophy')   || {}).value || '';
       var cta      = (_el('wbe-cta')          || {}).value || '';
       var services = _getServices();
+      // web_config_jsonb is the single source of truth — store EVERYTHING visual here
+      if (nombre)    config.doctor_name      = nombre;
+      if (espec)     config.specialty        = espec;
       if (ciudad)    config.city             = ciudad;
       if (headline)  config.headline         = headline;
       if (subhl)     config.subheadline      = subhl;
