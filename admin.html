@@ -134,81 +134,260 @@
   </div>
 </div>
 </div>
-<!-- Modal Editar Web -->
-<div id="modalEditWeb" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1001;align-items:center;justify-content:center;padding:1rem">
-<div style="background:#111820;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.5rem;max-width:520px;width:100%;max-height:92svh;overflow-y:auto">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.15rem">
-    <div style="font-size:.92rem;font-weight:600;color:rgba(255,255,255,.85)">Editar Web</div>
-    <button onclick="cerrarModalEditWeb()" style="background:0;border:none;color:rgba(255,255,255,.4);font-size:1.3rem;cursor:pointer;line-height:1;padding:.2rem .4rem">×</button>
-  </div>
-  <div id="mwe-slug-lbl" style="font-size:.65rem;color:rgba(255,255,255,.22);margin-bottom:1.1rem;font-family:monospace"></div>
+<!-- Web Builder Modal — full-screen modular editor -->
+<div id="modalEditWeb" style="display:none;position:fixed;inset:0;z-index:2000;font-family:'DM Sans',sans-serif;flex-direction:column">
+<style>
+#wbe-sidebar::-webkit-scrollbar{width:4px}#wbe-sidebar::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}
+.wbe-tab{padding:.4rem .85rem;border-radius:8px;font-size:.77rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:#6b7280;transition:all .15s;font-family:'DM Sans',sans-serif}
+.wbe-tab.active{background:#f0fdf4;color:#16a34a}
+.wbe-label{font-size:.67rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.45rem;display:block}
+.wbe-input{width:100%;padding:.52rem .72rem;border-radius:9px;border:1.5px solid #e5e7eb;background:#fff;color:#111827;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:0;box-sizing:border-box;transition:border-color .15s}
+.wbe-input:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.08)}
+.wbe-textarea{width:100%;padding:.52rem .72rem;border-radius:9px;border:1.5px solid #e5e7eb;background:#fff;color:#111827;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:0;box-sizing:border-box;resize:none;line-height:1.5;transition:border-color .15s}
+.wbe-textarea:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.08)}
+.wbe-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:.9rem 1rem;margin-bottom:.6rem}
+.wbe-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid #f3f4f6}
+.wbe-toggle-row:last-child{border-bottom:none}
+.wbe-toggle{position:relative;width:42px;height:24px;flex-shrink:0;cursor:pointer}
+.wbe-toggle input{opacity:0;width:0;height:0;position:absolute}
+.wbe-tsl{position:absolute;inset:0;background:#d1d5db;border-radius:24px;cursor:pointer;transition:.2s}
+.wbe-tsl:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.wbe-toggle input:checked+.wbe-tsl{background:#16a34a}
+.wbe-toggle input:checked+.wbe-tsl:before{transform:translateX(18px)}
+.wbe-lo{border:2px solid #e5e7eb;border-radius:10px;padding:.65rem .5rem;cursor:pointer;text-align:center;transition:all .15s;flex:1;background:#fff;font-family:'DM Sans',sans-serif;font-size:.71rem;color:#374151;font-weight:500}
+.wbe-lo:hover{border-color:#86efac}
+.wbe-lo.sel{border-color:#16a34a;background:#f0fdf4;color:#16a34a}
+.wbe-score-bar{height:5px;background:#e5e7eb;border-radius:5px;overflow:hidden;margin:.35rem 0}
+.wbe-score-fill{height:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:5px;transition:width .5s cubic-bezier(.16,1,.3,1)}
+.wbe-live-warning{background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:.6rem .8rem;font-size:.75rem;color:#c2410c;font-weight:500;margin-bottom:.75rem;display:none}
+.wbe-section{margin-bottom:1.25rem}
+</style>
 
-  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Foto y logo</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.15rem">
-    <div onclick="document.getElementById('mwe-photo-input').click()" style="display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;border:1.5px dashed rgba(255,255,255,.11);border-radius:11px;cursor:pointer">
-      <div id="mwe-photo-thumb" style="width:40px;height:40px;border-radius:7px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden">📷</div>
-      <div><div style="font-size:.72rem;color:rgba(255,255,255,.45);font-weight:500">Foto</div><div id="mwe-photo-st" style="font-size:.6rem;color:rgba(255,255,255,.2)">Cambiar</div></div>
+<!-- TOP BAR -->
+<div style="background:#fff;border-bottom:1.5px solid #e5e7eb;padding:.6rem 1.1rem;display:flex;align-items:center;gap:.65rem;height:52px;box-sizing:border-box;flex-shrink:0">
+  <button onclick="cerrarModalEditWeb()" style="padding:.32rem .65rem;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:.3rem;flex-shrink:0">← Volver</button>
+  <code id="mwe-slug-lbl" style="font-size:.72rem;color:#9ca3af;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></code>
+  <div id="wbe-status-badge" style="display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .6rem;border-radius:20px;font-size:.7rem;font-weight:700;background:#fef3c7;color:#b45309;flex-shrink:0">● Demo</div>
+  <div style="display:flex;gap:.35rem;flex-shrink:0">
+    <button id="wbe-btn-view" onclick="wbeVerWeb()" style="padding:.38rem .85rem;border-radius:8px;background:#f1f5f9;color:#374151;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;font-family:'DM Sans',sans-serif">Ver ↗</button>
+    <button id="wbe-btn-deploy" onclick="wbeDeployWeb()" style="padding:.38rem .85rem;border-radius:8px;background:#fef3c7;color:#b45309;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid #fde68a;font-family:'DM Sans',sans-serif">→ Deploy</button>
+    <button id="mwe-btn-save" onclick="guardarEditWeb()" style="padding:.38rem .95rem;border-radius:8px;background:#16a34a;color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif">Guardar</button>
+  </div>
+</div>
+
+<!-- MAIN SPLIT -->
+<div style="display:flex;height:calc(100svh - 52px)">
+
+  <!-- LEFT SIDEBAR -->
+  <div id="wbe-sidebar" style="width:360px;flex-shrink:0;background:#f8f9fb;border-right:1.5px solid #e5e7eb;overflow-y:auto;display:flex;flex-direction:column">
+
+    <!-- Health Score -->
+    <div style="padding:.85rem 1rem .7rem;border-bottom:1px solid #e9ecef;background:#fff">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem">
+        <span style="font-size:.73rem;font-weight:700;color:#374151">Completitud del perfil</span>
+        <span id="wbe-score-pct" style="font-size:.8rem;font-weight:800;color:#16a34a">0%</span>
+      </div>
+      <div class="wbe-score-bar"><div id="wbe-score-fill" class="wbe-score-fill" style="width:0%"></div></div>
+      <div id="wbe-score-checks" style="display:flex;flex-wrap:wrap;gap:.2rem .35rem;margin-top:.4rem;font-size:.66rem;color:#6b7280"></div>
     </div>
-    <input type="file" id="mwe-photo-input" accept="image/*" style="display:none" onchange="mweUploadMedia('photo',this)">
-    <div onclick="document.getElementById('mwe-logo-input').click()" style="display:flex;align-items:center;gap:.55rem;padding:.6rem .75rem;border:1.5px dashed rgba(255,255,255,.11);border-radius:11px;cursor:pointer">
-      <div id="mwe-logo-thumb" style="width:40px;height:40px;border-radius:7px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden">🏥</div>
-      <div><div style="font-size:.72rem;color:rgba(255,255,255,.45);font-weight:500">Logo</div><div id="mwe-logo-st" style="font-size:.6rem;color:rgba(255,255,255,.2)">Cambiar</div></div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:.15rem;padding:.5rem .65rem;border-bottom:1px solid #e5e7eb;background:#fff;position:sticky;top:0;z-index:10;flex-shrink:0">
+      <button class="wbe-tab active" onclick="wbeSetTab('contenido')" id="wbt-contenido">Contenido</button>
+      <button class="wbe-tab" onclick="wbeSetTab('modulos')" id="wbt-modulos">Módulos</button>
+      <button class="wbe-tab" onclick="wbeSetTab('apariencia')" id="wbt-apariencia">Apariencia</button>
+      <button class="wbe-tab" onclick="wbeSetTab('layout')" id="wbt-layout">Layout</button>
     </div>
-    <input type="file" id="mwe-logo-input" accept="image/*" style="display:none" onchange="mweUploadMedia('logo',this)">
-  </div>
 
-  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Identidad</div>
-  <div style="display:grid;gap:.5rem;margin-bottom:1.15rem">
-    <input id="mwe-nombre" placeholder="Nombre del médico" style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-      <input id="mwe-especialidad" placeholder="Especialidad" style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box">
-      <input id="mwe-ciudad" placeholder="Ciudad" style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box">
+    <!-- Tab: Contenido -->
+    <div id="wbtab-contenido" style="padding:.9rem 1rem">
+
+      <div id="mwe-live-warning" class="wbe-live-warning">⚡ Este sitio está LIVE — los cambios son inmediatos</div>
+
+      <!-- Identidad -->
+      <div class="wbe-section">
+        <span class="wbe-label">Identidad</span>
+        <div style="display:grid;gap:.4rem">
+          <input id="mwe-nombre" placeholder="Nombre del médico" class="wbe-input" oninput="wbeScheduleRefresh()">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+            <input id="mwe-especialidad" placeholder="Especialidad" class="wbe-input" oninput="wbeScheduleRefresh()">
+            <input id="mwe-ciudad" placeholder="Ciudad" class="wbe-input" oninput="wbeScheduleRefresh()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Media -->
+      <div class="wbe-section">
+        <span class="wbe-label">Foto y logo</span>
+        <div style="display:flex;gap:.45rem">
+          <div onclick="document.getElementById('mwe-photo-input').click()" style="display:flex;align-items:center;gap:.55rem;padding:.55rem .7rem;border:1.5px dashed #d1d5db;border-radius:11px;cursor:pointer;background:#fafafa;flex:1;transition:border-color .15s" onmouseenter="this.style.borderColor='#86efac'" onmouseleave="this.style.borderColor='#d1d5db'">
+            <div id="mwe-photo-thumb" style="width:36px;height:36px;border-radius:7px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden">📷</div>
+            <div><div style="font-size:.73rem;font-weight:600;color:#374151">Foto</div><div id="mwe-photo-st" style="font-size:.63rem;color:#9ca3af">Cambiar</div></div>
+          </div>
+          <div onclick="document.getElementById('mwe-logo-input').click()" style="display:flex;align-items:center;gap:.55rem;padding:.55rem .7rem;border:1.5px dashed #d1d5db;border-radius:11px;cursor:pointer;background:#fafafa;flex:1;transition:border-color .15s" onmouseenter="this.style.borderColor='#86efac'" onmouseleave="this.style.borderColor='#d1d5db'">
+            <div id="mwe-logo-thumb" style="width:36px;height:36px;border-radius:7px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden">🏥</div>
+            <div><div style="font-size:.73rem;font-weight:600;color:#374151">Logo</div><div id="mwe-logo-st" style="font-size:.63rem;color:#9ca3af">Cambiar</div></div>
+          </div>
+        </div>
+        <input type="file" id="mwe-photo-input" accept="image/*" style="display:none" onchange="mweUploadMedia('photo',this)">
+        <input type="file" id="mwe-logo-input" accept="image/*" style="display:none" onchange="mweUploadMedia('logo',this)">
+      </div>
+
+      <!-- Hero -->
+      <div class="wbe-section">
+        <span class="wbe-label">Hero</span>
+        <div style="display:grid;gap:.4rem">
+          <input id="mwe-headline" placeholder="Titular principal..." class="wbe-input" oninput="wbeScheduleRefresh()">
+          <textarea id="mwe-subheadline" rows="2" placeholder="Subtitular..." class="wbe-textarea" oninput="wbeScheduleRefresh()"></textarea>
+          <textarea id="mwe-bio" rows="2" placeholder="Bio / tagline..." class="wbe-textarea" oninput="wbeScheduleRefresh()"></textarea>
+        </div>
+      </div>
+
+      <!-- Servicios -->
+      <div class="wbe-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
+          <span class="wbe-label" style="margin:0">Servicios</span>
+          <button onclick="mweAddService()" style="padding:.22rem .6rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;color:#16a34a;font-size:.7rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ Agregar</button>
+        </div>
+        <div id="mwe-services-list" style="display:grid;gap:.3rem"></div>
+      </div>
+
+      <!-- Sobre -->
+      <div class="wbe-section">
+        <span class="wbe-label">Sobre el médico</span>
+        <textarea id="mwe-about" rows="3" placeholder="Texto de presentación del médico..." class="wbe-textarea" oninput="wbeScheduleRefresh()"></textarea>
+      </div>
+
+      <!-- Diferenciadores -->
+      <div class="wbe-section">
+        <span class="wbe-label">Diferenciadores <span style="font-weight:400;text-transform:none;letter-spacing:0">(uno por línea)</span></span>
+        <textarea id="mwe-diffs" rows="3" placeholder="15 años de experiencia&#10;Tecnología de punta&#10;Atención personalizada" class="wbe-textarea" oninput="wbeScheduleRefresh()"></textarea>
+      </div>
+
+      <!-- Filosofía y CTA -->
+      <div class="wbe-section">
+        <span class="wbe-label">Filosofía y CTA</span>
+        <div style="display:grid;gap:.4rem">
+          <input id="mwe-philosophy" placeholder="Filosofía de la práctica..." class="wbe-input" oninput="wbeScheduleRefresh()">
+          <input id="mwe-cta" placeholder="CTA final..." class="wbe-input" oninput="wbeScheduleRefresh()">
+        </div>
+      </div>
+
+      <!-- Galería -->
+      <div class="wbe-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
+          <span class="wbe-label" style="margin:0">Galería / Carrusel</span>
+          <button onclick="document.getElementById('mwe-gallery-input').click()" style="padding:.22rem .6rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;color:#16a34a;font-size:.7rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ Fotos</button>
+        </div>
+        <input type="file" id="mwe-gallery-input" accept="image/*" multiple style="display:none" onchange="mweUploadGallery(this)">
+        <div id="mwe-gallery-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem">
+          <div style="grid-column:1/-1;font-size:.72rem;color:#9ca3af;text-align:center;padding:.55rem;border:1.5px dashed #e5e7eb;border-radius:8px">Sin imágenes</div>
+        </div>
+      </div>
+
+      <div id="mwe-error-edit" style="display:none;font-size:.76rem;color:#dc2626;margin-bottom:.5rem;padding:.5rem .7rem;background:#fef2f2;border-radius:8px;border:1px solid #fecaca"></div>
+    </div>
+
+    <!-- Tab: Módulos -->
+    <div id="wbtab-modulos" style="display:none;padding:.9rem 1rem">
+      <p style="font-size:.77rem;color:#6b7280;margin-bottom:.8rem;line-height:1.55">Activa o desactiva secciones completas de la web.</p>
+      <div class="wbe-card">
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">WhatsApp</div><div style="font-size:.68rem;color:#9ca3af">Botón flotante de contacto</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_whatsapp" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Agenda / Booking</div><div style="font-size:.68rem;color:#9ca3af">Calendario de citas en línea</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_booking" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Carrusel</div><div style="font-size:.68rem;color:#9ca3af">Galería de fotos deslizable</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_carousel" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Calculadora</div><div style="font-size:.68rem;color:#9ca3af">Estimador de precios</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_calculator" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Servicios</div><div style="font-size:.68rem;color:#9ca3af">Listado de tratamientos</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_services" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Médicos</div><div style="font-size:.68rem;color:#9ca3af">Equipo del centro médico</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_doctors" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Instagram</div><div style="font-size:.68rem;color:#9ca3af">Feed de publicaciones</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_instagram" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Mapa</div><div style="font-size:.68rem;color:#9ca3af">Ubicación del consultorio</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_map" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">Seguros</div><div style="font-size:.68rem;color:#9ca3af">Aseguradoras aceptadas</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_insurance" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+        <div class="wbe-toggle-row"><div><div style="font-size:.82rem;font-weight:600;color:#111827">CTA</div><div style="font-size:.68rem;color:#9ca3af">Sección llamada a la acción</div></div><label class="wbe-toggle"><input type="checkbox" id="ws-show_cta" onchange="wbeSaveSettings()"><span class="wbe-tsl"></span></label></div>
+      </div>
+    </div>
+
+    <!-- Tab: Apariencia -->
+    <div id="wbtab-apariencia" style="display:none;padding:.9rem 1rem">
+      <div class="wbe-section">
+        <span class="wbe-label">Color principal</span>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <input type="color" id="mwe-color" value="#1e5c3a" oninput="document.getElementById('mwe-color-val').textContent=this.value;wbeScheduleRefresh()" style="width:48px;height:40px;border-radius:10px;border:1.5px solid #e5e7eb;cursor:pointer;padding:2px;background:#fff">
+          <span id="mwe-color-val" style="font-size:.82rem;color:#6b7280;font-family:monospace">#1e5c3a</span>
+        </div>
+      </div>
+      <div class="wbe-section">
+        <span class="wbe-label">Navbar</span>
+        <div style="display:flex;gap:.45rem">
+          <button class="wbe-lo sel" id="wbs-nav-transparent" onclick="wbeSetNav('transparent')" style="font-size:.72rem">
+            <div style="height:18px;background:linear-gradient(rgba(0,0,0,.08),rgba(0,0,0,.25));border-radius:5px;margin-bottom:.35rem"></div>Transparente
+          </button>
+          <button class="wbe-lo" id="wbs-nav-solid" onclick="wbeSetNav('solid')" style="font-size:.72rem">
+            <div style="height:18px;background:#1e5c3a;border-radius:5px;margin-bottom:.35rem"></div>Sólida
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Layout -->
+    <div id="wbtab-layout" style="display:none;padding:.9rem 1rem">
+      <div class="wbe-section">
+        <span class="wbe-label">Hero</span>
+        <div style="display:flex;gap:.4rem">
+          <button class="wbe-lo" id="wbl-hero-centered" onclick="wbeSetLayout('hero','centered')" style="font-size:.7rem">
+            <svg width="46" height="30" viewBox="0 0 46 30" fill="none" style="display:block;margin:0 auto .35rem"><rect width="46" height="30" rx="4" fill="#f1f5f9"/><rect x="13" y="7" width="20" height="3" rx="1.5" fill="#94a3b8"/><rect x="15" y="12" width="16" height="2" rx="1" fill="#cbd5e1"/><rect x="17" y="17" width="12" height="7" rx="2" fill="#16a34a"/></svg>
+            Centrado
+          </button>
+          <button class="wbe-lo sel" id="wbl-hero-split" onclick="wbeSetLayout('hero','split')" style="font-size:.7rem">
+            <svg width="46" height="30" viewBox="0 0 46 30" fill="none" style="display:block;margin:0 auto .35rem"><rect width="46" height="30" rx="4" fill="#f1f5f9"/><rect x="3" y="7" width="18" height="3" rx="1.5" fill="#94a3b8"/><rect x="3" y="12" width="14" height="2" rx="1" fill="#cbd5e1"/><rect x="3" y="17" width="10" height="7" rx="2" fill="#16a34a"/><rect x="27" y="3" width="16" height="24" rx="3" fill="#dbeafe"/></svg>
+            Split
+          </button>
+          <button class="wbe-lo" id="wbl-hero-fullscreen" onclick="wbeSetLayout('hero','fullscreen')" style="font-size:.7rem">
+            <svg width="46" height="30" viewBox="0 0 46 30" fill="none" style="display:block;margin:0 auto .35rem"><rect width="46" height="30" rx="4" fill="#0f172a"/><rect x="8" y="8" width="30" height="3" rx="1.5" fill="rgba(255,255,255,.55)"/><rect x="11" y="13" width="24" height="2" rx="1" fill="rgba(255,255,255,.25)"/><rect x="15" y="18" width="16" height="7" rx="2" fill="#16a34a"/></svg>
+            Fullscreen
+          </button>
+        </div>
+      </div>
+      <div class="wbe-section">
+        <span class="wbe-label">Servicios</span>
+        <div style="display:flex;gap:.4rem">
+          <button class="wbe-lo sel" id="wbl-services-grid" onclick="wbeSetLayout('services','grid')" style="font-size:.7rem">
+            <svg width="46" height="30" viewBox="0 0 46 30" fill="none" style="display:block;margin:0 auto .35rem"><rect width="46" height="30" rx="4" fill="#f1f5f9"/><rect x="3" y="5" width="18" height="8" rx="2" fill="#e2e8f0"/><rect x="25" y="5" width="18" height="8" rx="2" fill="#e2e8f0"/><rect x="3" y="17" width="18" height="8" rx="2" fill="#e2e8f0"/><rect x="25" y="17" width="18" height="8" rx="2" fill="#e2e8f0"/></svg>
+            Grid
+          </button>
+          <button class="wbe-lo" id="wbl-services-list" onclick="wbeSetLayout('services','list')" style="font-size:.7rem">
+            <svg width="46" height="30" viewBox="0 0 46 30" fill="none" style="display:block;margin:0 auto .35rem"><rect width="46" height="30" rx="4" fill="#f1f5f9"/><rect x="3" y="5" width="40" height="5" rx="2" fill="#e2e8f0"/><rect x="3" y="13" width="40" height="5" rx="2" fill="#e2e8f0"/><rect x="3" y="21" width="40" height="5" rx="2" fill="#e2e8f0"/></svg>
+            Lista
+          </button>
+        </div>
+      </div>
+      <div class="wbe-section">
+        <span class="wbe-label">DNA / Estilo visual</span>
+        <select id="wbe-dna" class="wbe-input" onchange="wbeSaveSettings()">
+          <option value="authority">Authority — oscuro, clínico</option>
+          <option value="clinic">Clinic — azul, limpio</option>
+          <option value="warm">Warm — cálido, humano</option>
+          <option value="modern">Modern — dinámico</option>
+          <option value="luxury">Luxury — premium, estético</option>
+        </select>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- RIGHT PREVIEW -->
+  <div style="flex:1;background:#e5e7eb;display:flex;flex-direction:column;overflow:hidden;min-width:0">
+    <div style="padding:.5rem .9rem;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:.5rem;flex-shrink:0">
+      <span style="font-size:.7rem;font-weight:600;color:#9ca3af;flex:1">Vista previa</span>
+      <button id="wbp-desktop" onclick="wbeSetPreview('desktop')" style="padding:.3rem .65rem;border-radius:7px;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;font-size:.72rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🖥 Desktop</button>
+      <button id="wbp-mobile" onclick="wbeSetPreview('mobile')" style="padding:.3rem .65rem;border-radius:7px;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;font-size:.72rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📱 Mobile</button>
+      <button onclick="wbeRefreshPreview()" title="Actualizar" style="padding:.3rem .55rem;border-radius:7px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:.78rem;cursor:pointer">↻</button>
+    </div>
+    <div id="wbe-preview-wrap" style="flex:1;display:flex;align-items:center;justify-content:center;padding:1.25rem;overflow:hidden">
+      <div id="wbe-preview-device" style="width:100%;height:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 28px rgba(0,0,0,.14);transition:all .3s">
+        <iframe id="wbe-preview-iframe" style="width:100%;height:100%;border:none" src="about:blank"></iframe>
+      </div>
     </div>
   </div>
 
-  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Hero</div>
-  <div style="display:grid;gap:.5rem;margin-bottom:1.15rem">
-    <input id="mwe-headline" placeholder="Titular principal..." style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box">
-    <textarea id="mwe-subheadline" rows="2" placeholder="Subtitular..." style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;resize:none;line-height:1.45"></textarea>
-    <textarea id="mwe-bio" rows="2" placeholder="Bio / tagline..." style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;resize:none;line-height:1.45"></textarea>
-  </div>
-
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
-    <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em">Servicios</div>
-    <button onclick="mweAddService()" style="padding:.25rem .65rem;background:rgba(93,186,138,.13);border:1px solid rgba(93,186,138,.25);border-radius:6px;color:#5dba8a;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer">+ Agregar</button>
-  </div>
-  <div id="mwe-services-list" style="display:grid;gap:.4rem;margin-bottom:1.15rem"></div>
-
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
-    <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em">Galería / carrusel</div>
-    <button onclick="document.getElementById('mwe-gallery-input').click()" style="padding:.25rem .65rem;background:rgba(93,186,138,.13);border:1px solid rgba(93,186,138,.25);border-radius:6px;color:#5dba8a;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer">+ Fotos</button>
-  </div>
-  <input type="file" id="mwe-gallery-input" accept="image/*" multiple style="display:none" onchange="mweUploadGallery(this)">
-  <div id="mwe-gallery-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:1.15rem"><div style="grid-column:1/-1;font-size:.72rem;color:rgba(255,255,255,.2);text-align:center;padding:.6rem">Sin imágenes</div></div>
-
-  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Sobre el doctor</div>
-  <textarea id="mwe-about" rows="4" placeholder="Texto de presentación del médico..." style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;resize:none;line-height:1.5;margin-bottom:1.15rem"></textarea>
-
-  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Diferenciadores <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.18)">(uno por línea)</span></div>
-  <textarea id="mwe-diffs" rows="3" placeholder="15 años de experiencia&#10;Tecnología de última generación&#10;Atención personalizada" style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box;resize:none;line-height:1.55;margin-bottom:1.15rem"></textarea>
-
-  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Filosofía y CTA</div>
-  <div style="display:grid;gap:.5rem;margin-bottom:1.15rem">
-    <input id="mwe-philosophy" placeholder="Filosofía de la práctica..." style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box">
-    <input id="mwe-cta" placeholder="CTA final (frase de cierre)..." style="width:100%;padding:.55rem .75rem;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:0;box-sizing:border-box">
-  </div>
-
-  <div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem">Color principal</div>
-  <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.3rem">
-    <input type="color" id="mwe-color" value="#4a4a4a" oninput="document.getElementById('mwe-color-val').textContent=this.value" style="width:44px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;cursor:pointer;padding:2px">
-    <span id="mwe-color-val" style="font-size:.82rem;color:rgba(255,255,255,.45);font-family:monospace">#4a4a4a</span>
-  </div>
-
-  <div id="mwe-error-edit" style="display:none;margin-top:.55rem;margin-bottom:.55rem;font-size:.77rem;color:#f87171"></div>
-  <div style="display:flex;gap:.5rem">
-    <button onclick="cerrarModalEditWeb()" style="flex:1;padding:.65rem;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:0;color:rgba(255,255,255,.38);font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer">Cancelar</button>
-    <button id="mwe-btn-save" onclick="guardarEditWeb()" style="flex:2;padding:.65rem;background:#1e5c3a;border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer">Guardar cambios</button>
-  </div>
 </div>
 </div><div class="panel" id="panel-promos" style="display:none"><div class="sec-title" style="margin-bottom:.75rem">🎟 Códigos Promo</div><div style="display:flex;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap"><input id="promoCode" placeholder="CÓDIGO" maxlength="20" style="flex:1;min-width:120px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem;text-transform:uppercase"> <input id="promoDiscount" type="number" min="1" max="100" placeholder="% desc." style="width:90px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem"> <input id="promoMaxUses" type="number" min="1" placeholder="Usos (∞)" style="width:100px;padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem"> <input id="promoExpires" type="date" style="padding:.55rem .75rem;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem"> <button onclick="crearPromo()" style="padding:.55rem 1rem;background:#5dba8a;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer">Crear</button> <button onclick="generarCodigoAleatorio()" style="padding:.55rem .9rem;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer">Generar</button></div><div id="promoMsg" style="font-size:.78rem;margin-bottom:.75rem;color:#5dba8a"></div><div id="promoList"><div class="loading">Cargando...</div></div></div><div class="panel" id="panel-verificaciones" style="display:none"><div class="sec-title" style="margin-bottom:.75rem">Verificaciones médicas</div><div class="tabs" id="verTabsRow" style="margin-bottom:.75rem"><div class="tab active" data-vertab="en_revision" onclick='setVerTab("en_revision")'>Pendientes <span class="count" id="vcnt-en_revision">0</span></div><div class="tab" data-vertab="verificado" onclick='setVerTab("verificado")'>Aprobados <span class="count" id="vcnt-verificado">0</span></div><div class="tab" data-vertab="rechazado" onclick='setVerTab("rechazado")'>Rechazados <span class="count" id="vcnt-rechazado">0</span></div></div><div id="verList"><div class="loading">Cargando...</div></div></div><div class="panel" id="panel-datos" style="display:none"><div class="sec-title" style="margin-bottom:.25rem">Mapa de datos CitaDoc</div><div class="sec-sub" style="margin-bottom:1.2rem">Población real, flujos clínicos y métricas de crecimiento.</div><div id="datosKPIs" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem"><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Especialidades más solicitadas</div><div id="chartEsp"></div></div><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Distribución por edad</div><div id="chartEdad"></div></div></div><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1.5rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">Flujo del paciente en CitaDoc</div><div id="flujoMapa" style="display:flex;align-items:center;gap:0;overflow-x:auto;padding:.5rem 0"></div></div><div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.1rem"><div style="font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.85rem">Base de conocimiento clínico — Kimi</div><div id="chartGuias"></div></div>
 <div style="margin-top:2rem">
@@ -1011,16 +1190,21 @@ async function retractDemo(slug) {
 
 // ── Edit Web ──────────────────────────────────────────────────────────────────
 
-var _MWE_INP = "width:100%;padding:.45rem .6rem;border-radius:7px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:0;box-sizing:border-box";
+var _MWE_INP = "width:100%;padding:.45rem .6rem;border-radius:7px;border:1.5px solid #e5e7eb;background:#fff;color:#111827;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:0;box-sizing:border-box";
 var _mweGallery = [], _mwePhotoUrl = null, _mweLogoUrl = null;
+var _wsSettings = {};
+var _wbePreviewMode = 'desktop';
+var _wbeCurrentTab = 'contenido';
+var _wbeRefreshTimer = null;
+var _wbeIsLive = false;
 
 function mweRenderGallery() {
   var el = document.getElementById('mwe-gallery-grid');
-  if (!_mweGallery.length) { el.innerHTML = '<div style="grid-column:1/-1;font-size:.72rem;color:rgba(255,255,255,.2);text-align:center;padding:.6rem">Sin imágenes — sube fotos para el carrusel</div>'; return; }
+  if (!_mweGallery.length) { el.innerHTML = '<div style="grid-column:1/-1;font-size:.72rem;color:#9ca3af;text-align:center;padding:.55rem;border:1.5px dashed #e5e7eb;border-radius:8px">Sin imágenes — sube fotos para el carrusel</div>'; return; }
   el.innerHTML = _mweGallery.map(function(url, i) {
-    return '<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.04)">'
+    return '<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#f3f4f6">'
       + '<img src="' + esc(url) + '" style="width:100%;height:100%;object-fit:cover" loading="lazy">'
-      + '<button onclick="mweDeleteGallery(' + i + ')" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.75);border:none;color:#f87171;font-size:.8rem;cursor:pointer;line-height:20px;text-align:center;padding:0">×</button>'
+      + '<button onclick="mweDeleteGallery(' + i + ')" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.65);border:none;color:#fca5a5;font-size:.8rem;cursor:pointer;line-height:20px;text-align:center;padding:0">×</button>'
       + '</div>';
   }).join('');
 }
@@ -1066,7 +1250,7 @@ async function mweUploadGallery(input) {
 function mweServiceRow(icon, title, desc) {
   var el = document.createElement('div');
   el.setAttribute('data-svc','');
-  el.style.cssText = 'background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.65rem .7rem;display:grid;gap:.35rem;position:relative';
+  el.style.cssText = 'background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .7rem;display:grid;gap:.35rem;position:relative';
   el.innerHTML = '<button onclick="this.closest(\'[data-svc]\').remove()" style="position:absolute;top:.35rem;right:.5rem;background:0;border:none;color:rgba(248,113,113,.5);cursor:pointer;font-size:1.05rem;line-height:1">×</button>'
     + '<div style="display:grid;grid-template-columns:52px 1fr;gap:.4rem">'
     + '<input class="svc-icon" placeholder="✦" maxlength="4" value="' + esc(icon||'') + '" style="' + _MWE_INP + ';text-align:center;font-size:1.05rem">'
@@ -1091,26 +1275,181 @@ function mweGetServices() {
   return arr;
 }
 
+// ─── Web Builder Functions ────────────────────────────────────────────────────
+
+function wbeSetTab(tab) {
+  _wbeCurrentTab = tab;
+  ['contenido','modulos','apariencia','layout'].forEach(function(t) {
+    document.getElementById('wbtab-' + t).style.display = t === tab ? '' : 'none';
+    var btn = document.getElementById('wbt-' + t);
+    if (btn) { btn.classList.toggle('active', t === tab); }
+  });
+}
+
+function wbeSetPreview(mode) {
+  _wbePreviewMode = mode;
+  var dev = document.getElementById('wbe-preview-device');
+  var wrap = document.getElementById('wbe-preview-wrap');
+  var dBtn = document.getElementById('wbp-desktop');
+  var mBtn = document.getElementById('wbp-mobile');
+  if (mode === 'mobile') {
+    dev.style.cssText = 'width:390px;height:100%;max-height:820px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 28px rgba(0,0,0,.18);transition:all .3s';
+    dBtn.style.cssText = 'padding:.3rem .65rem;border-radius:7px;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;font-size:.72rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif';
+    mBtn.style.cssText = 'padding:.3rem .65rem;border-radius:7px;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;font-size:.72rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif';
+  } else {
+    dev.style.cssText = 'width:100%;height:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 28px rgba(0,0,0,.14);transition:all .3s';
+    dBtn.style.cssText = 'padding:.3rem .65rem;border-radius:7px;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;font-size:.72rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif';
+    mBtn.style.cssText = 'padding:.3rem .65rem;border-radius:7px;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;font-size:.72rem;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif';
+  }
+}
+
+function wbeRefreshPreview() {
+  var iframe = document.getElementById('wbe-preview-iframe');
+  if (_editSlug) {
+    iframe.src = '/demo.html?slug=' + encodeURIComponent(_editSlug) + '&preview=true&_t=' + Date.now();
+  }
+}
+
+function wbeScheduleRefresh() {
+  if (_wbeRefreshTimer) clearTimeout(_wbeRefreshTimer);
+  _wbeRefreshTimer = setTimeout(function() { wbeRefreshPreview(); }, 2500);
+}
+
+function wbeUpdateScore() {
+  var config = {};
+  try { config = JSON.parse(document.getElementById('mwe-nombre').dataset.config || '{}'); } catch(e) {}
+  var checks = [
+    { key: 'foto', label: 'Foto', ok: !!(_mwePhotoUrl || document.getElementById('mwe-photo-thumb').querySelector('img')) },
+    { key: 'logo', label: 'Logo', ok: !!(_mweLogoUrl || document.getElementById('mwe-logo-thumb').querySelector('img')) },
+    { key: 'headline', label: 'Titular', ok: document.getElementById('mwe-headline').value.trim().length > 5 },
+    { key: 'servicios', label: 'Servicios', ok: document.getElementById('mwe-services-list').querySelectorAll('[data-svc]').length > 0 },
+    { key: 'bio', label: 'Bio', ok: document.getElementById('mwe-bio').value.trim().length > 10 },
+    { key: 'about', label: 'Sobre', ok: document.getElementById('mwe-about').value.trim().length > 20 },
+    { key: 'whatsapp', label: 'WhatsApp', ok: document.getElementById('ws-show_whatsapp').checked }
+  ];
+  var done = checks.filter(function(c) { return c.ok; }).length;
+  var pct = Math.round(done / checks.length * 100);
+  document.getElementById('wbe-score-pct').textContent = pct + '%';
+  document.getElementById('wbe-score-fill').style.width = pct + '%';
+  document.getElementById('wbe-score-fill').style.background = pct >= 80 ? 'linear-gradient(90deg,#16a34a,#4ade80)' : pct >= 50 ? 'linear-gradient(90deg,#f59e0b,#fbbf24)' : 'linear-gradient(90deg,#ef4444,#f87171)';
+  document.getElementById('wbe-score-checks').innerHTML = checks.map(function(c) {
+    return '<span style="display:inline-flex;align-items:center;gap:.2rem;padding:.1rem .38rem;border-radius:20px;background:' + (c.ok ? '#dcfce7' : '#f1f5f9') + ';color:' + (c.ok ? '#16a34a' : '#9ca3af') + '">' + (c.ok ? '✓' : '○') + ' ' + c.label + '</span>';
+  }).join('');
+}
+
+function wbeSetLayout(section, value) {
+  if (section === 'hero') {
+    ['centered','split','fullscreen'].forEach(function(v) {
+      var b = document.getElementById('wbl-hero-' + v);
+      if (b) b.classList.toggle('sel', v === value);
+    });
+    _wsSettings.hero_layout = value;
+  } else if (section === 'services') {
+    ['grid','list'].forEach(function(v) {
+      var b = document.getElementById('wbl-services-' + v);
+      if (b) b.classList.toggle('sel', v === value);
+    });
+    _wsSettings.services_layout = value;
+  }
+  wbeSaveSettings();
+}
+
+function wbeSetNav(style) {
+  ['transparent','solid'].forEach(function(v) {
+    var b = document.getElementById('wbs-nav-' + v);
+    if (b) b.classList.toggle('sel', v === style);
+  });
+  _wsSettings.navbar_style = style;
+  wbeSaveSettings();
+}
+
+async function wbeSaveSettings() {
+  // Collect toggles
+  ['show_whatsapp','show_booking','show_carousel','show_calculator','show_services','show_doctors','show_instagram','show_map','show_insurance','show_cta'].forEach(function(k) {
+    var el = document.getElementById('ws-' + k);
+    if (el) _wsSettings[k] = el.checked;
+  });
+  // DNA
+  var dnaEl = document.getElementById('wbe-dna');
+  if (dnaEl) _wsSettings.dna = dnaEl.value;
+  // Save to DB
+  await sb.from('generated_demos').update({ web_settings: _wsSettings }).eq('slug', _editSlug).catch(console.error);
+  wbeUpdateScore();
+  wbeScheduleRefresh();
+}
+
+function wbeVerWeb() {
+  if (!_editSlug) return;
+  var url = _wbeIsLive ? 'https://' + _editSlug + '.citadoc.lat' : 'https://citadoc.lat/demo/' + _editSlug;
+  window.open(url, '_blank');
+}
+
+async function wbeDeployWeb() {
+  if (!_editSlug) return;
+  var btn = document.getElementById('wbe-btn-deploy');
+  if (_wbeIsLive) {
+    if (!confirm('¿Retirar el sitio de producción?')) return;
+    btn.textContent = 'Retirando...'; btn.disabled = true;
+    await sb.from('generated_demos').update({ activated_at: null }).eq('slug', _editSlug);
+    _wbeIsLive = false;
+    wbeUpdateStatusUI();
+    btn.textContent = '→ Deploy'; btn.disabled = false;
+  } else {
+    btn.textContent = 'Desplegando...'; btn.disabled = true;
+    await guardarEditWeb(true); // save first
+    await sb.from('generated_demos').update({ activated_at: new Date().toISOString() }).eq('slug', _editSlug);
+    _wbeIsLive = true;
+    wbeUpdateStatusUI();
+    btn.textContent = 'Retirar'; btn.disabled = false;
+  }
+  var { data } = await sb.from('generated_demos').select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel,activated_at').order('created_at', { ascending: false }).limit(15);
+  if (data) renderDemos(data);
+}
+
+function wbeUpdateStatusUI() {
+  var badge = document.getElementById('wbe-status-badge');
+  var warn = document.getElementById('mwe-live-warning');
+  var deployBtn = document.getElementById('wbe-btn-deploy');
+  if (_wbeIsLive) {
+    badge.textContent = '● Live';
+    badge.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .6rem;border-radius:20px;font-size:.7rem;font-weight:700;background:#dcfce7;color:#16a34a;flex-shrink:0';
+    if (warn) warn.style.display = '';
+    if (deployBtn) { deployBtn.textContent = 'Retirar'; deployBtn.style.cssText = 'padding:.38rem .85rem;border-radius:8px;background:#fef2f2;color:#dc2626;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid #fecaca;font-family:DM Sans,sans-serif'; }
+  } else {
+    badge.textContent = '● Demo';
+    badge.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .6rem;border-radius:20px;font-size:.7rem;font-weight:700;background:#fef3c7;color:#b45309;flex-shrink:0';
+    if (warn) warn.style.display = 'none';
+    if (deployBtn) { deployBtn.textContent = '→ Deploy'; deployBtn.style.cssText = 'padding:.38rem .85rem;border-radius:8px;background:#fef3c7;color:#b45309;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid #fde68a;font-family:DM Sans,sans-serif'; }
+  }
+}
+
+// ─── Main modal functions ─────────────────────────────────────────────────────
+
 function abrirModalEditWeb(slug) {
   _editSlug = slug;
-  sb.from('generated_demos').select('slug,doctor_name,specialty,web_config_jsonb').eq('slug', slug).single().then(function(result) {
+  sb.from('generated_demos').select('slug,doctor_name,specialty,photo_url,logo_url,dna,web_config_jsonb,web_settings,activated_at').eq('slug', slug).single().then(function(result) {
     var d = result.data || {};
     var config = d.web_config_jsonb || {};
-    document.getElementById('mwe-slug-lbl').textContent = '/' + slug;
-    // reset media state
+    var ws = d.web_settings || {};
+    _wsSettings = Object.assign({ show_whatsapp: true, show_booking: true, show_carousel: true, show_calculator: false, show_services: true, show_doctors: false, show_instagram: false, show_map: false, show_insurance: false, show_cta: true, hero_layout: 'split', services_layout: 'grid', navbar_style: 'transparent', dna: d.dna || 'authority' }, ws);
+    _wbeIsLive = !!d.activated_at;
     _mwePhotoUrl = null; _mweLogoUrl = null;
     _mweGallery = Array.isArray(config.gallery) ? config.gallery.slice() : [];
-    // photo thumb
-    var pth = document.getElementById('mwe-photo-thumb');
+
+    // Slug / status
+    document.getElementById('mwe-slug-lbl').textContent = '/' + slug;
+    wbeUpdateStatusUI();
+
+    // Media
     var purl = d.photo_url || config.doctor_photo_url || null;
-    pth.innerHTML = purl ? '<img src="'+esc(purl)+'" style="width:100%;height:100%;object-fit:cover">' : '📷';
+    document.getElementById('mwe-photo-thumb').innerHTML = purl ? '<img src="'+esc(purl)+'" style="width:100%;height:100%;object-fit:cover">' : '📷';
     document.getElementById('mwe-photo-st').textContent = purl ? '✓ Cargada' : 'Cambiar';
-    // logo thumb
-    var lth = document.getElementById('mwe-logo-thumb');
     var lurl = d.logo_url || config.logo_url || null;
-    lth.innerHTML = lurl ? '<img src="'+esc(lurl)+'" style="width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply">' : '🏥';
+    document.getElementById('mwe-logo-thumb').innerHTML = lurl ? '<img src="'+esc(lurl)+'" style="width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply">' : '🏥';
     document.getElementById('mwe-logo-st').textContent = lurl ? '✓ Cargado' : 'Cambiar';
     mweRenderGallery();
+
+    // Contenido
     document.getElementById('mwe-nombre').value = d.doctor_name || '';
     document.getElementById('mwe-especialidad').value = d.specialty || '';
     document.getElementById('mwe-ciudad').value = config.city || '';
@@ -1127,64 +1466,110 @@ function abrirModalEditWeb(slug) {
     document.getElementById('mwe-diffs').value = diffs.map(function(x) { return typeof x === 'string' ? x : (x.t || x.text || x.title || x.name || ''); }).join('\n');
     document.getElementById('mwe-philosophy').value = config.philosophy || '';
     document.getElementById('mwe-cta').value = config.cta_final || '';
-    var col = config.primary_color || '#4a4a4a';
+    var col = config.primary_color || '#1e5c3a';
     document.getElementById('mwe-color').value = col;
     document.getElementById('mwe-color-val').textContent = col;
+
+    // Módulos toggles
+    ['show_whatsapp','show_booking','show_carousel','show_calculator','show_services','show_doctors','show_instagram','show_map','show_insurance','show_cta'].forEach(function(k) {
+      var el = document.getElementById('ws-' + k);
+      if (el) el.checked = _wsSettings[k] !== false;
+    });
+
+    // Layout buttons
+    ['centered','split','fullscreen'].forEach(function(v) {
+      var b = document.getElementById('wbl-hero-' + v);
+      if (b) b.classList.toggle('sel', (_wsSettings.hero_layout || 'split') === v);
+    });
+    ['grid','list'].forEach(function(v) {
+      var b = document.getElementById('wbl-services-' + v);
+      if (b) b.classList.toggle('sel', (_wsSettings.services_layout || 'grid') === v);
+    });
+    ['transparent','solid'].forEach(function(v) {
+      var b = document.getElementById('wbs-nav-' + v);
+      if (b) b.classList.toggle('sel', (_wsSettings.navbar_style || 'transparent') === v);
+    });
+
+    // DNA select
+    var dnaEl = document.getElementById('wbe-dna');
+    if (dnaEl) dnaEl.value = _wsSettings.dna || d.dna || 'authority';
+
+    // UI state
     document.getElementById('mwe-error-edit').style.display = 'none';
-    document.getElementById('mwe-btn-save').textContent = 'Guardar cambios';
+    document.getElementById('mwe-btn-save').textContent = 'Guardar';
     document.getElementById('mwe-btn-save').disabled = false;
-    document.getElementById('modalEditWeb').style.display = 'flex';
+    wbeSetTab('contenido');
+    wbeSetPreview('desktop');
+
+    // Show modal
+    var modal = document.getElementById('modalEditWeb');
+    modal.style.display = 'flex';
+
+    // Load preview
+    setTimeout(wbeRefreshPreview, 300);
+    wbeUpdateScore();
   });
 }
 
 function cerrarModalEditWeb() {
   document.getElementById('modalEditWeb').style.display = 'none';
+  if (_wbeRefreshTimer) { clearTimeout(_wbeRefreshTimer); _wbeRefreshTimer = null; }
 }
 
-async function guardarEditWeb() {
+async function guardarEditWeb(silent) {
   var btn = document.getElementById('mwe-btn-save');
-  btn.textContent = 'Guardando...';
-  btn.disabled = true;
+  if (!silent) { btn.textContent = 'Guardando...'; btn.disabled = true; }
   try {
     var { data: current } = await sb.from('generated_demos').select('web_config_jsonb').eq('slug', _editSlug).single();
     var config = (current && current.web_config_jsonb) || {};
-    var nombre     = document.getElementById('mwe-nombre').value.trim();
-    var espec      = document.getElementById('mwe-especialidad').value.trim();
-    var ciudad     = document.getElementById('mwe-ciudad').value.trim();
-    var headline   = document.getElementById('mwe-headline').value.trim();
-    var subheadline= document.getElementById('mwe-subheadline').value.trim();
-    var bio        = document.getElementById('mwe-bio').value.trim();
-    var about      = document.getElementById('mwe-about').value.trim();
-    var diffs      = document.getElementById('mwe-diffs').value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-    var philosophy = document.getElementById('mwe-philosophy').value.trim();
-    var cta        = document.getElementById('mwe-cta').value.trim();
-    var services   = mweGetServices();
-    if (ciudad)      config.city          = ciudad;
-    if (headline)    config.headline      = headline;
-    if (subheadline) config.subheadline   = subheadline;
-    if (bio)         config.hero_text     = bio;
-    if (about)       config.about_text    = about;
-    if (diffs.length)config.differentiators = diffs;
-    if (philosophy)  config.philosophy    = philosophy;
-    if (cta)         config.cta_final     = cta;
+    var nombre      = document.getElementById('mwe-nombre').value.trim();
+    var espec       = document.getElementById('mwe-especialidad').value.trim();
+    var ciudad      = document.getElementById('mwe-ciudad').value.trim();
+    var headline    = document.getElementById('mwe-headline').value.trim();
+    var subheadline = document.getElementById('mwe-subheadline').value.trim();
+    var bio         = document.getElementById('mwe-bio').value.trim();
+    var about       = document.getElementById('mwe-about').value.trim();
+    var diffs       = document.getElementById('mwe-diffs').value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+    var philosophy  = document.getElementById('mwe-philosophy').value.trim();
+    var cta         = document.getElementById('mwe-cta').value.trim();
+    var services    = mweGetServices();
+    if (ciudad)       config.city            = ciudad;
+    if (headline)     config.headline        = headline;
+    if (subheadline)  config.subheadline     = subheadline;
+    if (bio)          config.hero_text       = bio;
+    if (about)        config.about_text      = about;
+    if (diffs.length) config.differentiators = diffs;
+    if (philosophy)   config.philosophy      = philosophy;
+    if (cta)          config.cta_final       = cta;
     config.primary_color = document.getElementById('mwe-color').value;
     config.services  = services;
     config.servicios = services;
     config.gallery   = _mweGallery;
     if (_mwePhotoUrl) config.doctor_photo_url = _mwePhotoUrl;
     if (_mweLogoUrl)  config.logo_url = _mweLogoUrl;
-    var dbUpdate = { doctor_name: nombre, specialty: espec, web_config_jsonb: config };
+
+    // Sync dna from settings
+    if (_wsSettings.dna) config.dna = _wsSettings.dna;
+
+    var dbUpdate = { doctor_name: nombre, specialty: espec, web_config_jsonb: config, web_settings: _wsSettings };
     if (_mwePhotoUrl) dbUpdate.photo_url = _mwePhotoUrl;
     if (_mweLogoUrl)  dbUpdate.logo_url  = _mweLogoUrl;
+    if (_wsSettings.dna) dbUpdate.dna = _wsSettings.dna;
+
     await sb.from('generated_demos').update(dbUpdate).eq('slug', _editSlug);
-    document.getElementById('modalEditWeb').style.display = 'none';
-    var { data } = await sb.from('generated_demos').select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel,activated_at').order('created_at', { ascending: false }).limit(15);
-    if (data) renderDemos(data);
+
+    if (!silent) {
+      document.getElementById('modalEditWeb').style.display = 'none';
+      var { data } = await sb.from('generated_demos').select('slug,doctor_name,specialty,dna,views,whatsapp_clicks,showcase_content,created_at,published_at,publish_channel,activated_at').order('created_at', { ascending: false }).limit(15);
+      if (data) renderDemos(data);
+    } else {
+      wbeUpdateScore();
+    }
   } catch(e) {
-    document.getElementById('mwe-error-edit').textContent = 'Error: ' + e.message;
-    document.getElementById('mwe-error-edit').style.display = '';
-    btn.textContent = 'Guardar cambios';
-    btn.disabled = false;
+    var errEl = document.getElementById('mwe-error-edit');
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.style.display = '';
+    if (!silent) { btn.textContent = 'Guardar'; btn.disabled = false; }
   }
 }
 </script></body></html>
