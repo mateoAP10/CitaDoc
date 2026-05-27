@@ -97,7 +97,7 @@ details[open] .sa2-item-arrow{transform:rotate(90deg)}
 function injectCSS() {
   if (document.getElementById('sa2-css')) return;
   var s = document.createElement('style');
-  s.id = 'sa2-css';
+  s.id = 'sa2-css\n/* hero_layout variants */\n.sa2-page[data-hero-layout=centered] .sa2-photo{position:relative;height:280px;width:100%}\n.sa2-page[data-hero-layout=centered] .sa2-content{padding-top:1.5rem}\n.sa2-page[data-hero-layout=fullscreen] .sa2-photo{position:fixed;inset:0;z-index:-1;height:100vh;width:100vw;opacity:.45}\n.sa2-page[data-hero-layout=fullscreen] .sa2-content{background:transparent;min-height:100svh}\n/* services_layout grid vs list */\n.sa2-page[data-services-layout=grid] .sa2-item-body{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}\n.sa2-page[data-services-layout=list] .sa2-item-body{display:grid;grid-template-columns:1fr;gap:.3rem}\n';
   s.textContent = CSS;
   document.head.appendChild(s);
 }
@@ -123,6 +123,7 @@ window.renderLayoutSurgical = function(config, doctor, locs, container) {
 
   var m = doctor;
   var wc = config;
+  var ws = config._ws || {};
   var n = nombre(m);
   var esp = (m.especialidades||[])[0]||'';
   var ciudad = m.ciudad||'';
@@ -200,16 +201,16 @@ window.renderLayoutSurgical = function(config, doctor, locs, container) {
     + precioHTML
 
     // CTAs
-    + '<div class="sa2-ctas">'
-    + '<button class="sa2-btn-book" onclick="abrirBooking&&abrirBooking()">'+SVG_CAL+' Agendar consulta</button>'
-    + (wa?'<a class="sa2-btn-wa" href="'+wa+'" target="_blank" rel="noopener">'+SVG_WA+' WhatsApp</a>':'')
+    + '<div class="sa2-ctas" data-ws="cta">'
+    + (ws.show_booking!==false?'<button class="sa2-btn-book" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG_CAL+' Agendar consulta</button>':'')
+    + (wa&&ws.show_whatsapp!==false?'<a class="sa2-btn-wa" data-ws="whatsapp" href="'+wa+'" target="_blank" rel="noopener">'+SVG_WA+' WhatsApp</a>':'')
     + '</div>'
 
     // 3 Secciones colapsables
     + '<div class="sa2-sections">'
-    + '<details class="sa2-item"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">01</span><span class="sa2-item-label">Servicios ofrecidos</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body">'+srvHTML+'</div></details>'
+    + (ws.show_services!==false?'<details class="sa2-item" data-ws="services"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">01</span><span class="sa2-item-label">Servicios ofrecidos</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body">'+srvHTML+'</div></details>':'')
     + '<details class="sa2-item"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">02</span><span class="sa2-item-label">Formación y logros académicos</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body">'+frmHTML+'</div></details>'
-    + (((wc.gallery&&wc.gallery.length)||(photo))?'<details class="sa2-item"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">03</span><span class="sa2-item-label">Imágenes</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body"><div class="sa2-img-grid">'+(wc.gallery&&wc.gallery.length?wc.gallery.slice(0,4).map(function(u){return'<img src="'+e(u)+'" alt="">';}).join(''):photo?'<img src="'+e(photo)+'" alt="" style="grid-column:1/-1;aspect-ratio:16/9">':'')+'</div></div></details>':'')
+    + (ws.show_carousel!==false&&((wc.gallery&&wc.gallery.length)||(photo))?'<details class="sa2-item" data-ws="carousel"><summary class="sa2-item-summary sa2-item"><span class="sa2-item-num">03</span><span class="sa2-item-label">Imágenes</span><span class="sa2-item-arrow">›</span></summary><div class="sa2-item-body"><div class="sa2-img-grid">'+(wc.gallery&&wc.gallery.length?wc.gallery.slice(0,4).map(function(u){return'<img src="'+e(u)+'" alt="">';}).join(''):photo?'<img src="'+e(photo)+'" alt="" style="grid-column:1/-1;aspect-ratio:16/9">':'')+'</div></div></details>':'')
     + '</div>'
 
     // Credentials list

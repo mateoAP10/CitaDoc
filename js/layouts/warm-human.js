@@ -102,6 +102,7 @@ function navIcon(p){return'<svg width="18" height="18" fill="none" viewBox="0 0 
 window.renderLayoutWarmHuman = function(config, doctor, locs, container){
   injectCSS();
   var m=doctor, wc=config;
+  var ws=config._ws||{};
   var n=nombre(m), esp=(m.especialidades||[])[0]||'', ciudad=m.ciudad||'';
   var photo=wc.doctor_photo_url||m.foto_url||'';
   var logo=wc.logo_url||null;
@@ -139,10 +140,10 @@ window.renderLayoutWarmHuman = function(config, doctor, locs, container){
     +'<h1 class="wh2-headline">'+e(hl1)+(hl2?'<br><em>'+e(hl2)+'</em>':'')+'</h1>'
     +'<p class="wh2-subtext">'+e(sub)+'</p>'
     +precioHTML
-    +'<div class="wh2-ctas">'
-    +'<button class="wh2-btn-book" onclick="abrirBooking&&abrirBooking()">'+SVG_CAL+' Agendar consulta</button>'
-    +(wa?'<a class="wh2-btn-wa" href="'+wa+'" target="_blank" rel="noopener">'+SVG_WA+' Escribir por WhatsApp</a>':'')
-    +'</div>'
+    +(ws.show_cta!==false?'<div class="wh2-ctas" data-ws="cta">'
+    +(ws.show_booking!==false?'<button class="wh2-btn-book" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG_CAL+' Agendar consulta</button>':'')
+    +(wa&&ws.show_whatsapp!==false?'<a class="wh2-btn-wa" data-ws="whatsapp" href="'+wa+'" target="_blank" rel="noopener">'+SVG_WA+' Escribir por WhatsApp</a>':'')
+    +'</div>':'')
     // Primera consulta — sección signature
     +'<div class="wh2-first-visit"><div class="wh2-fv-title">Tu primera consulta</div><div class="wh2-fv-steps">'
     +'<div class="wh2-fv-step"><div class="wh2-fv-num">1</div><div class="wh2-fv-text"><strong>Agendá tu turno</strong>Online, en minutos. Confirmación inmediata.</div></div>'
@@ -151,9 +152,9 @@ window.renderLayoutWarmHuman = function(config, doctor, locs, container){
     +'</div></div>'
     // Secciones
     +'<div class="wh2-sections">'
-    +'<details class="wh2-item"><summary class="wh2-item"><span class="wh2-item-num">01</span><span class="wh2-item-label">Servicios ofrecidos</span><span class="wh2-item-arrow">›</span></summary><div class="wh2-item-body">'+srvHTML+'</div></details>'
+    +(ws.show_services!==false?'<details class="wh2-item" data-ws="services"><summary class="wh2-item"><span class="wh2-item-num">01</span><span class="wh2-item-label">Servicios ofrecidos</span><span class="wh2-item-arrow">›</span></summary><div class="wh2-item-body">'+srvHTML+'</div></details>':'')
     +'<details class="wh2-item"><summary class="wh2-item"><span class="wh2-item-num">02</span><span class="wh2-item-label">Formación y logros</span><span class="wh2-item-arrow">›</span></summary><div class="wh2-item-body">'+frmHTML+'</div></details>'
-    +'<details class="wh2-item"><summary class="wh2-item"><span class="wh2-item-num">03</span><span class="wh2-item-label">Imágenes</span><span class="wh2-item-arrow">›</span></summary><div class="wh2-item-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">'+imgHTML+'</div></div></details>'
+    +(ws.show_carousel!==false&&imgHTML?'<details class="wh2-item" data-ws="carousel"><summary class="wh2-item"><span class="wh2-item-num">03</span><span class="wh2-item-label">Imágenes</span><span class="wh2-item-arrow">›</span></summary><div class="wh2-item-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">'+imgHTML+'</div></div></details>':'')
     +'</div>'
     +testiHTML
     +(ciudad?'<div class="wh2-location"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span>'+e(ciudad)+'</span></div>':'')

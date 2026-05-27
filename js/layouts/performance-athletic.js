@@ -97,6 +97,7 @@ var PROC_DEFAULTS={
 window.renderLayoutPerformance = function(config, doctor, locs, container){
   injectCSS();
   var m=doctor, wc=config;
+  var ws=config._ws||{};
   var n=nombre(m), esp=(m.especialidades||[])[0]||'', ciudad=m.ciudad||'';
   var photo=wc.doctor_photo_url||m.foto_url||'';
   var logo=wc.logo_url||null;
@@ -140,15 +141,15 @@ window.renderLayoutPerformance = function(config, doctor, locs, container){
     +'<h1 class="pa2-headline">'+e(hl1)+(hl2?'<em>'+e(hl2)+'</em>':'')+'</h1>'
     +'<p class="pa2-subtext">'+e(sub)+'</p>'
     +precioHTML
-    +'<div class="pa2-ctas">'
-    +'<button class="pa2-btn-book" onclick="abrirBooking&&abrirBooking()">'+SVG_CAL+' Agendar consulta</button>'
-    +(wa?'<a class="pa2-btn-wa" href="'+wa+'" target="_blank" rel="noopener">'+SVG_WA+' WhatsApp</a>':'')
-    +'</div>'
+    +(ws.show_cta!==false?'<div class="pa2-ctas" data-ws="cta">'
+    +(ws.show_booking!==false?'<button class="pa2-btn-book" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVG_CAL+' Agendar consulta</button>':'')
+    +(wa&&ws.show_whatsapp!==false?'<a class="pa2-btn-wa" data-ws="whatsapp" href="'+wa+'" target="_blank" rel="noopener">'+SVG_WA+' WhatsApp</a>':'')
+    +'</div>':'')
     // Secciones
     +'<div class="pa2-sections">'
-    +'<details class="pa2-item"><summary class="pa2-item"><span class="pa2-item-num">01</span><span class="pa2-item-label">Servicios ofrecidos</span><span class="pa2-item-arrow">›</span></summary><div class="pa2-item-body">'+srvHTML+'</div></details>'
+    +(ws.show_services!==false?'<details class="pa2-item" data-ws="services"><summary class="pa2-item"><span class="pa2-item-num">01</span><span class="pa2-item-label">Servicios ofrecidos</span><span class="pa2-item-arrow">›</span></summary><div class="pa2-item-body">'+srvHTML+'</div></details>':'')
     +'<details class="pa2-item"><summary class="pa2-item"><span class="pa2-item-num">02</span><span class="pa2-item-label">Formación y logros académicos</span><span class="pa2-item-arrow">›</span></summary><div class="pa2-item-body">'+frmHTML+'</div></details>'
-    +'<details class="pa2-item"><summary class="pa2-item"><span class="pa2-item-num">03</span><span class="pa2-item-label">Imágenes</span><span class="pa2-item-arrow">›</span></summary><div class="pa2-item-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">'+imgHTML+'</div></div></details>'
+    +(ws.show_carousel!==false&&imgHTML?'<details class="pa2-item" data-ws="carousel"><summary class="pa2-item"><span class="pa2-item-num">03</span><span class="pa2-item-label">Imágenes</span><span class="pa2-item-arrow">›</span></summary><div class="pa2-item-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">'+imgHTML+'</div></div></details>':'')
     +'</div>'
     +credsHTML
     +(ciudad?'<div class="pa2-location"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span>'+e(ciudad)+'</span></div>':'')
