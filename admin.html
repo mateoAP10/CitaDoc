@@ -8,8 +8,6 @@
 <div class="tabs" id="wm-tabs" style="margin-bottom:.9rem">
   <div class="tab active" data-wmtab="medicos" onclick="setWmTab('medicos')">Médicos <span class="count" id="wm-cnt-medicos">—</span></div>
   <div class="tab" data-wmtab="demos" onclick="setWmTab('demos')">Demos <span class="count" id="wm-cnt-demos">—</span></div>
-  <div class="tab" data-wmtab="leads" onclick="setWmTab('leads')">Leads</div>
-  <div class="tab" data-wmtab="signals" onclick="setWmTab('signals')">Señales</div>
   <div class="tab" data-wmtab="activas" onclick="setWmTab('activas');cargarWebsActivas()">🌐 Activas <span class="count" id="wm-cnt-activas">—</span></div>
 </div>
 
@@ -22,13 +20,6 @@
   <div id="demosList"><div class="loading">Cargando...</div></div>
 </div>
 
-<div id="wm-panel-leads" style="display:none">
-  <div id="leadsList"><div class="loading">Cargando...</div></div>
-</div>
-
-<div id="wm-panel-signals" style="display:none">
-  <div id="signalsList"><div class="loading">Cargando...</div></div>
-</div>
 
 <div id="wm-panel-activas" style="display:none">
   <div id="activasList"><div class="loading">Cargando...</div></div>
@@ -491,75 +482,119 @@ async function cargarWebMedicos() {
   }
 }
 
+function adminToast(msg, ok) {
+  var t = document.getElementById('adminToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'adminToast';
+    t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);padding:.5rem 1.1rem;border-radius:10px;font-size:.78rem;font-weight:600;z-index:9999;transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = ok !== false ? 'rgba(61,153,112,.9)' : 'rgba(239,68,68,.85)';
+  t.style.color = '#fff';
+  t.style.opacity = '1';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(function() { t.style.opacity = '0'; }, 2000);
+}
+
 function renderMedicosWeb(list) {
-  const el = document.getElementById('medicosWebList');
-  if (!list.length) { el.innerHTML = '<div class="empty">Sin médicos registrados aún</div>'; return; }
-  el.innerHTML = list.map(function(m) {
-    const nombre = esc((m.nombre || '') + ' ' + (m.apellido || '')).trim() || 'Sin nombre';
-    const espec  = (m.especialidades || [])[0] || '—';
-    const plan   = m.plan || 'gratuito';
-    const pColor = PLAN_COLOR[plan] || 'rgba(255,255,255,.25)';
-    const pLabel = PLAN_LABEL[plan] || plan;
-    const slug   = m.slug || '';
-    return '<div class="demo-row" style="flex-wrap:wrap;gap:.5rem">' +
-      '<div class="demo-info" style="min-width:0">' +
-        '<div class="demo-name">' + nombre + '</div>' +
-        '<div class="demo-spec">' + esc(espec) + (m.ciudad ? ' · ' + esc(m.ciudad) : '') + (slug ? ' · <span style="font-family:monospace;font-size:.65rem;color:rgba(255,255,255,.2)">' + esc(slug) + '</span>' : '') + '</div>' +
+  var container = document.getElementById('medicosWebList');
+  if (!list.length) { container.innerHTML = '<div class="empty">Sin médicos registrados aún</div>'; return; }
+  container.innerHTML = list.map(function(m) {
+    var nombre = esc((m.nombre || '') + ' ' + (m.apellido || '')).trim() || 'Sin nombre';
+    var espec  = (m.especialidades || [])[0] || '—';
+    var plan   = m.plan || 'gratuito';
+    var slug   = m.slug || '';
+    var activo = !!m.activo;
+
+    // Plan pills
+    var planes = [
+      { val: 'gratuito', label: 'Free',     color: 'rgba(255,255,255,.22)' },
+      { val: 'pro',      label: 'PRO',      color: '#f59e0b' },
+      { val: 'pro_web',  label: 'PRO+WEB',  color: '#5dba8a' },
+    ];
+    var pillsHtml = planes.map(function(p) {
+      var active = plan === p.val;
+      return '<button onclick="cambiarPlanDirecto(\'' + m.id + '\',\'' + p.val + '\')" style="' +
+        'padding:.22rem .55rem;border-radius:6px;font-family:\'DM Sans\',sans-serif;font-size:.65rem;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .15s;' +
+        (active
+          ? 'background:' + p.color + '22;border-color:' + p.color + ';color:' + p.color + ';'
+          : 'background:transparent;border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.25);') +
+      '">' + p.label + '</button>';
+    }).join('');
+
+    // Activo toggle
+    var toggleHtml = '<button onclick="toggleActivo(\'' + m.id + '\',' + (activo ? 'false' : 'true') + ')" style="' +
+      'padding:.25rem .65rem;border-radius:7px;font-family:\'DM Sans\',sans-serif;font-size:.68rem;font-weight:600;cursor:pointer;border:1.5px solid;transition:all .15s;' +
+      (activo
+        ? 'background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#4ade80;'
+        : 'background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#f87171;') +
+    '">' + (activo ? '● Visible' : '○ Oculto') + '</button>';
+
+    return '<div style="display:flex;align-items:center;gap:.65rem;padding:.8rem .9rem;' +
+      'background:rgba(255,255,255,.03);border:1px solid ' + (activo ? 'rgba(255,255,255,.07)' : 'rgba(239,68,68,.1)') + ';' +
+      'border-radius:11px;margin-bottom:.4rem;flex-wrap:wrap">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:.84rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + nombre + '</div>' +
+        '<div style="font-size:.67rem;color:rgba(255,255,255,.3);margin-top:.1rem">' +
+          esc(espec) + (m.ciudad ? ' · ' + esc(m.ciudad) : '') +
+          (slug ? ' · <span style="font-family:monospace;color:rgba(255,255,255,.18)">' + esc(slug) + '</span>' : '') +
+        '</div>' +
       '</div>' +
-      '<div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">' +
-        '<span style="font-size:.65rem;font-weight:700;padding:.18rem .5rem;border-radius:5px;background:' + pColor + '22;color:' + pColor + '">' + pLabel + '</span>' +
-        '<select onchange="cambiarPlan(\'' + m.id + '\',this)" style="padding:.25rem .4rem;background:#1a2332;border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#fff;font-family:\'DM Sans\',sans-serif;font-size:.68rem;outline:0;cursor:pointer;color-scheme:dark">' +
-          '<option value="" style="background:#1a2332">Cambiar plan</option>' +
-          '<option value="gratuito" style="background:#1a2332">→ Free</option>' +
-          '<option value="pro" style="background:#1a2332;color:#f59e0b">→ PRO</option>' +
-          '<option value="pro_web" style="background:#1a2332;color:#5dba8a">→ PRO+WEB</option>' +
-        '</select>' +
-        (slug ? '<button class="btn-sm" onclick="window.open(\'https://citadoc.lat/' + esc(slug) + '\',\'_blank\')">Ver ↗</button>' : '') +
-        '<button class="btn-sm" style="background:rgba(61,153,112,.15);color:#5dba8a" onclick="abrirModalWebParaMedico(\\\'' + m.id + '\\\')">Web</button>' +
-        '<button class="btn-sm" data-mid="' + esc(m.id) + '" data-activo="' + (m.activo ? '1' : '0') + '" onclick="toggleActivoBtn(this)" style="background:' + (m.activo ? 'rgba(239,68,68,.15);color:#f87171' : 'rgba(34,197,94,.15);color:#4ade80') + '">' + (m.activo ? 'Ocultar' : 'Activar') + '</button>' +
+      '<div style="display:flex;align-items:center;gap:.35rem;flex-shrink:0;flex-wrap:wrap">' +
+        pillsHtml + toggleHtml +
+        (slug ? '<a href="https://citadoc.lat/' + esc(slug) + '" target="_blank" style="padding:.25rem .5rem;border-radius:6px;font-size:.65rem;color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.09);text-decoration:none">↗</a>' : '') +
       '</div>' +
     '</div>';
   }).join('');
 }
 
-async function toggleActivoBtn(btn) {
-  const medicoId = btn.dataset.mid;
-  const nuevoActivo = btn.dataset.activo !== '1';
-  btn.disabled = true;
+async function cambiarPlanDirecto(medicoId, plan) {
+  // Si ya tiene ese plan, no hacer nada
+  var m = _allMedicos.find(function(x) { return x.id === medicoId; });
+  if (m && m.plan === plan) return;
   try {
-    const r = await fetch(ADMIN_VERIFY_URL + '?resource=medicos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_VERIFY_TOKEN },
-      body: JSON.stringify({ action: 'toggle_activo', medico_id: medicoId, activo: nuevoActivo }),
-    });
-    const d = await r.json();
-    if (d.ok) {
-      _allMedicos = _allMedicos.map(function(m) { return m.id === medicoId ? Object.assign({}, m, { activo: nuevoActivo }) : m; });
-      renderMedicosWeb(_allMedicos);
-    } else { btn.disabled = false; alert('Error: ' + (d.error || 'no se pudo cambiar estado')); }
-  } catch (e) { btn.disabled = false; alert('Error de red'); }
-}
-async function cambiarPlan(medicoId, sel) {
-  const plan = sel.value;
-  if (!plan) return;
-  sel.disabled = true;
-  try {
-    const r = await fetch(ADMIN_VERIFY_URL + '?resource=medicos', {
+    var r = await fetch(ADMIN_VERIFY_URL + '?resource=medicos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_VERIFY_TOKEN },
       body: JSON.stringify({ action: 'cambiar_plan', medico_id: medicoId, plan }),
     });
-    const d = await r.json();
+    var d = await r.json();
     if (d.ok) {
-      _allMedicos = _allMedicos.map(function(m) { return m.id === medicoId ? Object.assign({}, m, { plan }) : m; });
+      _allMedicos = _allMedicos.map(function(x) { return x.id === medicoId ? Object.assign({}, x, { plan: plan }) : x; });
       renderMedicosWeb(_allMedicos);
-    } else {
-      sel.disabled = false; sel.value = '';
-      alert('Error: ' + (d.error || 'no se pudo cambiar plan'));
-    }
-  } catch (e) {
-    sel.disabled = false; sel.value = '';
-  }
+      adminToast('Plan actualizado → ' + (plan === 'gratuito' ? 'Free' : plan === 'pro' ? 'PRO' : 'PRO+WEB'));
+    } else { adminToast('Error: ' + (d.error || 'fallo'), false); }
+  } catch (e) { adminToast('Error de red', false); }
+}
+
+async function toggleActivo(medicoId, nuevoActivo) {
+  try {
+    var r = await fetch(ADMIN_VERIFY_URL + '?resource=medicos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': ADMIN_VERIFY_TOKEN },
+      body: JSON.stringify({ action: 'toggle_activo', medico_id: medicoId, activo: nuevoActivo }),
+    });
+    var d = await r.json();
+    if (d.ok) {
+      _allMedicos = _allMedicos.map(function(x) { return x.id === medicoId ? Object.assign({}, x, { activo: nuevoActivo }) : x; });
+      renderMedicosWeb(_allMedicos);
+      adminToast(nuevoActivo ? '✓ Médico visible en citadoc.lat' : '○ Médico oculto en citadoc.lat');
+    } else { adminToast('Error: ' + (d.error || 'fallo'), false); }
+  } catch (e) { adminToast('Error de red', false); }
+}
+
+// alias legacy (no se usa más, pero por si acaso)
+function toggleActivoBtn(btn) {
+  var medicoId = btn.dataset.mid;
+  var nuevoActivo = btn.dataset.activo !== '1';
+  toggleActivo(medicoId, nuevoActivo);
+}
+async function cambiarPlan(medicoId, sel) {
+  var plan = sel.value; if (!plan) return;
+  await cambiarPlanDirecto(medicoId, plan);
+  sel.value = '';
 }
 
 function renderLayoutPills() {

@@ -167,6 +167,7 @@ var DEFAULT_TREATS = [
 // ── RENDER ────────────────────────────────────────────────
 window.renderLayoutAestheticLuxe = function(config, doctor, locs, container) {
   var m = doctor, wc = config || {};
+  var ws = config._ws || {};
   var slug = m.slug || '';
   var p = getPalette(slug);
 
@@ -243,7 +244,7 @@ window.renderLayoutAestheticLuxe = function(config, doctor, locs, container) {
 
     // NAV
     + '<nav class="al-nav">' + navBrand
-    + '<button class="al-nav-cta" onclick="abrirBooking&&abrirBooking()">' + SVGS.cal + ' Agendar</button>'
+    + (ws.show_booking!==false?'<button class="al-nav-cta" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVGS.cal+' Agendar</button>':'')
     + '</nav>'
 
     // HERO
@@ -256,17 +257,14 @@ window.renderLayoutAestheticLuxe = function(config, doctor, locs, container) {
     + (ciudad ? '<div class="al-hero-city">' + esc(ciudad) + '</div>' : '')
     + '<p class="al-hero-hl">' + esc(hl) + '</p>'
     + '<div class="al-hero-btns">'
-    + '<button class="al-btn-p" onclick="abrirBooking&&abrirBooking()">' + SVGS.cal + ' Reservar</button>'
-    + (wa ? '<a class="al-btn-o" href="' + esc(waHref) + '" target="_blank" rel="noopener">' + SVGS.wa + ' WhatsApp</a>' : '')
+    + (ws.show_booking!==false?'<button class="al-btn-p" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVGS.cal+' Reservar</button>':'')
+    + (wa&&ws.show_whatsapp!==false?'<a class="al-btn-o" data-ws="whatsapp" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVGS.wa+' WhatsApp</a>':'')
     + '</div>'
     + '</div>'
     + '</section>'
 
     // TRATAMIENTOS
-    + '<div class="al-sec al-r">'
-    + '<div class="al-sec-lbl">Tratamientos</div>'
-    + '<div class="al-treats">' + treatsHTML + '</div>'
-    + '</div>'
+    + (ws.show_services!==false?'<div class="al-sec al-r" data-ws="services"><div class="al-sec-lbl">Tratamientos</div><div class="al-treats">'+treatsHTML+'</div></div>':'')
 
     // SOBRE
     + '<div class="al-sec al-r">'
@@ -284,12 +282,7 @@ window.renderLayoutAestheticLuxe = function(config, doctor, locs, container) {
     + diffsHTML
 
     // CTA
-    + '<div class="al-cta-wrap al-r">'
-    + '<div class="al-cta-hl">Tu transformación comienza hoy</div>'
-    + '<p class="al-cta-sub">Primera consulta de evaluación personalizada. Sin compromiso.</p>'
-    + '<button class="al-cta-btn" onclick="abrirBooking&&abrirBooking()">' + SVGS.cal + ' Agendar mi consulta</button>'
-    + (wa ? '<a class="al-cta-wa" href="' + esc(waHref) + '" target="_blank" rel="noopener">' + SVGS.wa + ' Escribir por WhatsApp</a>' : '')
-    + '</div>'
+    + (ws.show_cta!==false?'<div class="al-cta-wrap al-r" data-ws="cta"><div class="al-cta-hl">Tu transformación comienza hoy</div><p class="al-cta-sub">Primera consulta de evaluación personalizada. Sin compromiso.</p>'+(ws.show_booking!==false?'<button class="al-cta-btn" data-ws="booking" onclick="abrirBooking&&abrirBooking()">'+SVGS.cal+' Agendar mi consulta</button>':'')+(wa&&ws.show_whatsapp!==false?'<a class="al-cta-wa" data-ws="whatsapp" href="'+esc(waHref)+'" target="_blank" rel="noopener">'+SVGS.wa+' Escribir por WhatsApp</a>':'')+'</div>':'')
 
     // FOOTER
     + '<div class="al-foot"><div class="al-foot-txt">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc</a></div></div>'
