@@ -125,20 +125,21 @@
     +         '<input type="file" id="wbe-logo-input" accept="image/*" style="display:none" onchange="_wbe.uploadMedia(\'logo\',this)">'
     +       '</div>'
     +     '</div>'
-    +     '<div style="margin-top:.75rem"><label class="wbe-label">Posición de la foto</label>'
-    +       '<div style="display:flex;gap:.35rem;flex-wrap:wrap">'
-    +         '<button class="wbe-pos-btn" data-pos="center top"    onclick="_wbe.setPhotoPos(this)">Arriba</button>'
-    +         '<button class="wbe-pos-btn" data-pos="center 20%"   onclick="_wbe.setPhotoPos(this)">Centro-alto</button>'
-    +         '<button class="wbe-pos-btn sel" data-pos="center center" onclick="_wbe.setPhotoPos(this)">Centro</button>'
-    +         '<button class="wbe-pos-btn" data-pos="center 70%"   onclick="_wbe.setPhotoPos(this)">Centro-bajo</button>'
-    +         '<button class="wbe-pos-btn" data-pos="center bottom" onclick="_wbe.setPhotoPos(this)">Abajo</button>'
+    +     '<div style="margin-top:.85rem" id="wbe-crop-section">'
+    +       '<label class="wbe-label">Recorte de foto <span style="font-size:.65rem;font-weight:400;color:#9ca3af">— arrastra para ajustar</span></label>'
+    +       '<div id="wbe-crop-box" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#f1f5f9;cursor:grab;user-select:none;border:1.5px solid #e5e7eb;display:none">'
+    +         '<img id="wbe-crop-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;pointer-events:none" alt="">'
+    +         '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.7;pointer-events:none"><svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M3 12h18M12 3v18"/></svg></div>'
     +       '</div>'
-    +     '</div>'
-    +     '<div style="margin-top:.75rem"><label class="wbe-label">Forma de la foto</label>'
-    +       '<div style="display:flex;gap:.35rem">'
-    +         '<button class="wbe-pos-btn sel" data-shape="cdm-hero-photo--card" onclick="_wbe.setPhotoShape(this)">4:3 Card</button>'
-    +         '<button class="wbe-pos-btn" data-shape="cdm-hero-photo--wide"    onclick="_wbe.setPhotoShape(this)">16:7 Wide</button>'
-    +         '<button class="wbe-pos-btn" data-shape="cdm-hero-photo--tall"    onclick="_wbe.setPhotoShape(this)">3:4 Tall</button>'
+    +       '<div style="margin-top:.6rem;display:flex;align-items:center;gap:.75rem">'
+    +         '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>'
+    +         '<input type="range" id="wbe-crop-y" min="0" max="100" value="20" style="flex:1;accent-color:#0b7c6e" oninput="_wbe.updateCropY(this.value)">'
+    +         '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>'
+    +       '</div>'
+    +       '<div style="margin-top:.6rem;display:flex;gap:.35rem">'
+    +         '<button class="wbe-pos-btn sel" data-shape="cdm-hero-photo--card" onclick="_wbe.setPhotoShape(this)">Cuadrada 1:1</button>'
+    +         '<button class="wbe-pos-btn" data-shape="cdm-hero-photo--wide"    onclick="_wbe.setPhotoShape(this)">Panorámica</button>'
+    +         '<button class="wbe-pos-btn" data-shape="cdm-hero-photo--tall"    onclick="_wbe.setPhotoShape(this)">Retrato</button>'
     +       '</div>'
     +     '</div>'
     +     '<div><label class="wbe-label">Color principal</label>'
@@ -314,18 +315,74 @@
     }).join('');
   }
 
-  /* ── Photo position / shape setters ────────────────────────────────────── */
-  function _setPhotoPos(btn) {
-    document.querySelectorAll('.wbe-pos-btn[data-pos]').forEach(function(b){ b.classList.remove('sel'); });
-    btn.classList.add('sel');
-    _wsSettings._photo_position = btn.dataset.pos;
+  /* ── Photo crop live preview ────────────────────────────────────────────── */
+  function _initCropPreview(url) {
+    var box = _el('wbe-crop-box');
+    var img = _el('wbe-crop-img');
+    if (!box || !img) return;
+    if (url) {
+      img.src = url;
+      box.style.display = 'block';
+    } else {
+      box.style.display = 'none';
+    }
+    _setupCropDrag();
+  }
+
+  function _updateCropY(val) {
+    var img = _el('wbe-crop-img');
+    if (!img) return;
+    var pos = 'center ' + val + '%';
+    img.style.objectPosition = pos;
+    _wsSettings._photo_position = pos;
     _saveSettings();
+  }
+
+  function _setupCropDrag() {
+    var box = _el('wbe-crop-box');
+    var img = _el('wbe-crop-img');
+    var slider = _el('wbe-crop-y');
+    if (!box || !img) return;
+    var dragging = false, startY = 0, startVal = 20;
+
+    function onDown(e) {
+      dragging = true;
+      startY = e.touches ? e.touches[0].clientY : e.clientY;
+      startVal = parseInt(slider ? slider.value : 20);
+      box.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+    function onMove(e) {
+      if (!dragging) return;
+      var y = e.touches ? e.touches[0].clientY : e.clientY;
+      var delta = ((y - startY) / box.offsetHeight) * 100;
+      var newVal = Math.max(0, Math.min(100, startVal + delta));
+      if (slider) { slider.value = newVal; }
+      _updateCropY(Math.round(newVal));
+    }
+    function onUp() { dragging = false; box.style.cursor = 'grab'; }
+
+    box.removeEventListener('mousedown', box._cmDown);
+    box._cmDown = onDown;
+    box.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    box.addEventListener('touchstart', onDown, {passive:false});
+    window.addEventListener('touchmove', onMove, {passive:false});
+    window.addEventListener('touchend', onUp);
   }
 
   function _setPhotoShape(btn) {
     document.querySelectorAll('.wbe-pos-btn[data-shape]').forEach(function(b){ b.classList.remove('sel'); });
     btn.classList.add('sel');
     _wsSettings._hero_photo_class = btn.dataset.shape;
+    // Update preview aspect ratio
+    var box = _el('wbe-crop-box');
+    if (box) {
+      var ar = btn.dataset.shape === 'cdm-hero-photo--tall' ? '3/4'
+             : btn.dataset.shape === 'cdm-hero-photo--wide' ? '16/7' : '16/9';
+      box.style.aspectRatio = ar;
+    }
     _saveSettings();
   }
 
@@ -387,7 +444,8 @@
     var pub = _sb().storage.from('growth-creatives').getPublicUrl(path).data.publicUrl;
     if (th) th.innerHTML = '<img src="' + pub + '" style="width:100%;height:100%;object-fit:cover">';
     if (st) st.textContent = '✓ Cargada';
-    if (type === 'photo') _photoUrl = pub; else _logoUrl = pub;
+    if (type === 'photo') { _photoUrl = pub; _initCropPreview(pub); }
+    else _logoUrl = pub;
     input.value = '';
     _updateScore();
   }
@@ -458,6 +516,8 @@
     var th_p = _el('wbe-photo-thumb'), st_p = _el('wbe-photo-st');
     if (th_p) th_p.innerHTML = purl ? '<img src="' + _esc(purl) + '" style="width:100%;height:100%;object-fit:cover">' : '📷';
     if (st_p) st_p.textContent = purl ? '✓ Cargada' : 'Subir imagen';
+    // Init crop preview if photo exists
+    setTimeout(function(){ _initCropPreview(purl); }, 100);
 
     var lurl = d.logo_url || config.logo_url || null;
     var th_l = _el('wbe-logo-thumb'), st_l = _el('wbe-logo-st');
@@ -683,8 +743,8 @@
     save:         function() { _save(false); },
     layout:       _setLayout,
     nav:          _setNav,
-    setPhotoPos:  _setPhotoPos,
     setPhotoShape:_setPhotoShape,
+    updateCropY:  _updateCropY,
     settings:     _saveSettings,
     addSvc:       _addService,
     delGallery:   _deleteGallery,
