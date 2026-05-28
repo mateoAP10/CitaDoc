@@ -813,28 +813,33 @@
 
       console.log('[Builder] Saving slug:', _slug, '| headline:', config.headline, '| dna:', config.dna);
       var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
-      console.log('[Builder] Save response error:', _saveRes && _saveRes.error);
-
       if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
 
-      // Sync in-memory config to match what was just saved
-      _liveConfig = config;
-      console.log('[Builder] Saved OK — headline:', config.headline, '| dna:', config.dna);
+      // Read-back: verify the data actually landed in DB
+      var _rb = await _sb().from('generated_demos')
+        .select('slug,doctor_name,web_config_jsonb,web_settings')
+        .eq('slug', _slug).maybeSingle();
+      if (_rb.error || !_rb.data) throw new Error('Update ejecutado pero no se pudo leer back. ' + (_rb.error && _rb.error.message || ''));
+      var _rbConf = _rb.data.web_config_jsonb || {};
+      console.log('[Builder] Read-back OK — headline:', _rbConf.headline, '| dna:', _rbConf.dna, '| doctor_name:', _rb.data.doctor_name);
+
+      // Sync in-memory to actual DB state
+      _liveConfig = Object.assign({}, _rbConf);
 
       if (silent) {
         _updateScore();
       } else {
-        // Show success confirmation before closing
+        if (_opts.onSave) _opts.onSave();
+        // Stay open — just show success on button
         if (btn) {
           btn.textContent = '✓ Guardado';
           btn.style.background = 'linear-gradient(135deg,#059669,#10b981)';
-          btn.disabled = true;
         }
         setTimeout(function() {
-          if (_opts.onSave) _opts.onSave();
-          close();
           if (btn) { btn.textContent = 'Guardar'; btn.style.background = ''; btn.disabled = false; }
-        }, 900);
+        }, 1200);
+        // Hide any previous error banner
+        var eb = _el('wbe-err-banner'); if (eb) eb.style.display = 'none';
       }
     } catch(e) {
       console.error('[Builder] Save error:', e);
