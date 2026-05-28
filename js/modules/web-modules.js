@@ -152,17 +152,21 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 .cdm-ins-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-top:.5rem}
 @media(min-width:640px){.cdm-ins-grid{grid-template-columns:repeat(3,1fr)}}
 .cdm-ins-item{padding:.55rem .85rem;background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:8px;font-size:.82rem;font-weight:500;color:var(--lyt-ink,#111);text-align:center}
-.cdm-calc-list{display:flex;flex-direction:column;gap:0;margin-top:.5rem;border-radius:14px;overflow:hidden;border:1.5px solid var(--lyt-border,rgba(0,0,0,.08))}
-.cdm-calc-row{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;background:var(--lyt-surface,rgba(255,255,255,.6));border-bottom:1px solid var(--lyt-border,rgba(0,0,0,.07));cursor:pointer;transition:background .12s;user-select:none}
-.cdm-calc-row:last-child{border-bottom:none}
-.cdm-calc-row:hover{background:var(--lyt-surface,rgba(0,0,0,.03))}
-.cdm-calc-chk{width:18px;height:18px;accent-color:var(--lyt-accent,#0b7c6e);flex-shrink:0;cursor:pointer}
+.cdm-calc-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.6rem}
+.cdm-calc-row{display:flex;align-items:center;gap:.75rem;padding:.75rem .9rem;background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:10px;border:1.5px solid transparent;cursor:pointer;transition:all .14s;user-select:none}
+.cdm-calc-row:hover{border-color:var(--lyt-accent,#0b7c6e);background:var(--lyt-surface,rgba(0,0,0,.06))}
+.cdm-row-sel{border-color:var(--lyt-accent,#0b7c6e)!important;background:var(--lyt-accent,#0b7c6e)!important}
+.cdm-row-sel .cdm-calc-name,.cdm-row-sel .cdm-calc-price{color:#fff!important}
+.cdm-calc-chk{width:16px;height:16px;accent-color:var(--lyt-accent,#0b7c6e);flex-shrink:0;cursor:pointer}
 .cdm-calc-name{flex:1;font-size:.88rem;font-weight:500;color:var(--lyt-ink,#111)}
-.cdm-calc-price{font-size:.88rem;font-weight:700;color:var(--lyt-accent,#0b7c6e);flex-shrink:0}
-.cdm-calc-total{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;padding:.85rem 1rem;background:var(--lyt-accent,#0b7c6e);border-radius:12px}
-.cdm-calc-total-lbl{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.85)}
-.cdm-calc-sum{font-size:1.25rem;font-weight:800;color:#fff}
-.cdm-calc-book{display:block;margin-top:.75rem;padding:.9rem 1rem;background:var(--lyt-accent,#0b7c6e);color:#fff;border-radius:14px;text-align:center;font-size:.88rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.cdm-calc-price{font-size:.85rem;font-weight:700;color:var(--lyt-accent,#0b7c6e);flex-shrink:0}
+.cdm-calc-total{display:flex;gap:1rem;margin-top:.85rem;padding:1rem 1.1rem;background:var(--lyt-accent,#0b7c6e);border-radius:14px;flex-direction:column}
+.cdm-calc-total-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.55);margin-bottom:.2rem}
+.cdm-calc-sum{font-size:2rem;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1}
+.cdm-calc-lines{display:flex;flex-direction:column;gap:.2rem;padding-top:.6rem;border-top:1px solid rgba(255,255,255,.15);margin-top:.5rem}
+.cdm-calc-line{display:flex;justify-content:space-between;font-size:.78rem;color:rgba(255,255,255,.8)}
+.cdm-calc-line-price{font-weight:600;color:#fff}
+.cdm-calc-book{display:block;margin-top:.75rem;padding:.95rem 1rem;background:var(--lyt-accent,#0b7c6e);color:#fff;border-radius:14px;text-align:center;font-size:.9rem;font-weight:700;text-decoration:none;transition:opacity .15s}
 .cdm-calc-book:hover{opacity:.88}
 
 /* LOCATION */
@@ -480,50 +484,75 @@ function insuranceModule(config,ws){
     +'</div></section>';
 }
 
-// CALCULATOR — estimador interactivo de precios
+// CALCULATOR — estimador interactivo igual que doctor-center
 function calculatorModule(config,doctor,ws){
   if(ws.show_calculator===false)return'';
   var svcs=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title;});
   if(!svcs.length)return'';
   var currency=config.currency||'$';
-  var hasPrice=svcs.some(function(s){return s.price||s.p;});
+  var hasPrice=svcs.some(function(s){return parseFloat(s.price||s.p||0)>0;});
   var nm=nom(doctor);
-  var wa=waUrl(doctor,nm);
-  var ctaHref=wa?'href="'+e(wa)+'" target="_blank" rel="noopener"':'onclick="abrirBooking&&abrirBooking()"';
-  // register interactive handler once
-  if(typeof window.cdmCalcUpdate==='undefined'){
-    window.cdmCalcUpdate=function(){
-      var total=0;
-      document.querySelectorAll('.cdm-calc-chk:checked').forEach(function(c){
-        total+=parseFloat(c.closest('.cdm-calc-row').getAttribute('data-price')||0);
+  var waBase=doctor.whatsapp?'https://wa.me/'+doctor.whatsapp.replace(/\D/g,''):null;
+  // Init calculator state on this page once
+  if(!window._cdmCalc){
+    window._cdmCalc={selected:[]};
+    window.cdmToggle=function(id,nombre,precio){
+      var arr=window._cdmCalc.selected;
+      var idx=arr.findIndex(function(x){return x.id===id;});
+      if(idx>=0)arr.splice(idx,1);else arr.push({id:id,nombre:nombre,precio:precio});
+      var total=arr.reduce(function(a,s){return a+s.precio;},0);
+      var totEl=document.getElementById('cdm-calc-total');
+      var sumEl=document.getElementById('cdm-calc-sum');
+      var linesEl=document.getElementById('cdm-calc-lines');
+      var bookEl=document.getElementById('cdm-calc-book');
+      if(totEl)totEl.style.display=arr.length?'flex':'none';
+      if(sumEl)sumEl.textContent=currency+total.toFixed(0);
+      if(linesEl)linesEl.innerHTML=arr.map(function(s){
+        return'<div class="cdm-calc-line"><span>'+e(s.nombre)+'</span><span class="cdm-calc-line-price">'+currency+s.precio.toFixed(0)+'</span></div>';
+      }).join('');
+      if(bookEl){
+        bookEl.style.display=arr.length?'block':'none';
+        if(waBase){
+          var msg='Hola '+nm+', me interesa agendar:\n'+arr.map(function(s){return'• '+s.nombre+(s.precio?' ('+currency+s.precio+')':'');}).join('\n')+'\nTotal estimado: '+currency+total.toFixed(0);
+          bookEl.href=waBase+'?text='+encodeURIComponent(msg);
+        }
+      }
+      // sync checkbox visual
+      document.querySelectorAll('.cdm-calc-chk').forEach(function(c){
+        var inSel=arr.some(function(x){return x.id===c.dataset.id;});
+        c.checked=inSel;
+        var row=c.closest('.cdm-calc-row');
+        if(row)row.classList.toggle('cdm-row-sel',inSel);
       });
-      var tot=document.getElementById('cdm-calc-total');
-      var sum=document.getElementById('cdm-calc-sum');
-      if(tot)tot.style.display=total>0?'flex':'none';
-      if(sum)sum.textContent=currency+total.toFixed(0);
     };
+  }else{
+    // Re-render: reset state for this doctor's services
+    window._cdmCalc.selected=[];
   }
   var rows=svcs.map(function(s,i){
-    var title=e(s.t||s.title||'');
+    var sid='svc-'+i;
     var price=parseFloat(s.price||s.p||0);
-    var priceLabel=price?'<span class="cdm-calc-price">'+currency+price.toFixed(0)+'</span>':'';
-    return'<label class="cdm-calc-row rv" data-price="'+price+'">'
-      +(hasPrice?'<input type="checkbox" class="cdm-calc-chk" onchange="cdmCalcUpdate()">':'')
+    var title=e(s.t||s.title||'');
+    return'<div class="cdm-calc-row" onclick="cdmToggle(\''+sid+'\',\''+e(s.t||s.title||'')+'\','+price+')">'
+      +(hasPrice?'<input type="checkbox" class="cdm-calc-chk" data-id="'+sid+'" onclick="event.stopPropagation();cdmToggle(\''+sid+'\',\''+e(s.t||s.title||'')+'\','+price+')" >':'')
       +'<span class="cdm-calc-name">'+title+'</span>'
-      +priceLabel
-      +'</label>';
+      +(price?'<span class="cdm-calc-price">'+currency+price.toFixed(0)+'</span>':'')
+      +'</div>';
   }).join('');
-  var totalBlock=hasPrice
-    ?'<div class="cdm-calc-total" id="cdm-calc-total" style="display:none">'
-      +'<span class="cdm-calc-total-lbl">Total estimado</span>'
-      +'<span class="cdm-calc-sum" id="cdm-calc-sum">'+currency+'0</span>'
-      +'</div>'
-    :'';
+  var ctaAttrs=waBase?'href="'+e(waBase)+'" target="_blank" rel="noopener"':'onclick="abrirBooking&&abrirBooking()"';
   return'<section class="cdm-section" id="calculadora" data-ws="calculator">'
-    +'<div class="cdm-sec-label rv">'+(hasPrice?'Estimador de precios':'Servicios')+'</div>'
+    +'<div class="cdm-sec-label rv">'+(hasPrice?'Estimador de precios':'Servicios disponibles')+'</div>'
     +'<div class="cdm-calc-list">'+rows+'</div>'
-    +totalBlock
-    +(wa?'<a class="cdm-calc-book rv" '+ctaHref+'>Reservar consulta →</a>':'')
+    +(hasPrice
+      ?'<div class="cdm-calc-total" id="cdm-calc-total" style="display:none">'
+        +'<div>'
+          +'<div class="cdm-calc-total-lbl">Total estimado</div>'
+          +'<div class="cdm-calc-sum" id="cdm-calc-sum">'+currency+'0</div>'
+        +'</div>'
+        +'<div id="cdm-calc-lines" class="cdm-calc-lines"></div>'
+        +'</div>'
+      :'')
+    +'<a id="cdm-calc-book" class="cdm-calc-book" '+ctaAttrs+' style="display:none">Agendar ahora →</a>'
     +'</section>';
 }
 

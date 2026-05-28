@@ -811,8 +811,9 @@
       // If already live: refresh activated_at so the demo URL reflects this save immediately
       if (_isLive)         upd.activated_at  = new Date().toISOString();
 
-      var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
-      if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
+      var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug).select('slug');
+      if (_saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
+      if (!_saveRes.data || !_saveRes.data.length) throw new Error('Sin permisos para guardar este demo (RLS). Contacta soporte.');
 
       // Sync in-memory config to match what was just saved
       _liveConfig = config;
