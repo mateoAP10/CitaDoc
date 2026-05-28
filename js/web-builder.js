@@ -811,7 +811,15 @@
       // If already live: refresh activated_at so the demo URL reflects this save immediately
       if (_isLive)         upd.activated_at  = new Date().toISOString();
 
-      console.log('[Builder] Saving slug:', _slug, '| headline:', config.headline, '| dna:', config.dna);
+      console.log('[Builder] SAVE PAYLOAD:', JSON.stringify({
+        slug: _slug,
+        headline: config.headline,
+        dna: config.dna,
+        gallery_count: (_gallery||[]).length,
+        web_settings_keys: Object.keys(_wsSettings||{}),
+        show_instagram: _wsSettings.show_instagram,
+        show_calculator: _wsSettings.show_calculator
+      }));
       var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
       if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
 
