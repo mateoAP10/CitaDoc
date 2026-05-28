@@ -444,7 +444,10 @@ function locationModule(config,doctor,locs,ws){
         ciudad:config.location_city||config.city||'',
         maps_url:config.maps_url||config.location_maps_url||''
       }]:[];
-  if(!items.length)return'';
+  if(!items.length)return'<section class="cdm-section" id="contacto" data-ws="map">'
+    +'<div class="cdm-sec-label">Consultorio</div>'
+    +'<div style="font-size:.82rem;color:var(--lyt-ink2,#888);padding:.5rem 0">Agrega la dirección en el editor para mostrar tu consultorio.</div>'
+    +'</section>';
   return'<section class="cdm-section" id="contacto" data-ws="map">'
     +'<div class="cdm-sec-label rv">Consultorio</div>'
     +'<div class="cdm-loc-list">'
@@ -462,7 +465,10 @@ function locationModule(config,doctor,locs,ws){
 function instagramModule(config,ws){
   if(ws.show_instagram===false)return'';
   var handle=(config.instagram_handle||config.instagram||'').replace(/^@/,'');
-  if(!handle)return'';
+  if(!handle)return'<section class="cdm-section" id="instagram" data-ws="instagram">'
+    +'<div class="cdm-sec-label">Instagram</div>'
+    +'<div style="font-size:.82rem;color:var(--lyt-ink2,#888);padding:.5rem 0">Agrega tu @handle en el editor para activar tu Instagram.</div>'
+    +'</section>';
   return'<section class="cdm-section" id="instagram" data-ws="instagram">'
     +'<div class="cdm-sec-label rv">Instagram</div>'
     +'<a class="cdm-ig-card rv" href="https://instagram.com/'+e(handle)+'" target="_blank" rel="noopener">'
@@ -476,7 +482,10 @@ function insuranceModule(config,ws){
   if(ws.show_insurance===false)return'';
   var ins=Array.isArray(config.insurances)?config.insurances
     :(typeof config.insurances==='string'?config.insurances.split('\n').map(function(s){return s.trim();}).filter(Boolean):[]);
-  if(!ins.length)return'';
+  if(!ins.length)return'<section class="cdm-section" id="seguros" data-ws="insurance">'
+    +'<div class="cdm-sec-label">Seguros aceptados</div>'
+    +'<div style="font-size:.82rem;color:var(--lyt-ink2,#888);padding:.5rem 0">Agrega los seguros en el editor para mostrarlos aquí.</div>'
+    +'</section>';
   return'<section class="cdm-section" id="seguros" data-ws="insurance">'
     +'<div class="cdm-sec-label rv">Seguros aceptados</div>'
     +'<div class="cdm-ins-grid">'

@@ -818,7 +818,9 @@
         gallery_count: (_gallery||[]).length,
         web_settings_keys: Object.keys(_wsSettings||{}),
         show_instagram: _wsSettings.show_instagram,
-        show_calculator: _wsSettings.show_calculator
+        show_calculator: _wsSettings.show_calculator,
+        show_map: _wsSettings.show_map,
+        show_insurance: _wsSettings.show_insurance
       }));
       var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
       if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
