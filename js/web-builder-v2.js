@@ -643,6 +643,16 @@
     if (ins) _liveConfig.insurances = ins.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
   }
 
+  // Called on oninput for dynamic fields — updates _liveConfig immediately so save always has the latest value
+  function _dynInput(key, val) {
+    if (key === 'insurances') {
+      _liveConfig.insurances = val.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+    } else {
+      _liveConfig[key] = val;
+    }
+    _scheduleRefresh();
+  }
+
   function _renderModuleCards() {
     var el = _el('wbe-dynamic-cards'); if (!el) return;
     _flushDynamicCards();
@@ -659,15 +669,15 @@
       html += '<div class="wbe-card">'
         + '<div class="wbe-card-hd"><span style="font-size:1rem">📸</span><span class="wbe-card-title">Instagram</span></div>'
         + '<div class="wbe-card-body"><label class="wbe-label">Handle</label>'
-        + '<input id="wbe-instagram" class="wbe-inp" placeholder="@drnombre" value="' + _esc(_liveConfig.instagram_handle||'') + '" oninput="_wbe.schedRefresh()"></div></div>';
+        + '<input id="wbe-instagram" class="wbe-inp" placeholder="@drnombre" value="' + _esc(_liveConfig.instagram_handle||'') + '" oninput="_wbe.dynInput(\'instagram_handle\',this.value)"></div></div>';
     }
     if (_wsSettings.show_map !== false) {
       html += '<div class="wbe-card">'
         + '<div class="wbe-card-hd"><span style="font-size:1rem">📍</span><span class="wbe-card-title">Mapa / Consultorio</span></div>'
         + '<div class="wbe-card-body">'
-        + '<div><label class="wbe-label">Nombre</label><input id="wbe-loc-name" class="wbe-inp" placeholder="Consultorio Norte" value="' + _esc(_liveConfig.location_name||'') + '" oninput="_wbe.schedRefresh()"></div>'
-        + '<div><label class="wbe-label">Dirección</label><input id="wbe-loc-addr" class="wbe-inp" placeholder="Av. Principal 123" value="' + _esc(_liveConfig.location_address||'') + '" oninput="_wbe.schedRefresh()"></div>'
-        + '<div><label class="wbe-label">Link Google Maps</label><input id="wbe-loc-maps" class="wbe-inp" placeholder="https://maps.google.com/..." value="' + _esc(_liveConfig.maps_url||'') + '" oninput="_wbe.schedRefresh()"></div>'
+        + '<div><label class="wbe-label">Nombre</label><input id="wbe-loc-name" class="wbe-inp" placeholder="Consultorio Norte" value="' + _esc(_liveConfig.location_name||'') + '" oninput="_wbe.dynInput(\'location_name\',this.value)"></div>'
+        + '<div><label class="wbe-label">Dirección</label><input id="wbe-loc-addr" class="wbe-inp" placeholder="Av. Principal 123" value="' + _esc(_liveConfig.location_address||'') + '" oninput="_wbe.dynInput(\'location_address\',this.value)"></div>'
+        + '<div><label class="wbe-label">Link Google Maps</label><input id="wbe-loc-maps" class="wbe-inp" placeholder="https://maps.google.com/..." value="' + _esc(_liveConfig.maps_url||'') + '" oninput="_wbe.dynInput(\'maps_url\',this.value)"></div>'
         + '</div></div>';
     }
     if (_wsSettings.show_insurance !== false) {
@@ -675,7 +685,7 @@
       html += '<div class="wbe-card">'
         + '<div class="wbe-card-hd"><span style="font-size:1rem">🏥</span><span class="wbe-card-title">Seguros aceptados</span></div>'
         + '<div class="wbe-card-body"><label class="wbe-label">Uno por línea</label>'
-        + '<textarea id="wbe-insurances" class="wbe-ta" rows="3" placeholder="Seguro Nacional&#10;IESS&#10;AXA" oninput="_wbe.schedRefresh()">' + _esc(insVal) + '</textarea></div></div>';
+        + '<textarea id="wbe-insurances" class="wbe-ta" rows="3" placeholder="Seguro Nacional&#10;IESS&#10;AXA" oninput="_wbe.dynInput(\'insurances\',this.value)">' + _esc(insVal) + '</textarea></div></div>';
     }
     el.innerHTML = html;
   }
@@ -686,6 +696,7 @@
     var badge = _el('wbe-autosave-badge');
     if (badge) { badge.textContent = '● Sin guardar'; badge.style.color = '#f59e0b'; }
     _autoSaveTimer = setTimeout(function() {
+      _autoSaveTimer = null; // reset so beforeunload doesn't re-fire a stale save
       _save(true);
     }, 800);
   }
@@ -876,13 +887,13 @@
       console.log('[Builder] SNAPSHOT SAVE', {
         slug: _slug,
         instagram_handle: config.instagram_handle,
-        location_address: config.location_address,
         location_name: config.location_name,
+        location_address: config.location_address,
+        maps_url: config.maps_url,
         show_map: wsSnap.show_map,
-        photo_position: config.photo_position,
-        ig_input_exists: !!_el('wbe-instagram'),
-        ig_input_value: v('wbe-instagram'),
-        liveConfig_ig: _liveConfig.instagram_handle
+        show_instagram: wsSnap.show_instagram,
+        liveConfig_ig: _liveConfig.instagram_handle,
+        liveConfig_loc: _liveConfig.location_name
       });
 
       var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
@@ -894,7 +905,15 @@
         .eq('slug', _slug).maybeSingle();
       if (_rb.error || !_rb.data) throw new Error('Update ejecutado pero no se pudo leer back. ' + (_rb.error && _rb.error.message || ''));
       var _rbConf = _rb.data.web_config_jsonb || {};
-      console.log('[Builder] Read-back OK — headline:', _rbConf.headline, '| dna:', _rbConf.dna, '| doctor_name:', _rb.data.doctor_name);
+      console.log('[Builder] Read-back OK', {
+        doctor_name: _rb.data.doctor_name,
+        instagram_handle: _rbConf.instagram_handle,
+        location_name: _rbConf.location_name,
+        location_address: _rbConf.location_address,
+        maps_url: _rbConf.maps_url,
+        show_instagram: _rb.data.web_settings && _rb.data.web_settings.show_instagram,
+        show_map: _rb.data.web_settings && _rb.data.web_settings.show_map
+      });
 
       // Sync in-memory to actual DB state
       _liveConfig = Object.assign({}, _rbConf);
@@ -1062,6 +1081,7 @@
     setPhotoShape:_setPhotoShape,
     updateCropY:  _updateCropY,
     settings:     _saveSettings,
+    dynInput:     _dynInput,
     addSvc:       _addService,
     delGallery:   _deleteGallery,
     uploadMedia:  _uploadMedia,
