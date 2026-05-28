@@ -161,9 +161,13 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 .cdm-cta-btn:hover{opacity:.88}
 
 /* FOOTER */
-.cdm-footer{padding:22px 20px;border-top:1px solid var(--lyt-border,#e5e5e5);text-align:center;background:var(--lyt-bg,#fff)}
+.cdm-footer{padding:22px 20px 28px;border-top:1px solid var(--lyt-border,#e5e5e5);text-align:center;background:var(--lyt-bg,#fff)}
 .cdm-footer-txt{font-size:.58rem;color:var(--lyt-muted,#aaa);letter-spacing:.02em}
 .cdm-footer-txt a{color:var(--lyt-ink2,#777);text-decoration:none;font-weight:600}
+.cdm-powered{margin-top:14px}
+.cdm-powered-link{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;border-radius:50px;background:rgba(11,124,110,.07);border:1px solid rgba(11,124,110,.15);color:rgba(11,124,110,.7);font-size:.68rem;font-weight:700;letter-spacing:.02em;text-decoration:none;transition:all .2s}
+.cdm-powered-link:hover{background:rgba(11,124,110,.13);color:#0b7c6e;border-color:rgba(11,124,110,.3)}
+.cdm-powered-link strong{font-weight:800}
 
 /* REVEAL ANIMATION */
 .rv{opacity:0;transform:translateY(22px);transition:opacity .72s cubic-bezier(.16,1,.3,1),transform .72s cubic-bezier(.16,1,.3,1)}
@@ -440,6 +444,10 @@ function ctaBlockModule(config,doctor,ws){
 function footerModule(config,doctor,ws){
   return'<footer class="cdm-footer">'
     +'<span class="cdm-footer-txt">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc</a></span>'
+    +'<div class="cdm-powered"><a href="https://citadoc.lat" target="_blank" rel="noopener" class="cdm-powered-link">'
+    +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+    +'<span>Powered by <strong>CitaDoc AI</strong></span>'
+    +'</a></div>'
     +'</footer>';
 }
 
