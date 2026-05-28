@@ -35,8 +35,9 @@
     '#wbe-modal.open{display:flex}',
     '#wbe-topbar{background:#fff;border-bottom:1.5px solid #e5e7eb;padding:.65rem 1.25rem;display:flex;align-items:center;gap:.6rem;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06)}',
     '#wbe-body{flex:1;display:flex;min-height:0;overflow:hidden}',
-    '.wbe-form{width:360px;flex-shrink:0;overflow-y:auto;padding:1.1rem 1.1rem 3rem;display:flex;flex-direction:column;gap:1rem;background:#f8fafc;border-right:1.5px solid #e5e7eb;min-height:0}',
-    '.wbe-form::-webkit-scrollbar{width:4px}.wbe-form::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}',
+    '#wbe-left{width:360px;flex-shrink:0;overflow-y:auto;background:#f8fafc;border-right:1.5px solid #e5e7eb;height:100%}',
+    '#wbe-left::-webkit-scrollbar{width:4px}#wbe-left::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}',
+    '.wbe-form{padding:1.1rem 1.1rem 3rem;display:grid;gap:1rem}',
     '#wbe-preview-panel{flex:1;display:flex;flex-direction:column;background:#cbd5e1;min-width:0;overflow:hidden}',
     '#wbe-preview-bar{padding:.45rem .75rem;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:.5rem;flex-shrink:0;height:38px}',
     '#wbe-preview-bar-lbl{font-size:.65rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;flex:1}',
@@ -45,7 +46,7 @@
     '#wbe-preview-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:.75rem;background:#cbd5e1}',
     '#wbe-preview-wrap::-webkit-scrollbar{width:6px}#wbe-preview-wrap::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:4px}',
     '#wbe-preview-frame{border:none;border-radius:12px;box-shadow:0 4px 28px rgba(0,0,0,.22);background:#fff;min-height:900px;width:430px;transition:width .3s ease;flex-shrink:0}',
-    '@media(max-width:960px){.wbe-form{width:100%;max-width:100%}#wbe-preview-panel{display:none}}',
+    '@media(max-width:960px){#wbe-left{width:100%}#wbe-preview-panel{display:none}}',
     '.wbe-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;overflow:hidden}',
     '.wbe-card-hd{padding:.75rem 1.1rem;border-bottom:1px solid #f1f3f5;display:flex;align-items:center;gap:.5rem}',
     '.wbe-card-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:#374151}',
@@ -96,6 +97,7 @@
 
     /* BODY */
     + '<div id="wbe-body">'
+    + '<div id="wbe-left">'
     + '<div class="wbe-form">'
 
     /* Live warning */
@@ -267,6 +269,7 @@
     + '<div id="wbe-error" style="display:none;font-size:.77rem;color:#dc2626;padding:.6rem .85rem;background:#fef2f2;border-radius:9px;border:1px solid #fecaca"></div>'
 
     + '</div>' /* /wbe-form */
+    + '</div>' /* /wbe-left */
 
     /* ── LIVE PREVIEW PANEL ── */
     + '<div id="wbe-preview-panel">'
@@ -681,7 +684,7 @@
     var errEl = _el('wbe-error'); if (errEl) errEl.style.display = 'none';
 
     // Scroll to top
-    var body = _el('wbe-body'); if (body) body.scrollTop = 0;
+    var left = _el('wbe-left'); if (left) left.scrollTop = 0;
     _updateScore();
     // Trigger live preview — debounced to let iframe finish loading if needed
     setTimeout(_liveRender, 300);
