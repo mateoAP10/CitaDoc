@@ -152,11 +152,18 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 .cdm-ins-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-top:.5rem}
 @media(min-width:640px){.cdm-ins-grid{grid-template-columns:repeat(3,1fr)}}
 .cdm-ins-item{padding:.55rem .85rem;background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:8px;font-size:.82rem;font-weight:500;color:var(--lyt-ink,#111);text-align:center}
-.cdm-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem}
-.cdm-calc-item{background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.6rem}
-.cdm-calc-name{font-size:.9rem;font-weight:600;line-height:1.3;color:var(--lyt-ink,#111)}
-.cdm-calc-cta{display:inline-block;font-size:.75rem;font-weight:700;color:var(--lyt-accent,#0b7c6e);text-decoration:none;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;text-align:left}
-@media(min-width:640px){.cdm-calc-grid{grid-template-columns:repeat(4,1fr)}}
+.cdm-calc-list{display:flex;flex-direction:column;gap:0;margin-top:.5rem;border-radius:14px;overflow:hidden;border:1.5px solid var(--lyt-border,rgba(0,0,0,.08))}
+.cdm-calc-row{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;background:var(--lyt-surface,rgba(255,255,255,.6));border-bottom:1px solid var(--lyt-border,rgba(0,0,0,.07));cursor:pointer;transition:background .12s;user-select:none}
+.cdm-calc-row:last-child{border-bottom:none}
+.cdm-calc-row:hover{background:var(--lyt-surface,rgba(0,0,0,.03))}
+.cdm-calc-chk{width:18px;height:18px;accent-color:var(--lyt-accent,#0b7c6e);flex-shrink:0;cursor:pointer}
+.cdm-calc-name{flex:1;font-size:.88rem;font-weight:500;color:var(--lyt-ink,#111)}
+.cdm-calc-price{font-size:.88rem;font-weight:700;color:var(--lyt-accent,#0b7c6e);flex-shrink:0}
+.cdm-calc-total{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;padding:.85rem 1rem;background:var(--lyt-accent,#0b7c6e);border-radius:12px}
+.cdm-calc-total-lbl{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.85)}
+.cdm-calc-sum{font-size:1.25rem;font-weight:800;color:#fff}
+.cdm-calc-book{display:block;margin-top:.75rem;padding:.9rem 1rem;background:var(--lyt-accent,#0b7c6e);color:#fff;border-radius:14px;text-align:center;font-size:.88rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.cdm-calc-book:hover{opacity:.88}
 
 /* LOCATION */
 .cdm-loc-list{display:flex;flex-direction:column;gap:14px;margin-top:4px}
@@ -473,23 +480,50 @@ function insuranceModule(config,ws){
     +'</div></section>';
 }
 
-// CALCULATOR — precio estimado de consulta
+// CALCULATOR — estimador interactivo de precios
 function calculatorModule(config,doctor,ws){
   if(ws.show_calculator===false)return'';
   var svcs=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title;});
   if(!svcs.length)return'';
+  var currency=config.currency||'$';
+  var hasPrice=svcs.some(function(s){return s.price||s.p;});
   var nm=nom(doctor);
   var wa=waUrl(doctor,nm);
-  var items=svcs.slice(0,4).map(function(s){
-    var t=e(s.t||s.title||'');
-    var cta=wa
-      ?'<a class="cdm-calc-cta" href="'+e(wa)+'" target="_blank" rel="noopener">Consultar precio →</a>'
-      :'<button class="cdm-calc-cta" onclick="abrirBooking&&abrirBooking()">Agendar →</button>';
-    return'<div class="cdm-calc-item rv"><div class="cdm-calc-name">'+t+'</div>'+cta+'</div>';
+  var ctaHref=wa?'href="'+e(wa)+'" target="_blank" rel="noopener"':'onclick="abrirBooking&&abrirBooking()"';
+  // register interactive handler once
+  if(typeof window.cdmCalcUpdate==='undefined'){
+    window.cdmCalcUpdate=function(){
+      var total=0;
+      document.querySelectorAll('.cdm-calc-chk:checked').forEach(function(c){
+        total+=parseFloat(c.closest('.cdm-calc-row').getAttribute('data-price')||0);
+      });
+      var tot=document.getElementById('cdm-calc-total');
+      var sum=document.getElementById('cdm-calc-sum');
+      if(tot)tot.style.display=total>0?'flex':'none';
+      if(sum)sum.textContent=currency+total.toFixed(0);
+    };
+  }
+  var rows=svcs.map(function(s,i){
+    var title=e(s.t||s.title||'');
+    var price=parseFloat(s.price||s.p||0);
+    var priceLabel=price?'<span class="cdm-calc-price">'+currency+price.toFixed(0)+'</span>':'';
+    return'<label class="cdm-calc-row rv" data-price="'+price+'">'
+      +(hasPrice?'<input type="checkbox" class="cdm-calc-chk" onchange="cdmCalcUpdate()">':'')
+      +'<span class="cdm-calc-name">'+title+'</span>'
+      +priceLabel
+      +'</label>';
   }).join('');
+  var totalBlock=hasPrice
+    ?'<div class="cdm-calc-total" id="cdm-calc-total" style="display:none">'
+      +'<span class="cdm-calc-total-lbl">Total estimado</span>'
+      +'<span class="cdm-calc-sum" id="cdm-calc-sum">'+currency+'0</span>'
+      +'</div>'
+    :'';
   return'<section class="cdm-section" id="calculadora" data-ws="calculator">'
-    +'<div class="cdm-sec-label rv">Tarifas de consulta</div>'
-    +'<div class="cdm-calc-grid">'+items+'</div>'
+    +'<div class="cdm-sec-label rv">'+(hasPrice?'Estimador de precios':'Servicios')+'</div>'
+    +'<div class="cdm-calc-list">'+rows+'</div>'
+    +totalBlock
+    +(wa?'<a class="cdm-calc-book rv" '+ctaHref+'>Reservar consulta →</a>':'')
     +'</section>';
 }
 

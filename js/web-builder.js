@@ -501,14 +501,15 @@
   }
 
   /* ── Services ───────────────────────────────────────────────────────────── */
-  function _serviceRow(icon, title, desc) {
+  function _serviceRow(icon, title, desc, price) {
     var el = document.createElement('div');
     el.setAttribute('data-svc', '');
     el.className = 'wbe-svc-row';
     el.innerHTML = '<button onclick="this.closest(\'[data-svc]\').remove();_wbe.schedRefresh()" style="position:absolute;top:.4rem;right:.5rem;background:0;border:none;color:rgba(239,68,68,.45);cursor:pointer;font-size:1rem;line-height:1;padding:0">×</button>'
-      + '<div style="display:grid;grid-template-columns:50px 1fr;gap:.4rem">'
+      + '<div style="display:grid;grid-template-columns:50px 1fr 80px;gap:.4rem">'
       + '<input class="svc-icon wbe-inp" placeholder="✦" maxlength="4" value="' + _esc(icon || '') + '" style="text-align:center;font-size:1rem;padding:.4rem" oninput="_wbe.schedRefresh()">'
       + '<input class="svc-title wbe-inp" placeholder="Nombre del servicio" value="' + _esc(title || '') + '" oninput="_wbe.schedRefresh()">'
+      + '<input class="svc-price wbe-inp" type="number" min="0" placeholder="$0" value="' + _esc(price || '') + '" style="padding:.4rem;text-align:right" oninput="_wbe.schedRefresh()">'
       + '</div>'
       + '<textarea class="svc-desc wbe-ta" rows="1" placeholder="Descripción breve..." oninput="_wbe.schedRefresh()">' + _esc(desc || '') + '</textarea>';
     return el;
@@ -524,7 +525,9 @@
     var arr = [];
     rows.forEach(function(r) {
       var t = r.querySelector('.svc-title').value.trim(); if (!t) return;
-      arr.push({ i: r.querySelector('.svc-icon').value.trim() || '✦', t: t, d: r.querySelector('.svc-desc').value.trim() });
+      var priceEl = r.querySelector('.svc-price');
+      var p = priceEl ? parseFloat(priceEl.value) || 0 : 0;
+      arr.push({ i: r.querySelector('.svc-icon').value.trim() || '✦', t: t, d: r.querySelector('.svc-desc').value.trim(), price: p });
     });
     return arr;
   }
@@ -632,6 +635,14 @@
     var el = _el('wbe-dynamic-cards'); if (!el) return;
     _flushDynamicCards();
     var html = '';
+    if (_wsSettings.show_calculator !== false) {
+      html += '<div class="wbe-card">'
+        + '<div class="wbe-card-hd"><span style="font-size:1rem">🧮</span><span class="wbe-card-title">Calculadora de precios</span></div>'
+        + '<div class="wbe-card-body" style="font-size:.78rem;color:#6b7280;line-height:1.5">'
+        + 'Los servicios y precios se configuran en la sección <strong style="color:#374151">Servicios</strong> de arriba.<br>'
+        + 'Agrega el precio a cada servicio para activar el estimador interactivo en la web.'
+        + '</div></div>';
+    }
     if (_wsSettings.show_instagram !== false) {
       html += '<div class="wbe-card">'
         + '<div class="wbe-card-hd"><span style="font-size:1rem">📸</span><span class="wbe-card-title">Instagram</span></div>'
@@ -714,7 +725,7 @@
     if (list) {
       list.innerHTML = '';
       var svcs = Array.isArray(config.services) ? config.services : (Array.isArray(config.servicios) ? config.servicios : []);
-      svcs.forEach(function(s) { list.appendChild(_serviceRow(s.i || s.icon || '✦', s.t || s.title || s.name || '', s.d || s.desc || s.description || '')); });
+      svcs.forEach(function(s) { list.appendChild(_serviceRow(s.i || s.icon || '✦', s.t || s.title || s.name || '', s.d || s.desc || s.description || '', s.price || s.p || '')); });
       if (!svcs.length) list.appendChild(_serviceRow('', '', ''));
     }
 
@@ -800,7 +811,8 @@
       // If already live: refresh activated_at so the demo URL reflects this save immediately
       if (_isLive)         upd.activated_at  = new Date().toISOString();
 
-      await _sb().from('generated_demos').update(upd).eq('slug', _slug);
+      var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
+      if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
 
       // Sync in-memory config to match what was just saved
       _liveConfig = config;
