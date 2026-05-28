@@ -807,6 +807,9 @@
     var btn = _el('wbe-btn-save');
     if (!silent && btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
     try {
+      // Flush dynamic cards to _liveConfig FIRST — ensures typed values are captured
+      _flushDynamicCards();
+
       // ── SNAPSHOT TOTAL — todo el estado de pantalla, sin guards, sin parciales ──
       var v = function(id) { return (_el(id) || {}).value || ''; };
 
@@ -870,10 +873,17 @@
       if (_logoUrl)  upd.logo_url  = _logoUrl;
       if (_isLive)   upd.activated_at = new Date().toISOString();
 
-      console.log('[Builder] SNAPSHOT SAVE — show_map:', wsSnap.show_map,
-        '| photo_pos:', config.photo_position,
-        '| instagram:', config.instagram_handle,
-        '| slug:', _slug);
+      console.log('[Builder] SNAPSHOT SAVE', {
+        slug: _slug,
+        instagram_handle: config.instagram_handle,
+        location_address: config.location_address,
+        location_name: config.location_name,
+        show_map: wsSnap.show_map,
+        photo_position: config.photo_position,
+        ig_input_exists: !!_el('wbe-instagram'),
+        ig_input_value: v('wbe-instagram'),
+        liveConfig_ig: _liveConfig.instagram_handle
+      });
 
       var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
       if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
