@@ -434,15 +434,15 @@
   }
 
   /* ── Settings save ──────────────────────────────────────────────────────── */
-  async function _saveSettings() {
+  function _saveSettings() {
     ['show_whatsapp','show_booking','show_carousel','show_calculator','show_services','show_doctors','show_instagram','show_map','show_insurance','show_cta'].forEach(function(k) {
       var el = _el('ws-' + k); if (el) _wsSettings[k] = el.checked;
     });
     var dnaEl = _el('wbe-dna'); if (dnaEl) _wsSettings.dna = dnaEl.value;
     _renderModuleCards();
     _liveRender();
-    await _sb().from('generated_demos').update({ web_settings: _wsSettings }).eq('slug', _slug).catch(console.error);
     _updateScore();
+    // DB persistence happens in _save() — no async call here
   }
 
   /* ── Gallery ────────────────────────────────────────────────────────────── */
