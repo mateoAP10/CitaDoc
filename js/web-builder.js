@@ -564,6 +564,7 @@
     config.hero_photo_class = _wsSettings._hero_photo_class || config.hero_photo_class || 'cdm-hero-photo--card';
 
     var _np = nombre.replace(/^(dra?\.?\s+)/i, '').trim().split(' ');
+    var _showWa = _wsSettings.show_whatsapp !== false;
     var doctor = {
       slug: _slug, titulo: /dra\./i.test(nombre) ? 'Dra.' : 'Dr.',
       nombre: _np[0] || '', apellido: _np.slice(1).join(' ') || '',
@@ -571,7 +572,10 @@
       ciudad: ciudad,
       foto_url:  _photoUrl || _liveConfig.doctor_photo_url || null,
       logo_url:  _logoUrl  || _liveConfig.logo_url         || null,
-      id: null, whatsapp: null, whatsapp_activo: false, telefono: null,
+      id: null,
+      whatsapp: _showWa ? (_liveConfig.whatsapp || '5491100000000') : null,
+      whatsapp_activo: _showWa,
+      telefono: null,
       locs: [], web_status: 'active', plan: 'pro_web', plan_activo: true
     };
 
