@@ -66,7 +66,7 @@ var BASE_CSS = `
 /* HERO */
 .cdm-hero{position:relative;overflow:hidden;background:var(--lyt-hero-bg,var(--lyt-bg,#fff))}
 .cdm-hero-photo{overflow:hidden;position:relative;background:var(--lyt-surface,#f5f5f5)}
-.cdm-hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
+.cdm-hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
 .cdm-hero-body{padding:24px 20px;position:relative;z-index:2;background:var(--lyt-hero-body-bg,var(--lyt-bg,#fff))}
 .cdm-hero-eyebrow{font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--lyt-muted,#999);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .cdm-hero-h1{font-family:var(--lyt-display,var(--lyt-font,'DM Sans',sans-serif));font-size:clamp(1.65rem,5.5vw,2.5rem);font-weight:var(--lyt-h1-weight,700);line-height:1.12;letter-spacing:var(--lyt-h1-tracking,-.025em);color:var(--lyt-hero-ink,var(--lyt-ink,#111));margin-bottom:10px}
@@ -89,8 +89,8 @@ var BASE_CSS = `
 .cdm-hero--fullscreen .cdm-btn-wa{border-color:rgba(255,255,255,.35);color:#fff}
 
 /* ── Hero: stacked (mobile) — photo as card ── */
-.cdm-hero-photo--card{aspect-ratio:4/3;margin:8px 16px 0;border-radius:var(--lyt-hero-photo-r,14px);overflow:hidden}
-.cdm-hero-photo--wide{aspect-ratio:16/7;border-radius:0;margin:0}
+.cdm-hero-photo--card{aspect-ratio:16/9;margin:0;border-radius:0;overflow:hidden}
+.cdm-hero-photo--wide{aspect-ratio:16/9;border-radius:0;margin:0}
 .cdm-hero-photo--tall{aspect-ratio:3/4;margin:8px 16px 0;border-radius:var(--lyt-hero-photo-r,14px);overflow:hidden}
 
 /* SECTION BASE */
