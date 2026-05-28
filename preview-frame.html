@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+  <script src="js/shared.js"></script>
+  <script src="js/dna-specs.js"></script>
+  <script src="js/dna-config.js"></script>
+  <script src="js/composition-engine.js"></script>
+  <script src="js/module-registry.js"></script>
+  <script src="js/scene-renderers.js"></script>
+  <script src="js/modules/web-modules.js"></script>
+  <script src="js/layouts/surgical-authority.js"></script>
+  <script src="js/layouts/warm-human-care.js"></script>
+  <script src="js/layouts/aesthetic-luxe.js"></script>
+  <script src="js/layouts/performance-athletic.js"></script>
+  <script src="js/layouts/sand-wellness.js"></script>
+  <script src="js/layouts/neoclinic.js"></script>
+  <script src="js/layouts/medical-minimal.js"></script>
+  <script src="js/layouts/personal-brand.js"></script>
+  <script src="js/layouts/high-conversion.js"></script>
+  <script src="js/layouts/modern-story.js"></script>
+  <script src="js/layouts/clinic-institutional.js"></script>
+  <script src="js/website-renderer.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;background:#fff;font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    #dna-main{display:block;min-height:100vh}
+  </style>
+</head>
+<body>
+  <main id="dna-main"></main>
+  <script>
+    window.addEventListener('message', function(e) {
+      if (!e.data || e.data.type !== 'CITADOC_RENDER') return;
+      var d = e.data;
+      if (typeof window.renderWebsite !== 'function') return;
+      // Clean previous render
+      var main = document.getElementById('dna-main');
+      if (main) main.innerHTML = '';
+      ['_cd-legacy-hide','_cd-dna-override','_cd-ws-post'].forEach(function(id) {
+        var s = document.getElementById(id);
+        if (s && s.parentNode) s.parentNode.removeChild(s);
+      });
+      document.body.style.paddingTop = '0';
+      window.renderWebsite(d.doctor, d.locs || [], d.config, true, d.ws || {});
+    });
+  </script>
+</body>
+</html>

@@ -11,7 +11,8 @@
   /* ── State ─────────────────────────────────────────────────────────────── */
   var _slug = null, _opts = {}, _wsSettings = {}, _gallery = [],
       _photoUrl = null, _logoUrl = null, _isLive = false,
-      _refreshTimer = null, _injected = false;
+      _refreshTimer = null, _injected = false,
+      _liveConfig = {}, _liveTimer = null;
 
   var _WS_DEFAULTS = {
     show_whatsapp: true, show_booking: true, show_carousel: true,
@@ -33,9 +34,18 @@
     '#wbe-modal{display:none;position:fixed;inset:0;z-index:9000;background:#f4f6f8;flex-direction:column;font-family:"DM Sans",system-ui,sans-serif}',
     '#wbe-modal.open{display:flex}',
     '#wbe-topbar{background:#fff;border-bottom:1.5px solid #e5e7eb;padding:.65rem 1.25rem;display:flex;align-items:center;gap:.6rem;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06)}',
-    '#wbe-body{flex:1;overflow-y:auto;padding:1.5rem 1.25rem 3rem}',
-    '#wbe-body::-webkit-scrollbar{width:5px}#wbe-body::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}',
-    '.wbe-form{max-width:680px;margin:0 auto;display:grid;gap:1.25rem}',
+    '#wbe-body{flex:1;display:flex;min-height:0;overflow:hidden}',
+    '.wbe-form{width:360px;flex-shrink:0;overflow-y:auto;padding:1.1rem;display:grid;gap:1rem;background:#f8fafc;border-right:1.5px solid #e5e7eb}',
+    '.wbe-form::-webkit-scrollbar{width:4px}.wbe-form::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}',
+    '#wbe-preview-panel{flex:1;display:flex;flex-direction:column;background:#cbd5e1;min-width:0;overflow:hidden}',
+    '#wbe-preview-bar{padding:.45rem .75rem;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:.5rem;flex-shrink:0;height:38px}',
+    '#wbe-preview-bar-lbl{font-size:.65rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;flex:1}',
+    '.wbe-dev-btn{padding:.22rem .65rem;border-radius:7px;border:1.5px solid #e5e7eb;background:#f8fafc;color:#6b7280;font-size:.68rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;line-height:1.4}',
+    '.wbe-dev-btn.sel{border-color:#0b7c6e;background:#f0fdf8;color:#0b7c6e}',
+    '#wbe-preview-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:.75rem;background:#cbd5e1}',
+    '#wbe-preview-wrap::-webkit-scrollbar{width:6px}#wbe-preview-wrap::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:4px}',
+    '#wbe-preview-frame{border:none;border-radius:12px;box-shadow:0 4px 28px rgba(0,0,0,.22);background:#fff;min-height:900px;width:430px;transition:width .3s ease;flex-shrink:0}',
+    '@media(max-width:960px){.wbe-form{width:100%;max-width:100%}#wbe-preview-panel{display:none}}',
     '.wbe-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:16px;overflow:hidden}',
     '.wbe-card-hd{padding:.75rem 1.1rem;border-bottom:1px solid #f1f3f5;display:flex;align-items:center;gap:.5rem}',
     '.wbe-card-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:#374151}',
@@ -67,7 +77,7 @@
     '.wbe-score-bar{height:4px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin:.25rem 0 .5rem}',
     '.wbe-score-fill{height:100%;border-radius:4px;transition:width .5s}',
     '.wbe-live-warn{background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;padding:.5rem .8rem;font-size:.74rem;color:#c2410c;font-weight:500;display:none;margin-bottom:.5rem}',
-    '@media(max-width:640px){.wbe-2col,.wbe-3col{grid-template-columns:1fr!important}.wbe-form{gap:1rem}#wbe-body{padding:1rem .75rem 3rem}}'
+    '@media(max-width:640px){.wbe-2col,.wbe-3col{grid-template-columns:1fr!important}.wbe-form{gap:1rem;padding:.75rem}}'
   ].join('');
 
   /* ── HTML ───────────────────────────────────────────────────────────────── */
@@ -257,6 +267,19 @@
     + '<div id="wbe-error" style="display:none;font-size:.77rem;color:#dc2626;padding:.6rem .85rem;background:#fef2f2;border-radius:9px;border:1px solid #fecaca"></div>'
 
     + '</div>' /* /wbe-form */
+
+    /* ── LIVE PREVIEW PANEL ── */
+    + '<div id="wbe-preview-panel">'
+    +   '<div id="wbe-preview-bar">'
+    +     '<span id="wbe-preview-bar-lbl">Preview</span>'
+    +     '<button class="wbe-dev-btn sel" id="wbe-dev-mobile" onclick="_wbe.setDevice(\'mobile\')">📱 Mobile</button>'
+    +     '<button class="wbe-dev-btn" id="wbe-dev-desktop" onclick="_wbe.setDevice(\'desktop\')">🖥 Desktop</button>'
+    +   '</div>'
+    +   '<div id="wbe-preview-wrap">'
+    +     '<iframe id="wbe-preview-frame" src="preview-frame.html" title="Vista previa"></iframe>'
+    +   '</div>'
+    + '</div>'
+
     + '</div>' /* /wbe-body */
     + '</div>'; /* /wbe-modal */
   }
@@ -410,6 +433,7 @@
       var el = _el('ws-' + k); if (el) _wsSettings[k] = el.checked;
     });
     var dnaEl = _el('wbe-dna'); if (dnaEl) _wsSettings.dna = dnaEl.value;
+    _liveRender();
     await _sb().from('generated_demos').update({ web_settings: _wsSettings }).eq('slug', _slug).catch(console.error);
     _updateScore();
   }
@@ -448,6 +472,7 @@
     else _logoUrl = pub;
     input.value = '';
     _updateScore();
+    _liveRender();
   }
 
   async function _uploadGallery(input) {
@@ -465,6 +490,7 @@
     input.value = '';
     if (btn) { btn.textContent = '+ Fotos'; btn.disabled = false; }
     _renderGallery();
+    _liveRender();
   }
 
   /* ── Services ───────────────────────────────────────────────────────────── */
@@ -496,13 +522,92 @@
     return arr;
   }
 
-  /* ── Schedule preview refresh (no-op — no iframe) ──────────────────────── */
-  function _scheduleRefresh() { _updateScore(); }
+  /* ── Live preview ───────────────────────────────────────────────────────── */
+  function _buildLivePayload() {
+    var nombre   = (_el('wbe-nombre')       || {}).value || '';
+    var espec    = (_el('wbe-especialidad') || {}).value || '';
+    var ciudad   = (_el('wbe-ciudad')       || {}).value || '';
+    var headline = (_el('wbe-headline')     || {}).value || '';
+    var subhl    = (_el('wbe-subheadline')  || {}).value || '';
+    var bio      = (_el('wbe-bio')          || {}).value || '';
+    var about    = (_el('wbe-about')        || {}).value || '';
+    var diffs    = ((_el('wbe-diffs') || {}).value || '').split('\n').map(function(l){return l.trim();}).filter(Boolean);
+    var phi      = (_el('wbe-philosophy')   || {}).value || '';
+    var cta      = (_el('wbe-cta')          || {}).value || '';
+    var color    = (_el('wbe-color')        || {}).value || '#0b7c6e';
+    var dna      = (_el('wbe-dna')          || {}).value || 'surgical-authority';
+
+    var config = Object.assign({}, _liveConfig);
+    if (nombre)       config.doctor_name      = nombre;
+    if (espec)        config.specialty        = espec;
+    if (ciudad)       config.city             = ciudad;
+    if (headline)     config.headline         = headline;
+    if (subhl)        config.subheadline      = subhl;
+    if (bio)          config.hero_text        = bio;
+    if (about)        config.about_text       = about;
+    if (diffs.length) config.differentiators  = diffs;
+    if (phi)          config.philosophy       = phi;
+    if (cta)          config.cta_final        = cta;
+    config.primary_color   = color;
+    config.services        = _getServices();
+    config.servicios       = config.services;
+    config.gallery         = _gallery;
+    config.dna             = dna;
+    config.visual_dna      = dna;
+    config.selected_layout = dna;
+    if (_photoUrl) config.doctor_photo_url = _photoUrl;
+    if (_logoUrl)  config.logo_url         = _logoUrl;
+    config.photo_position   = _wsSettings._photo_position   || config.photo_position   || 'center 20%';
+    config.hero_photo_class = _wsSettings._hero_photo_class || config.hero_photo_class || 'cdm-hero-photo--card';
+
+    var _np = nombre.replace(/^(dra?\.?\s+)/i, '').trim().split(' ');
+    var doctor = {
+      slug: _slug, titulo: /dra\./i.test(nombre) ? 'Dra.' : 'Dr.',
+      nombre: _np[0] || '', apellido: _np.slice(1).join(' ') || '',
+      especialidades: espec ? [espec] : [],
+      ciudad: ciudad,
+      foto_url:  _photoUrl || _liveConfig.doctor_photo_url || null,
+      logo_url:  _logoUrl  || _liveConfig.logo_url         || null,
+      id: null, whatsapp: null, whatsapp_activo: false, telefono: null,
+      locs: [], web_status: 'active', plan: 'pro_web', plan_activo: true
+    };
+
+    return { config: config, doctor: doctor, locs: [], ws: _wsSettings };
+  }
+
+  function _liveRender() {
+    clearTimeout(_liveTimer);
+    _liveTimer = setTimeout(function() {
+      var frame = _el('wbe-preview-frame');
+      if (!frame || !frame.contentWindow) return;
+      var payload = _buildLivePayload();
+      frame.contentWindow.postMessage(Object.assign({ type: 'CITADOC_RENDER' }, payload), '*');
+    }, 80);
+  }
+
+  function _setDevice(mode) {
+    var frame = _el('wbe-preview-frame');
+    if (!frame) return;
+    var mb = _el('wbe-dev-mobile'), db = _el('wbe-dev-desktop');
+    if (mode === 'desktop') {
+      frame.style.width = '100%';
+      if (mb) mb.classList.remove('sel');
+      if (db) db.classList.add('sel');
+    } else {
+      frame.style.width = '430px';
+      if (mb) mb.classList.add('sel');
+      if (db) db.classList.remove('sel');
+    }
+  }
+
+  /* ── Schedule refresh ────────────────────────────────────────────────────── */
+  function _scheduleRefresh() { _updateScore(); _liveRender(); }
 
   /* ── Load data into form ────────────────────────────────────────────────── */
   function _loadData(d) {
     var config = d.web_config_jsonb || {};
     var ws     = d.web_settings    || {};
+    _liveConfig = Object.assign({}, config);
     _wsSettings = Object.assign({}, _WS_DEFAULTS, { dna: d.dna || 'authority' }, ws);
     _isLive     = !!d.activated_at;
     _photoUrl   = null; _logoUrl = null;
@@ -578,6 +683,8 @@
     // Scroll to top
     var body = _el('wbe-body'); if (body) body.scrollTop = 0;
     _updateScore();
+    // Trigger live preview — debounced to let iframe finish loading if needed
+    setTimeout(_liveRender, 300);
   }
 
   /* ── Save ───────────────────────────────────────────────────────────────── */
@@ -704,6 +811,10 @@
     if (modal) modal.classList.add('open');
     document.body.style.overflow = 'hidden';
 
+    // Wire iframe onload so render fires even if data arrives before iframe
+    var _frame = _el('wbe-preview-frame');
+    if (_frame) { _frame.onload = function() { _liveRender(); }; }
+
     var saveBtn = _el('wbe-btn-save');
     if (saveBtn) { saveBtn.textContent = 'Cargando...'; saveBtn.disabled = true; }
 
@@ -732,6 +843,7 @@
     if (modal) modal.classList.remove('open');
     document.body.style.overflow = '';
     if (_refreshTimer) { clearTimeout(_refreshTimer); _refreshTimer = null; }
+    if (_liveTimer)    { clearTimeout(_liveTimer);    _liveTimer    = null; }
     if (_opts.onClose) _opts.onClose();
   }
 
@@ -752,7 +864,8 @@
     uploadGallery:_uploadGallery,
     deploy:       _deployWeb,
     view:         _verWeb,
-    schedRefresh: _scheduleRefresh
+    schedRefresh: _scheduleRefresh,
+    setDevice:    _setDevice
   };
 
 })(window, document);
