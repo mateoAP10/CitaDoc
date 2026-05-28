@@ -811,23 +811,49 @@
       // If already live: refresh activated_at so the demo URL reflects this save immediately
       if (_isLive)         upd.activated_at  = new Date().toISOString();
 
+      console.log('[Builder] Saving slug:', _slug, '| config keys:', Object.keys(config).length, '| services:', config.services && config.services.length);
       var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug).select('slug');
+      console.log('[Builder] Save result:', JSON.stringify(_saveRes));
+
       if (_saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
-      if (!_saveRes.data || !_saveRes.data.length) throw new Error('Sin permisos para guardar este demo (RLS). Contacta soporte.');
+      if (!_saveRes.data || !_saveRes.data.length) throw new Error('Sin permisos para guardar (0 filas actualizadas). Slug: ' + _slug);
 
       // Sync in-memory config to match what was just saved
       _liveConfig = config;
+      console.log('[Builder] Saved OK — headline:', config.headline, '| dna:', config.dna);
 
       if (silent) {
         _updateScore();
       } else {
-        if (_opts.onSave) _opts.onSave();
-        close();
+        // Show success confirmation before closing
+        if (btn) {
+          btn.textContent = '✓ Guardado';
+          btn.style.background = 'linear-gradient(135deg,#059669,#10b981)';
+          btn.disabled = true;
+        }
+        setTimeout(function() {
+          if (_opts.onSave) _opts.onSave();
+          close();
+          if (btn) { btn.textContent = 'Guardar'; btn.style.background = ''; btn.disabled = false; }
+        }, 900);
       }
     } catch(e) {
-      var errEl = _el('wbe-error');
-      if (errEl) { errEl.textContent = 'Error al guardar: ' + (e.message || e); errEl.style.display = ''; }
-      if (!silent && btn) { btn.textContent = 'Guardar'; btn.disabled = false; }
+      console.error('[Builder] Save error:', e);
+      // Show error at TOP of form (always visible, no scroll needed)
+      var topbar = _el('wbe-topbar');
+      var errBanner = _el('wbe-err-banner');
+      if (!errBanner && topbar) {
+        errBanner = document.createElement('div');
+        errBanner.id = 'wbe-err-banner';
+        errBanner.style.cssText = 'background:#fef2f2;border-bottom:2px solid #fecaca;padding:.55rem 1.25rem;font-size:.78rem;color:#dc2626;font-weight:600;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:.5rem';
+        topbar.insertAdjacentElement('afterend', errBanner);
+      }
+      if (errBanner) {
+        errBanner.innerHTML = '⚠ Error al guardar: ' + _esc(e.message || String(e))
+          + '<button onclick="this.parentNode.style.display=\'none\'" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:1.1rem;line-height:1;flex-shrink:0">×</button>';
+        errBanner.style.display = 'flex';
+      }
+      if (!silent && btn) { btn.textContent = 'Guardar'; btn.style.background = ''; btn.disabled = false; }
     }
   }
 
