@@ -7,23 +7,23 @@
 
 var CSS = `
 .lyt-luxe{
-  --lyt-bg:#0D0D0D;--lyt-surface:#181818;--lyt-ink:#F0EDE8;--lyt-ink2:#A09890;
-  --lyt-muted:#6B6258;--lyt-border:#2A2520;--lyt-accent:#C9A84C;--lyt-accent-fg:#0D0D0D;
+  --lyt-bg:#FDFAF7;--lyt-surface:#F5EFE8;--lyt-ink:#1A0F0A;--lyt-ink2:#6B5446;
+  --lyt-muted:#A8927E;--lyt-border:#E8DDD4;--lyt-accent:#B07D5A;--lyt-accent-fg:#FDFAF7;
   --lyt-display:'Fraunces',Georgia,serif;--lyt-h1-weight:300;--lyt-h1-tracking:-.04em;
-  --lyt-radius:10px;--lyt-nav-bg:transparent;--lyt-section-bg:#0D0D0D;
-  --lyt-hero-overlay:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.3) 55%,transparent 100%);
-  --lyt-cta-bg:#C9A84C;--lyt-cta-ink:#0D0D0D;--lyt-cta-btn-bg:#C9A84C;--lyt-cta-btn-ink:#0D0D0D;
-  --lyt-label:#6B6258;--sticky-accent:#C9A84C;
+  --lyt-radius:10px;--lyt-nav-bg:rgba(253,250,247,.92);--lyt-section-bg:#FDFAF7;
+  --lyt-hero-overlay:linear-gradient(to top,rgba(26,15,10,.85) 0%,rgba(26,15,10,.2) 55%,transparent 100%);
+  --lyt-cta-bg:#B07D5A;--lyt-cta-ink:#FDFAF7;--lyt-cta-btn-bg:#B07D5A;--lyt-cta-btn-ink:#FDFAF7;
+  --lyt-label:#A8927E;--sticky-accent:#B07D5A;
 }
 .lyt-luxe .cdm-nav{position:absolute;top:0;left:0;right:0;z-index:30;background:transparent;border-bottom:none}
-.lyt-luxe .cdm-brand-name,.lyt-luxe .cdm-brand-esp{color:rgba(255,255,255,.9)}
-.lyt-luxe .cdm-nav-btn{background:#C9A84C;color:#0D0D0D}
+.lyt-luxe .cdm-brand-name,.lyt-luxe .cdm-brand-esp{color:rgba(255,255,255,.95)}
+.lyt-luxe .cdm-nav-btn{background:#B07D5A;color:#FDFAF7}
 .lyt-luxe .cdm-hero{padding-top:0}
 .lyt-luxe .cdm-hero-body{padding-top:40px;padding-bottom:32px}
-.lyt-luxe .cdm-hero--fullscreen .cdm-btn-book{background:#C9A84C;color:#0D0D0D}
-.lyt-luxe .cdm-section{border-top:1px solid #2A2520}
-.lyt-luxe .cdm-svc-card{background:#181818;border-color:#2A2520}
-.lyt-luxe .cdm-testi-card{background:#181818;border-color:#2A2520}
+.lyt-luxe .cdm-hero--fullscreen .cdm-btn-book{background:#B07D5A;color:#FDFAF7}
+.lyt-luxe .cdm-section{border-top:1px solid #E8DDD4}
+.lyt-luxe .cdm-svc-card{background:#F5EFE8;border-color:#E8DDD4}
+.lyt-luxe .cdm-testi-card{background:#F5EFE8;border-color:#E82520}
 .lyt-luxe .cdm-faq-item{background:#181818}
 .lyt-luxe .cdm-footer{background:#0D0D0D;border-top-color:#2A2520}
 .lyt-luxe .cdm-sticky{background:rgba(13,13,13,.92);border-top-color:#2A2520}
