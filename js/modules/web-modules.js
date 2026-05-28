@@ -66,7 +66,7 @@ var BASE_CSS = `
 /* HERO */
 .cdm-hero{position:relative;overflow:hidden;background:var(--lyt-hero-bg,var(--lyt-bg,#fff))}
 .cdm-hero-photo{overflow:hidden;position:relative;background:var(--lyt-surface,#f5f5f5)}
-.cdm-hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center 15%;display:block}
+.cdm-hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
 .cdm-hero-body{padding:24px 20px;position:relative;z-index:2;background:var(--lyt-hero-body-bg,var(--lyt-bg,#fff))}
 .cdm-hero-eyebrow{font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--lyt-muted,#999);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .cdm-hero-h1{font-family:var(--lyt-display,var(--lyt-font,'DM Sans',sans-serif));font-size:clamp(1.65rem,5.5vw,2.5rem);font-weight:var(--lyt-h1-weight,700);line-height:1.12;letter-spacing:var(--lyt-h1-tracking,-.025em);color:var(--lyt-hero-ink,var(--lyt-ink,#111));margin-bottom:10px}
@@ -267,13 +267,14 @@ function heroModule(config,doctor,ws){
   var sub=config.subheadline||'Atención médica de excelencia, con trato humano.';
   var wa=waUrl(doctor,nm);
   var variant=ws.hero_layout||'stacked';
-  var photoClass=ws._hero_photo_class||'cdm-hero-photo--card';
+  var photoClass=ws._hero_photo_class||config.hero_photo_class||'cdm-hero-photo--card';
 
   var ctasHTML=(ws.show_booking!==false
     ?'<button class="cdm-btn-book" onclick="abrirBooking&&abrirBooking()">'+ICON.calSm+' Agendar consulta</button>':'')
     +(wa&&ws.show_whatsapp!==false?'<a class="cdm-btn-wa" href="'+e(wa)+'" target="_blank" rel="noopener">'+ICON.wa+' WhatsApp</a>':'');
 
-  var photoHTML=photo?'<div class="cdm-hero-photo '+photoClass+'"><img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager"></div>':'';
+  var photoPos=config.photo_position||'center 20%';
+  var photoHTML=photo?'<div class="cdm-hero-photo '+photoClass+'"><img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager" style="object-position:'+photoPos+'"></div>':'';
   var eyebrow=e(esp+(ciudad?' · '+ciudad:''));
 
   var bodyHTML='<div class="cdm-hero-body">'

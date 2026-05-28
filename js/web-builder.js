@@ -58,6 +58,8 @@
     '.wbe-sw-track:before{content:"";position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}',
     '.wbe-sw input:checked+.wbe-sw-track{background:#0b7c6e}',
     '.wbe-sw input:checked+.wbe-sw-track:before{transform:translateX(18px)}',
+    '.wbe-pos-btn{flex:1;border:1.5px solid #e5e7eb;border-radius:8px;padding:.4rem .5rem;cursor:pointer;font-family:inherit;font-size:.69rem;color:#6b7280;font-weight:500;background:#fff;transition:all .15s;white-space:nowrap}',
+    '.wbe-pos-btn:hover{border-color:#9ecfca;color:#0b7c6e}.wbe-pos-btn.sel{border-color:#0b7c6e;background:#f0fdf8;color:#0b7c6e;font-weight:700}',
     '.wbe-lo-group{display:flex;gap:.4rem}',
     '.wbe-lo{flex:1;border:2px solid #e5e7eb;border-radius:10px;padding:.6rem .4rem;cursor:pointer;text-align:center;font-family:inherit;font-size:.7rem;color:#6b7280;font-weight:500;background:#fff;transition:all .15s}',
     '.wbe-lo:hover{border-color:#9ecfca}.wbe-lo.sel{border-color:#0b7c6e;background:#f0fdf8;color:#0b7c6e;font-weight:700}',
@@ -121,6 +123,22 @@
     +           '<div><div style="font-size:.78rem;font-weight:600;color:#374151">Logo</div><div id="wbe-logo-st" style="font-size:.65rem;color:#9ca3af">Subir imagen</div></div>'
     +         '</div>'
     +         '<input type="file" id="wbe-logo-input" accept="image/*" style="display:none" onchange="_wbe.uploadMedia(\'logo\',this)">'
+    +       '</div>'
+    +     '</div>'
+    +     '<div style="margin-top:.75rem"><label class="wbe-label">Posición de la foto</label>'
+    +       '<div style="display:flex;gap:.35rem;flex-wrap:wrap">'
+    +         '<button class="wbe-pos-btn" data-pos="center top"    onclick="_wbe.setPhotoPos(this)">Arriba</button>'
+    +         '<button class="wbe-pos-btn" data-pos="center 20%"   onclick="_wbe.setPhotoPos(this)">Centro-alto</button>'
+    +         '<button class="wbe-pos-btn sel" data-pos="center center" onclick="_wbe.setPhotoPos(this)">Centro</button>'
+    +         '<button class="wbe-pos-btn" data-pos="center 70%"   onclick="_wbe.setPhotoPos(this)">Centro-bajo</button>'
+    +         '<button class="wbe-pos-btn" data-pos="center bottom" onclick="_wbe.setPhotoPos(this)">Abajo</button>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div style="margin-top:.75rem"><label class="wbe-label">Forma de la foto</label>'
+    +       '<div style="display:flex;gap:.35rem">'
+    +         '<button class="wbe-pos-btn sel" data-shape="cdm-hero-photo--card" onclick="_wbe.setPhotoShape(this)">4:3 Card</button>'
+    +         '<button class="wbe-pos-btn" data-shape="cdm-hero-photo--wide"    onclick="_wbe.setPhotoShape(this)">16:7 Wide</button>'
+    +         '<button class="wbe-pos-btn" data-shape="cdm-hero-photo--tall"    onclick="_wbe.setPhotoShape(this)">3:4 Tall</button>'
     +       '</div>'
     +     '</div>'
     +     '<div><label class="wbe-label">Color principal</label>'
@@ -296,6 +314,21 @@
     }).join('');
   }
 
+  /* ── Photo position / shape setters ────────────────────────────────────── */
+  function _setPhotoPos(btn) {
+    document.querySelectorAll('.wbe-pos-btn[data-pos]').forEach(function(b){ b.classList.remove('sel'); });
+    btn.classList.add('sel');
+    _wsSettings._photo_position = btn.dataset.pos;
+    _saveSettings();
+  }
+
+  function _setPhotoShape(btn) {
+    document.querySelectorAll('.wbe-pos-btn[data-shape]').forEach(function(b){ b.classList.remove('sel'); });
+    btn.classList.add('sel');
+    _wsSettings._hero_photo_class = btn.dataset.shape;
+    _saveSettings();
+  }
+
   /* ── Layout / Nav setters ───────────────────────────────────────────────── */
   function _setLayout(section, value) {
     if (section === 'hero') {
@@ -464,6 +497,12 @@
       var el = _el('ws-' + k); if (el) el.checked = _wsSettings[k] !== false;
     });
 
+    // Photo position & shape buttons
+    var _pos = _wsSettings._photo_position || config.photo_position || 'center 20%';
+    document.querySelectorAll('.wbe-pos-btn[data-pos]').forEach(function(b){ b.classList.toggle('sel', b.dataset.pos === _pos); });
+    var _shape = _wsSettings._hero_photo_class || config.hero_photo_class || 'cdm-hero-photo--card';
+    document.querySelectorAll('.wbe-pos-btn[data-shape]').forEach(function(b){ b.classList.toggle('sel', b.dataset.shape === _shape); });
+
     // Layout buttons
     ['centered','split','fullscreen'].forEach(function(v) { var b = _el('wbl-hero-' + v); if (b) b.classList.toggle('sel', (_wsSettings.hero_layout || 'split') === v); });
     ['grid','list'].forEach(function(v) { var b = _el('wbl-services-' + v); if (b) b.classList.toggle('sel', (_wsSettings.services_layout || 'grid') === v); });
@@ -516,6 +555,8 @@
       config.gallery   = _gallery;
       if (_photoUrl) config.doctor_photo_url = _photoUrl;
       if (_logoUrl)  config.logo_url = _logoUrl;
+      if (_wsSettings._photo_position) config.photo_position = _wsSettings._photo_position;
+      if (_wsSettings._hero_photo_class) config.hero_photo_class = _wsSettings._hero_photo_class;
       if (_wsSettings.dna) config.dna = _wsSettings.dna;
 
       var upd = { doctor_name: nombre, specialty: espec, web_config_jsonb: config, web_settings: _wsSettings };
@@ -642,6 +683,8 @@
     save:         function() { _save(false); },
     layout:       _setLayout,
     nav:          _setNav,
+    setPhotoPos:  _setPhotoPos,
+    setPhotoShape:_setPhotoShape,
     settings:     _saveSettings,
     addSvc:       _addService,
     delGallery:   _deleteGallery,
