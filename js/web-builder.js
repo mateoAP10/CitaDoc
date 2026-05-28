@@ -12,7 +12,7 @@
   var _slug = null, _opts = {}, _wsSettings = {}, _gallery = [],
       _photoUrl = null, _logoUrl = null, _isLive = false,
       _refreshTimer = null, _injected = false,
-      _liveConfig = {}, _liveTimer = null;
+      _liveConfig = {}, _liveTimer = null, _autoSaveTimer = null;
 
   var _WS_DEFAULTS = {
     show_whatsapp: true, show_booking: true, show_carousel: true,
@@ -89,6 +89,7 @@
     + '<div id="wbe-topbar">'
     +   '<button onclick="_wbe.close()" style="padding:.35rem .7rem;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.3rem;flex-shrink:0">← Volver</button>'
     +   '<code id="wbe-slug-lbl" style="font-size:.72rem;color:#9ca3af;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0"></code>'
+    +   '<span id="wbe-autosave-badge" style="font-size:.65rem;font-weight:600;color:#10b981;flex-shrink:0;white-space:nowrap"></span>'
     +   '<div id="wbe-status-badge" style="padding:.22rem .65rem;border-radius:20px;font-size:.68rem;font-weight:800;background:#fef3c7;color:#b45309;flex-shrink:0;white-space:nowrap">● Demo</div>'
     +   '<button onclick="_wbe.view()" style="padding:.35rem .75rem;border:1.5px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#374151;font-size:.76rem;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0">Ver ↗</button>'
     +   '<button id="wbe-btn-deploy" onclick="_wbe.deploy()" style="padding:.35rem .8rem;border-radius:8px;background:#fef3c7;color:#b45309;font-size:.76rem;font-weight:700;cursor:pointer;border:1.5px solid #fde68a;font-family:inherit;flex-shrink:0">→ Deploy</button>'
@@ -442,11 +443,7 @@
     _renderModuleCards();
     _liveRender();
     _updateScore();
-    // Auto-save settings immediately using .then() (valid in Supabase v2, no .catch() chain)
-    if (_sb && _slug) {
-      _sb().from('generated_demos').update({ web_settings: _wsSettings }).eq('slug', _slug)
-        .then(function(r) { if (r.error) console.error('[Builder] settings save:', r.error.message); });
-    }
+    _autoSave();
   }
 
   /* ── Gallery ────────────────────────────────────────────────────────────── */
@@ -672,8 +669,18 @@
     el.innerHTML = html;
   }
 
+  /* ── Autosave debounce ──────────────────────────────────────────────────── */
+  function _autoSave() {
+    clearTimeout(_autoSaveTimer);
+    var badge = _el('wbe-autosave-badge');
+    if (badge) { badge.textContent = '● Sin guardar'; badge.style.color = '#f59e0b'; }
+    _autoSaveTimer = setTimeout(function() {
+      _save(true);
+    }, 800);
+  }
+
   /* ── Schedule refresh ────────────────────────────────────────────────────── */
-  function _scheduleRefresh() { _updateScore(); _liveRender(); }
+  function _scheduleRefresh() { _updateScore(); _liveRender(); _autoSave(); }
 
   /* ── Load data into form ────────────────────────────────────────────────── */
   function _loadData(d) {
@@ -861,9 +868,14 @@
       // Sync in-memory to actual DB state
       _liveConfig = Object.assign({}, _rbConf);
 
+      // Update autosave badge
+      var _ab = _el('wbe-autosave-badge');
+      if (_ab) { _ab.textContent = '✓ Guardado'; _ab.style.color = '#10b981'; }
+
       _liveRender();
       if (silent) {
         _updateScore();
+        setTimeout(function() { if (_ab) _ab.textContent = ''; }, 2000);
       } else {
         if (_opts.onSave) _opts.onSave();
         if (btn) {
@@ -872,6 +884,7 @@
         }
         setTimeout(function() {
           if (btn) { btn.textContent = 'Guardar'; btn.style.background = ''; btn.disabled = false; }
+          if (_ab) _ab.textContent = '';
         }, 1200);
         var eb = _el('wbe-err-banner'); if (eb) eb.style.display = 'none';
       }
@@ -991,8 +1004,9 @@
     var modal = _el('wbe-modal');
     if (modal) modal.classList.remove('open');
     document.body.style.overflow = '';
-    if (_refreshTimer) { clearTimeout(_refreshTimer); _refreshTimer = null; }
-    if (_liveTimer)    { clearTimeout(_liveTimer);    _liveTimer    = null; }
+    if (_refreshTimer)  { clearTimeout(_refreshTimer);  _refreshTimer  = null; }
+    if (_liveTimer)     { clearTimeout(_liveTimer);     _liveTimer     = null; }
+    if (_autoSaveTimer) { clearTimeout(_autoSaveTimer); _autoSaveTimer = null; }
     if (_opts.onClose) _opts.onClose();
   }
 
