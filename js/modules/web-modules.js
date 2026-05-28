@@ -484,15 +484,20 @@ function stickyBarModule(config,doctor,ws,container){
 
 // REVEAL — IntersectionObserver para animaciones
 function initReveal(container){
-  if(typeof IntersectionObserver==='undefined')return;
   var els=container.querySelectorAll('.rv');
   if(!els.length)return;
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      els.forEach(function(el){el.classList.add('in');});
+    });
+  });
+  if(typeof IntersectionObserver==='undefined')return;
   var obs=new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       if(entry.isIntersecting){entry.target.classList.add('in');obs.unobserve(entry.target);}
     });
-  },{threshold:.06,rootMargin:'0px 0px -20px 0px'});
-  els.forEach(function(el){obs.observe(el);});
+  },{threshold:.06,rootMargin:'0px 0px -40px 0px'});
+  els.forEach(function(el){el.classList.remove('in');obs.observe(el);});
 }
 
 // ── PUBLIC API ────────────────────────────────────────────────────────────────
