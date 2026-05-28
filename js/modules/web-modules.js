@@ -443,7 +443,6 @@ function ctaBlockModule(config,doctor,ws){
 // FOOTER
 function footerModule(config,doctor,ws){
   return'<footer class="cdm-footer">'
-    +'<span class="cdm-footer-txt">Powered by <a href="https://citadoc.lat" target="_blank" rel="noopener">CitaDoc</a></span>'
     +'<div class="cdm-powered"><a href="https://citadoc.lat" target="_blank" rel="noopener" class="cdm-powered-link">'
     +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
     +'<span>Powered by <strong>CitaDoc AI</strong></span>'
