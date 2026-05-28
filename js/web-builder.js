@@ -443,7 +443,16 @@
     _renderModuleCards();
     _liveRender();
     _updateScore();
-    _autoSave();
+    // Save web_settings immediately — toggles must persist even if user closes fast
+    if (_sb && _slug) {
+      _sb().from('generated_demos')
+        .update({ web_settings: _wsSettings })
+        .eq('slug', _slug)
+        .then(function(r) {
+          if (r && r.error) console.error('[Builder] web_settings save:', r.error.message);
+        });
+    }
+    _autoSave(); // also queue full config save
   }
 
   /* ── Gallery ────────────────────────────────────────────────────────────── */
@@ -1004,18 +1013,24 @@
     var modal = _el('wbe-modal');
     if (modal) modal.classList.remove('open');
     document.body.style.overflow = '';
-    if (_refreshTimer)  { clearTimeout(_refreshTimer);  _refreshTimer  = null; }
-    if (_liveTimer)     { clearTimeout(_liveTimer);     _liveTimer     = null; }
-    if (_autoSaveTimer) { clearTimeout(_autoSaveTimer); _autoSaveTimer = null; }
+    if (_refreshTimer) { clearTimeout(_refreshTimer); _refreshTimer = null; }
+    if (_liveTimer)    { clearTimeout(_liveTimer);    _liveTimer    = null; }
+    // DO NOT cancel _autoSaveTimer — let pending save fire in background after close
     if (_opts.onClose) _opts.onClose();
   }
 
   /* ── Public API ─────────────────────────────────────────────────────────── */
   window.webBuilderOpen  = open;
   window.webBuilderClose = close;
-  // Close modal if browser restores page from bfcache (back button / reload)
-  window.addEventListener('pageshow', function(e) {
-    if (e.persisted) { close(); }
+  // Close modal if browser restores page from bfcache
+  window.addEventListener('pageshow', function(e) { if (e.persisted) { close(); } });
+  // Flush pending save on page unload/reload
+  window.addEventListener('beforeunload', function() {
+    if (_autoSaveTimer && _slug && _sb && _sb()) {
+      clearTimeout(_autoSaveTimer);
+      _autoSaveTimer = null;
+      _save(true);
+    }
   });
   window._wbe = {
     close:        close,
