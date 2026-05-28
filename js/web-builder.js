@@ -1,5 +1,6 @@
 /**
- * CitaDoc Website Builder — Editor vertical simple
+ * CitaDoc Website Builder v2.1 — autosave + single source of truth
+ * BUILD: 2026-05-28
  * Uso:  webBuilderOpen(slug, opts)
  *       webBuilderClose()
  *
@@ -7,6 +8,7 @@
  */
 (function (window, document) {
   'use strict';
+  console.log('[Builder] v2.1 loaded — autosave activo');
 
   /* ── State ─────────────────────────────────────────────────────────────── */
   var _slug = null, _opts = {}, _wsSettings = {}, _gallery = [],
