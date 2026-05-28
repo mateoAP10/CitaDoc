@@ -442,7 +442,11 @@
     _renderModuleCards();
     _liveRender();
     _updateScore();
-    // DB persistence happens in _save() — no async call here
+    // Auto-save settings immediately using .then() (valid in Supabase v2, no .catch() chain)
+    if (_sb && _slug) {
+      _sb().from('generated_demos').update({ web_settings: _wsSettings }).eq('slug', _slug)
+        .then(function(r) { if (r.error) console.error('[Builder] settings save:', r.error.message); });
+    }
   }
 
   /* ── Gallery ────────────────────────────────────────────────────────────── */
@@ -814,8 +818,8 @@
       config.gallery   = _gallery;
       if (_photoUrl) config.doctor_photo_url = _photoUrl;
       if (_logoUrl)  config.logo_url         = _logoUrl;
-      if (_wsSettings._photo_position)   config.photo_position   = _wsSettings._photo_position;
-      if (_wsSettings._hero_photo_class) config.hero_photo_class = _wsSettings._hero_photo_class;
+      config.photo_position   = _wsSettings._photo_position   || _liveConfig.photo_position   || 'center 20%';
+      config.hero_photo_class = _wsSettings._hero_photo_class || _liveConfig.hero_photo_class || 'cdm-hero-photo--card';
       if (_wsSettings.dna)               config.dna              = _wsSettings.dna;
       // Persist dynamic module fields
       var _sig  = _el('wbe-instagram');  if (_sig  && _sig.value)  config.instagram_handle = _sig.value;
@@ -995,6 +999,10 @@
   /* ── Public API ─────────────────────────────────────────────────────────── */
   window.webBuilderOpen  = open;
   window.webBuilderClose = close;
+  // Close modal if browser restores page from bfcache (back button / reload)
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) { close(); }
+  });
   window._wbe = {
     close:        close,
     save:         function() { _save(false); },
