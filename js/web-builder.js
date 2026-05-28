@@ -826,11 +826,11 @@
       // Sync in-memory to actual DB state
       _liveConfig = Object.assign({}, _rbConf);
 
+      _liveRender();
       if (silent) {
         _updateScore();
       } else {
         if (_opts.onSave) _opts.onSave();
-        // Stay open — just show success on button
         if (btn) {
           btn.textContent = '✓ Guardado';
           btn.style.background = 'linear-gradient(135deg,#059669,#10b981)';
@@ -838,7 +838,6 @@
         setTimeout(function() {
           if (btn) { btn.textContent = 'Guardar'; btn.style.background = ''; btn.disabled = false; }
         }, 1200);
-        // Hide any previous error banner
         var eb = _el('wbe-err-banner'); if (eb) eb.style.display = 'none';
       }
     } catch(e) {
