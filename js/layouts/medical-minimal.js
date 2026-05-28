@@ -45,7 +45,7 @@ function render(config,doctor,locs,container){
     +M.services(config,ws)
     +M.faq(config,ws)
     +M.location(config,doctor,locs,ws)
-    +M.ctaBlock(config,doctor,ws)
+    +M.calculator(config,doctor,ws)+M.ctaBlock(config,doctor,ws)
     +M.footer(config,doctor,ws)
     +'</div>';
 

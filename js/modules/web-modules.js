@@ -145,6 +145,11 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 /* GALLERY */
 .cdm-gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px}
 .cdm-gallery-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px}
+.cdm-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem}
+.cdm-calc-item{background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.6rem}
+.cdm-calc-name{font-size:.9rem;font-weight:600;line-height:1.3;color:var(--lyt-ink,#111)}
+.cdm-calc-cta{display:inline-block;font-size:.75rem;font-weight:700;color:var(--lyt-accent,#0b7c6e);text-decoration:none;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;text-align:left}
+@media(min-width:640px){.cdm-calc-grid{grid-template-columns:repeat(4,1fr)}}
 
 /* LOCATION */
 .cdm-loc-list{display:flex;flex-direction:column;gap:14px;margin-top:4px}
@@ -428,6 +433,26 @@ function locationModule(config,doctor,locs,ws){
     +'</div></section>';
 }
 
+// CALCULATOR — precio estimado de consulta
+function calculatorModule(config,doctor,ws){
+  if(ws.show_calculator===false)return'';
+  var svcs=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title;});
+  if(!svcs.length)return'';
+  var nm=nom(doctor);
+  var wa=waUrl(doctor,nm);
+  var items=svcs.slice(0,4).map(function(s){
+    var t=e(s.t||s.title||'');
+    var cta=wa
+      ?'<a class="cdm-calc-cta" href="'+e(wa)+'" target="_blank" rel="noopener">Consultar precio →</a>'
+      :'<button class="cdm-calc-cta" onclick="abrirBooking&&abrirBooking()">Agendar →</button>';
+    return'<div class="cdm-calc-item rv"><div class="cdm-calc-name">'+t+'</div>'+cta+'</div>';
+  }).join('');
+  return'<section class="cdm-section" id="calculadora" data-ws="calculator">'
+    +'<div class="cdm-sec-label rv">Tarifas de consulta</div>'
+    +'<div class="cdm-calc-grid">'+items+'</div>'
+    +'</section>';
+}
+
 // CTA BLOCK
 function ctaBlockModule(config,doctor,ws){
   if(ws.show_cta===false)return'';
@@ -514,6 +539,7 @@ window.WebModules={
   metrics:        metricsModule,
   gallery:        galleryModule,
   location:       locationModule,
+  calculator:     calculatorModule,
   ctaBlock:       ctaBlockModule,
   footer:         footerModule,
   stickyBar:      stickyBarModule,

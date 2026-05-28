@@ -699,8 +699,8 @@
     var btn = _el('wbe-btn-save');
     if (!silent && btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
     try {
-      var cur = await _sb().from('generated_demos').select('web_config_jsonb').eq('slug', _slug).single();
-      var config = (cur.data && cur.data.web_config_jsonb) || {};
+      // Use in-memory config as base — no extra DB round-trip, no risk of overwrite
+      var config = Object.assign({}, _liveConfig);
       var nombre   = (_el('wbe-nombre')      || {}).value || '';
       var espec    = (_el('wbe-especialidad') || {}).value || '';
       var ciudad   = (_el('wbe-ciudad')       || {}).value || '';
@@ -712,33 +712,37 @@
       var phi      = (_el('wbe-philosophy')   || {}).value || '';
       var cta      = (_el('wbe-cta')          || {}).value || '';
       var services = _getServices();
-      // web_config_jsonb is the single source of truth — store EVERYTHING visual here
-      if (nombre)    config.doctor_name      = nombre;
-      if (espec)     config.specialty        = espec;
-      if (ciudad)    config.city             = ciudad;
-      if (headline)  config.headline         = headline;
-      if (subhl)     config.subheadline      = subhl;
-      if (bio)       config.hero_text        = bio;
-      if (about)     config.about_text       = about;
-      if (diffs.length) config.differentiators = diffs;
-      if (phi)       config.philosophy       = phi;
-      if (cta)       config.cta_final        = cta;
+      if (nombre)       config.doctor_name      = nombre;
+      if (espec)        config.specialty        = espec;
+      if (ciudad)       config.city             = ciudad;
+      if (headline)     config.headline         = headline;
+      if (subhl)        config.subheadline      = subhl;
+      if (bio)          config.hero_text        = bio;
+      if (about)        config.about_text       = about;
+      if (diffs.length) config.differentiators  = diffs;
+      if (phi)          config.philosophy       = phi;
+      if (cta)          config.cta_final        = cta;
       config.primary_color = (_el('wbe-color') || {}).value || '#0b7c6e';
       config.services  = services;
       config.servicios = services;
       config.gallery   = _gallery;
       if (_photoUrl) config.doctor_photo_url = _photoUrl;
-      if (_logoUrl)  config.logo_url = _logoUrl;
-      if (_wsSettings._photo_position) config.photo_position = _wsSettings._photo_position;
+      if (_logoUrl)  config.logo_url         = _logoUrl;
+      if (_wsSettings._photo_position)   config.photo_position   = _wsSettings._photo_position;
       if (_wsSettings._hero_photo_class) config.hero_photo_class = _wsSettings._hero_photo_class;
-      if (_wsSettings.dna) config.dna = _wsSettings.dna;
+      if (_wsSettings.dna)               config.dna              = _wsSettings.dna;
 
       var upd = { doctor_name: nombre, specialty: espec, web_config_jsonb: config, web_settings: _wsSettings };
-      if (_photoUrl) upd.photo_url = _photoUrl;
-      if (_logoUrl)  upd.logo_url  = _logoUrl;
-      if (_wsSettings.dna) upd.dna = _wsSettings.dna;
+      if (_photoUrl)       upd.photo_url     = _photoUrl;
+      if (_logoUrl)        upd.logo_url      = _logoUrl;
+      if (_wsSettings.dna) upd.dna          = _wsSettings.dna;
+      // If already live: refresh activated_at so the demo URL reflects this save immediately
+      if (_isLive)         upd.activated_at  = new Date().toISOString();
 
       await _sb().from('generated_demos').update(upd).eq('slug', _slug);
+
+      // Sync in-memory config to match what was just saved
+      _liveConfig = config;
 
       if (silent) {
         _updateScore();
