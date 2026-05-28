@@ -182,12 +182,17 @@
     +   '<div class="wbe-card-body">'
     +     '<div><label class="wbe-label">DNA / Estilo visual</label>'
     +       '<select id="wbe-dna" class="wbe-inp" onchange="_wbe.settings()">'
-    +         '<option value="surgical-authority">Surgical Authority — clínico, oscuro, experto</option>'
-    +         '<option value="performance-athletic">Performance Athletic — dinámico, deportivo</option>'
+    +         '<option value="surgical-authority">Surgical Authority — clínico, experto, foto sticky</option>'
     +         '<option value="warm-human-care">Warm Human Care — cálido, cercano, humano</option>'
-    +         '<option value="aesthetic-luxe">Aesthetic Luxe — lujo, transformación, editorial</option>'
-    +         '<option value="neoclinic">Neoclinic — moderno, tecnológico, minimalista</option>'
+    +         '<option value="aesthetic-luxe">Aesthetic Luxe — lujo, editorial, fullscreen</option>'
+    +         '<option value="performance-athletic">Performance Athletic — dinámico, deportivo, bold</option>'
     +         '<option value="sand-wellness">Sand Wellness — bienestar, naturaleza, calma</option>'
+    +         '<option value="neoclinic">Neoclinic — moderno, tecnológico, institucional</option>'
+    +         '<option value="medical-minimal">Medical Minimal — limpio, universal, confiable</option>'
+    +         '<option value="personal-brand">Personal Brand — médico como marca personal</option>'
+    +         '<option value="high-conversion">High Conversion — landing orientada a citas</option>'
+    +         '<option value="modern-story">Modern Story — cinemático, storytelling médico</option>'
+    +         '<option value="clinic-institutional">Clinic Institutional — centro médico, equipo</option>'
     +       '</select>'
     +     '</div>'
     +     '<div><label class="wbe-label">Layout del Hero</label>'
@@ -465,7 +470,7 @@
     ['transparent','solid'].forEach(function(v) { var b = _el('wbs-nav-' + v); if (b) b.classList.toggle('sel', (_wsSettings.navbar_style || 'transparent') === v); });
 
     var _dnaRaw = _wsSettings.dna || d.dna || 'surgical-authority';
-    var _dnaAliases = {authority:'surgical-authority',clinic:'surgical-authority',warm:'warm-human-care',modern:'performance-athletic',luxury:'aesthetic-luxe',sports:'performance-athletic',bienestar:'sand-wellness',estetica:'aesthetic-luxe'};
+    var _dnaAliases = {authority:'surgical-authority',clinic:'surgical-authority',warm:'warm-human-care',modern:'modern-story','future-minimal':'modern-story',luxury:'aesthetic-luxe',sports:'performance-athletic',bienestar:'sand-wellness',estetica:'aesthetic-luxe',minimal:'medical-minimal',brand:'personal-brand',conversion:'high-conversion',landing:'high-conversion',institutional:'clinic-institutional'};
     var dnaEl = _el('wbe-dna'); if (dnaEl) dnaEl.value = _dnaAliases[_dnaRaw] || _dnaRaw || 'surgical-authority';
 
     var saveBtn = _el('wbe-btn-save'); if (saveBtn) { saveBtn.textContent = 'Guardar'; saveBtn.disabled = false; }
