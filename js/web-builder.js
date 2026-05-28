@@ -693,8 +693,29 @@
     var th_p = _el('wbe-photo-thumb'), st_p = _el('wbe-photo-st');
     if (th_p) th_p.innerHTML = purl ? '<img src="' + _esc(purl) + '" style="width:100%;height:100%;object-fit:cover">' : '📷';
     if (st_p) st_p.textContent = purl ? '✓ Cargada' : 'Subir imagen';
-    // Init crop preview if photo exists
-    setTimeout(function(){ _initCropPreview(purl); }, 100);
+    // Init crop preview and restore saved position
+    setTimeout(function(){
+      _initCropPreview(purl);
+      var savedPos = _wsSettings._photo_position || config.photo_position || '';
+      if (savedPos) {
+        var cropImg    = _el('wbe-crop-img');
+        var cropSlider = _el('wbe-crop-y');
+        if (cropImg)    cropImg.style.objectPosition = savedPos;
+        if (cropSlider) {
+          var m = savedPos.match(/center\s+(\d+)/);
+          if (m) cropSlider.value = m[1];
+        }
+      }
+      var savedShape = _wsSettings._hero_photo_class || config.hero_photo_class || '';
+      if (savedShape) {
+        var cropBox = _el('wbe-crop-box');
+        if (cropBox) {
+          var ar = savedShape === 'cdm-hero-photo--tall' ? '3/4'
+                 : savedShape === 'cdm-hero-photo--wide' ? '16/7' : '16/9';
+          cropBox.style.aspectRatio = ar;
+        }
+      }
+    }, 100);
 
     var lurl = d.logo_url || config.logo_url || null;
     var th_l = _el('wbe-logo-thumb'), st_l = _el('wbe-logo-st');
