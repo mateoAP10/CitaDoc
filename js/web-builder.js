@@ -265,6 +265,9 @@
     +   '</div>'
     + '</div>'
 
+    /* dynamic module cards — shown when toggles are ON */
+    + '<div id="wbe-dynamic-cards"></div>'
+
     /* error */
     + '<div id="wbe-error" style="display:none;font-size:.77rem;color:#dc2626;padding:.6rem .85rem;background:#fef2f2;border-radius:9px;border:1px solid #fecaca"></div>'
 
@@ -436,6 +439,7 @@
       var el = _el('ws-' + k); if (el) _wsSettings[k] = el.checked;
     });
     var dnaEl = _el('wbe-dna'); if (dnaEl) _wsSettings.dna = dnaEl.value;
+    _renderModuleCards();
     _liveRender();
     await _sb().from('generated_demos').update({ web_settings: _wsSettings }).eq('slug', _slug).catch(console.error);
     _updateScore();
@@ -562,6 +566,13 @@
     if (_logoUrl)  config.logo_url         = _logoUrl;
     config.photo_position   = _wsSettings._photo_position   || config.photo_position   || 'center 20%';
     config.hero_photo_class = _wsSettings._hero_photo_class || config.hero_photo_class || 'cdm-hero-photo--card';
+    // Dynamic module fields
+    var _ig  = _el('wbe-instagram');  if (_ig  && _ig.value)  config.instagram_handle = _ig.value;
+    var _ln  = _el('wbe-loc-name');   if (_ln  && _ln.value)  config.location_name    = _ln.value;
+    var _la  = _el('wbe-loc-addr');   if (_la  && _la.value)  config.location_address = _la.value;
+    var _lm  = _el('wbe-loc-maps');   if (_lm  && _lm.value)  config.maps_url         = _lm.value;
+    var _ins = _el('wbe-insurances');
+    if (_ins && _ins.value) config.insurances = _ins.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
 
     var _np = nombre.replace(/^(dra?\.?\s+)/i, '').trim().split(' ');
     var _showWa = _wsSettings.show_whatsapp !== false;
@@ -607,6 +618,45 @@
     }
   }
 
+  /* ── Dynamic module cards ───────────────────────────────────────────────── */
+  function _flushDynamicCards() {
+    var ig  = _el('wbe-instagram');  if (ig)  _liveConfig.instagram_handle = ig.value;
+    var ln  = _el('wbe-loc-name');   if (ln)  _liveConfig.location_name    = ln.value;
+    var la  = _el('wbe-loc-addr');   if (la)  _liveConfig.location_address = la.value;
+    var lm  = _el('wbe-loc-maps');   if (lm)  _liveConfig.maps_url         = lm.value;
+    var ins = _el('wbe-insurances');
+    if (ins) _liveConfig.insurances = ins.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+  }
+
+  function _renderModuleCards() {
+    var el = _el('wbe-dynamic-cards'); if (!el) return;
+    _flushDynamicCards();
+    var html = '';
+    if (_wsSettings.show_instagram !== false) {
+      html += '<div class="wbe-card">'
+        + '<div class="wbe-card-hd"><span style="font-size:1rem">📸</span><span class="wbe-card-title">Instagram</span></div>'
+        + '<div class="wbe-card-body"><label class="wbe-label">Handle</label>'
+        + '<input id="wbe-instagram" class="wbe-inp" placeholder="@drnombre" value="' + _esc(_liveConfig.instagram_handle||'') + '" oninput="_wbe.schedRefresh()"></div></div>';
+    }
+    if (_wsSettings.show_map !== false) {
+      html += '<div class="wbe-card">'
+        + '<div class="wbe-card-hd"><span style="font-size:1rem">📍</span><span class="wbe-card-title">Mapa / Consultorio</span></div>'
+        + '<div class="wbe-card-body">'
+        + '<div><label class="wbe-label">Nombre</label><input id="wbe-loc-name" class="wbe-inp" placeholder="Consultorio Norte" value="' + _esc(_liveConfig.location_name||'') + '" oninput="_wbe.schedRefresh()"></div>'
+        + '<div><label class="wbe-label">Dirección</label><input id="wbe-loc-addr" class="wbe-inp" placeholder="Av. Principal 123" value="' + _esc(_liveConfig.location_address||'') + '" oninput="_wbe.schedRefresh()"></div>'
+        + '<div><label class="wbe-label">Link Google Maps</label><input id="wbe-loc-maps" class="wbe-inp" placeholder="https://maps.google.com/..." value="' + _esc(_liveConfig.maps_url||'') + '" oninput="_wbe.schedRefresh()"></div>'
+        + '</div></div>';
+    }
+    if (_wsSettings.show_insurance !== false) {
+      var insVal = Array.isArray(_liveConfig.insurances) ? _liveConfig.insurances.join('\n') : (_liveConfig.insurances||'');
+      html += '<div class="wbe-card">'
+        + '<div class="wbe-card-hd"><span style="font-size:1rem">🏥</span><span class="wbe-card-title">Seguros aceptados</span></div>'
+        + '<div class="wbe-card-body"><label class="wbe-label">Uno por línea</label>'
+        + '<textarea id="wbe-insurances" class="wbe-ta" rows="3" placeholder="Seguro Nacional&#10;IESS&#10;AXA" oninput="_wbe.schedRefresh()">' + _esc(insVal) + '</textarea></div></div>';
+    }
+    el.innerHTML = html;
+  }
+
   /* ── Schedule refresh ────────────────────────────────────────────────────── */
   function _scheduleRefresh() { _updateScore(); _liveRender(); }
 
@@ -615,9 +665,13 @@
     var config = d.web_config_jsonb || {};
     var ws     = d.web_settings    || {};
     _liveConfig = Object.assign({}, config);
+    // Ensure row-level photo/logo are in liveConfig for preview
+    if (d.photo_url && !_liveConfig.doctor_photo_url) _liveConfig.doctor_photo_url = d.photo_url;
+    if (d.logo_url  && !_liveConfig.logo_url)         _liveConfig.logo_url         = d.logo_url;
     _wsSettings = Object.assign({}, _WS_DEFAULTS, { dna: d.dna || 'authority' }, ws);
     _isLive     = !!d.activated_at;
-    _photoUrl   = null; _logoUrl = null;
+    _photoUrl   = d.photo_url || config.doctor_photo_url || null;
+    _logoUrl    = d.logo_url  || config.logo_url         || null;
     _gallery    = Array.isArray(config.gallery) ? config.gallery.slice() : [];
 
     var lbl = _el('wbe-slug-lbl'); if (lbl) lbl.textContent = '/' + _slug;
@@ -690,7 +744,7 @@
     // Scroll to top
     var left = _el('wbe-left'); if (left) left.scrollTop = 0;
     _updateScore();
-    // Trigger live preview — debounced to let iframe finish loading if needed
+    _renderModuleCards();
     setTimeout(_liveRender, 300);
   }
 
@@ -731,6 +785,13 @@
       if (_wsSettings._photo_position)   config.photo_position   = _wsSettings._photo_position;
       if (_wsSettings._hero_photo_class) config.hero_photo_class = _wsSettings._hero_photo_class;
       if (_wsSettings.dna)               config.dna              = _wsSettings.dna;
+      // Persist dynamic module fields
+      var _sig  = _el('wbe-instagram');  if (_sig  && _sig.value)  config.instagram_handle = _sig.value;
+      var _sln  = _el('wbe-loc-name');   if (_sln  && _sln.value)  config.location_name    = _sln.value;
+      var _sla  = _el('wbe-loc-addr');   if (_sla  && _sla.value)  config.location_address = _sla.value;
+      var _slm  = _el('wbe-loc-maps');   if (_slm  && _slm.value)  config.maps_url         = _slm.value;
+      var _sins = _el('wbe-insurances');
+      if (_sins && _sins.value) config.insurances = _sins.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
 
       var upd = { doctor_name: nombre, specialty: espec, web_config_jsonb: config, web_settings: _wsSettings };
       if (_photoUrl)       upd.photo_url     = _photoUrl;

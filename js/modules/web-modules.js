@@ -145,6 +145,13 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 /* GALLERY */
 .cdm-gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px}
 .cdm-gallery-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px}
+.cdm-ig-card{display:flex;flex-direction:column;gap:.3rem;padding:1rem 1.25rem;background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:14px;text-decoration:none;transition:opacity .15s}
+.cdm-ig-card:hover{opacity:.8}
+.cdm-ig-handle{font-size:1.1rem;font-weight:700;color:var(--lyt-ink,#111)}
+.cdm-ig-cta{font-size:.78rem;color:var(--lyt-accent,#111);font-weight:600}
+.cdm-ins-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-top:.5rem}
+@media(min-width:640px){.cdm-ins-grid{grid-template-columns:repeat(3,1fr)}}
+.cdm-ins-item{padding:.55rem .85rem;background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:8px;font-size:.82rem;font-weight:500;color:var(--lyt-ink,#111);text-align:center}
 .cdm-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem}
 .cdm-calc-item{background:var(--lyt-surface,rgba(0,0,0,.04));border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.6rem}
 .cdm-calc-name{font-size:.9rem;font-weight:600;line-height:1.3;color:var(--lyt-ink,#111)}
@@ -416,11 +423,18 @@ function galleryModule(config,ws){
     +'</div></section>';
 }
 
-// LOCATION
+// LOCATION — config-driven with locs fallback
 function locationModule(config,doctor,locs,ws){
-  var items=locs&&locs.length?locs:[];
+  if(ws.show_map===false)return'';
+  var items=locs&&locs.length?locs
+    :(config.location_address||config.location_name)?[{
+        nombre:config.location_name||'Consultorio',
+        direccion:config.location_address||'',
+        ciudad:config.location_city||config.city||'',
+        maps_url:config.maps_url||config.location_maps_url||''
+      }]:[];
   if(!items.length)return'';
-  return'<section class="cdm-section" id="contacto">'
+  return'<section class="cdm-section" id="contacto" data-ws="map">'
     +'<div class="cdm-sec-label rv">Consultorio</div>'
     +'<div class="cdm-loc-list">'
     +items.map(function(l){
@@ -430,6 +444,32 @@ function locationModule(config,doctor,locs,ws){
         +(l.maps_url?'<a class="cdm-loc-link" href="'+e(l.maps_url)+'" target="_blank" rel="noopener">'+ICON.loc+' Ver en mapa</a>':'')
         +'</div>';
     }).join('')
+    +'</div></section>';
+}
+
+// INSTAGRAM
+function instagramModule(config,ws){
+  if(ws.show_instagram===false)return'';
+  var handle=(config.instagram_handle||config.instagram||'').replace(/^@/,'');
+  if(!handle)return'';
+  return'<section class="cdm-section" id="instagram" data-ws="instagram">'
+    +'<div class="cdm-sec-label rv">Instagram</div>'
+    +'<a class="cdm-ig-card rv" href="https://instagram.com/'+e(handle)+'" target="_blank" rel="noopener">'
+    +'<div class="cdm-ig-handle">@'+e(handle)+'</div>'
+    +'<div class="cdm-ig-cta">Ver perfil en Instagram →</div>'
+    +'</a></section>';
+}
+
+// INSURANCE
+function insuranceModule(config,ws){
+  if(ws.show_insurance===false)return'';
+  var ins=Array.isArray(config.insurances)?config.insurances
+    :(typeof config.insurances==='string'?config.insurances.split('\n').map(function(s){return s.trim();}).filter(Boolean):[]);
+  if(!ins.length)return'';
+  return'<section class="cdm-section" id="seguros" data-ws="insurance">'
+    +'<div class="cdm-sec-label rv">Seguros aceptados</div>'
+    +'<div class="cdm-ins-grid">'
+    +ins.map(function(i){return'<div class="cdm-ins-item rv">'+e(i)+'</div>';}).join('')
     +'</div></section>';
 }
 
@@ -540,6 +580,8 @@ window.WebModules={
   gallery:        galleryModule,
   location:       locationModule,
   calculator:     calculatorModule,
+  instagram:      instagramModule,
+  insurance:      insuranceModule,
   ctaBlock:       ctaBlockModule,
   footer:         footerModule,
   stickyBar:      stickyBarModule,
