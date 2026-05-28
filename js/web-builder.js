@@ -811,12 +811,11 @@
       // If already live: refresh activated_at so the demo URL reflects this save immediately
       if (_isLive)         upd.activated_at  = new Date().toISOString();
 
-      console.log('[Builder] Saving slug:', _slug, '| config keys:', Object.keys(config).length, '| services:', config.services && config.services.length);
-      var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug).select('slug');
-      console.log('[Builder] Save result:', JSON.stringify(_saveRes));
+      console.log('[Builder] Saving slug:', _slug, '| headline:', config.headline, '| dna:', config.dna);
+      var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
+      console.log('[Builder] Save response error:', _saveRes && _saveRes.error);
 
-      if (_saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
-      if (!_saveRes.data || !_saveRes.data.length) throw new Error('Sin permisos para guardar (0 filas actualizadas). Slug: ' + _slug);
+      if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
 
       // Sync in-memory config to match what was just saved
       _liveConfig = config;
