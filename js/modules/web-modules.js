@@ -192,6 +192,76 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 .cdm-powered-link:hover{background:rgba(11,124,110,.13);color:#0b7c6e;border-color:rgba(11,124,110,.3)}
 .cdm-powered-link strong{font-weight:800}
 
+/* ── Hero: profile — cover panorámica + avatar circular superpuesto ── */
+.cdm-hero--profile{background:var(--lyt-bg,#fff)}
+.cdm-profile-cover{width:100%;aspect-ratio:16/5;overflow:hidden;background:var(--lyt-surface,#f5f5f5);position:relative;flex-shrink:0}
+.cdm-profile-cover img{width:100%;height:100%;object-fit:cover;object-position:center}
+.cdm-profile-cover-grad{width:100%;height:100%;background:linear-gradient(135deg,var(--lyt-accent,#0b7c6e) 0%,var(--lyt-ink,#111) 100%)}
+.cdm-profile-card{padding:0 20px 24px;background:var(--lyt-bg,#fff)}
+.cdm-profile-avatar{width:88px;height:88px;border-radius:50%;border:4px solid var(--lyt-bg,#fff);overflow:hidden;margin-top:-44px;background:var(--lyt-surface,#f5f5f5);margin-bottom:12px;flex-shrink:0}
+.cdm-profile-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.cdm-profile-name{font-family:var(--lyt-display,inherit);font-size:1.35rem;font-weight:700;color:var(--lyt-ink,#111);letter-spacing:-.02em;margin-bottom:3px}
+.cdm-profile-esp{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--lyt-muted,#999);margin-bottom:12px}
+.cdm-profile-bio{font-size:13.5px;color:var(--lyt-ink2,#555);line-height:1.7;margin-bottom:16px}
+.cdm-profile-stats{display:flex;gap:20px;padding:14px 0;border-top:1px solid var(--lyt-border,#e5e5e5);border-bottom:1px solid var(--lyt-border,#e5e5e5);margin-bottom:16px}
+.cdm-profile-stat-n{font-family:var(--lyt-display,inherit);font-size:1.15rem;font-weight:800;color:var(--lyt-accent,#111);line-height:1}
+.cdm-profile-stat-l{font-size:.48rem;text-transform:uppercase;letter-spacing:.1em;color:var(--lyt-muted,#999);margin-top:2px;font-weight:600}
+/* services horizontal scroll */
+.cdm-svc-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-top:4px}
+.cdm-svc-scroll::-webkit-scrollbar{display:none}
+.cdm-svc-chip{flex-shrink:0;display:flex;flex-direction:column;gap:5px;padding:14px 16px;background:var(--lyt-surface,#f9f9f9);border:1px solid var(--lyt-border,#e5e5e5);border-radius:var(--lyt-radius,12px);min-width:140px;max-width:180px}
+.cdm-svc-chip-icon{font-size:1.3rem}
+.cdm-svc-chip-name{font-size:.82rem;font-weight:700;color:var(--lyt-ink,#111);line-height:1.3}
+.cdm-svc-chip-desc{font-size:.65rem;color:var(--lyt-muted,#999);line-height:1.4}
+@media(min-width:768px){
+  .cdm-profile-cover{aspect-ratio:16/4}
+  .cdm-profile-card{padding:0 5% 32px;max-width:800px}
+  .cdm-profile-stats{gap:32px}
+  .cdm-hero--profile .cdm-hero-ctas{flex-direction:row;gap:10px}
+  .cdm-hero--profile .cdm-btn-book,.cdm-hero--profile .cdm-btn-wa{width:auto}
+  .cdm-svc-scroll{flex-wrap:wrap;gap:12px}
+  .cdm-svc-chip{min-width:160px}
+}
+
+/* ── Hero: authority — texto gigante, sin foto en hero ── */
+.cdm-hero--authority{
+  padding:calc(env(safe-area-inset-top,0px)+28px) 20px 28px;
+  background:var(--lyt-bg,#fff);
+  border-bottom:1px solid var(--lyt-border,#e5e5e5);
+}
+.cdm-authority-eyebrow{font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--lyt-muted,#999);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.cdm-authority-eyebrow::before{content:'';display:block;width:20px;height:1.5px;background:var(--lyt-accent,#111)}
+.cdm-authority-h1{font-family:var(--lyt-display,inherit);font-size:clamp(2.2rem,8vw,4.5rem);font-weight:var(--lyt-h1-weight,700);line-height:1.06;letter-spacing:var(--lyt-h1-tracking,-.04em);color:var(--lyt-ink,#111);margin-bottom:18px}
+.cdm-authority-sub{font-size:14px;line-height:1.75;color:var(--lyt-ink2,#555);margin-bottom:22px;max-width:520px}
+/* pillars dark band */
+.cdm-pillars-band{background:var(--lyt-ink,#111);padding:22px 20px}
+.cdm-pillars-band-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cdm-pillar-item{display:flex;flex-direction:column;gap:5px}
+.cdm-pillar-item-title{font-size:.8rem;font-weight:700;color:#fff;line-height:1.3}
+.cdm-pillar-item-desc{font-size:.65rem;color:rgba(255,255,255,.45);line-height:1.5}
+/* content split: services left, photo right */
+.cdm-authority-split{display:flex;flex-direction:column}
+.cdm-authority-svc-list{padding:0}
+.cdm-authority-svc-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--lyt-border,#e5e5e5);gap:10px}
+.cdm-authority-svc-left{display:flex;align-items:center;gap:12px}
+.cdm-authority-svc-icon{font-size:1.1rem;width:34px;height:34px;border-radius:8px;background:var(--lyt-surface,#f5f5f5);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cdm-authority-svc-name{font-size:.88rem;font-weight:600;color:var(--lyt-ink,#111)}
+.cdm-authority-svc-arr{color:var(--lyt-muted,#ccc);font-size:1.1rem}
+.cdm-authority-photo{width:100%;aspect-ratio:4/5;overflow:hidden;background:var(--lyt-surface,#f5f5f5)}
+.cdm-authority-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}
+@media(min-width:768px){
+  .cdm-hero--authority{padding:56px 7%;min-height:calc(60vh - 68px);display:flex;flex-direction:column;justify-content:center}
+  .cdm-authority-h1{font-size:clamp(3rem,6vw,5.5rem);max-width:800px}
+  .cdm-hero--authority .cdm-hero-ctas{flex-direction:row;gap:10px}
+  .cdm-hero--authority .cdm-btn-book,.cdm-hero--authority .cdm-btn-wa{width:auto}
+  .cdm-pillars-band{padding:28px 7%}
+  .cdm-pillars-band-grid{grid-template-columns:repeat(4,1fr);gap:24px}
+  .cdm-authority-split{flex-direction:row;align-items:stretch}
+  .cdm-authority-svc-list{flex:1;min-width:0}
+  .cdm-authority-svc-row{padding:16px 7%}
+  .cdm-authority-photo{width:40%;flex-shrink:0;aspect-ratio:unset;min-height:400px}
+}
+
 /* ── Hero: split — texto izquierda, foto derecha (desktop real 2-col) ── */
 @media(min-width:768px){
   .cdm-hero--split{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100svh - 68px);align-items:stretch}
@@ -372,6 +442,118 @@ function heroModule(config,doctor,ws){
     +photoHTML
     +bodyHTML
     +'</section>';
+}
+
+// HERO: profile — cover panorámica + avatar circular + stats + CTAs
+function heroProfileModule(config,doctor,ws){
+  var nm=nom(doctor);
+  var esp=(doctor.especialidades||[])[0]||'';
+  var ciudad=doctor.ciudad||'';
+  var photo=config.doctor_photo_url||doctor.foto_url||'';
+  var gallery=config.gallery||[];
+  var cover=gallery[0]||gallery[1]||'';
+  var bio=config.hero_text||config.about_text||config.tagline||config.doctor_story||'';
+  var wa=waUrl(doctor,nm);
+  var photoPos=config.photo_position||'center 20%';
+  var diffs=config.differentiators||[];
+  var yearsMatch=diffs.map(function(d){return typeof d==='string'?d:(d.t||d.title||'');}).join(' ').match(/(\d{1,2})\s*\+?\s*a[ñn]/i);
+  var srvCount=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title||s.name;}).length;
+  var coverHTML=cover?'<img src="'+e(cover)+'" alt="" loading="eager">':'<div class="cdm-profile-cover-grad"></div>';
+  var avatarHTML=photo?'<img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager" style="object-position:'+photoPos+'">':'';
+  var statsHTML=[
+    {n:yearsMatch?yearsMatch[1]+'+':'10+',l:'años exp.'},
+    {n:srvCount>0?srvCount+'':'∞',l:'servicios'},
+    {n:ciudad||'✓',l:ciudad?'ubicación':'verificado'}
+  ].map(function(s){return'<div><div class="cdm-profile-stat-n">'+e(s.n)+'</div><div class="cdm-profile-stat-l">'+e(s.l)+'</div></div>';}).join('');
+  var bioSnippet=bio?bio.slice(0,160)+(bio.length>160?'…':''):'';
+  var ctasHTML=(ws.show_booking!==false?'<button class="cdm-btn-book" onclick="abrirBooking&&abrirBooking()">'+ICON.calSm+' Agendar consulta</button>':'')
+    +(wa&&ws.show_whatsapp!==false?'<a class="cdm-btn-wa" href="'+e(wa)+'" target="_blank" rel="noopener">'+ICON.wa+' WhatsApp</a>':'');
+  return'<section class="cdm-hero cdm-hero--profile" id="inicio">'
+    +'<div class="cdm-profile-cover">'+coverHTML+'</div>'
+    +'<div class="cdm-profile-card">'
+    +'<div class="cdm-profile-avatar rv">'+avatarHTML+'</div>'
+    +'<div class="cdm-profile-name rv d1">'+e(nm)+'</div>'
+    +'<div class="cdm-profile-esp">'+e(esp+(ciudad?' · '+ciudad:''))+'</div>'
+    +(bioSnippet?'<p class="cdm-profile-bio rv d2">'+e(bioSnippet)+'</p>':'')
+    +'<div class="cdm-profile-stats rv d2">'+statsHTML+'</div>'
+    +(ctasHTML?'<div class="cdm-hero-ctas rv d3">'+ctasHTML+'</div>':'')
+    +'</div>'
+    +'</section>';
+}
+
+// HERO: authority — headline gigante sin foto, pilares en band oscura, servicios con foto al lado
+function heroAuthorityModule(config,doctor,ws){
+  var nm=nom(doctor);
+  var esp=(doctor.especialidades||[])[0]||'';
+  var ciudad=doctor.ciudad||'';
+  var hl=config.headline||'Tu salud, en las mejores manos.';
+  var sub=config.subheadline||'Atención médica de excelencia.';
+  var wa=waUrl(doctor,nm);
+  var eyebrow=e(esp+(ciudad?' · '+ciudad:''));
+  var ctasHTML=(ws.show_booking!==false?'<button class="cdm-btn-book" onclick="abrirBooking&&abrirBooking()">'+ICON.calSm+' Agendar consulta</button>':'')
+    +(wa&&ws.show_whatsapp!==false?'<a class="cdm-btn-wa" href="'+e(wa)+'" target="_blank" rel="noopener">'+ICON.wa+' WhatsApp</a>':'');
+  return'<section class="cdm-hero cdm-hero--authority" id="inicio">'
+    +'<div class="cdm-authority-eyebrow rv">'+eyebrow+'</div>'
+    +'<h1 class="cdm-authority-h1 rv d1">'+e(hl)+'</h1>'
+    +'<p class="cdm-authority-sub rv d2">'+e(sub)+'</p>'
+    +(ctasHTML?'<div class="cdm-hero-ctas rv d3">'+ctasHTML+'</div>':'')
+    +'</section>';
+}
+
+// PILLARS BAND — diferenciadores en banda oscura full-width (para authority-desk)
+function pillarsBandModule(config,ws){
+  var diffs=config.differentiators||[];
+  if(!diffs.length)return'';
+  var items=diffs.slice(0,4).map(function(d){
+    var t=typeof d==='string'?d:(d.t||d.title||d.text||'');
+    var desc=typeof d==='object'?(d.d||d.desc||d.description||''):'';
+    if(!desc&&t.includes(':')){desc=t.split(':').slice(1).join(':').trim();t=t.split(':')[0].trim();}
+    return{t:t,d:desc};
+  });
+  return'<div class="cdm-pillars-band">'
+    +'<div class="cdm-pillars-band-grid">'
+    +items.map(function(p){return'<div class="cdm-pillar-item rv"><div class="cdm-pillar-item-title">'+e(p.t)+'</div>'+(p.d?'<div class="cdm-pillar-item-desc">'+e(p.d)+'</div>':'')+'</div>';}).join('')
+    +'</div></div>';
+}
+
+// SERVICES AUTHORITY — lista con ícono + flecha + foto al costado (desktop)
+function servicesAuthorityModule(config,doctor,ws){
+  if(ws.show_services===false)return'';
+  var srvs=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title||s.name;});
+  if(!srvs.length)return'';
+  var photo=config.doctor_photo_url||doctor.foto_url||'';
+  var photoPos=config.photo_position||'center 20%';
+  var photoHTML=photo?'<div class="cdm-authority-photo"><img src="'+e(photo)+'" alt="" loading="lazy" style="object-position:'+photoPos+'"></div>':'';
+  var rowsHTML=srvs.slice(0,6).map(function(s){
+    var ic=s.i||s.icon||'✦';var nm=s.t||s.title||s.name||'';
+    return'<div class="cdm-authority-svc-row">'
+      +'<div class="cdm-authority-svc-left"><div class="cdm-authority-svc-icon">'+e(ic)+'</div><div class="cdm-authority-svc-name">'+e(nm)+'</div></div>'
+      +'<span class="cdm-authority-svc-arr">'+ICON.arr+'</span>'
+      +'</div>';
+  }).join('');
+  return'<div class="cdm-authority-split" data-ws="services">'
+    +'<div class="cdm-authority-svc-list">'+rowsHTML+'</div>'
+    +photoHTML
+    +'</div>';
+}
+
+// SERVICES SCROLL (horizontal chips para doctor-profile)
+function servicesScrollModule(config,ws){
+  if(ws.show_services===false)return'';
+  var srvs=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title||s.name;});
+  if(!srvs.length)return'';
+  return'<section class="cdm-section" data-ws="services">'
+    +'<div class="cdm-sec-label rv">Servicios</div>'
+    +'<div class="cdm-svc-scroll rv d1">'
+    +srvs.slice(0,8).map(function(s){
+      var ic=s.i||s.icon||'✦';var nm=s.t||s.title||s.name||'';var desc=s.d||s.desc||s.description||'';
+      return'<div class="cdm-svc-chip">'
+        +'<div class="cdm-svc-chip-icon">'+e(ic)+'</div>'
+        +'<div class="cdm-svc-chip-name">'+e(nm)+'</div>'
+        +(desc?'<div class="cdm-svc-chip-desc">'+e(desc.slice(0,55))+'</div>':'')
+        +'</div>';
+    }).join('')
+    +'</div></section>';
 }
 
 // HERO: split — text left, photo right, real 2-col desktop
@@ -802,6 +984,11 @@ window.WebModules={
   heroSplit:      heroSplitModule,
   heroCinematic:  heroCinematicModule,
   heroConversion: heroConversionModule,
+  heroProfile:    heroProfileModule,
+  heroAuthority:  heroAuthorityModule,
+  pillarsBand:    pillarsBandModule,
+  servicesAuthority: servicesAuthorityModule,
+  servicesScroll: servicesScrollModule,
   about:          aboutModule,
   services:       servicesModule,
   testimonials:   testimonialsModule,
