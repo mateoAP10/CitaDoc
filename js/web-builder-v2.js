@@ -12,7 +12,7 @@
 
   /* ── State ─────────────────────────────────────────────────────────────── */
   var _slug = null, _opts = {}, _wsSettings = {}, _gallery = [],
-      _photoUrl = null, _logoUrl = null, _isLive = false,
+      _photoUrl = null, _logoUrl = null, _coverUrl = null, _isLive = false,
       _refreshTimer = null, _injected = false,
       _liveConfig = {}, _liveTimer = null, _autoSaveTimer = null,
       _saveInProgress = false;
@@ -164,6 +164,19 @@
     +         '<span id="wbe-color-val" style="font-size:.82rem;color:#6b7280;font-family:monospace">#0b7c6e</span>'
     +       '</div>'
     +     '</div>'
+    +     '<div style="margin-top:.5rem">'
+    +       '<label class="wbe-label">Foto de portada <span style="font-size:.62rem;font-weight:400;color:#9ca3af">— para layouts de perfil</span></label>'
+    +       '<div class="wbe-upload-btn" onclick="document.getElementById(\'wbe-cover-input\').click()" style="margin-bottom:.5rem">'
+    +         '<div id="wbe-cover-thumb" class="wbe-upload-thumb" style="width:52px;height:28px;border-radius:5px;aspect-ratio:unset">🖼️</div>'
+    +         '<div><div style="font-size:.78rem;font-weight:600;color:#374151">Portada panorámica</div><div id="wbe-cover-st" style="font-size:.65rem;color:#9ca3af">Sube una foto ancha</div></div>'
+    +       '</div>'
+    +       '<input type="file" id="wbe-cover-input" accept="image/*" style="display:none" onchange="_wbe.uploadMedia(\'cover\',this)">'
+    +       '<div id="wbe-cover-preview" style="display:none;position:relative;width:100%;aspect-ratio:16/5;border-radius:8px;overflow:hidden;background:#f1f5f9;border:1.5px solid #e5e7eb;margin-bottom:.5rem">'
+    +         '<img id="wbe-cover-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" alt="">'
+    +       '</div>'
+    +       '<label class="wbe-label" style="margin-top:.4rem">Posición horizontal</label>'
+    +       '<input type="range" id="wbe-cover-x" min="0" max="100" value="50" style="width:100%;accent-color:#0b7c6e" oninput="_wbe.updateCoverX(this.value)">'
+    +     '</div>'
     +   '</div>'
     + '</div>'
 
@@ -232,9 +245,10 @@
     +           '<option value="medical-minimal">Medical Minimal — ultra limpio, universal</option>'
     +           '<option value="sand-wellness">Sand Wellness — bienestar, naturaleza, calma</option>'
     +         '</optgroup>'
-    +         '<optgroup label="◎  Perfil Digital — Arquitectura nueva">'
-    +           '<option value="doctor-profile">Doctor Profile — cover + avatar + chips</option>'
-    +           '<option value="authority-desk">Authority Desk — headline bold + pilares + lista</option>'
+    +         '<optgroup label="◎  Perfil Digital — Cover + avatar + chips">'
+    +           '<option value="doctor-profile">Profile Blanco — zinc limpio, moderno</option>'
+    +           '<option value="doctor-profile-noir">Profile Noir — oscuro, dorado, premium</option>'
+    +           '<option value="doctor-profile-terra">Profile Terra — tierra, cálido, humano</option>'
     +         '</optgroup>'
     +       '</select>'
     +     '</div>'
@@ -427,6 +441,14 @@
     _saveSettings();
   }
 
+  function _updateCoverX(val) {
+    var pos = val + '% center';
+    var img = _el('wbe-cover-img');
+    if (img) img.style.objectPosition = pos;
+    _liveConfig.cover_position = pos;
+    _scheduleRefresh();
+  }
+
   /* ── Layout / Nav setters ───────────────────────────────────────────────── */
   function _setLayout(section, value) {
     if (section === 'hero') {
@@ -497,6 +519,14 @@
     if (th) th.innerHTML = '<img src="' + pub + '" style="width:100%;height:100%;object-fit:cover">';
     if (st) st.textContent = '✓ Cargada';
     if (type === 'photo') { _photoUrl = pub; _initCropPreview(pub); }
+    else if (type === 'cover') {
+      _coverUrl = pub;
+      var prev = _el('wbe-cover-preview');
+      var cimg = _el('wbe-cover-img');
+      if (prev) prev.style.display = 'block';
+      if (cimg) cimg.src = pub;
+      if (th) th.innerHTML = '<img src="' + pub + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px">';
+    }
     else _logoUrl = pub;
     input.value = '';
     _updateScore();
@@ -588,8 +618,10 @@
     config.dna             = dna;
     config.visual_dna      = dna;
     config.selected_layout = dna;
-    if (_photoUrl) config.doctor_photo_url = _photoUrl;
-    if (_logoUrl)  config.logo_url         = _logoUrl;
+    if (_photoUrl)  config.doctor_photo_url = _photoUrl;
+    if (_logoUrl)   config.logo_url         = _logoUrl;
+    if (_coverUrl)  config.cover_url        = _coverUrl;
+    var _cx = _el('wbe-cover-x'); if (_cx) config.cover_position = _cx.value + '% center';
     config.photo_position   = _wsSettings._photo_position   || config.photo_position   || 'center 20%';
     config.hero_photo_class = _wsSettings._hero_photo_class || config.hero_photo_class || 'cdm-hero-photo--card';
     // Dynamic module fields
@@ -727,7 +759,18 @@
     _isLive     = !!d.activated_at;
     _photoUrl   = d.photo_url || config.doctor_photo_url || null;
     _logoUrl    = d.logo_url  || config.logo_url         || null;
+    _coverUrl   = config.cover_url || null;
     _gallery    = Array.isArray(config.gallery) ? config.gallery.slice() : [];
+    // Restore cover preview in editor
+    var cprev = _el('wbe-cover-preview'), cimg = _el('wbe-cover-img'), cth = _el('wbe-cover-thumb'), cst = _el('wbe-cover-st');
+    if (_coverUrl) {
+      if (cprev) cprev.style.display = 'block';
+      if (cimg)  cimg.src = _coverUrl;
+      if (cth)   cth.innerHTML = '<img src="' + _coverUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px">';
+      if (cst)   cst.textContent = '✓ Cargada';
+    }
+    var cx = _el('wbe-cover-x');
+    if (cx && config.cover_position) { var m=config.cover_position.match(/^(\d+)/); if(m) cx.value=m[1]; }
 
     var lbl = _el('wbe-slug-lbl'); if (lbl) lbl.textContent = '/' + _slug;
     _updateStatusUI();
@@ -871,6 +914,8 @@
         selected_layout:  dnaVal,
         doctor_photo_url: _photoUrl            || _liveConfig.doctor_photo_url || '',
         logo_url:         _logoUrl             || _liveConfig.logo_url         || '',
+        cover_url:        _coverUrl            || _liveConfig.cover_url        || '',
+        cover_position:   (function(){var cx=_el('wbe-cover-x');return cx?cx.value+'% center':(_liveConfig.cover_position||'50% center');})(),
         photo_position:   _wsSettings._photo_position   || _liveConfig.photo_position   || 'center 20%',
         hero_photo_class: _wsSettings._hero_photo_class || _liveConfig.hero_photo_class || 'cdm-hero-photo--card',
         services:         _getServices(),
@@ -1097,6 +1142,7 @@
     updateCropY:  _updateCropY,
     settings:     _saveSettings,
     dynInput:     _dynInput,
+    updateCoverX: _updateCoverX,
     addSvc:       _addService,
     delGallery:   _deleteGallery,
     uploadMedia:  _uploadMedia,

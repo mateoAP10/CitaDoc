@@ -193,34 +193,49 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 .cdm-powered-link strong{font-weight:800}
 
 /* ── Hero: profile — cover panorámica + avatar circular superpuesto ── */
-.cdm-hero--profile{background:var(--lyt-bg,#fff)}
+.cdm-hero--profile{background:var(--lyt-bg,#fff);overflow:visible}
 .cdm-profile-cover{width:100%;aspect-ratio:16/5;overflow:hidden;background:var(--lyt-surface,#f5f5f5);position:relative;flex-shrink:0}
-.cdm-profile-cover img{width:100%;height:100%;object-fit:cover;object-position:center}
+.cdm-profile-cover img{width:100%;height:100%;object-fit:cover;object-position:var(--cover-pos,center)}
 .cdm-profile-cover-grad{width:100%;height:100%;background:linear-gradient(135deg,var(--lyt-accent,#0b7c6e) 0%,var(--lyt-ink,#111) 100%)}
-.cdm-profile-card{padding:0 20px 24px;background:var(--lyt-bg,#fff)}
-.cdm-profile-avatar{width:88px;height:88px;border-radius:50%;border:4px solid var(--lyt-bg,#fff);overflow:hidden;margin-top:-44px;background:var(--lyt-surface,#f5f5f5);margin-bottom:12px;flex-shrink:0}
+/* card: padding-top 0 — el avatar sube con margin negativo */
+.cdm-profile-card{padding:0 20px 28px;background:var(--lyt-bg,#fff);position:relative;z-index:1}
+.cdm-profile-avatar{
+  width:92px;height:92px;border-radius:50%;
+  border:4px solid var(--lyt-bg,#fff);
+  box-shadow:0 2px 12px rgba(0,0,0,.14);
+  overflow:hidden;
+  margin-top:-46px;
+  margin-bottom:14px;
+  background:var(--lyt-surface,#f5f5f5);
+  flex-shrink:0;
+  position:relative;z-index:2;
+}
 .cdm-profile-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top}
-.cdm-profile-name{font-family:var(--lyt-display,inherit);font-size:1.35rem;font-weight:700;color:var(--lyt-ink,#111);letter-spacing:-.02em;margin-bottom:3px}
-.cdm-profile-esp{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--lyt-muted,#999);margin-bottom:12px}
-.cdm-profile-bio{font-size:13.5px;color:var(--lyt-ink2,#555);line-height:1.7;margin-bottom:16px}
-.cdm-profile-stats{display:flex;gap:20px;padding:14px 0;border-top:1px solid var(--lyt-border,#e5e5e5);border-bottom:1px solid var(--lyt-border,#e5e5e5);margin-bottom:16px}
-.cdm-profile-stat-n{font-family:var(--lyt-display,inherit);font-size:1.15rem;font-weight:800;color:var(--lyt-accent,#111);line-height:1}
-.cdm-profile-stat-l{font-size:.48rem;text-transform:uppercase;letter-spacing:.1em;color:var(--lyt-muted,#999);margin-top:2px;font-weight:600}
+.cdm-profile-name{font-family:var(--lyt-display,inherit);font-size:1.4rem;font-weight:700;color:var(--lyt-ink,#111);letter-spacing:-.025em;margin-bottom:3px;line-height:1.2}
+.cdm-profile-esp{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--lyt-muted,#999);margin-bottom:14px}
+.cdm-profile-bio{font-size:13.5px;color:var(--lyt-ink2,#555);line-height:1.75;margin-bottom:18px}
+.cdm-profile-stats{display:flex;gap:0;border-top:1px solid var(--lyt-border,#e5e5e5);border-bottom:1px solid var(--lyt-border,#e5e5e5);margin-bottom:18px}
+.cdm-profile-stat{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 4px;border-right:1px solid var(--lyt-border,#e5e5e5)}
+.cdm-profile-stat:last-child{border-right:none}
+.cdm-profile-stat-n{font-family:var(--lyt-display,inherit);font-size:1.25rem;font-weight:800;color:var(--lyt-accent,#111);line-height:1}
+.cdm-profile-stat-l{font-size:.46rem;text-transform:uppercase;letter-spacing:.1em;color:var(--lyt-muted,#999);margin-top:3px;font-weight:600;text-align:center}
 /* services horizontal scroll */
-.cdm-svc-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-top:4px}
+.cdm-svc-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;margin-top:4px}
 .cdm-svc-scroll::-webkit-scrollbar{display:none}
-.cdm-svc-chip{flex-shrink:0;display:flex;flex-direction:column;gap:5px;padding:14px 16px;background:var(--lyt-surface,#f9f9f9);border:1px solid var(--lyt-border,#e5e5e5);border-radius:var(--lyt-radius,12px);min-width:140px;max-width:180px}
-.cdm-svc-chip-icon{font-size:1.3rem}
-.cdm-svc-chip-name{font-size:.82rem;font-weight:700;color:var(--lyt-ink,#111);line-height:1.3}
-.cdm-svc-chip-desc{font-size:.65rem;color:var(--lyt-muted,#999);line-height:1.4}
+.cdm-svc-chip{flex-shrink:0;display:flex;flex-direction:column;gap:6px;padding:16px;background:var(--lyt-surface,#f9f9f9);border:1px solid var(--lyt-border,#e5e5e5);border-radius:var(--lyt-radius,14px);min-width:148px;max-width:180px;transition:border-color .15s}
+.cdm-svc-chip:hover{border-color:var(--lyt-accent,#0b7c6e)}
+.cdm-svc-chip-icon{font-size:1.4rem}
+.cdm-svc-chip-name{font-size:.84rem;font-weight:700;color:var(--lyt-ink,#111);line-height:1.3}
+.cdm-svc-chip-desc{font-size:.66rem;color:var(--lyt-muted,#999);line-height:1.45}
 @media(min-width:768px){
-  .cdm-profile-cover{aspect-ratio:16/4}
-  .cdm-profile-card{padding:0 5% 32px;max-width:800px}
-  .cdm-profile-stats{gap:32px}
+  .cdm-profile-cover{aspect-ratio:16/4;--cover-pos:center}
+  .cdm-profile-card{padding:0 5% 36px;max-width:860px}
+  .cdm-profile-avatar{width:108px;height:108px;margin-top:-54px;border-width:5px}
+  .cdm-profile-stats{max-width:320px}
   .cdm-hero--profile .cdm-hero-ctas{flex-direction:row;gap:10px}
   .cdm-hero--profile .cdm-btn-book,.cdm-hero--profile .cdm-btn-wa{width:auto}
-  .cdm-svc-scroll{flex-wrap:wrap;gap:12px}
-  .cdm-svc-chip{min-width:160px}
+  .cdm-svc-scroll{flex-wrap:wrap;gap:12px;overflow-x:visible}
+  .cdm-svc-chip{min-width:170px}
 }
 
 /* ── Hero: authority — texto gigante, sin foto en hero ── */
@@ -451,29 +466,33 @@ function heroProfileModule(config,doctor,ws){
   var ciudad=doctor.ciudad||'';
   var photo=config.doctor_photo_url||doctor.foto_url||'';
   var gallery=config.gallery||[];
-  var cover=gallery[0]||gallery[1]||'';
+  // cover_url tiene prioridad; si no, usa primera foto de galería; si no, gradiente
+  var cover=config.cover_url||gallery[0]||'';
+  var coverPos=config.cover_position||'center';
   var bio=config.hero_text||config.about_text||config.tagline||config.doctor_story||'';
   var wa=waUrl(doctor,nm);
   var photoPos=config.photo_position||'center 20%';
   var diffs=config.differentiators||[];
   var yearsMatch=diffs.map(function(d){return typeof d==='string'?d:(d.t||d.title||'');}).join(' ').match(/(\d{1,2})\s*\+?\s*a[ñn]/i);
   var srvCount=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title||s.name;}).length;
-  var coverHTML=cover?'<img src="'+e(cover)+'" alt="" loading="eager">':'<div class="cdm-profile-cover-grad"></div>';
+  var coverHTML=cover
+    ?'<img src="'+e(cover)+'" alt="" loading="eager" style="object-position:'+e(coverPos)+'">'
+    :'<div class="cdm-profile-cover-grad"></div>';
   var avatarHTML=photo?'<img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager" style="object-position:'+photoPos+'">':'';
   var statsHTML=[
     {n:yearsMatch?yearsMatch[1]+'+':'10+',l:'años exp.'},
     {n:srvCount>0?srvCount+'':'∞',l:'servicios'},
     {n:ciudad||'✓',l:ciudad?'ubicación':'verificado'}
-  ].map(function(s){return'<div><div class="cdm-profile-stat-n">'+e(s.n)+'</div><div class="cdm-profile-stat-l">'+e(s.l)+'</div></div>';}).join('');
-  var bioSnippet=bio?bio.slice(0,160)+(bio.length>160?'…':''):'';
+  ].map(function(s){return'<div class="cdm-profile-stat"><div class="cdm-profile-stat-n">'+e(s.n)+'</div><div class="cdm-profile-stat-l">'+e(s.l)+'</div></div>';}).join('');
+  var bioSnippet=bio?bio.slice(0,180)+(bio.length>180?'…':''):'';
   var ctasHTML=(ws.show_booking!==false?'<button class="cdm-btn-book" onclick="abrirBooking&&abrirBooking()">'+ICON.calSm+' Agendar consulta</button>':'')
     +(wa&&ws.show_whatsapp!==false?'<a class="cdm-btn-wa" href="'+e(wa)+'" target="_blank" rel="noopener">'+ICON.wa+' WhatsApp</a>':'');
   return'<section class="cdm-hero cdm-hero--profile" id="inicio">'
     +'<div class="cdm-profile-cover">'+coverHTML+'</div>'
     +'<div class="cdm-profile-card">'
-    +'<div class="cdm-profile-avatar rv">'+avatarHTML+'</div>'
-    +'<div class="cdm-profile-name rv d1">'+e(nm)+'</div>'
-    +'<div class="cdm-profile-esp">'+e(esp+(ciudad?' · '+ciudad:''))+'</div>'
+    +'<div class="cdm-profile-avatar">'+avatarHTML+'</div>'
+    +'<div class="cdm-profile-name rv">'+e(nm)+'</div>'
+    +'<div class="cdm-profile-esp rv d1">'+e(esp+(ciudad?' · '+ciudad:''))+'</div>'
     +(bioSnippet?'<p class="cdm-profile-bio rv d2">'+e(bioSnippet)+'</p>':'')
     +'<div class="cdm-profile-stats rv d2">'+statsHTML+'</div>'
     +(ctasHTML?'<div class="cdm-hero-ctas rv d3">'+ctasHTML+'</div>':'')
