@@ -12,19 +12,19 @@
   <script src="js/composition-engine.js"></script>
   <script src="js/module-registry.js"></script>
   <script src="js/scene-renderers.js"></script>
-  <script src="js/modules/web-modules.js"></script>
-  <script src="js/layouts/surgical-authority.js"></script>
-  <script src="js/layouts/warm-human-care.js"></script>
-  <script src="js/layouts/aesthetic-luxe.js"></script>
-  <script src="js/layouts/performance-athletic.js"></script>
-  <script src="js/layouts/sand-wellness.js"></script>
-  <script src="js/layouts/neoclinic.js"></script>
-  <script src="js/layouts/medical-minimal.js"></script>
-  <script src="js/layouts/personal-brand.js"></script>
-  <script src="js/layouts/high-conversion.js"></script>
-  <script src="js/layouts/modern-story.js"></script>
-  <script src="js/layouts/clinic-institutional.js"></script>
-  <script src="js/website-renderer.js"></script>
+  <script src="js/modules/web-modules.js?v202605282316"></script>
+  <script src="js/layouts/surgical-authority.js?v202605282316"></script>
+  <script src="js/layouts/warm-human-care.js?v202605282316"></script>
+  <script src="js/layouts/aesthetic-luxe.js?v202605282316"></script>
+  <script src="js/layouts/performance-athletic.js?v202605282316"></script>
+  <script src="js/layouts/sand-wellness.js?v202605282316"></script>
+  <script src="js/layouts/neoclinic.js?v202605282316"></script>
+  <script src="js/layouts/medical-minimal.js?v202605282316"></script>
+  <script src="js/layouts/personal-brand.js?v202605282316"></script>
+  <script src="js/layouts/high-conversion.js?v202605282316"></script>
+  <script src="js/layouts/modern-story.js?v202605282316"></script>
+  <script src="js/layouts/clinic-institutional.js?v202605282316"></script>
+  <script src="js/website-renderer.js?v202605282316"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{height:100%;font-family:'DM Sans',sans-serif;overflow-x:hidden}
@@ -37,6 +37,7 @@
     window.addEventListener('message', function(e) {
       if (!e.data || e.data.type !== 'CITADOC_RENDER') return;
       var d = e.data;
+      console.log('[Preview] gallery:', d.config && d.config.gallery && d.config.gallery.length, '| show_carousel:', d.ws && d.ws.show_carousel);
       if (typeof window.renderWebsite !== 'function') return;
       // Clean previous render
       var main = document.getElementById('dna-main');

@@ -509,6 +509,7 @@
     }
     input.value = '';
     if (btn) { btn.textContent = '+ Fotos'; btn.disabled = false; }
+    console.log('[Gallery] _gallery after upload:', _gallery.length, 'fotos');
     _renderGallery();
     _liveRender();
     _autoSave();
