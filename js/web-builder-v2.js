@@ -117,8 +117,8 @@
     +   '</div>'
     + '</div>'
 
-    /* ── VINCULAR MÉDICO ── */
-    + '<div class="wbe-card">'
+    /* ── VINCULAR MÉDICO (solo admin) ── */
+    + '<div class="wbe-card" id="wbe-vincular-card">'
     +   '<div class="wbe-card-hd"><span style="font-size:1rem">🔗</span><span class="wbe-card-title">Médico vinculado</span></div>'
     +   '<div class="wbe-card-body">'
     +     '<div id="wbe-linked-display" style="display:none;align-items:center;gap:.65rem;padding:.6rem .75rem;background:#f0fdf8;border:1.5px solid #a7f3d0;border-radius:10px">'
@@ -877,6 +877,10 @@
     var cemail = _el('wbe-contact-email');
     if (cemail) cemail.value = config.contact_email || '';
 
+    // Vincular médico — solo visible en modo admin
+    var _vcard = _el('wbe-vincular-card');
+    if (_vcard) _vcard.style.display = _opts.isAdmin ? '' : 'none';
+
     // Linked medico — si el demo ya tiene medico_id, cargar info del médico
     _linkedMedico = null;
     if (d.medico_id) {
@@ -1229,8 +1233,18 @@
         console.log('[Deploy] ✓ ' + _slug + ' → medico_id:' + _medicoId);
 
         // 7. Enviar email de activación al médico ──────────────────────────────
+        // Admin: usa campo contact_email o linked medico
+        // Self-service: usa sesión auth activa o medicos.email
         var _notifEmail = v('wbe-contact-email') || _liveConfig.contact_email || '';
+        if (!_notifEmail && !_opts.isAdmin) {
+          // Self-service: leer email de la sesión activa
+          try {
+            var _sess = await _sb().auth.getUser();
+            if (_sess.data && _sess.data.user) _notifEmail = _sess.data.user.email || '';
+          } catch(_se) {}
+        }
         if (!_notifEmail && _medicoId) {
+          // Fallback: leer desde tabla medicos (funciona para ambos modos)
           var _mEmail = await _sb().from('medicos').select('email,nombre,apellido,titulo,especialidades,ciudad').eq('id', _medicoId).maybeSingle();
           if (_mEmail.data) {
             _notifEmail = _mEmail.data.email || '';
