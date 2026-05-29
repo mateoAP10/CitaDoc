@@ -473,7 +473,7 @@
     }).join('');
   }
 
-  function _deleteGallery(idx) { _gallery.splice(idx, 1); _renderGallery(); }
+  function _deleteGallery(idx) { _gallery.splice(idx, 1); _renderGallery(); _autoSave(); }
 
   /* ── Upload media ───────────────────────────────────────────────────────── */
   async function _uploadMedia(type, input) {
@@ -511,6 +511,7 @@
     if (btn) { btn.textContent = '+ Fotos'; btn.disabled = false; }
     _renderGallery();
     _liveRender();
+    _autoSave();
   }
 
   /* ── Services ───────────────────────────────────────────────────────────── */
