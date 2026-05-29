@@ -366,9 +366,9 @@
     if (_isLive) {
       if (badge) { badge.textContent = '● Live'; badge.style.cssText = 'padding:.22rem .65rem;border-radius:20px;font-size:.68rem;font-weight:800;background:#dcfce7;color:#15803d;flex-shrink:0;white-space:nowrap'; }
       if (warn)  warn.style.display = '';
-      if (dep)   { dep.textContent = 'Retirar'; dep.style.cssText = 'padding:.35rem .8rem;border-radius:8px;background:#fef2f2;color:#dc2626;font-size:.76rem;font-weight:700;cursor:pointer;border:1.5px solid #fecaca;font-family:inherit;flex-shrink:0'; }
+      if (dep)   { dep.textContent = '✓ Deployed'; dep.style.cssText = 'padding:.35rem .8rem;border-radius:8px;background:#dcfce7;color:#15803d;font-size:.76rem;font-weight:700;cursor:pointer;border:1.5px solid #86efac;font-family:inherit;flex-shrink:0'; }
     } else {
-      if (badge) { badge.textContent = '● Demo'; badge.style.cssText = 'padding:.22rem .65rem;border-radius:20px;font-size:.68rem;font-weight:800;background:#fef3c7;color:#b45309;flex-shrink:0;white-space:nowrap'; }
+      if (badge) { badge.textContent = '● Borrador'; badge.style.cssText = 'padding:.22rem .65rem;border-radius:20px;font-size:.68rem;font-weight:800;background:#f3f4f6;color:#6b7280;flex-shrink:0;white-space:nowrap'; }
       if (warn)  warn.style.display = 'none';
       if (dep)   { dep.textContent = _opts.isAdmin ? '→ Deploy' : '→ Publicar'; dep.style.cssText = 'padding:.35rem .8rem;border-radius:8px;background:#fef3c7;color:#b45309;font-size:.76rem;font-weight:700;cursor:pointer;border:1.5px solid #fde68a;font-family:inherit;flex-shrink:0'; }
     }
