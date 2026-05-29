@@ -899,23 +899,24 @@
         show_instagram: wsSnap.show_instagram, show_map: wsSnap.show_map
       });
 
-      // Atomic: update + select en una sola operación — elimina race condition de read-back separado
+      // 1. Update
+      var _upd = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
+      if (_upd && _upd.error) throw new Error(_upd.error.message || 'Error en base de datos');
+
+      // 2. Read-back separado — anon puede SELECT (policy: public status IN demo/active/...)
       var _rb = await _sb().from('generated_demos')
-        .update(upd).eq('slug', _slug)
         .select('web_config_jsonb,web_settings,doctor_name')
-        .single();
+        .eq('slug', _slug).maybeSingle();
+      if (_rb.error) throw new Error(_rb.error.message || 'Error leyendo estado guardado');
 
-      if (_rb.error) throw new Error(_rb.error.message || 'Error en base de datos');
-      if (!_rb.data) throw new Error('No se pudo leer la fila después del update');
-
-      var _rbConf = _rb.data.web_config_jsonb || {};
+      var _rbConf = (_rb.data && _rb.data.web_config_jsonb) || config;
       console.log('[Builder] SAVED OK', {
         instagram_handle: _rbConf.instagram_handle,
         location_name: _rbConf.location_name,
         location_address: _rbConf.location_address
       });
 
-      // Sync in-memory to confirmed DB state
+      // Sync in-memory — si read-back falló (null), mantener el config local que acabamos de guardar
       _liveConfig = Object.assign({}, _rbConf);
 
       // Update autosave badge
