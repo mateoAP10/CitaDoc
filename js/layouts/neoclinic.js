@@ -61,9 +61,9 @@ function render(config,doctor,locs,container){
 
   container.innerHTML='<div class="cdm-wrap lyt-neo">'
     +M.nav(config,doctor,ws)
-    +M.hero(config,doctor,ws)
-    +M.about(config,doctor,ws)
+    +M.heroSplit(config,doctor,ws)
     +M.metrics(config,doctor,ws)
+    +M.about(config,doctor,ws)
     +M.services(config,ws)
     +M.testimonials(config,ws)
     +M.faq(config,ws)

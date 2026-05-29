@@ -22,10 +22,9 @@ var CSS = `
 
 /* desktop: hero full-width top, content below — centered max-width */
 @media(min-width:768px){
-  .lyt-warm .cdm-hero{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;min-height:70vh}
-  .lyt-warm .cdm-hero-photo{height:100%;min-height:480px;order:2;margin:0;border-radius:0;aspect-ratio:unset}
-  .lyt-warm .cdm-hero-photo img{height:100%}
-  .lyt-warm .cdm-hero-body{order:1;padding:56px 5% 56px 7%}
+  .lyt-warm .cdm-hero--split{grid-template-columns:1fr 1fr;min-height:70vh}
+  .lyt-warm .cdm-hero--split .cdm-hero-photo{min-height:480px}
+  .lyt-warm .cdm-hero--split .cdm-hero-body{padding:56px 5% 56px 7%}
   .lyt-warm .cdm-section{max-width:1100px;margin:0 auto;width:100%;box-sizing:border-box}
   .lyt-warm footer{max-width:1100px;margin:0 auto;width:100%;box-sizing:border-box}
 }
@@ -39,10 +38,10 @@ function render(config,doctor,locs,container){
 
   container.innerHTML='<div class="cdm-wrap lyt-warm">'
     +M.nav(config,doctor,ws)
-    +M.hero(config,doctor,ws)
+    +M.heroSplit(config,doctor,ws)
     +M.about(config,doctor,ws)
-    +M.services(config,ws)
     +M.testimonials(config,ws)
+    +M.services(config,ws)
     +M.faq(config,ws)
     +M.calculator(config,doctor,ws)+M.instagram(config,ws)+M.insurance(config,ws)+M.location(config,doctor,locs,ws)+M.ctaBlock(config,doctor,ws)
     +M.footer(config,doctor,ws)

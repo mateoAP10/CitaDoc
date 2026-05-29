@@ -43,10 +43,9 @@ function render(config,doctor,locs,container){
 
   container.innerHTML='<div class="cdm-wrap lyt-athletic">'
     +M.nav(config,doctor,ws)
-    +M.hero(config,doctor,ws)
-    +M.metrics(config,doctor,ws)
-    +M.about(config,doctor,ws)
+    +M.heroConversion(config,doctor,ws)
     +M.services(config,ws)
+    +M.metrics(config,doctor,ws)
     +M.testimonials(config,ws)
     +M.faq(config,ws)
     +M.calculator(config,doctor,ws)+M.instagram(config,ws)+M.insurance(config,ws)+M.location(config,doctor,locs,ws)+M.ctaBlock(config,doctor,ws)

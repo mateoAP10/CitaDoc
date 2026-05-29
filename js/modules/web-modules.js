@@ -192,6 +192,60 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 .cdm-powered-link:hover{background:rgba(11,124,110,.13);color:#0b7c6e;border-color:rgba(11,124,110,.3)}
 .cdm-powered-link strong{font-weight:800}
 
+/* ── Hero: split — texto izquierda, foto derecha (desktop real 2-col) ── */
+@media(min-width:768px){
+  .cdm-hero--split{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100svh - 68px);align-items:stretch}
+  .cdm-hero--split .cdm-hero-body{display:flex;flex-direction:column;justify-content:center;padding:56px 6%;order:1}
+  .cdm-hero--split .cdm-hero-photo{order:2;height:100%;aspect-ratio:unset;border-radius:0;margin:0;min-height:480px;position:relative}
+  .cdm-hero--split .cdm-hero-photo img{position:absolute;inset:0;height:100%}
+  .cdm-hero--split .cdm-hero-ctas{flex-direction:row;flex-wrap:wrap;gap:10px}
+  .cdm-hero--split .cdm-btn-book,.cdm-hero--split .cdm-btn-wa{width:auto;flex:1;min-width:130px}
+  .cdm-hero--split .cdm-hero-h1{font-size:clamp(1.8rem,3.5vw,2.8rem)}
+}
+
+/* ── Hero: cinematic — foto fullscreen + overlay + texto flotante ── */
+.cdm-hero--cinematic{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.cdm-hero--cinematic .cdm-hero-photo{position:absolute;inset:0;height:100%;aspect-ratio:unset;border-radius:0;margin:0}
+.cdm-hero--cinematic .cdm-hero-photo img{position:absolute;inset:0;height:100%;filter:var(--lyt-hero-filter,none)}
+.cdm-hero--cinematic::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:var(--lyt-hero-overlay,linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.35) 55%,rgba(0,0,0,.06) 100%))}
+.cdm-hero--cinematic .cdm-hero-body{position:relative;z-index:2;background:transparent;padding:24px 22px calc(28px + env(safe-area-inset-bottom,0px))}
+.cdm-hero--cinematic .cdm-hero-eyebrow{color:rgba(255,255,255,.5)}
+.cdm-hero--cinematic .cdm-hero-h1{color:#fff;font-size:clamp(2rem,6.5vw,3.6rem)}
+.cdm-hero--cinematic .cdm-hero-sub{color:rgba(255,255,255,.62)}
+.cdm-hero--cinematic .cdm-btn-book{background:var(--lyt-cta-btn-bg,var(--lyt-accent,#fff));color:var(--lyt-cta-btn-ink,#111)}
+.cdm-hero--cinematic .cdm-btn-wa{border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.08)}
+@media(min-width:768px){
+  .cdm-hero--cinematic .cdm-hero-body{padding:80px 8% 88px;max-width:700px}
+  .cdm-hero--cinematic .cdm-hero-ctas{flex-direction:row;gap:10px}
+  .cdm-hero--cinematic .cdm-btn-book,.cdm-hero--cinematic .cdm-btn-wa{width:auto}
+}
+
+/* ── Hero: conversion — avatar+trust bar above fold, no large photo mobile ── */
+.cdm-hero--conversion{padding:calc(env(safe-area-inset-top,0px)+22px) 20px 22px;background:var(--lyt-bg,#fff)}
+.cdm-hconv-col{width:100%}
+.cdm-hconv-top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.cdm-hconv-avatar{width:60px;height:60px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--lyt-surface,#f5f5f5);border:2.5px solid var(--lyt-border,#e5e5e5)}
+.cdm-hconv-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.cdm-hconv-name{font-size:1rem;font-weight:700;color:var(--lyt-ink,#111);letter-spacing:-.01em;line-height:1.2}
+.cdm-hconv-trust{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.cdm-hconv-trust::-webkit-scrollbar{display:none}
+.cdm-hconv-stat{flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:10px 14px;background:var(--lyt-surface,#f5f5f5);border-radius:12px;min-width:70px;border:1px solid var(--lyt-border,#e5e5e5)}
+.cdm-hconv-stat-n{font-family:var(--lyt-display,inherit);font-size:1.4rem;font-weight:800;color:var(--lyt-accent,#111);line-height:1}
+.cdm-hconv-stat-l{font-size:.48rem;text-transform:uppercase;letter-spacing:.1em;color:var(--lyt-muted,#999);margin-top:3px;font-weight:600;text-align:center}
+.cdm-hconv-photo{display:none}
+@media(min-width:768px){
+  .cdm-hero--conversion{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;min-height:calc(100svh - 68px);padding:0}
+  .cdm-hconv-col{display:flex;flex-direction:column;justify-content:center;padding:56px 6%}
+  .cdm-hconv-trust{flex-wrap:wrap;overflow:visible;gap:10px;margin-bottom:24px}
+  .cdm-hconv-stat{min-width:80px;padding:12px 16px}
+  .cdm-hconv-stat-n{font-size:1.7rem}
+  .cdm-hero--conversion .cdm-hero-h1{font-size:clamp(1.8rem,3vw,2.6rem)}
+  .cdm-hero--conversion .cdm-hero-ctas{flex-direction:row;gap:10px;margin-top:20px}
+  .cdm-hero--conversion .cdm-btn-book,.cdm-hero--conversion .cdm-btn-wa{width:auto;flex:1}
+  .cdm-hconv-photo{display:block;height:100%;min-height:480px;overflow:hidden;position:relative}
+  .cdm-hconv-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
+}
+
 /* REVEAL ANIMATION */
 .rv{opacity:0;transform:translateY(22px);transition:opacity .72s cubic-bezier(.16,1,.3,1),transform .72s cubic-bezier(.16,1,.3,1)}
 .rv.in{opacity:1;transform:none}
@@ -317,6 +371,103 @@ function heroModule(config,doctor,ws){
   return'<section class="cdm-hero" id="inicio">'
     +photoHTML
     +bodyHTML
+    +'</section>';
+}
+
+// HERO: split — text left, photo right, real 2-col desktop
+function heroSplitModule(config,doctor,ws){
+  var nm=nom(doctor);
+  var esp=(doctor.especialidades||[])[0]||'';
+  var ciudad=doctor.ciudad||'';
+  var photo=config.doctor_photo_url||doctor.foto_url||'';
+  var hl=config.headline||'Tu salud, en las mejores manos.';
+  var sub=config.subheadline||'Atención médica de excelencia, con trato humano.';
+  var wa=waUrl(doctor,nm);
+  var photoPos=config.photo_position||'center 20%';
+  var eyebrow=e(esp+(ciudad?' · '+ciudad:''));
+  var ctasHTML=(ws.show_booking!==false?'<button class="cdm-btn-book" onclick="abrirBooking&&abrirBooking()">'+ICON.calSm+' Agendar consulta</button>':'')
+    +(wa&&ws.show_whatsapp!==false?'<a class="cdm-btn-wa" href="'+e(wa)+'" target="_blank" rel="noopener">'+ICON.wa+' WhatsApp</a>':'');
+  var photoHTML=photo
+    ?'<div class="cdm-hero-photo"><img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager" style="object-position:'+photoPos+'"></div>'
+    :'<div class="cdm-hero-photo" style="background:var(--lyt-surface,#f0f0f0)"></div>';
+  return'<section class="cdm-hero cdm-hero--split" id="inicio">'
+    +'<div class="cdm-hero-body">'
+    +'<div class="cdm-hero-eyebrow rv">'+eyebrow+'</div>'
+    +'<h1 class="cdm-hero-h1 rv d1">'+e(hl)+'</h1>'
+    +'<p class="cdm-hero-sub rv d2">'+e(sub)+'</p>'
+    +(ctasHTML?'<div class="cdm-hero-ctas rv d3">'+ctasHTML+'</div>':'')
+    +'</div>'
+    +photoHTML
+    +'</section>';
+}
+
+// HERO: cinematic — fullscreen photo + gradient overlay + text floating bottom
+function heroCinematicModule(config,doctor,ws){
+  var nm=nom(doctor);
+  var esp=(doctor.especialidades||[])[0]||'';
+  var ciudad=doctor.ciudad||'';
+  var photo=config.doctor_photo_url||doctor.foto_url||'';
+  var hl=config.headline||'Tu salud, en las mejores manos.';
+  var sub=config.subheadline||'Atención médica de excelencia, con trato humano.';
+  var wa=waUrl(doctor,nm);
+  var photoPos=config.photo_position||'center 20%';
+  var eyebrow=e(esp+(ciudad?' · '+ciudad:''));
+  var ctasHTML=(ws.show_booking!==false?'<button class="cdm-btn-book" onclick="abrirBooking&&abrirBooking()">'+ICON.calSm+' Agendar consulta</button>':'')
+    +(wa&&ws.show_whatsapp!==false?'<a class="cdm-btn-wa" href="'+e(wa)+'" target="_blank" rel="noopener">'+ICON.wa+' WhatsApp</a>':'');
+  var photoHTML=photo?'<div class="cdm-hero-photo"><img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager" style="object-position:'+photoPos+'"></div>':'';
+  return'<section class="cdm-hero cdm-hero--cinematic" id="inicio">'
+    +photoHTML
+    +'<div class="cdm-hero-body">'
+    +'<div class="cdm-hero-eyebrow rv">'+eyebrow+'</div>'
+    +'<h1 class="cdm-hero-h1 rv d1">'+e(hl)+'</h1>'
+    +'<p class="cdm-hero-sub rv d2">'+e(sub)+'</p>'
+    +(ctasHTML?'<div class="cdm-hero-ctas rv d3">'+ctasHTML+'</div>':'')
+    +'</div>'
+    +'</section>';
+}
+
+// HERO: conversion — avatar + trust stats above fold, no large photo on mobile
+function heroConversionModule(config,doctor,ws){
+  var nm=nom(doctor);
+  var esp=(doctor.especialidades||[])[0]||'';
+  var ciudad=doctor.ciudad||'';
+  var photo=config.doctor_photo_url||doctor.foto_url||'';
+  var hl=config.headline||'Tu salud, en las mejores manos.';
+  var sub=config.subheadline||'Atención médica de excelencia, con trato humano.';
+  var wa=waUrl(doctor,nm);
+  var photoPos=config.photo_position||'center 20%';
+  var eyebrow=e(esp+(ciudad?' · '+ciudad:''));
+
+  // Build trust stats from differentiators or defaults
+  var diffs=config.differentiators||[];
+  var yearsMatch=diffs.map(function(d){return typeof d==='string'?d:(d.t||d.title||'');}).join(' ').match(/(\d{1,2})\s*\+?\s*a[ñn]/i);
+  var srvCount=(config.services||config.servicios||[]).filter(function(s){return s.t||s.title||s.name;}).length;
+  var stats=[
+    {n:yearsMatch?yearsMatch[1]+'+':'10+', l:'años exp.'},
+    {n:srvCount>1?srvCount+'':'100+', l:srvCount>1?'tratamientos':'pacientes'},
+    {n:ciudad?ciudad:'✓', l:ciudad?'ubicación':'verificado'}
+  ];
+  var statsHTML=stats.map(function(s){
+    return'<div class="cdm-hconv-stat"><div class="cdm-hconv-stat-n">'+e(s.n)+'</div><div class="cdm-hconv-stat-l">'+e(s.l)+'</div></div>';
+  }).join('');
+
+  var ctasHTML=(ws.show_booking!==false?'<button class="cdm-btn-book" onclick="abrirBooking&&abrirBooking()">'+ICON.calSm+' Agendar consulta</button>':'')
+    +(wa&&ws.show_whatsapp!==false?'<a class="cdm-btn-wa" href="'+e(wa)+'" target="_blank" rel="noopener">'+ICON.wa+' WhatsApp</a>':'');
+  var avatarHTML=photo?'<img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager" style="object-position:'+photoPos+'">':'';
+  var bigPhotoHTML=photo?'<div class="cdm-hconv-photo"><img src="'+e(photo)+'" alt="'+e(nm)+'" loading="eager" style="object-position:'+photoPos+'"></div>':'';
+
+  return'<section class="cdm-hero cdm-hero--conversion" id="inicio">'
+    +'<div class="cdm-hconv-col">'
+    +'<div class="cdm-hconv-top">'
+    +'<div class="cdm-hconv-avatar">'+avatarHTML+'</div>'
+    +'<div><div class="cdm-hero-eyebrow" style="margin-bottom:4px">'+eyebrow+'</div><div class="cdm-hconv-name">'+e(nm)+'</div></div>'
+    +'</div>'
+    +'<div class="cdm-hconv-trust rv">'+statsHTML+'</div>'
+    +'<h1 class="cdm-hero-h1 rv d1">'+e(hl)+'</h1>'
+    +'<p class="cdm-hero-sub rv d2">'+e(sub)+'</p>'
+    +(ctasHTML?'<div class="cdm-hero-ctas rv d3">'+ctasHTML+'</div>':'')
+    +'</div>'
+    +bigPhotoHTML
     +'</section>';
 }
 
@@ -648,6 +799,9 @@ window.WebModules={
   injectLayoutCSS:injectLayoutCSS,
   nav:            navModule,
   hero:           heroModule,
+  heroSplit:      heroSplitModule,
+  heroCinematic:  heroCinematicModule,
+  heroConversion: heroConversionModule,
   about:          aboutModule,
   services:       servicesModule,
   testimonials:   testimonialsModule,
