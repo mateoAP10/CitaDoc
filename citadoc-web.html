@@ -59,7 +59,7 @@
       if(dm.medico_id){
         _locsP=_sb.from("doctor_locations").select("id,nombre,direccion,telefono,ciudad,maps_url").eq("medico_id",dm.medico_id).order("created_at");
         _blkP=_sb.from("doctor_schedule_blocks").select("*").eq("medico_id",dm.medico_id).eq("is_active",true);
-        var _mbRes=await _sb.from("medicos").select("id,titulo,nombre,apellido,especialidades,ciudad,telefono,whatsapp,whatsapp_activo,email,foto_url,logo_url,slug,horarios_config,horario_desde,horario_hasta,dias_atencion,agendamiento_citadoc,duracion_consulta,plan,plan_activo,web_status").eq("id",dm.medico_id).maybeSingle();
+        var _mbRes=await _sb.from("medicos").select("id,titulo,nombre,apellido,especialidades,ciudad,telefono,whatsapp,whatsapp_activo,email,foto_url,slug,horarios_config,horario_desde,horario_hasta,dias_atencion,agendamiento_citadoc,plan,plan_activo,web_status,precio,seguros,mostrar_whatsapp,instagram").eq("id",dm.medico_id).maybeSingle();
         if(!_mbRes.error&&_mbRes.data){
           // Merge ALL medico fields into _med — agenda, horarios, sedes, contact
           Object.assign(_med,_mbRes.data);
