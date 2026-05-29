@@ -247,7 +247,6 @@
     +         '</optgroup>'
     +         '<optgroup label="◎  Perfil Digital — Cover + avatar + chips">'
     +           '<option value="doctor-profile">Profile Blanco — zinc limpio, moderno</option>'
-    +           '<option value="doctor-profile-noir">Profile Noir — oscuro, dorado, premium</option>'
     +           '<option value="doctor-profile-terra">Profile Terra — tierra, cálido, humano</option>'
     +         '</optgroup>'
     +       '</select>'

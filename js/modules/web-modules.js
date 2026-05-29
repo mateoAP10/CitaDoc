@@ -194,17 +194,17 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 
 /* ── Hero: profile — cover panorámica + avatar circular superpuesto ── */
 .cdm-hero--profile{background:var(--lyt-bg,#fff);overflow:visible}
-.cdm-profile-cover{width:100%;aspect-ratio:16/5;overflow:hidden;background:var(--lyt-surface,#f5f5f5);position:relative;flex-shrink:0}
+.cdm-profile-cover{width:100%;aspect-ratio:16/7;overflow:hidden;background:var(--lyt-surface,#f5f5f5);position:relative;flex-shrink:0}
 .cdm-profile-cover img{width:100%;height:100%;object-fit:cover;object-position:var(--cover-pos,center)}
 .cdm-profile-cover-grad{width:100%;height:100%;background:linear-gradient(135deg,var(--lyt-accent,#0b7c6e) 0%,var(--lyt-ink,#111) 100%)}
-/* card: padding-top 0 — el avatar sube con margin negativo */
-.cdm-profile-card{padding:0 20px 28px;background:var(--lyt-bg,#fff);position:relative;z-index:1}
+/* card: padding-top generoso — el avatar baja más */
+.cdm-profile-card{padding:16px 20px 28px;background:var(--lyt-bg,#fff);position:relative;z-index:1}
 .cdm-profile-avatar{
   width:92px;height:92px;border-radius:50%;
   border:4px solid var(--lyt-bg,#fff);
   box-shadow:0 2px 12px rgba(0,0,0,.14);
   overflow:hidden;
-  margin-top:-46px;
+  margin-top:-56px;
   margin-bottom:14px;
   background:var(--lyt-surface,#f5f5f5);
   flex-shrink:0;
@@ -228,9 +228,9 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
 .cdm-svc-chip-name{font-size:.84rem;font-weight:700;color:var(--lyt-ink,#111);line-height:1.3}
 .cdm-svc-chip-desc{font-size:.66rem;color:var(--lyt-muted,#999);line-height:1.45}
 @media(min-width:768px){
-  .cdm-profile-cover{aspect-ratio:16/4;--cover-pos:center}
-  .cdm-profile-card{padding:0 5% 36px;max-width:860px}
-  .cdm-profile-avatar{width:108px;height:108px;margin-top:-54px;border-width:5px}
+  .cdm-profile-cover{aspect-ratio:16/5;--cover-pos:center}
+  .cdm-profile-card{padding:20px 5% 36px;max-width:860px}
+  .cdm-profile-avatar{width:112px;height:112px;margin-top:-66px;border-width:5px}
   .cdm-profile-stats{max-width:320px}
   .cdm-hero--profile .cdm-hero-ctas{flex-direction:row;gap:10px}
   .cdm-hero--profile .cdm-btn-book,.cdm-hero--profile .cdm-btn-wa{width:auto}
