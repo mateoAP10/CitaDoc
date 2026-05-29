@@ -85,6 +85,7 @@
         ["inicio","beneficios","servicios","testimonios","sobre-mi","wLocsSection","contacto"].forEach(function(id){
           var n=el(id);if(n&&n.tagName!=="MAIN")n.style.display="none";
         });
+        console.log("[CitaDoc Live] _med at render:",{id:_med.id,whatsapp:_med.whatsapp,whatsapp_activo:_med.whatsapp_activo,horarios:!!(_med.horarios_config),nombre:_med.nombre,dna:cfg&&(cfg.dna||cfg.visual_dna),show_wa:_ws&&_ws.show_whatsapp});
         window.renderWebsite(_med,_locs,cfg,false,_ws);
       }else{
         renderWeb(_med,_locs,cfg,false);
