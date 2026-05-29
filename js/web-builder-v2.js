@@ -1030,32 +1030,109 @@
       if (btn) { btn.textContent = 'Publicando...'; btn.disabled = true; }
       await _save(true);
 
-      // Auto-resolve medico_id if missing — slug → doctor_name fuzzy
-      var _deployUpd = { activated_at: new Date().toISOString(), status: 'active', payment_status: 'paid' };
       try {
-        var _cur = await _sb().from('generated_demos').select('medico_id,doctor_name').eq('slug', _slug).maybeSingle();
-        if (_cur.data && !_cur.data.medico_id) {
-          // Try slug match first
-          var _mRes = await _sb().from('medicos').select('id').eq('slug', _slug).maybeSingle();
-          if (_mRes.data && _mRes.data.id) {
-            _deployUpd.medico_id = _mRes.data.id;
-            console.log('[Builder] medico_id resolved by slug:', _mRes.data.id);
-          } else if (_cur.data.doctor_name) {
-            // Fuzzy: extract first name from doctor_name and match medico
-            var _fn = (_cur.data.doctor_name || '').replace(/^(dra?\.?\s+)/i, '').trim().split(' ')[0];
+        // ── GARANTÍA: Deploy siempre produce medico_id vinculado ──────────────
+        // 1. Leer demo fresco (post-save)
+        var _demo = await _sb().from('generated_demos')
+          .select('medico_id,doctor_name,specialty,photo_url,logo_url,web_config_jsonb,dna')
+          .eq('slug', _slug).maybeSingle();
+        if (_demo.error || !_demo.data) throw new Error('Demo no encontrado');
+        var _d = _demo.data;
+        var _medicoId = _d.medico_id || null;
+
+        // 2. Si ya tiene medico_id → solo sincronizar config
+        if (_medicoId) {
+          await _sb().from('medicos').update({
+            web_status: 'active', plan: 'pro_web', plan_activo: true, activo: true,
+            foto_url: _d.photo_url || (_d.web_config_jsonb||{}).doctor_photo_url || null,
+            logo_url: _d.logo_url  || (_d.web_config_jsonb||{}).logo_url  || null,
+            web_config: Object.assign({}, _d.web_config_jsonb||{}, { web_status:'active', selected_layout:_d.dna||'surgical-authority' })
+          }).eq('id', _medicoId);
+          console.log('[Deploy] medico synced:', _medicoId);
+
+        } else {
+          // 3. Buscar por slug
+          var _bySlug = await _sb().from('medicos').select('id').eq('slug', _slug).maybeSingle();
+          if (_bySlug.data) {
+            _medicoId = _bySlug.data.id;
+            console.log('[Deploy] medico found by slug:', _medicoId);
+          } else {
+            // 4. Buscar por nombre fuzzy
+            var _fn = (_d.doctor_name||'').replace(/^(dra?\.?\s+)/i,'').trim().split(' ')[0];
             if (_fn) {
-              var _mRes2 = await _sb().from('medicos').select('id').ilike('nombre', _fn + '%').limit(1).maybeSingle();
-              if (_mRes2.data && _mRes2.data.id) {
-                _deployUpd.medico_id = _mRes2.data.id;
-                console.log('[Builder] medico_id resolved by name:', _fn, '→', _mRes2.data.id);
+              var _byName = await _sb().from('medicos').select('id').ilike('nombre',_fn+'%').limit(1).maybeSingle();
+              if (_byName.data) {
+                _medicoId = _byName.data.id;
+                console.log('[Deploy] medico found by name:', _fn, '→', _medicoId);
               }
             }
           }
-        }
-      } catch(_e) { /* non-fatal */ }
 
-      await _sb().from('generated_demos').update(_deployUpd).eq('slug', _slug);
-      _isLive = true;
+          if (_medicoId) {
+            // Encontrado — sincronizar config
+            await _sb().from('medicos').update({
+              web_status: 'active', plan: 'pro_web', plan_activo: true, activo: true,
+              foto_url: _d.photo_url || (_d.web_config_jsonb||{}).doctor_photo_url || null,
+              logo_url: _d.logo_url  || (_d.web_config_jsonb||{}).logo_url  || null,
+              web_config: Object.assign({}, _d.web_config_jsonb||{}, { web_status:'active', selected_layout:_d.dna||'surgical-authority' })
+            }).eq('id', _medicoId);
+          } else {
+            // 5. NO existe → CREAR medico garantizado ──────────────────────────
+            var _parts  = (_d.doctor_name||'').replace(/^(dra?\.?\s+)/i,'').trim().split(' ');
+            var _titulo = /dra\./i.test(_d.doctor_name||'') ? 'Dra.' : 'Dr.';
+            var _wc     = Object.assign({}, _d.web_config_jsonb||{}, {
+              web_status: 'active', selected_layout: _d.dna||'surgical-authority'
+            });
+            var _ins = await _sb().from('medicos').upsert({
+              slug:          _slug,
+              titulo:        _titulo,
+              nombre:        _parts[0] || '',
+              apellido:      _parts.slice(1).join(' ') || '',
+              especialidades: _d.specialty ? [_d.specialty] : [],
+              ciudad:        (_d.web_config_jsonb||{}).city || null,
+              foto_url:      _d.photo_url || (_d.web_config_jsonb||{}).doctor_photo_url || null,
+              logo_url:      _d.logo_url  || (_d.web_config_jsonb||{}).logo_url  || null,
+              web_config:    _wc,
+              web_status:    'active',
+              plan:          'pro_web',
+              plan_activo:   true,
+              activo:        true,
+            }, { onConflict: 'slug' }).select('id').single();
+            if (_ins.error) throw new Error('Error creando médico: ' + _ins.error.message);
+            _medicoId = _ins.data.id;
+            console.log('[Deploy] medico CREATED:', _medicoId);
+          }
+        }
+
+        // 6. Activar demo — siempre con medico_id garantizado ─────────────────
+        await _sb().from('generated_demos').update({
+          activated_at:   new Date().toISOString(),
+          status:         'active',
+          payment_status: 'paid',
+          medico_id:      _medicoId,
+        }).eq('slug', _slug);
+
+        console.log('[Deploy] ✓ ' + _slug + ' → medico_id:' + _medicoId);
+        _isLive = true;
+
+      } catch(_e) {
+        console.error('[Deploy] Error:', _e);
+        var _eb = _el('wbe-err-banner');
+        var _tb = _el('wbe-topbar');
+        if (!_eb && _tb) {
+          _eb = document.createElement('div');
+          _eb.id = 'wbe-err-banner';
+          _eb.style.cssText = 'background:#fef2f2;border-bottom:2px solid #fecaca;padding:.55rem 1.25rem;font-size:.78rem;color:#dc2626;font-weight:600;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:.5rem';
+          _tb.insertAdjacentElement('afterend', _eb);
+        }
+        if (_eb) {
+          _eb.innerHTML = '⚠ Error al publicar: ' + _esc(_e.message||String(_e))
+            +'<button onclick="this.parentNode.style.display=\'none\'" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:1.1rem;line-height:1;flex-shrink:0">×</button>';
+          _eb.style.display = 'flex';
+        }
+        if (btn) { btn.textContent = _opts.isAdmin ? '→ Deploy' : '→ Publicar'; btn.disabled = false; }
+        return;
+      }
     }
     _updateStatusUI();
     if (btn) btn.disabled = false;
