@@ -189,6 +189,9 @@
     +         '<span id="wbe-color-val" style="font-size:.82rem;color:#6b7280;font-family:monospace">#0b7c6e</span>'
     +       '</div>'
     +     '</div>'
+    +     '<div><label class="wbe-label">WhatsApp <span style="font-size:.62rem;font-weight:400;color:#9ca3af">— número con código de país</span></label>'
+    +       '<input id="wbe-whatsapp" class="wbe-inp" type="tel" placeholder="5491100000000" oninput="_wbe.dynInput(\'whatsapp\',this.value)">'
+    +     '</div>'
     +     '<div style="margin-top:.5rem">'
     +       '<label class="wbe-label">Foto de portada <span style="font-size:.62rem;font-weight:400;color:#9ca3af">— para layouts de perfil</span></label>'
     +       '<div class="wbe-upload-btn" onclick="document.getElementById(\'wbe-cover-input\').click()" style="margin-bottom:.5rem">'
@@ -937,6 +940,7 @@
     _set('wbe-about',       config.about_text  || '');
     _set('wbe-philosophy',  config.philosophy   || '');
     _set('wbe-cta',         config.cta_final    || '');
+    _set('wbe-whatsapp',    config.whatsapp     || d.whatsapp || '');
 
     var col = config.primary_color || '#0b7c6e';
     var colorEl = _el('wbe-color'); if (colorEl) colorEl.value = col;
@@ -1044,7 +1048,8 @@
         location_address: laVal,
         maps_url:         lmVal,
         insurances:       insVal,
-        contact_email:    v('wbe-contact-email') || _liveConfig.contact_email || ''
+        contact_email:    v('wbe-contact-email') || _liveConfig.contact_email || '',
+        whatsapp:         v('wbe-whatsapp')      || _liveConfig.whatsapp      || ''
       });
 
       var wsSnap = Object.assign({}, _WS_DEFAULTS, _wsSettings, {
@@ -1165,6 +1170,8 @@
             web_status: 'active', plan: 'pro_web', plan_activo: true, activo: true,
             foto_url: _d.photo_url || (_d.web_config_jsonb||{}).doctor_photo_url || null,
             logo_url: _d.logo_url  || (_d.web_config_jsonb||{}).logo_url  || null,
+            whatsapp: (_d.web_config_jsonb||{}).whatsapp || null,
+            whatsapp_activo: (_d.web_settings||{}).show_whatsapp !== false,
             web_config: Object.assign({}, _d.web_config_jsonb||{}, { web_status:'active', selected_layout:_d.dna||'surgical-authority' })
           }).eq('id', _medicoId);
           console.log('[Deploy] medico synced:', _medicoId);
