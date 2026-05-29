@@ -434,7 +434,7 @@ function doUpdatePassword(){var p=document.getElementById("resetNewPass").value,
 <script>
 // CitaDoc Pacientes V2 — raiz unica por email/cedula
 function pac2Abrir(){
-  if(!window.esPro||!esPro()){if(window.mostrarProModal)mostrarProModal("pacientes");return;}
+  if(!esPro||!esPro()){if(mostrarProModal)mostrarProModal("pacientes");return;}
   var m=document.getElementById("modalPacienteV2");
   if(!m)return;
   m.style.display="flex";
@@ -447,11 +447,11 @@ function pac2Abrir(){
 
 async function pac2Buscar(){
   var query=((document.getElementById("pac2_search")||{}).value||"").trim();
-  if(!query){if(window.mostrarToast)mostrarToast("Ingresa email o cedula","error");return;}
+  if(!query){if(mostrarToast)mostrarToast("Ingresa email o cedula","error");return;}
   var btn=document.getElementById("pac2_search_btn");
   if(btn){btn.textContent="Buscando...";btn.disabled=true;}
   var found=null;
-  var _sb=window._sb;
+  var _sb=_sb;
   if(query.includes("@")){
     var re=await _sb.from("pacientes").select("id,nombre,email,cedula,patient_number,fecha_nacimiento").eq("email",query).maybeSingle();
     if(!re.error&&re.data)found=re.data;
@@ -494,14 +494,14 @@ async function pac2Buscar(){
 
 async function pac2Vincular(btn){
   var pid=btn.dataset.pid;
-  var _sb=window._sb;
-  var M=window.M;
+  var _sb=_sb;
+  var M=M;
   if(!pid||!M)return;
   var r=await _sb.from("medico_paciente").upsert({medico_id:M.id,paciente_id:pid},{onConflict:"medico_id,paciente_id"});
-  if(r.error){if(window.mostrarToast)mostrarToast("Error: "+r.error.message,"error");return;}
-  if(window.mostrarToast)mostrarToast("Paciente agregado a tu lista");
+  if(r.error){if(mostrarToast)mostrarToast("Error: "+r.error.message,"error");return;}
+  if(mostrarToast)mostrarToast("Paciente agregado a tu lista");
   document.getElementById("modalPacienteV2").style.display="none";
-  if(window.cargarPacientes)cargarPacientes();
+  if(cargarPacientes)cargarPacientes();
 }
 
 function pac2MostrarForm(){
@@ -511,16 +511,16 @@ function pac2MostrarForm(){
 }
 
 async function pac2Crear(){
-  var _sb=window._sb;
-  var M=window.M;
+  var _sb=_sb;
+  var M=M;
   var nombre=((document.getElementById("pac2_nombre")||{}).value||"").trim();
   var email=((document.getElementById("pac2_email")||{}).value||"").trim();
   var cedula=((document.getElementById("pac2_cedula")||{}).value||"").trim();
   var tel=((document.getElementById("pac2_tel")||{}).value||"").trim();
   var fecha=(document.getElementById("pac2_fecha")||{}).value||null;
   var genero=(document.getElementById("pac2_genero")||{}).value||null;
-  if(!nombre){if(window.mostrarToast)mostrarToast("Nombre obligatorio","error");return;}
-  if(email&&!email.includes("@")){if(window.mostrarToast)mostrarToast("Email invalido","error");return;}
+  if(!nombre){if(mostrarToast)mostrarToast("Nombre obligatorio","error");return;}
+  if(email&&!email.includes("@")){if(mostrarToast)mostrarToast("Email invalido","error");return;}
   // Double-check globally
   var existing=null;
   if(email){var re=await _sb.from("pacientes").select("id,nombre,patient_number").eq("email",email).maybeSingle();if(!re.error&&re.data)existing=re.data;}
@@ -528,21 +528,21 @@ async function pac2Crear(){
   var pacId;
   if(existing){
     pacId=existing.id;
-    if(window.mostrarToast)mostrarToast("Paciente encontrado y vinculado: "+existing.nombre);
+    if(mostrarToast)mostrarToast("Paciente encontrado y vinculado: "+existing.nombre);
   } else {
     var ins=await _sb.from("pacientes").insert([{nombre:nombre,email:email||null,telefono:tel||null,cedula:cedula||null,fecha_nacimiento:fecha,genero:genero||null,origen:"manual",medico_id:M.id}]).select("id").single();
-    if(ins.error){if(window.mostrarToast)mostrarToast("Error: "+ins.error.message,"error");return;}
+    if(ins.error){if(mostrarToast)mostrarToast("Error: "+ins.error.message,"error");return;}
     pacId=ins.data.id;
-    if(window.mostrarToast)mostrarToast("Paciente creado");
+    if(mostrarToast)mostrarToast("Paciente creado");
   }
   await _sb.from("medico_paciente").upsert({medico_id:M.id,paciente_id:pacId},{onConflict:"medico_id,paciente_id"});
   document.getElementById("modalPacienteV2").style.display="none";
-  if(window.cargarPacientes)cargarPacientes();
+  if(cargarPacientes)cargarPacientes();
 }
 
 // Override abrirModalPaciente to open V2
 document.addEventListener("DOMContentLoaded",function(){
-  window.abrirModalPaciente=pac2Abrir;
+  abrirModalPaciente=pac2Abrir;
 });
 </script>
 </body></html>
