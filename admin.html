@@ -977,26 +977,31 @@ async function retractDemo(slug) {
 var _editSlug = null; // kept for legacy compat
 
 async function enviarLinkPago(slug) {
-  var email = prompt('Email del médico (deja vacío para solo copiar el link):');
+  // Fetch demo + linked medico email automatically
   var {data:demo} = await sb.from('generated_demos').select('slug,doctor_name,specialty,medico_id').eq('slug',slug).maybeSingle();
   if (!demo) { adminToast('Demo no encontrado', false); return; }
-  var payUrl = 'https://citadoc.lat/citadoc-pay.html?plan=pro_web&slug='+encodeURIComponent(slug)+(demo.medico_id?'&medico='+demo.medico_id:'')+(email?'&email='+encodeURIComponent(email):'');
-  if (navigator.clipboard) navigator.clipboard.writeText(payUrl).catch(function(){});
-  if (email) {
-    var nombre = (demo.doctor_name||'').replace(/^(dra?\.?\s+)/i,'').trim().split(' ')[0];
-    var res = await fetch(SB_URL+'/functions/v1/send-email', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-citadoc-public-key':'citadoc-public-2026'},
-      body: JSON.stringify({
-        type:'web_generada', to_email:email,
-        nombre:nombre, especialidad:demo.specialty||'', ciudad:'',
-        web_url:'https://citadoc.lat/demo/'+slug, is_real:false
-      })
-    });
-    res.ok ? adminToast('✉ Email enviado + link copiado') : adminToast('Error al enviar email', false);
-  } else {
-    adminToast('📋 Link copiado: '+(payUrl.slice(0,50)+'...'));
+  var email = '';
+  if (demo.medico_id) {
+    var {data:med} = await sb.from('medicos').select('email,nombre').eq('id',demo.medico_id).maybeSingle();
+    if (med && med.email) email = med.email;
   }
+  if (!email) {
+    email = prompt('No hay email registrado. Ingresá el email del médico:') || '';
+    if (!email) { adminToast('Email requerido', false); return; }
+  }
+  var payUrl = 'https://citadoc.lat/citadoc-pay.html?plan=pro_web&slug='+encodeURIComponent(slug)+(demo.medico_id?'&medico='+demo.medico_id:'')+'&email='+encodeURIComponent(email);
+  if (navigator.clipboard) navigator.clipboard.writeText(payUrl).catch(function(){});
+  var nombre = (demo.doctor_name||'').replace(/^(dra?\.?\s+)/i,'').trim().split(' ')[0];
+  var res = await fetch(SB_URL+'/functions/v1/send-email', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-citadoc-public-key':'citadoc-public-2026'},
+    body: JSON.stringify({
+      type:'web_generada', to_email:email,
+      nombre:nombre, especialidad:demo.specialty||'', ciudad:'',
+      web_url:'https://citadoc.lat/demo/'+slug, is_real:false
+    })
+  });
+  res.ok ? adminToast('✉ Link de pago enviado a '+email) : adminToast('Error al enviar: revisa el email', false);
 }
 function abrirModalEditWeb(slug) {
   _editSlug = slug;
