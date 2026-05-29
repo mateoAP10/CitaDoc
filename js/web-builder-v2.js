@@ -899,11 +899,13 @@
         show_instagram: wsSnap.show_instagram, show_map: wsSnap.show_map
       });
 
-      // 1. Update
-      var _upd = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
+      // 1. Update con count para detectar si realmente afectó filas
+      var _upd = await _sb().from('generated_demos').update(upd, { count: 'exact' }).eq('slug', _slug);
+      console.log('[Builder] UPDATE RESULT', { error: _upd && _upd.error, status: _upd && _upd.status, count: _upd && _upd.count });
       if (_upd && _upd.error) throw new Error(_upd.error.message || 'Error en base de datos');
+      if (_upd && _upd.count === 0) throw new Error('UPDATE no afectó ninguna fila — RLS puede estar bloqueando. Status: ' + (_upd.status || '?'));
 
-      // 2. Read-back separado — anon puede SELECT (policy: public status IN demo/active/...)
+      // 2. Read-back
       var _rb = await _sb().from('generated_demos')
         .select('web_config_jsonb,web_settings,doctor_name')
         .eq('slug', _slug).maybeSingle();
