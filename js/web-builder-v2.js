@@ -15,7 +15,8 @@
       _photoUrl = null, _logoUrl = null, _coverUrl = null, _isLive = false,
       _refreshTimer = null, _injected = false,
       _liveConfig = {}, _liveTimer = null, _autoSaveTimer = null,
-      _saveInProgress = false;
+      _saveInProgress = false,
+      _linkedMedico = null, _searchTimer = null;
 
   var _WS_DEFAULTS = {
     show_whatsapp: true, show_booking: true, show_carousel: true,
@@ -113,6 +114,30 @@
     +     '<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:.78rem;font-weight:600;color:#374151">Completitud del perfil</span><span id="wbe-score-pct" style="font-size:.82rem;font-weight:800;color:#0b7c6e">0%</span></div>'
     +     '<div class="wbe-score-bar"><div id="wbe-score-fill" class="wbe-score-fill" style="width:0%;background:linear-gradient(90deg,#0b7c6e,#34d399)"></div></div>'
     +     '<div id="wbe-score-checks" style="display:flex;flex-wrap:wrap;gap:.2rem .3rem;font-size:.66rem"></div>'
+    +   '</div>'
+    + '</div>'
+
+    /* ── VINCULAR MÉDICO ── */
+    + '<div class="wbe-card">'
+    +   '<div class="wbe-card-hd"><span style="font-size:1rem">🔗</span><span class="wbe-card-title">Médico vinculado</span></div>'
+    +   '<div class="wbe-card-body">'
+    +     '<div id="wbe-linked-display" style="display:none;align-items:center;gap:.65rem;padding:.6rem .75rem;background:#f0fdf8;border:1.5px solid #a7f3d0;border-radius:10px">'
+    +       '<div id="wbe-linked-avatar" style="width:36px;height:36px;border-radius:50%;background:#0b7c6e;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0"></div>'
+    +       '<div style="flex:1;min-width:0">'
+    +         '<div id="wbe-linked-name" style="font-size:.82rem;font-weight:700;color:#065f46;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>'
+    +         '<div id="wbe-linked-email" style="font-size:.65rem;color:#059669;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>'
+    +       '</div>'
+    +       '<button onclick="_wbe.unlinkMedico()" style="padding:.2rem .5rem;border:1px solid #a7f3d0;border-radius:6px;background:#fff;color:#dc2626;font-size:.65rem;font-weight:600;cursor:pointer;flex-shrink:0">✕</button>'
+    +     '</div>'
+    +     '<div id="wbe-search-wrap">'
+    +       '<label class="wbe-label">Buscar médico registrado</label>'
+    +       '<input id="wbe-medico-search" class="wbe-inp" placeholder="Nombre o email del médico..." oninput="_wbe.searchMedico(this.value)" autocomplete="off">'
+    +       '<div id="wbe-medico-results" style="display:none;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;margin-top:3px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08)"></div>'
+    +     '</div>'
+    +     '<div>'
+    +       '<label class="wbe-label" style="margin-top:.4rem">Email de contacto <span style="font-size:.62rem;font-weight:400;color:#9ca3af">— para notificación de deploy</span></label>'
+    +       '<input id="wbe-contact-email" class="wbe-inp" type="email" placeholder="doctor@email.com" oninput="_wbe.dynInput(\'contact_email\',this.value)">'
+    +     '</div>'
     +   '</div>'
     + '</div>'
 
@@ -685,6 +710,83 @@
     if (ins) _liveConfig.insurances = ins.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
   }
 
+  /* ── Doctor search & link ──────────────────────────────────────────────────── */
+  function _renderLinkedMedico() {
+    var m = _linkedMedico;
+    var disp = _el('wbe-linked-display');
+    var wrap = _el('wbe-search-wrap');
+    if (!m) {
+      if (disp) disp.style.display = 'none';
+      if (wrap) wrap.style.display = '';
+      return;
+    }
+    var fullName = (m.titulo||'Dr.') + ' ' + (m.nombre||'') + ' ' + (m.apellido||'');
+    var initials = ((m.nombre||'?')[0] + (m.apellido||'?')[0]).toUpperCase();
+    var av = _el('wbe-linked-avatar'); if (av) av.textContent = initials;
+    var nm = _el('wbe-linked-name');   if (nm) nm.textContent = fullName.trim();
+    var em = _el('wbe-linked-email');  if (em) em.textContent = m.email || 'Sin email registrado';
+    if (disp) disp.style.display = 'flex';
+    if (wrap) wrap.style.display = 'none';
+    // Pre-fill email if empty
+    var emailInput = _el('wbe-contact-email');
+    if (emailInput && !emailInput.value && m.email) {
+      emailInput.value = m.email;
+      _liveConfig.contact_email = m.email;
+    }
+  }
+
+  function _searchMedico(q) {
+    clearTimeout(_searchTimer);
+    var res = _el('wbe-medico-results');
+    if (!q || q.length < 2) { if (res) res.style.display = 'none'; return; }
+    _searchTimer = setTimeout(async function() {
+      try {
+        var r = await _sb().from('medicos')
+          .select('id,nombre,apellido,titulo,especialidades,ciudad,email')
+          .or('nombre.ilike.%' + q + '%,apellido.ilike.%' + q + '%,email.ilike.%' + q + '%')
+          .limit(6);
+        var results = (r.data || []);
+        if (!results.length) {
+          if (res) { res.style.display = 'block'; res.innerHTML = '<div style="padding:.6rem .85rem;font-size:.75rem;color:#9ca3af">Sin resultados para "' + _esc(q) + '"</div>'; }
+          return;
+        }
+        var html = results.map(function(m) {
+          var name = (m.titulo||'Dr.') + ' ' + (m.nombre||'') + ' ' + (m.apellido||'');
+          var esp  = (m.especialidades||[])[0] || '';
+          var em   = m.email || '';
+          return '<div onclick="_wbe.selectMedico(\'' + m.id + '\')" style="display:flex;align-items:center;gap:.6rem;padding:.6rem .85rem;cursor:pointer;border-bottom:1px solid #f1f3f5;transition:background .1s" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'">'
+            + '<div style="width:30px;height:30px;border-radius:50%;background:#0b7c6e22;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#0b7c6e;flex-shrink:0">' + ((m.nombre||'?')[0]+(m.apellido||'?')[0]).toUpperCase() + '</div>'
+            + '<div style="flex:1;min-width:0"><div style="font-size:.8rem;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + _esc(name.trim()) + '</div>'
+            + '<div style="font-size:.62rem;color:#9ca3af">' + _esc(esp) + (em ? ' · ' + _esc(em) : '') + '</div></div>'
+            + '</div>';
+        }).join('');
+        if (res) { res.style.display = 'block'; res.innerHTML = html; }
+        // cache results for selectMedico lookup
+        _wbe._searchCache = results;
+      } catch(e) { console.error('[Search]', e); }
+    }, 350);
+  }
+
+  function _selectMedico(id) {
+    var cache = (_wbe && _wbe._searchCache) || [];
+    var found = cache.find(function(m) { return m.id === id; });
+    if (!found) return;
+    _linkedMedico = found;
+    _liveConfig.medico_id_linked = id;
+    _renderLinkedMedico();
+    var res = _el('wbe-medico-results'); if (res) res.style.display = 'none';
+    var inp = _el('wbe-medico-search');  if (inp) inp.value = '';
+    _autoSave();
+  }
+
+  function _unlinkMedico() {
+    _linkedMedico = null;
+    _liveConfig.medico_id_linked = null;
+    _renderLinkedMedico();
+    var emailInput = _el('wbe-contact-email');
+    if (emailInput) emailInput.value = _liveConfig.contact_email || '';
+  }
+
   // Called on oninput for dynamic fields — updates _liveConfig immediately so save always has the latest value
   function _dynInput(key, val) {
     if (key === 'insurances') {
@@ -770,6 +872,17 @@
     }
     var cx = _el('wbe-cover-x');
     if (cx && config.cover_position) { var m=config.cover_position.match(/^(\d+)/); if(m) cx.value=m[1]; }
+
+    // Contact email
+    var cemail = _el('wbe-contact-email');
+    if (cemail) cemail.value = config.contact_email || '';
+
+    // Linked medico — si el demo ya tiene medico_id, cargar info del médico
+    _linkedMedico = null;
+    if (d.medico_id) {
+      _sb().from('medicos').select('id,nombre,apellido,titulo,especialidades,ciudad,email').eq('id', d.medico_id).maybeSingle()
+        .then(function(r) { if (r.data) { _linkedMedico = r.data; _renderLinkedMedico(); } });
+    } else { _renderLinkedMedico(); }
 
     var lbl = _el('wbe-slug-lbl'); if (lbl) lbl.textContent = '/' + _slug;
     _updateStatusUI();
@@ -926,7 +1039,8 @@
         location_name:    lnVal,
         location_address: laVal,
         maps_url:         lmVal,
-        insurances:       insVal
+        insurances:       insVal,
+        contact_email:    v('wbe-contact-email') || _liveConfig.contact_email || ''
       });
 
       var wsSnap = Object.assign({}, _WS_DEFAULTS, _wsSettings, {
@@ -1113,6 +1227,38 @@
         }).eq('slug', _slug);
 
         console.log('[Deploy] ✓ ' + _slug + ' → medico_id:' + _medicoId);
+
+        // 7. Enviar email de activación al médico ──────────────────────────────
+        var _notifEmail = v('wbe-contact-email') || _liveConfig.contact_email || '';
+        if (!_notifEmail && _medicoId) {
+          var _mEmail = await _sb().from('medicos').select('email,nombre,apellido,titulo,especialidades,ciudad').eq('id', _medicoId).maybeSingle();
+          if (_mEmail.data) {
+            _notifEmail = _mEmail.data.email || '';
+            if (!_linkedMedico) _linkedMedico = _mEmail.data;
+          }
+        }
+        if (_notifEmail) {
+          var _mData = _linkedMedico || {};
+          var _sbUrl = _opts.sb ? _opts.sb.supabaseUrl : 'https://qxoomcqaafogczrvsyhg.supabase.co';
+          fetch(_sbUrl + '/functions/v1/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-citadoc-public-key': 'citadoc-public-2026' },
+            body: JSON.stringify({
+              type:         'web_generada',
+              to_email:     _notifEmail,
+              nombre:       _mData.nombre || (_d.doctor_name||'').replace(/^(dra?\.?\s+)/i,'').trim().split(' ')[0] || '',
+              especialidad: (_mData.especialidades||[])[0] || _d.specialty || '',
+              ciudad:       _mData.ciudad || (_d.web_config_jsonb||{}).city || '',
+              web_url:      'https://' + _slug + '.citadoc.lat',
+              is_real:      true,
+            })
+          }).then(function() {
+            console.log('[Deploy] Email enviado a:', _notifEmail);
+            var ab = _el('wbe-autosave-badge');
+            if (ab) { ab.textContent = '✉ Email enviado'; ab.style.color = '#0b7c6e'; setTimeout(function(){ if(ab) ab.textContent=''; }, 3000); }
+          }).catch(function(e) { console.warn('[Deploy] Email error:', e); });
+        }
+
         _isLive = true;
 
       } catch(_e) {
@@ -1219,6 +1365,9 @@
     settings:     _saveSettings,
     dynInput:     _dynInput,
     updateCoverX: _updateCoverX,
+    searchMedico: _searchMedico,
+    selectMedico: _selectMedico,
+    unlinkMedico: _unlinkMedico,
     addSvc:       _addService,
     delGallery:   _deleteGallery,
     uploadMedia:  _uploadMedia,
