@@ -1061,6 +1061,7 @@
         dna:              dnaVal
       };
       if (_photoUrl) upd.photo_url = _photoUrl;
+      if (_linkedMedico && _linkedMedico.id) upd.medico_id = _linkedMedico.id;
       if (_logoUrl)  upd.logo_url  = _logoUrl;
       if (_isLive)   upd.activated_at = new Date().toISOString();
 
@@ -1327,7 +1328,7 @@
     if (saveBtn) { saveBtn.textContent = 'Cargando...'; saveBtn.disabled = true; }
 
     _sb().from('generated_demos')
-      .select('slug,doctor_name,specialty,photo_url,logo_url,dna,web_config_jsonb,web_settings,activated_at')
+      .select('slug,doctor_name,specialty,photo_url,logo_url,dna,web_config_jsonb,web_settings,activated_at,medico_id')
       .eq('slug', slug)
       .maybeSingle()
       .then(function(res) {
