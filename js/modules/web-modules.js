@@ -426,8 +426,12 @@ function metricsModule(config,doctor,ws){
 function galleryModule(config,ws){
   if(ws.show_carousel===false)return'';
   var imgs=config.gallery||[];
-  if(!imgs.length)return'';
-  return'<section class="cdm-section" id="galeria">'
+  if(!imgs.length)return'<section class="cdm-section" id="galeria" data-ws="carousel">'
+    +'<div class="cdm-sec-label">Galería</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:4px">'
+    +'<div style="aspect-ratio:1;background:var(--lyt-surface,#f1f5f9);border-radius:6px;display:flex;align-items:center;justify-content:center;opacity:.45;font-size:.7rem;color:var(--lyt-muted,#9ca3af)">📷</div>'.repeat(3)
+    +'</div></section>';
+  return'<section class="cdm-section" id="galeria" data-ws="carousel">'
     +'<div class="cdm-sec-label rv">Galería</div>'
     +'<div class="cdm-gallery-grid">'
     +imgs.slice(0,6).map(function(u){return'<img src="'+e(u)+'" alt="" loading="lazy">';}).join('')
