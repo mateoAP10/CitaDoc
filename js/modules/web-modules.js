@@ -391,6 +391,22 @@ details[open] .cdm-faq-arr{transform:rotate(90deg)}
   .cdm-nav{padding-left:7%;padding-right:7%}
   .cdm-cta-block,.cdm-footer{padding-left:7%;padding-right:7%}
 }
+/* ── Pantallas grandes: contenido centrado y bien proporcionado ── */
+@media(min-width:1280px){
+  /* Secciones de contenido: max-width centrado */
+  .cdm-section{max-width:1200px;margin-left:auto;margin-right:auto;padding-left:56px;padding-right:56px;width:100%;box-sizing:border-box}
+  .cdm-footer{max-width:1200px;margin-left:auto;margin-right:auto;padding-left:56px;padding-right:56px;width:100%;box-sizing:border-box}
+  /* Nav: padding progresivo (background sigue full-width) */
+  .cdm-nav{padding-left:10%;padding-right:10%}
+  /* CTA: padding más generoso */
+  .cdm-cta-block{padding-left:10%;padding-right:10%}
+  /* Hero body: texto no se estira demasiado */
+  .cdm-hero-body{max-width:680px}
+}
+@media(min-width:1600px){
+  .cdm-section,.cdm-footer{max-width:1320px;padding-left:80px;padding-right:80px}
+  .cdm-nav,.cdm-cta-block{padding-left:13%;padding-right:13%}
+}
 `;
 
 function injectBaseCSS(){
