@@ -63,12 +63,12 @@
         if(!_mbRes.error&&_mbRes.data){
           _med.id=_mbRes.data.id;
           _med.telefono=_mbRes.data.telefono||null;
-          // web_config_jsonb.whatsapp > medicos.whatsapp > fallback
+          // medicos.whatsapp es el número del médico (de su perfil en dashboard)
+          // web_config_jsonb.whatsapp como override si lo ingresó en el builder
           _med.whatsapp=(dm.web_config_jsonb&&dm.web_config_jsonb.whatsapp)||_mbRes.data.whatsapp||null;
-          // show_whatsapp toggle is the source of truth — if ON, button always shows
+          // show_whatsapp toggle controla visibilidad; sin número no hay botón
           var _showWa=dm.web_settings&&dm.web_settings.show_whatsapp!==false;
-          _med.whatsapp_activo=_showWa;
-          if(_showWa&&!_med.whatsapp)_med.whatsapp='593989173062'; // fallback → entra al CTA de CitaDoc
+          _med.whatsapp_activo=_showWa&&!!_med.whatsapp;
         }
       }
 
