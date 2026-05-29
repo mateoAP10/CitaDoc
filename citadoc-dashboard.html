@@ -375,6 +375,12 @@ async function guardarPerfil(e){if(M&&M.id){var o=e||document.querySelector("#pt
       },
       onDeploy: function(isLive) {
         if (typeof cargarMiSitio === 'function') cargarMiSitio(M);
+        if (isLive) {
+          webBuilderClose();
+          var url = 'https://' + slug + '.citadoc.lat';
+          mostrarToast('🎉 ¡Tu sitio está live! ' + url);
+          setTimeout(function() { window.open(url, '_blank'); }, 800);
+        }
       }
     });
   };
