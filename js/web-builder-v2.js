@@ -14,7 +14,8 @@
   var _slug = null, _opts = {}, _wsSettings = {}, _gallery = [],
       _photoUrl = null, _logoUrl = null, _isLive = false,
       _refreshTimer = null, _injected = false,
-      _liveConfig = {}, _liveTimer = null, _autoSaveTimer = null;
+      _liveConfig = {}, _liveTimer = null, _autoSaveTimer = null,
+      _saveInProgress = false;
 
   var _WS_DEFAULTS = {
     show_whatsapp: true, show_booking: true, show_carousel: true,
@@ -815,16 +816,19 @@
 
   /* ── Save ───────────────────────────────────────────────────────────────── */
   async function _save(silent) {
+    // Guard: skip if a save is already in flight — the pending one has fresher data
+    if (_saveInProgress) { if (!silent) _autoSave(); return; }
+    _saveInProgress = true;
+
     var btn = _el('wbe-btn-save');
     if (!silent && btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
     try {
-      // Flush dynamic cards to _liveConfig FIRST — ensures typed values are captured
+      // Flush dynamic cards to _liveConfig — captures any values _dynInput may have missed
       _flushDynamicCards();
 
-      // ── SNAPSHOT TOTAL — todo el estado de pantalla, sin guards, sin parciales ──
       var v = function(id) { return (_el(id) || {}).value || ''; };
 
-      // Sync wsSettings from DOM checkboxes (source of truth = current UI)
+      // Sync wsSettings from DOM checkboxes
       ['show_whatsapp','show_booking','show_carousel','show_calculator','show_services',
        'show_doctors','show_instagram','show_map','show_insurance','show_cta'].forEach(function(k){
         var el = _el('ws-' + k); if (el) _wsSettings[k] = el.checked;
@@ -832,7 +836,15 @@
       var dnaVal = v('wbe-dna') || _wsSettings.dna || 'surgical-authority';
       _wsSettings.dna = dnaVal;
 
-      // Build complete web_config_jsonb from baseline + all current UI values
+      // For dynamic fields: prefer DOM value, then _liveConfig (set by _dynInput on every keystroke)
+      var _ig  = _el('wbe-instagram'); var igVal  = _ig  ? _ig.value  : (_liveConfig.instagram_handle || '');
+      var _ln  = _el('wbe-loc-name');  var lnVal  = _ln  ? _ln.value  : (_liveConfig.location_name    || '');
+      var _la  = _el('wbe-loc-addr');  var laVal  = _la  ? _la.value  : (_liveConfig.location_address || '');
+      var _lm  = _el('wbe-loc-maps');  var lmVal  = _lm  ? _lm.value  : (_liveConfig.maps_url         || '');
+      var _ins = _el('wbe-insurances');
+      var insVal = _ins ? _ins.value.split('\n').map(function(s){return s.trim();}).filter(Boolean)
+                        : (Array.isArray(_liveConfig.insurances) ? _liveConfig.insurances : []);
+
       var config = Object.assign({}, _liveConfig, {
         doctor_name:      v('wbe-nombre')      || _liveConfig.doctor_name      || '',
         specialty:        v('wbe-especialidad') || _liveConfig.specialty        || '',
@@ -847,32 +859,28 @@
         dna:              dnaVal,
         visual_dna:       dnaVal,
         selected_layout:  dnaVal,
-        // Photo — always use session value or DB fallback
         doctor_photo_url: _photoUrl            || _liveConfig.doctor_photo_url || '',
         logo_url:         _logoUrl             || _liveConfig.logo_url         || '',
         photo_position:   _wsSettings._photo_position   || _liveConfig.photo_position   || 'center 20%',
         hero_photo_class: _wsSettings._hero_photo_class || _liveConfig.hero_photo_class || 'cdm-hero-photo--card',
-        // Collections — always overwrite with current state
         services:         _getServices(),
         servicios:        _getServices(),
         gallery:          _gallery,
         differentiators:  (v('wbe-diffs')||'').split('\n').map(function(l){return l.trim();}).filter(Boolean),
-        // Dynamic modules — always save current values (empty string = user cleared it)
-        instagram_handle: v('wbe-instagram')   || _liveConfig.instagram_handle || '',
-        location_name:    v('wbe-loc-name')    || _liveConfig.location_name    || '',
-        location_address: v('wbe-loc-addr')    || _liveConfig.location_address || '',
-        maps_url:         v('wbe-loc-maps')    || _liveConfig.maps_url         || '',
-        insurances:       (v('wbe-insurances')||'').split('\n').map(function(s){return s.trim();}).filter(Boolean)
+        // Dynamic modules — use explicit DOM-first reads above
+        instagram_handle: igVal,
+        location_name:    lnVal,
+        location_address: laVal,
+        maps_url:         lmVal,
+        insurances:       insVal
       });
 
-      // Complete web_settings — all toggles + layout prefs + crop state
       var wsSnap = Object.assign({}, _WS_DEFAULTS, _wsSettings, {
         _photo_position:   config.photo_position,
         _hero_photo_class: config.hero_photo_class,
         dna:               dnaVal
       });
 
-      // One atomic update — everything at once
       var upd = {
         doctor_name:      config.doctor_name,
         specialty:        config.specialty,
@@ -884,38 +892,30 @@
       if (_logoUrl)  upd.logo_url  = _logoUrl;
       if (_isLive)   upd.activated_at = new Date().toISOString();
 
-      console.log('[Builder] SNAPSHOT SAVE', {
+      console.log('[Builder] SAVE', {
         slug: _slug,
-        instagram_handle: config.instagram_handle,
-        location_name: config.location_name,
-        location_address: config.location_address,
-        maps_url: config.maps_url,
-        show_map: wsSnap.show_map,
-        show_instagram: wsSnap.show_instagram,
-        liveConfig_ig: _liveConfig.instagram_handle,
-        liveConfig_loc: _liveConfig.location_name
+        instagram_handle: igVal, location_name: lnVal,
+        location_address: laVal, maps_url: lmVal,
+        show_instagram: wsSnap.show_instagram, show_map: wsSnap.show_map
       });
 
-      var _saveRes = await _sb().from('generated_demos').update(upd).eq('slug', _slug);
-      if (_saveRes && _saveRes.error) throw new Error(_saveRes.error.message || 'Error en base de datos');
-
-      // Read-back: verify the data actually landed in DB
+      // Atomic: update + select en una sola operación — elimina race condition de read-back separado
       var _rb = await _sb().from('generated_demos')
-        .select('slug,doctor_name,web_config_jsonb,web_settings')
-        .eq('slug', _slug).maybeSingle();
-      if (_rb.error || !_rb.data) throw new Error('Update ejecutado pero no se pudo leer back. ' + (_rb.error && _rb.error.message || ''));
+        .update(upd).eq('slug', _slug)
+        .select('web_config_jsonb,web_settings,doctor_name')
+        .single();
+
+      if (_rb.error) throw new Error(_rb.error.message || 'Error en base de datos');
+      if (!_rb.data) throw new Error('No se pudo leer la fila después del update');
+
       var _rbConf = _rb.data.web_config_jsonb || {};
-      console.log('[Builder] Read-back OK', {
-        doctor_name: _rb.data.doctor_name,
+      console.log('[Builder] SAVED OK', {
         instagram_handle: _rbConf.instagram_handle,
         location_name: _rbConf.location_name,
-        location_address: _rbConf.location_address,
-        maps_url: _rbConf.maps_url,
-        show_instagram: _rb.data.web_settings && _rb.data.web_settings.show_instagram,
-        show_map: _rb.data.web_settings && _rb.data.web_settings.show_map
+        location_address: _rbConf.location_address
       });
 
-      // Sync in-memory to actual DB state
+      // Sync in-memory to confirmed DB state
       _liveConfig = Object.assign({}, _rbConf);
 
       // Update autosave badge
@@ -955,6 +955,8 @@
         errBanner.style.display = 'flex';
       }
       if (!silent && btn) { btn.textContent = 'Guardar'; btn.style.background = ''; btn.disabled = false; }
+    } finally {
+      _saveInProgress = false;
     }
   }
 
