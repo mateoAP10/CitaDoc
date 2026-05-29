@@ -1170,7 +1170,7 @@
             web_status: 'active', plan: 'pro_web', plan_activo: true, activo: true,
             foto_url: _d.photo_url || (_d.web_config_jsonb||{}).doctor_photo_url || null,
             logo_url: _d.logo_url  || (_d.web_config_jsonb||{}).logo_url  || null,
-            whatsapp: (_d.web_config_jsonb||{}).whatsapp || null,
+            whatsapp: ((_d.web_config_jsonb||{}).whatsapp || '').replace(/\D/g,'') || null,
             whatsapp_activo: (_d.web_settings||{}).show_whatsapp !== false,
             web_config: Object.assign({}, _d.web_config_jsonb||{}, { web_status:'active', selected_layout:_d.dna||'surgical-authority' })
           }).eq('id', _medicoId);

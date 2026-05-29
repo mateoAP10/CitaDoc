@@ -63,10 +63,9 @@
         if(!_mbRes.error&&_mbRes.data){
           _med.id=_mbRes.data.id;
           _med.telefono=_mbRes.data.telefono||null;
-          // medicos.whatsapp es el número del médico (de su perfil en dashboard)
-          // web_config_jsonb.whatsapp como override si lo ingresó en el builder
-          _med.whatsapp=(dm.web_config_jsonb&&dm.web_config_jsonb.whatsapp)||_mbRes.data.whatsapp||null;
-          // show_whatsapp toggle controla visibilidad; sin número no hay botón
+          // Prioridad: builder override > medicos.whatsapp > medicos.telefono (en LATAM el tel ES el WA)
+          _med.whatsapp=(dm.web_config_jsonb&&dm.web_config_jsonb.whatsapp)||_mbRes.data.whatsapp||_mbRes.data.telefono||null;
+          if(_med.whatsapp)_med.whatsapp=_med.whatsapp.replace(/[^0-9]/g,''); // limpiar +, espacios
           var _showWa=dm.web_settings&&dm.web_settings.show_whatsapp!==false;
           _med.whatsapp_activo=_showWa&&!!_med.whatsapp;
         }
