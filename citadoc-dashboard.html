@@ -558,6 +558,20 @@ document.addEventListener("DOMContentLoaded",function(){
     fichaCargarDatos(id);
     return _origAbrir(id,nombre);
   };
+  // Fix citadocSendEmail — agrega Authorization header con token de sesión
+  window.citadocSendEmail=function(type,data){
+    _sb.auth.getSession().then(function(s){
+      var token=s.data&&s.data.session&&s.data.session.access_token;
+      var headers={'Content-Type':'application/json'};
+      if(token)headers['Authorization']='Bearer '+token;
+      fetch('https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/send-email',{
+        method:'POST',headers:headers,
+        body:JSON.stringify(Object.assign({type:type},data))
+      }).then(function(r){
+        if(!r.ok)r.text().then(function(t){console.warn('[email] '+r.status+':',t);});
+      }).catch(function(e){console.warn('[email]',e);});
+    });
+  };
   var _origRF=renderFicha;
   renderFicha=function(pac,consultas,nextCita){
     _fichaPacId=pac.id;
