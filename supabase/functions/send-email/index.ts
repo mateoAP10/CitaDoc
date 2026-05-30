@@ -226,30 +226,30 @@ function tplIndicaciones(d: Record<string, unknown>): string {
   <p style="margin:0;color:rgba(255,255,255,.55);font-size:13px;">Para: <strong style="color:rgba(255,255,255,.85);">${safe(d.patient_name as string)}</strong></p>
 </td></tr>
 
-<tr><td style="padding:20px 0 0;"></td></tr>
+<!-- FIRMA — siempre visible, justo debajo del header -->
+<tr><td style="padding:16px 32px 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-left:4px solid #16a34a;background:#f0fdf4;border-radius:0 10px 10px 0;">
+    <tr><td style="padding:12px 16px;">
+      <p style="margin:0 0 3px;font-size:11px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:1px;">&#10003; Este documento ha sido firmado y autorizado digitalmente</p>
+      <p style="margin:0;font-size:12px;color:#166534;">por <strong>${safe(d.doctor_name as string)}</strong>${(d.doctor_meta as string) ? ' &mdash; '+safe(d.doctor_meta as string) : ''}</p>
+    </td></tr>
+  </table>
+</td></tr>
+
+<tr><td style="padding:16px 0 0;"></td></tr>
 
 ${recetaHtml}
 ${textHtml}
 ${imagenesHtml}
 ${labsHtml}
 
-${(d.pdf_url as string) ? `<tr><td style="padding:4px 32px 20px;">
-  <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-    <div style="flex:1;"><p style="margin:0;font-size:13px;font-weight:700;color:#0f172a;">documentos-medicos.pdf</p><p style="margin:0;font-size:11px;color:#64748b;">Adjunto a este correo · Receta · Imágenes · Laboratorios</p></div>
-    <a href="${d.pdf_url}" style="font-size:12px;font-weight:700;color:#1d4ed8;text-decoration:none;">Ver →</a>
-  </div>
-</td></tr>` : ''}
-
-<tr><td style="padding:0 32px 32px;">
-  <table width="100%" cellpadding="0" cellspacing="0">
-    <tr><td style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
-      <p style="margin:0 0 6px;color:#065f46;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">✓ Documento firmado y autorizado</p>
-      <p style="margin:0 0 2px;color:#0f172a;font-size:14px;font-weight:700;">${safe(d.doctor_name as string)}</p>
-      <p style="margin:0 0 12px;color:#374151;font-size:12px;">${safe((d.doctor_meta as string)||'')}</p>
-      <p style="margin:0;color:#374151;font-size:12px;font-style:italic;line-height:1.6;border-left:3px solid #34d399;padding-left:10px;">"Declaro bajo mi responsabilidad profesional que autorizo y firmo este documento. Soy el único titular autorizado de esta cuenta para emitir recetas, órdenes de laboratorio e imágenes diagnósticas."</p>
-    </td></tr>
-  </table>
+<!-- PDF cards por tipo -->
+<tr><td style="padding:0 32px 8px;">
+${(d.pdf_receta as string) ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;border:1.5px solid #bbf7d0;border-radius:10px;overflow:hidden;"><tr><td style="padding:10px 14px;background:#f0fdf4;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td><p style="margin:0;font-size:12px;font-weight:700;color:#065f46;">&#128138; Receta M&eacute;dica.pdf</p></td><td align="right"><a href="${d.pdf_receta}" style="font-size:11px;font-weight:700;color:#15803d;text-decoration:none;">Descargar &rarr;</a></td></tr></table></td></tr></table>` : ''}
+${(d.pdf_imagenes as string) ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;border:1.5px solid #e9d5ff;border-radius:10px;overflow:hidden;"><tr><td style="padding:10px 14px;background:#faf5ff;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td><p style="margin:0;font-size:12px;font-weight:700;color:#6b21a8;">&#129657; Orden Im&aacute;genes.pdf</p></td><td align="right"><a href="${d.pdf_imagenes}" style="font-size:11px;font-weight:700;color:#7c3aed;text-decoration:none;">Descargar &rarr;</a></td></tr></table></td></tr></table>` : ''}
+${(d.pdf_laboratorios as string) ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;border:1.5px solid #fed7aa;border-radius:10px;overflow:hidden;"><tr><td style="padding:10px 14px;background:#fff7ed;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td><p style="margin:0;font-size:12px;font-weight:700;color:#9a3412;">&#129514; Orden Laboratorios.pdf</p></td><td align="right"><a href="${d.pdf_laboratorios}" style="font-size:11px;font-weight:700;color:#c2410c;text-decoration:none;">Descargar &rarr;</a></td></tr></table></td></tr></table>` : ''}
+${(d.pdf_indicaciones as string) ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;border:1.5px solid #bfdbfe;border-radius:10px;overflow:hidden;"><tr><td style="padding:10px 14px;background:#eff6ff;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td><p style="margin:0;font-size:12px;font-weight:700;color:#1e40af;">&#128203; Indicaciones.pdf</p></td><td align="right"><a href="${d.pdf_indicaciones}" style="font-size:11px;font-weight:700;color:#1d4ed8;text-decoration:none;">Descargar &rarr;</a></td></tr></table></td></tr></table>` : ''}
+${(!d.pdf_receta && !d.pdf_imagenes && !d.pdf_laboratorios && d.pdf_url as string) ? `<table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;"><tr><td style="padding:10px 14px;background:#f8fafc;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td><p style="margin:0;font-size:12px;font-weight:700;color:#0f172a;">&#128196; Documentos M&eacute;dicos.pdf</p></td><td align="right"><a href="${d.pdf_url}" style="font-size:11px;font-weight:700;color:#1d4ed8;text-decoration:none;">Descargar &rarr;</a></td></tr></table></td></tr></table>` : ''}
 </td></tr>
 
 </table></td></tr>
@@ -1179,14 +1179,20 @@ async function sendEmail(to: string, subject: string, html: string, attachments?
 
 async function pdfToBase64(url: string): Promise<string|null> {
   try {
+    console.log('[pdf-attach] fetching:', url)
     const r = await fetch(url)
-    if (!r.ok) return null
+    console.log('[pdf-attach] status:', r.status, 'size:', r.headers.get('content-length'))
+    if (!r.ok) { console.warn('[pdf-attach] fetch failed:', r.status); return null }
     const buf = await r.arrayBuffer()
+    console.log('[pdf-attach] buf size:', buf.byteLength)
+    if (buf.byteLength > 8_000_000) { console.warn('[pdf-attach] PDF too large, skipping attachment'); return null }
     const bytes = new Uint8Array(buf)
     let bin = ''
     for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
-    return btoa(bin)
-  } catch(e) { console.warn('[pdf-attach]', e); return null }
+    const b64 = btoa(bin)
+    console.log('[pdf-attach] b64 length:', b64.length)
+    return b64
+  } catch(e) { console.warn('[pdf-attach] error:', e); return null }
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
