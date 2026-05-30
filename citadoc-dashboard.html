@@ -546,8 +546,6 @@ function confirmarFirmaYEnviar(){
     {ok:!!(docs.imagenes&&docs.imagenes.items&&docs.imagenes.items.length),label:"Imágenes",n:docs.imagenes?docs.imagenes.items.length:0,color:"#7c3aed",bg:"#faf5ff"},
     {ok:!!(docs.laboratorios&&docs.laboratorios.items&&docs.laboratorios.items.length),label:"Laboratorios",n:docs.laboratorios?docs.laboratorios.items.length:0,color:"#c2410c",bg:"#fff7ed"}
   ];
-  var hayAlgo=secciones.some(function(s){return s.ok;});
-  if(!hayAlgo){if(mostrarToast)mostrarToast("Agrega indicaciones o documentos primero","error");return;}
   var secHtml=secciones.map(function(s){
     return '<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border-radius:8px;background:'+(s.ok?s.bg:'#f9fafb')+';margin-bottom:.35rem">'
       +'<span style="font-size:.82rem;">'+(s.ok?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="'+s.color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>')+'</span>'
@@ -598,6 +596,38 @@ document.addEventListener("DOMContentLoaded",function(){
         if(!r.ok)r.text().then(function(t){console.warn('[email] '+r.status+':',t);});
       }).catch(function(e){console.warn('[email]',e);});
     });
+  };
+  // Interceptar mcEnviarDocs para pasar por el juramento
+  var _origMcEnviarDocs=mcEnviarDocs;
+  mcEnviarDocs=function(e,t){
+    var _e=e,_t=t;
+    var nombre=M?(M.titulo||"Dr.")+" "+(M.nombre||"")+" "+(M.apellido||""):"Médico";
+    var esp=(M&&(M.especialidades||[])[0])||"";
+    var reg=M&&M.senescyt?"Reg. Médico: "+M.senescyt:"";
+    var fecha=new Date().toLocaleDateString("es",{day:"numeric",month:"long",year:"numeric"});
+    var m2=document.getElementById("modalJuramentoMedico");
+    if(m2)m2.remove();
+    m2=document.createElement("div");
+    m2.id="modalJuramentoMedico";
+    m2.style.cssText="display:flex;position:fixed;inset:0;z-index:10000;background:rgba(15,26,24,.6);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1.2rem";
+    m2.innerHTML='<div onclick="event.stopPropagation()" style="background:#fff;border-radius:20px;padding:1.75rem;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.22)">'
+      +'<div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1.2rem">'
+      +'<div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>'
+      +'<div><div style="font-family:Fraunces,serif;font-size:.95rem;font-weight:700;color:#0f1a18">Firmar y enviar</div><div style="font-size:.7rem;color:#6b7c79">'+fecha+'</div></div></div>'
+      +'<div style="background:#f8fafc;border-radius:10px;padding:.75rem .9rem;margin-bottom:1rem;border:1px solid #e5e7eb">'
+      +'<div style="font-size:.85rem;font-weight:700;color:#0f1a18">'+nombre+'</div>'
+      +'<div style="font-size:.72rem;color:#6b7c79;margin-top:.15rem">'+[esp,reg].filter(Boolean).join(" · ")+'</div></div>'
+      +'<p style="font-size:.75rem;color:#6b7280;line-height:1.6;margin-bottom:1.2rem;font-style:italic;border-left:2px solid #e5e7eb;padding-left:.7rem">"Declaro bajo mi responsabilidad profesional que autorizo y firmo este documento. Soy el único titular autorizado de esta cuenta para emitir estos documentos clínicos."</p>'
+      +'<div style="display:flex;gap:.55rem">'
+      +'<button onclick="document.getElementById(\'modalJuramentoMedico\').remove()" style="flex:1;padding:.7rem;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;font-family:inherit;font-size:.83rem;cursor:pointer;color:#374151">Cancelar</button>'
+      +'<button id="jurConfirmBtn" style="flex:2;padding:.7rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.83rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem">'
+      +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Confirmar y enviar</button>'
+      +'</div></div>';
+    document.body.appendChild(m2);
+    document.getElementById("jurConfirmBtn").onclick=function(){
+      document.getElementById("modalJuramentoMedico").remove();
+      _origMcEnviarDocs(_e,_t);
+    };
   };
   var _origRF=renderFicha;
   renderFicha=function(pac,consultas,nextCita){
