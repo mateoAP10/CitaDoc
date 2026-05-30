@@ -141,72 +141,70 @@ ${d.public_profile_url ? `<tr><td style="padding:0 40px 36px;">
 function tplIndicaciones(d: Record<string, unknown>): string {
   const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
 
-  // Receta block
+  const sectionWrap = (color: string, borderColor: string, labelColor: string, icon: string, title: string, content: string) => `
+  <tr><td style="padding:0 32px 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid ${borderColor};border-radius:14px;overflow:hidden;">
+      <tr><td style="background:${color};padding:12px 18px;border-bottom:1px solid ${borderColor};">
+        <span style="font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:${labelColor};">${icon} ${title}</span>
+      </td></tr>
+      <tr><td style="background:#fff;padding:16px 18px;">${content}</td></tr>
+    </table>
+  </td></tr>`
+
+  // 1. Medicación
   // deno-lint-ignore no-explicit-any
   const receta = d.receta as any
-  const recetaHtml = receta?.items?.length ? `
-  <tr><td style="padding:0 40px 28px;">
-    <p style="margin:0 0 14px;color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">💊 Receta médica</p>
-    <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr style="background:#f8fafc;">
-          <td style="padding:8px 14px;color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;width:35%;">Medicamento</td>
-          <td style="padding:8px 14px;color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Dosis</td>
-          <td style="padding:8px 14px;color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Frecuencia</td>
-          <td style="padding:8px 14px;color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Duración</td>
-        </tr>
-        ${receta.items.map((item: Record<string,string>, i: number) => `
-        <tr style="background:${i%2===0?'#fff':'#fafafa'};border-top:1px solid #f1f5f9;">
-          <td style="padding:10px 14px;color:#0f172a;font-size:13px;font-weight:600;">${safe(item.medicamento)}</td>
-          <td style="padding:10px 14px;color:#374151;font-size:13px;">${safe(item.dosis)}</td>
-          <td style="padding:10px 14px;color:#374151;font-size:13px;">${safe(item.frecuencia)}</td>
-          <td style="padding:10px 14px;color:#374151;font-size:13px;">${safe(item.duracion)}</td>
-        </tr>`).join('')}
-      </table>
-    </div>
-    ${receta.notas ? `<p style="margin:10px 0 0;color:#6b7280;font-size:13px;font-style:italic;">${safe(receta.notas)}</p>` : ''}
-  </td></tr>` : ''
+  const recetaHtml = receta?.items?.length ? sectionWrap(
+    '#f0fdf4','#bbf7d0','#065f46','💊','Medicación',
+    `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      <tr style="background:#f8fafc;">
+        <td style="padding:7px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;width:38%;border-bottom:1px solid #e5e7eb;">Medicamento</td>
+        <td style="padding:7px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #e5e7eb;">Dosis</td>
+        <td style="padding:7px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #e5e7eb;">Frecuencia</td>
+        <td style="padding:7px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #e5e7eb;">Duración</td>
+      </tr>
+      ${receta.items.map((item: Record<string,string>) => `
+      <tr style="border-bottom:1px solid #f1f5f9;">
+        <td style="padding:9px 10px;color:#0f172a;font-size:13px;font-weight:600;">${safe(item.medicamento)}</td>
+        <td style="padding:9px 10px;color:#374151;font-size:13px;">${safe(item.dosis)}</td>
+        <td style="padding:9px 10px;color:#374151;font-size:13px;">${safe(item.frecuencia)}</td>
+        <td style="padding:9px 10px;color:#374151;font-size:13px;">${safe(item.duracion)}</td>
+      </tr>`).join('')}
+    </table>
+    ${receta.notas ? `<p style="margin:10px 0 0;color:#6b7280;font-size:12px;font-style:italic;">${safe(receta.notas)}</p>` : ''}`
+  ) : ''
 
-  // Labs block
-  // deno-lint-ignore no-explicit-any
-  const labs = d.laboratorios as any
-  const labsHtml = labs?.items?.length ? `
-  <tr><td style="padding:0 40px 28px;">
-    <p style="margin:0 0 14px;color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">🧪 Orden de laboratorio</p>
-    <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
-      ${labs.items.map((item: Record<string,string>, i: number) => `
-      <div style="padding:12px 16px;background:${i%2===0?'#fff':'#f8fafc'};${i>0?'border-top:1px solid #f1f5f9;':''}">
-        <p style="margin:0 0 3px;color:#0f172a;font-size:14px;font-weight:600;">${safe(item.nombre)}</p>
-        ${item.indicacion ? `<p style="margin:0;color:#6b7280;font-size:12px;">${safe(item.indicacion)}</p>` : ''}
-        ${item.prioridad && item.prioridad!=='normal' ? `<span style="display:inline-block;margin-top:4px;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;text-transform:uppercase;">${safe(item.prioridad)}</span>` : ''}
-      </div>`).join('')}
-    </div>
-  </td></tr>` : ''
+  // 2. Indicaciones
+  const safeText = safe(d.text || '')
+  const textHtml = safeText ? sectionWrap(
+    '#eff6ff','#bfdbfe','#1e40af','📋','Indicaciones',
+    `<p style="margin:0;color:#1e293b;font-size:14px;line-height:1.8;white-space:pre-wrap;">${safeText}</p>`
+  ) : ''
 
-  // Imagenes block
+  // 3. Imágenes
   // deno-lint-ignore no-explicit-any
   const imgs = d.imagenes as any
-  const imagenesHtml = imgs?.items?.length ? `
-  <tr><td style="padding:0 40px 28px;">
-    <p style="margin:0 0 14px;color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">🩻 Orden de imágenes</p>
-    <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
-      ${imgs.items.map((item: Record<string,string>, i: number) => `
-      <div style="padding:12px 16px;background:${i%2===0?'#fff':'#f8fafc'};${i>0?'border-top:1px solid #f1f5f9;':''}">
-        <p style="margin:0 0 2px;color:#0f172a;font-size:14px;font-weight:600;">${safe(item.estudio)}${item.zona?` — ${safe(item.zona)}`:''}</p>
-        ${item.motivo ? `<p style="margin:0;color:#6b7280;font-size:12px;">${safe(item.motivo)}</p>` : ''}
-      </div>`).join('')}
-    </div>
-  </td></tr>` : ''
+  const imagenesHtml = imgs?.items?.length ? sectionWrap(
+    '#faf5ff','#e9d5ff','#6b21a8','🩻','Orden de imágenes',
+    imgs.items.map((item: Record<string,string>, i: number) => `
+    <div style="${i>0?'border-top:1px solid #f3e8ff;margin-top:10px;padding-top:10px;':''}">
+      <p style="margin:0 0 2px;color:#0f172a;font-size:13px;font-weight:600;">${safe(item.estudio)}${item.zona?` — ${safe(item.zona)}`:''}</p>
+      ${item.motivo ? `<p style="margin:0;color:#6b7280;font-size:12px;">${safe(item.motivo)}</p>` : ''}
+    </div>`).join('')
+  ) : ''
 
-  // Indicaciones text block
-  const safeText = safe(d.text || '')
-  const textHtml = safeText ? `
-  <tr><td style="padding:0 40px 28px;">
-    <p style="margin:0 0 14px;color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">📋 Indicaciones generales</p>
-    <div style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;padding:20px 24px;">
-      <p style="margin:0;color:#374151;font-size:14px;line-height:1.8;white-space:pre-wrap;">${safeText}</p>
-    </div>
-  </td></tr>` : ''
+  // 4. Laboratorios
+  // deno-lint-ignore no-explicit-any
+  const labs = d.laboratorios as any
+  const labsHtml = labs?.items?.length ? sectionWrap(
+    '#fff7ed','#fed7aa','#9a3412','🧪','Laboratorios',
+    labs.items.map((item: Record<string,string>, i: number) => `
+    <div style="${i>0?'border-top:1px solid #ffedd5;margin-top:10px;padding-top:10px;':''}">
+      <p style="margin:0 0 2px;color:#0f172a;font-size:13px;font-weight:600;">${safe(item.nombre)}</p>
+      ${item.indicacion ? `<p style="margin:0;color:#6b7280;font-size:12px;">${safe(item.indicacion)}</p>` : ''}
+      ${item.prioridad && item.prioridad!=='normal' ? `<span style="display:inline-block;margin-top:4px;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;text-transform:uppercase;">${safe(item.prioridad)}</span>` : ''}
+    </div>`).join('')
+  ) : ''
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
@@ -222,37 +220,34 @@ function tplIndicaciones(d: Record<string, unknown>): string {
 <tr><td style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
 <table width="100%" cellpadding="0" cellspacing="0">
 
-<tr><td style="background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);padding:36px 40px 28px;border-bottom:1px solid #d1fae5;">
-  <table cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr>
-    <td style="background:#d1fae5;border-radius:100px;padding:5px 14px;">
-      <span style="color:#065f46;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Documentos Médicos</span>
-    </td>
-  </tr></table>
-  <h1 style="margin:0 0 6px;color:#0f172a;font-size:20px;font-weight:700;">De: ${safe(d.doctor_name as string)}</h1>
-  <p style="margin:0;color:#6b7280;font-size:14px;">Para: <strong>${safe(d.patient_name as string)}</strong></p>
+<tr><td style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);padding:32px 32px 24px;">
+  <p style="margin:0 0 4px;color:rgba(255,255,255,.45);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Documentos médicos</p>
+  <h1 style="margin:0 0 6px;color:#fff;font-size:19px;font-weight:700;">${safe(d.doctor_name as string)}</h1>
+  <p style="margin:0;color:rgba(255,255,255,.55);font-size:13px;">Para: <strong style="color:rgba(255,255,255,.85);">${safe(d.patient_name as string)}</strong></p>
 </td></tr>
 
-<tr><td style="padding:28px 0 0;"></td></tr>
+<tr><td style="padding:20px 0 0;"></td></tr>
 
 ${recetaHtml}
-${labsHtml}
-${imagenesHtml}
 ${textHtml}
+${imagenesHtml}
+${labsHtml}
 
-${(d.pdf_url as string) ? `<tr><td style="padding:0 40px 20px;">
-  <a href="${d.pdf_url}" style="display:block;background:#0f172a;color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">
-    ⬇ Descargar documentos en PDF
+${(d.pdf_url as string) ? `<tr><td style="padding:4px 32px 20px;">
+  <a href="${d.pdf_url}" style="display:block;background:#0f172a;color:#fff;text-align:center;padding:13px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">
+    ⬇ Descargar todos los documentos en PDF
   </a>
 </td></tr>` : ''}
-<tr><td style="padding:0 40px 32px;text-align:center;">
-  <p style="margin:0;color:#94a3b8;font-size:12px;">${safe(d.doctor_name as string)}</p>
+
+<tr><td style="padding:0 32px 28px;border-top:1px solid #f1f5f9;margin-top:8px;">
+  <p style="margin:16px 0 2px;color:#6b7280;font-size:11px;font-weight:600;">${safe(d.doctor_name as string)}</p>
+  <p style="margin:0;color:#94a3b8;font-size:11px;font-style:italic;">Firmado y autorizado por el titular de la cuenta · CitaDoc</p>
 </td></tr>
 
 </table></td></tr>
 
 <tr><td style="padding:20px 0 0;text-align:center;">
   <p style="margin:0;color:#cbd5e1;font-size:11px;">${safe(d.brand_name as string) || 'CitaDoc'} · <a href="mailto:hola@citadoc.lat" style="color:#cbd5e1;text-decoration:none;">hola@citadoc.lat</a></p>
-  ${d.brand_subtitle ? '<p style="margin:3px 0 0;color:#e2e8f0;font-size:10px;">Powered by CitaDoc Health Network</p>' : ''}
 </td></tr>
 
 </table></td></tr></table>
