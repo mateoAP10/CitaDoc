@@ -405,10 +405,13 @@ function doUpdatePassword(){var p=document.getElementById("resetNewPass").value,
     <h3 style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:#0f1a18;margin:0">Agregar paciente</h3>
     <button onclick="document.getElementById('modalPacienteV2').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#9ca3af">&#x2715;</button>
   </div>
-  <p style="font-size:.82rem;color:#6b7c79;margin-bottom:1rem;line-height:1.55">Ingresa el <strong>email</strong> o <strong>c&eacute;dula</strong> del paciente. Si ya existe en CitaDoc lo vinculamos directamente.</p>
+  <p style="font-size:.82rem;color:#6b7c79;margin-bottom:1rem;line-height:1.55">Ingresa el <strong>email</strong> o <strong>c&eacute;dula</strong> del paciente para buscarlo, o cr&eacute;alo directamente.</p>
   <div style="display:flex;gap:.5rem">
     <input id="pac2_search" placeholder="Email o c&eacute;dula de identidad" style="flex:1;padding:.7rem .9rem;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;font-family:inherit;box-sizing:border-box" onkeydown="if(event.key==='Enter')pac2Buscar()">
     <button onclick="pac2Buscar()" id="pac2_search_btn" style="padding:.7rem 1.2rem;background:#0b7c6e;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap">Buscar</button>
+  </div>
+  <div style="text-align:center;margin-top:.75rem">
+    <button onclick="pac2MostrarForm()" style="font-size:.8rem;color:#6b7c79;background:none;border:none;cursor:pointer;text-decoration:underline">+ Crear nuevo paciente sin buscar</button>
   </div>
   <div id="pac2_result" style="display:none;margin-top:1rem"></div>
   <div id="pac2_new_trigger" style="display:none;margin-top:1rem;text-align:center">
@@ -451,7 +454,7 @@ async function pac2Buscar(){
   var btn=document.getElementById("pac2_search_btn");
   if(btn){btn.textContent="Buscando...";btn.disabled=true;}
   var found=null;
-  var _sb=_sb;
+  var _sb=window._sb;
   if(query.includes("@")){
     var re=await _sb.from("pacientes").select("id,nombre,email,cedula,patient_number,fecha_nacimiento").eq("email",query).maybeSingle();
     if(!re.error&&re.data)found=re.data;
@@ -494,8 +497,8 @@ async function pac2Buscar(){
 
 async function pac2Vincular(btn){
   var pid=btn.dataset.pid;
-  var _sb=_sb;
-  var M=M;
+  var _sb=window._sb;
+  var M=window.M;
   if(!pid||!M)return;
   var r=await _sb.from("medico_paciente").upsert({medico_id:M.id,paciente_id:pid},{onConflict:"medico_id,paciente_id"});
   if(r.error){if(mostrarToast)mostrarToast("Error: "+r.error.message,"error");return;}
@@ -511,8 +514,8 @@ function pac2MostrarForm(){
 }
 
 async function pac2Crear(){
-  var _sb=_sb;
-  var M=M;
+  var _sb=window._sb;
+  var M=window.M;
   var nombre=((document.getElementById("pac2_nombre")||{}).value||"").trim();
   var email=((document.getElementById("pac2_email")||{}).value||"").trim();
   var cedula=((document.getElementById("pac2_cedula")||{}).value||"").trim();
