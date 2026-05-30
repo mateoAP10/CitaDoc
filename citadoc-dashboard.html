@@ -538,6 +538,12 @@ document.addEventListener("DOMContentLoaded",function(){
     fichaCargarDatos(id);
     return _origAbrir(id,nombre);
   };
+  var _origRF=renderFicha;
+  renderFicha=function(pac,consultas,nextCita){
+    _fichaPacId=pac.id;
+    _origRF(pac,consultas,nextCita);
+    fpInyectar(pac);
+  };
 });
 
 var _fichaPacId=null;
@@ -596,6 +602,63 @@ async function fichaGuardar(){
   if(r.error){if(mostrarToast)mostrarToast("Error: "+r.error.message,"error");return;}
   if(mostrarToast)mostrarToast("Datos actualizados");
   fichaCargarDatos(_fichaPacId);
+  if(cargarPacientes)cargarPacientes();
+}
+
+function fpInyectar(pac){
+  var content=document.getElementById("fichaContent");
+  if(!content)return;
+  // Add ✏️ Editar button next to + Consulta button
+  var consultaBtn=content.querySelector('button[onclick*="abrirConsultaFicha"]');
+  if(consultaBtn){
+    var eb=document.createElement("button");
+    eb.id="fpEditBtn";
+    eb.onclick=fpToggleEdit;
+    eb.style.cssText="margin-top:.7rem;padding:.5rem 1.1rem;background:rgba(11,124,110,.1);border:1px solid rgba(11,124,110,.2);color:#0b7c6e;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;display:block";
+    eb.textContent="✏️ Editar datos";
+    consultaBtn.insertAdjacentElement("afterend",eb);
+  }
+  // Build edit section
+  var sec=document.createElement("div");
+  sec.id="fpEditSection";
+  sec.style.cssText="display:none;background:#fff;border-radius:14px;border:1px solid rgba(11,124,110,.13);padding:1rem;margin-bottom:.75rem;box-shadow:0 1px 2px rgba(15,26,24,.04),0 4px 12px rgba(15,26,24,.05)";
+  sec.innerHTML='<div style="font-size:.68rem;font-weight:700;color:#6b7280;letter-spacing:.05em;margin-bottom:.75rem">EDITAR DATOS DEL PACIENTE</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.7rem"><div style="grid-column:1/-1"><input id="fp_nombre" placeholder="Nombre completo" style="width:100%;padding:.55rem .8rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.84rem;font-family:inherit;box-sizing:border-box"></div><div><input id="fp_email" type="email" placeholder="Email" style="width:100%;padding:.55rem .8rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.84rem;font-family:inherit;box-sizing:border-box"></div><div><input id="fp_cedula" placeholder="Cédula / ID" style="width:100%;padding:.55rem .8rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.84rem;font-family:inherit;box-sizing:border-box"></div><div><input id="fp_tel" placeholder="Teléfono" style="width:100%;padding:.55rem .8rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.84rem;font-family:inherit;box-sizing:border-box"></div><div><input id="fp_nac" type="date" style="width:100%;padding:.55rem .8rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.84rem;font-family:inherit;box-sizing:border-box"></div><div><select id="fp_gen" style="width:100%;padding:.55rem .8rem;border:1.5px solid #e5e7eb;border-radius:8px;font-size:.84rem;font-family:inherit;box-sizing:border-box;background:#fff"><option value="">Género</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select></div></div><div style="display:flex;gap:.5rem"><button onclick="fpToggleEdit()" style="flex:1;padding:.55rem;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff;font-family:inherit;font-size:.82rem;cursor:pointer;color:#374151">Cancelar</button><button onclick="fpGuardar()" style="flex:2;padding:.55rem;background:#0b7c6e;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer">Guardar datos</button></div>';
+  // Insert after patient header (second child, after back button)
+  var backBtn=content.firstElementChild;
+  var headerCard=backBtn?backBtn.nextElementSibling:null;
+  if(headerCard)headerCard.insertAdjacentElement("afterend",sec);
+  else content.appendChild(sec);
+  // Pre-fill fields
+  var _v=function(id,val){var el=document.getElementById(id);if(el)el.value=val||"";};
+  _v("fp_nombre",pac.nombre);_v("fp_email",pac.email);_v("fp_cedula",pac.cedula);_v("fp_tel",pac.telefono);_v("fp_nac",pac.fecha_nacimiento);
+  var sg=document.getElementById("fp_gen");if(sg)sg.value=pac.genero||"";
+}
+
+function fpToggleEdit(){
+  var sec=document.getElementById("fpEditSection");
+  var btn=document.getElementById("fpEditBtn");
+  if(!sec)return;
+  var open=sec.style.display==="block";
+  sec.style.display=open?"none":"block";
+  if(btn)btn.textContent=open?"✏️ Editar datos":"✕ Cancelar edición";
+}
+
+async function fpGuardar(){
+  if(!_fichaPacId)return;
+  var nombre=((document.getElementById("fp_nombre")||{}).value||"").trim();
+  if(!nombre){if(mostrarToast)mostrarToast("Nombre obligatorio","error");return;}
+  var data={
+    nombre:nombre,
+    email:((document.getElementById("fp_email")||{}).value||"").trim()||null,
+    cedula:((document.getElementById("fp_cedula")||{}).value||"").trim()||null,
+    telefono:((document.getElementById("fp_tel")||{}).value||"").trim()||null,
+    fecha_nacimiento:(document.getElementById("fp_nac")||{}).value||null,
+    genero:(document.getElementById("fp_gen")||{}).value||null
+  };
+  var r=await _sb.from("pacientes").update(data).eq("id",_fichaPacId);
+  if(r.error){if(mostrarToast)mostrarToast("Error: "+r.error.message,"error");return;}
+  if(mostrarToast)mostrarToast("Datos actualizados");
+  abrirFicha(_fichaPacId);
   if(cargarPacientes)cargarPacientes();
 }
 </script>
