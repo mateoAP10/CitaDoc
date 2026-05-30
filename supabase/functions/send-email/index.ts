@@ -242,12 +242,12 @@ ${(d.pdf_url as string) ? `<tr><td style="padding:4px 32px 20px;">
 </td></tr>` : ''}
 
 <tr><td style="padding:0 32px 32px;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="border-top:2px solid #e2e8f0;padding-top:20px;">
-    <tr><td style="padding-top:20px;">
-      <p style="margin:0 0 4px;color:#64748b;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Firmado y autorizado digitalmente por</p>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;">
+      <p style="margin:0 0 6px;color:#065f46;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">✓ Documento firmado y autorizado</p>
       <p style="margin:0 0 2px;color:#0f172a;font-size:14px;font-weight:700;">${safe(d.doctor_name as string)}</p>
-      <p style="margin:0 0 10px;color:#64748b;font-size:12px;">${safe((d.doctor_meta as string)||'')}</p>
-      <p style="margin:0;color:#94a3b8;font-size:11px;font-style:italic;line-height:1.5;">"Declaro bajo mi responsabilidad profesional que autorizo y firmo este documento. Soy el único titular autorizado de esta cuenta para emitir estos documentos clínicos." · CitaDoc</p>
+      <p style="margin:0 0 12px;color:#374151;font-size:12px;">${safe((d.doctor_meta as string)||'')}</p>
+      <p style="margin:0;color:#374151;font-size:12px;font-style:italic;line-height:1.6;border-left:3px solid #34d399;padding-left:10px;">"Declaro bajo mi responsabilidad profesional que autorizo y firmo este documento. Soy el único titular autorizado de esta cuenta para emitir recetas, órdenes de laboratorio e imágenes diagnósticas."</p>
     </td></tr>
   </table>
 </td></tr>
@@ -1234,12 +1234,21 @@ serve(async (req) => {
 
       case 'indicaciones': {
         const subject = `Documentos médicos — ${data.doctor_name || 'tu médico'}`
-        let attachments: {filename: string, content: string}[] | undefined
-        if (data.pdf_url) {
-          const b64 = await pdfToBase64(data.pdf_url as string)
-          if (b64) attachments = [{ filename: 'documentos-medicos.pdf', content: b64 }]
+        const attachments: {filename: string, content: string}[] = []
+        const pdfMap = [
+          { key: 'pdf_receta',       name: 'receta-medica.pdf' },
+          { key: 'pdf_imagenes',     name: 'orden-imagenes.pdf' },
+          { key: 'pdf_laboratorios', name: 'orden-laboratorios.pdf' },
+          { key: 'pdf_indicaciones', name: 'indicaciones.pdf' },
+          { key: 'pdf_url',          name: 'documentos-medicos.pdf' },
+        ]
+        for (const p of pdfMap) {
+          if (data[p.key]) {
+            const b64 = await pdfToBase64(data[p.key] as string)
+            if (b64) attachments.push({ filename: p.name, content: b64 })
+          }
         }
-        await sendEmail(to_email, subject, tplIndicaciones(data as Record<string, unknown>), attachments)
+        await sendEmail(to_email, subject, tplIndicaciones(data as Record<string, unknown>), attachments.length ? attachments : undefined)
         break
       }
 

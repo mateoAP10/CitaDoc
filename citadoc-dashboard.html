@@ -532,6 +532,47 @@ async function pac2Crear(){
 }
 
 /* ── Modal juramento médico ── */
+async function generarPDFsPorTipo(nombre,docs,texto){
+  var urls={};
+  try{
+    if(docs.receta&&docs.receta.items&&docs.receta.items.length)
+      urls.receta=await generarYSubirPDF(nombre,{receta:docs.receta,laboratorios:null,imagenes:null},"");
+    if(docs.imagenes&&docs.imagenes.items&&docs.imagenes.items.length)
+      urls.imagenes=await generarYSubirPDF(nombre,{receta:null,laboratorios:null,imagenes:docs.imagenes},"");
+    if(docs.laboratorios&&docs.laboratorios.items&&docs.laboratorios.items.length)
+      urls.laboratorios=await generarYSubirPDF(nombre,{receta:null,laboratorios:docs.laboratorios,imagenes:null},"");
+    if(texto&&texto.trim())
+      urls.indicaciones=await generarYSubirPDF(nombre,{receta:null,laboratorios:null,imagenes:null},texto);
+  }catch(e){console.warn("[pdfs]",e);}
+  return urls;
+}
+
+async function enviarDocumentosV2(){
+  try{
+    var texto=((document.getElementById("aiIndicaciones")||{}).value||"");
+    var docs=JSON.parse(JSON.stringify(leerDocumentos()));
+    if(!(texto.trim()||docs.receta||docs.laboratorios||docs.imagenes)){mostrarToast("Agrega indicaciones o documentos primero","error");return;}
+    if(!_hcPacienteId){mostrarToast("Sin paciente vinculado","error");return;}
+    var a=await _sb.from("pacientes").select("nombre,email").eq("id",_hcPacienteId).single();
+    if(!a.data||!a.data.email){mostrarToast("El paciente no tiene email registrado","error");return;}
+    var pac=a.data;
+    var doctorNombre=M?(M.titulo||"Dr.")+" "+M.nombre+" "+M.apellido:"Tu médico";
+    var doctorMeta=[M&&(M.especialidades||[])[0],M&&M.senescyt?"Reg. "+M.senescyt:""].filter(Boolean).join(" · ")||"";
+    mostrarToast("Generando documentos...");
+    var pdfs=await generarPDFsPorTipo(pac.nombre,docs,texto);
+    citadocSendEmail("indicaciones",{
+      to_email:pac.email,doctor_name:doctorNombre,doctor_meta:doctorMeta,
+      patient_name:pac.nombre,text:texto.trim()||null,
+      receta:docs.receta||null,laboratorios:docs.laboratorios||null,imagenes:docs.imagenes||null,
+      pdf_receta:pdfs.receta||null,pdf_imagenes:pdfs.imagenes||null,
+      pdf_laboratorios:pdfs.laboratorios||null,pdf_indicaciones:pdfs.indicaciones||null
+    });
+    mostrarToast("✓ Enviado a "+pac.email);
+    cerrarHC();
+    if(_fichaId&&typeof abrirFicha==="function")abrirFicha(_fichaId);
+  }catch(e){logError("enviarDocumentosV2",e);mostrarToast("Error al enviar","error");}
+}
+
 function confirmarFirmaYEnviar(){
   var nombre=M?(M.titulo||"Dr.")+" "+(M.nombre||"")+" "+(M.apellido||""):"Médico";
   var esp=(M&&(M.especialidades||[])[0])||"";
@@ -570,7 +611,7 @@ function confirmarFirmaYEnviar(){
     +'<p style="font-size:.75rem;color:#6b7280;line-height:1.6;margin-bottom:1.2rem;font-style:italic;border-left:2px solid #e5e7eb;padding-left:.7rem">"Declaro bajo mi responsabilidad profesional que autorizo y firmo este documento. Soy el único titular autorizado de esta cuenta para emitir estos documentos clínicos."</p>'
     +'<div style="display:flex;gap:.55rem">'
     +'<button onclick="document.getElementById(\'modalJuramentoMedico\').remove()" style="flex:1;padding:.7rem;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;font-family:inherit;font-size:.83rem;cursor:pointer;color:#374151">Cancelar</button>'
-    +'<button onclick="document.getElementById(\'modalJuramentoMedico\').remove();enviarIndicacionesPaciente()" style="flex:2;padding:.7rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.83rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem">'
+    +'<button onclick="document.getElementById(\'modalJuramentoMedico\').remove();enviarDocumentosV2()" style="flex:2;padding:.7rem;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.83rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem">'
     +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Confirmar y enviar</button>'
     +'</div></div>';
   document.body.appendChild(m);
