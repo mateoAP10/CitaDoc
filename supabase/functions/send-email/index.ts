@@ -234,14 +234,22 @@ ${imagenesHtml}
 ${labsHtml}
 
 ${(d.pdf_url as string) ? `<tr><td style="padding:4px 32px 20px;">
-  <a href="${d.pdf_url}" style="display:block;background:#0f172a;color:#fff;text-align:center;padding:13px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">
-    ⬇ Descargar todos los documentos en PDF
-  </a>
+  <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <div style="flex:1;"><p style="margin:0;font-size:13px;font-weight:700;color:#0f172a;">documentos-medicos.pdf</p><p style="margin:0;font-size:11px;color:#64748b;">Adjunto a este correo · Receta · Imágenes · Laboratorios</p></div>
+    <a href="${d.pdf_url}" style="font-size:12px;font-weight:700;color:#1d4ed8;text-decoration:none;">Ver →</a>
+  </div>
 </td></tr>` : ''}
 
-<tr><td style="padding:0 32px 28px;border-top:1px solid #f1f5f9;margin-top:8px;">
-  <p style="margin:16px 0 2px;color:#6b7280;font-size:11px;font-weight:600;">${safe(d.doctor_name as string)}</p>
-  <p style="margin:0;color:#94a3b8;font-size:11px;font-style:italic;">Firmado y autorizado por el titular de la cuenta · CitaDoc</p>
+<tr><td style="padding:0 32px 32px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-top:2px solid #e2e8f0;padding-top:20px;">
+    <tr><td style="padding-top:20px;">
+      <p style="margin:0 0 4px;color:#64748b;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Firmado y autorizado digitalmente por</p>
+      <p style="margin:0 0 2px;color:#0f172a;font-size:14px;font-weight:700;">${safe(d.doctor_name as string)}</p>
+      <p style="margin:0 0 10px;color:#64748b;font-size:12px;">${safe((d.doctor_meta as string)||'')}</p>
+      <p style="margin:0;color:#94a3b8;font-size:11px;font-style:italic;line-height:1.5;">"Declaro bajo mi responsabilidad profesional que autorizo y firmo este documento. Soy el único titular autorizado de esta cuenta para emitir estos documentos clínicos." · CitaDoc</p>
+    </td></tr>
+  </table>
 </td></tr>
 
 </table></td></tr>
@@ -1155,15 +1163,30 @@ function tplWebGenerada(d: { nombre: string; especialidad: string; ciudad: strin
 }
 
 // ── Send via Resend ───────────────────────────────────────────────────────────
-async function sendEmail(to: string, subject: string, html: string) {
+async function sendEmail(to: string, subject: string, html: string, attachments?: {filename: string, content: string}[]) {
   if (!RESEND_API_KEY) { console.warn('[send-email] No RESEND_API_KEY'); return }
+  // deno-lint-ignore no-explicit-any
+  const body: Record<string, any> = { from: FROM, to: [to], subject, html }
+  if (attachments?.length) body.attachments = attachments
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: FROM, to: [to], subject, html }),
+    body: JSON.stringify(body),
   })
   if (!res.ok) console.warn('[send-email] Resend error:', res.status, await res.text())
   else console.log('[send-email] Sent to:', to, '|', subject)
+}
+
+async function pdfToBase64(url: string): Promise<string|null> {
+  try {
+    const r = await fetch(url)
+    if (!r.ok) return null
+    const buf = await r.arrayBuffer()
+    const bytes = new Uint8Array(buf)
+    let bin = ''
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
+    return btoa(bin)
+  } catch(e) { console.warn('[pdf-attach]', e); return null }
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
@@ -1211,7 +1234,12 @@ serve(async (req) => {
 
       case 'indicaciones': {
         const subject = `Documentos médicos — ${data.doctor_name || 'tu médico'}`
-        await sendEmail(to_email, subject, tplIndicaciones(data as Record<string, unknown>))
+        let attachments: {filename: string, content: string}[] | undefined
+        if (data.pdf_url) {
+          const b64 = await pdfToBase64(data.pdf_url as string)
+          if (b64) attachments = [{ filename: 'documentos-medicos.pdf', content: b64 }]
+        }
+        await sendEmail(to_email, subject, tplIndicaciones(data as Record<string, unknown>), attachments)
         break
       }
 
