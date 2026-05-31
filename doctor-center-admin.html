@@ -182,6 +182,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .admin-tab:hover{color:var(--ink);background:#f9fafb}
 .admin-tab.active{color:var(--ink);border-bottom-color:var(--red)}
 
+/* ESTADO CITA */
+.estado-btns{display:flex;gap:.3rem;flex-wrap:nowrap}
+.estado-btn{border:1.5px solid var(--border);background:#fff;border-radius:7px;padding:.28rem .5rem;font-family:'DM Sans',sans-serif;font-size:.65rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.3}
+.estado-btn:hover{opacity:.85}
+.estado-btn.atendido{background:#f0fdf4;border-color:#86efac;color:#15803d}
+.estado-btn.atendido.active{background:#16a34a;border-color:#16a34a;color:#fff}
+.estado-btn.noshow{background:#fff7ed;border-color:#fdba74;color:#c2410c}
+.estado-btn.noshow.active{background:#ea580c;border-color:#ea580c;color:#fff}
+.estado-btn.cancelado{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+.estado-btn.cancelado.active{background:#2563eb;border-color:#2563eb;color:#fff}
+
 /* LEADS TABLE */
 .leads-search{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;margin-bottom:1rem;transition:border-color .15s}
 .leads-search:focus{border-color:var(--red)}
@@ -1507,49 +1518,81 @@ function renderCitasRow(patientId) {
   const wrap = el('citasContent_'+patientId)
   if (!wrap || !patient) return
   const citas = patient._citas || []
-  if (!citas.length) { wrap.innerHTML = '<em>Sin citas registradas</em>'; return }
+  if (!citas.length) { wrap.innerHTML = '<em style="color:var(--muted);font-size:.78rem">Sin citas registradas</em>'; return }
   wrap.innerHTML = `<table style="width:100%;border-collapse:collapse;margin-top:.25rem">
     <tr style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">
-      <td style="padding:.3rem .5rem">Fecha</td><td>Hora</td><td>Servicios</td><td>Total</td><td>Estado</td><td></td>
+      <td style="padding:.3rem .5rem">Fecha</td><td>Hora</td><td>Servicios</td><td>Total</td><td colspan="2">Estado</td>
     </tr>
     ${citas.map(c => {
-      const svcs = c.servicios ? (Array.isArray(c.servicios)?c.servicios:JSON.parse(c.servicios||'[]')).map(s=>s.nombre).join(', ') : '—'
-      const badge = c.atendido
-        ? '<span class="lead-badge atendido">✓ Atendido</span>'
-        : '<span class="lead-badge pendiente">Pendiente</span>'
+      const svcs = c.servicios ? (() => { try { const a = Array.isArray(c.servicios)?c.servicios:JSON.parse(c.servicios||'[]'); return a.map(s=>s.nombre).join(', ') } catch { return '—' } })() : (c.nota||'—')
+      const estado = c.estado || (c.atendido ? 'atendido' : 'pendiente')
       return `<tr style="border-top:1px solid #f0f0f0">
-        <td style="padding:.35rem .5rem;white-space:nowrap">${c.fecha_pref||'—'}</td>
-        <td>${c.hora||'—'}</td>
-        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(svcs)}</td>
-        <td>${c.total_est?'$'+c.total_est:'—'}</td>
-        <td>${badge}</td>
-        <td>${!c.atendido?`<button class="btn-atendido" style="font-size:.65rem" onclick="markAtendido('${c.id}','${patientId}',this)">✓ Atendido</button>`:''}</td>
+        <td style="padding:.4rem .5rem;white-space:nowrap;font-size:.8rem">${c.fecha_pref||'—'}</td>
+        <td style="font-size:.8rem">${c.hora||'—'}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem">${esc(svcs)}</td>
+        <td style="font-size:.8rem;font-weight:700">${c.total_est?'$'+c.total_est:'—'}</td>
+        <td>
+          <div class="estado-btns">
+            <button class="estado-btn atendido${estado==='atendido'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','atendido',this)" title="Atendido">✓ Asistió</button>
+            <button class="estado-btn noshow${estado==='noshow'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','noshow',this)" title="No se presentó">✗ No vino</button>
+            <button class="estado-btn cancelado${estado==='cancelado'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','cancelado',this)" title="Canceló / Reagendar">↻ Reagendar</button>
+          </div>
+        </td>
       </tr>`
     }).join('')}
   </table>`
 }
 
-async function markAtendido(citaId, patientId, btn) {
-  btn.disabled = true; btn.textContent = '...'
-  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { atendido: true })
-  if (error) { toast('Error al actualizar', 'err'); btn.disabled = false; btn.textContent = '✓ Atendido'; return }
-  // Update local state
+const ESTADO_EMAIL = {
+  atendido:  { type: 'center_postvista',  toast: 'Email de agradecimiento enviado ✓' },
+  noshow:    { type: 'center_noshow',     toast: 'Email de no-show enviado — le pedimos reagendar ✓' },
+  cancelado: { type: 'center_noshow',     toast: 'Email de reagendamiento enviado ✓' },
+}
+
+async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
   const patient = _allLeads.find(p => p.id === patientId)
-  if (patient) {
-    const cita = (patient._citas||[]).find(c => c.id === citaId)
-    if (cita) cita.atendido = true
+  const cita = (patient?._citas||[]).find(c => c.id === citaId)
+  if (!cita) return
+
+  // Deselect si ya estaba activo (toggle off → pendiente)
+  const estadoActual = cita.estado || (cita.atendido ? 'atendido' : 'pendiente')
+  const targetEstado = estadoActual === nuevoEstado ? 'pendiente' : nuevoEstado
+
+  btnClicked.disabled = true
+  const patch = {
+    estado:   targetEstado,
+    atendido: targetEstado === 'atendido',
   }
-  btn.classList.add('done'); btn.textContent = '✓ Listo'
-  // Post-visita email
-  if (patient?.email && _center?.nombre) {
-    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
-      body: JSON.stringify({ type: 'center_postvista', to_email: patient.email, patient_name: patient.nombre||'', center_name: _center.nombre, booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}` })
-    })
+  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, patch)
+  if (error) { toast('Error: '+error.message, 'err'); btnClicked.disabled=false; return }
+
+  cita.estado   = targetEstado
+  cita.atendido = targetEstado === 'atendido'
+  btnClicked.disabled = false
+
+  // Enviar email si corresponde
+  if (targetEstado !== 'pendiente') {
+    const cfg = ESTADO_EMAIL[targetEstado]
+    if (cfg && patient?.email && _center?.nombre) {
+      fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+        body: JSON.stringify({
+          type: cfg.type,
+          to_email: patient.email,
+          patient_name: patient.nombre||'',
+          center_name: _center.nombre,
+          center_phone: _center.whatsapp||_center.telefono||'',
+          booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}`,
+        })
+      })
+      toast(cfg.toast, 'ok')
+    }
   }
-  toast('Atendido ✓ — se enviará post-visita', 'ok')
+
   renderCitasRow(patientId)
+  // Refresh patient row stats
+  await loadLeads()
 }
 
 function abrirNuevaCita(patientId, nombre) {
