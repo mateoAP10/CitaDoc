@@ -807,8 +807,6 @@ function checkKey() {
   }
 }
 
-// Auto-unlock si ya estaba autenticado en esta sesión del browser
-if (sessionStorage.getItem('dc_admin_auth') === '1') unlockAdmin()
 
 // ── ENSURE CENTER ─────────────────────────────────────────────────────────────
 let _centerLoading = null
@@ -1694,6 +1692,9 @@ function toast(msg, type='ok') {
   clearTimeout(_toastTimer)
   _toastTimer = setTimeout(() => t.className = 'toast', 2800)
 }
+
+// Auto-unlock al final — todas las variables ya están declaradas
+if (sessionStorage.getItem('dc_admin_auth') === '1') unlockAdmin()
 </script>
 </body>
 </html>
