@@ -1214,8 +1214,11 @@ function tplCenterConfirm(d: Record<string,unknown>): string {
 
 function tplCenterAdminLead(d: Record<string,unknown>): string {
   const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const confirmUrl = d.lead_id
+    ? `https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/center-followup?action=confirm&lead_id=${safe(d.lead_id)}`
+    : null
   const body = `
-<tr><td style="padding:24px 32px;">
+<tr><td style="padding:24px 32px 8px;">
   <table width="100%" cellpadding="0" cellspacing="0">
     ${[['Paciente',String(d.patient_name||'')],['Teléfono',String(d.telefono||'—')],['Email',String(d.email||'—')],['Fecha',String(d.fecha||'Sin fecha')],['Hora',String(d.hora||'Sin hora')],['Servicios',String(d.servicios||'—')],['Total est.',String(d.total||'—')]].map(([l,v],i)=>`
     <tr><td style="padding:8px 0;${i>0?'border-top:1px solid #f1f5f9;':''}">
@@ -1223,7 +1226,13 @@ function tplCenterAdminLead(d: Record<string,unknown>): string {
       <p style="margin:0;font-size:14px;font-weight:600;color:#0f172a;">${safe(v)}</p>
     </td></tr>`).join('')}
   </table>
-</td></tr>`
+</td></tr>
+${confirmUrl ? `<tr><td style="padding:0 32px 24px;">
+  <a href="${confirmUrl}" style="display:block;background:#16a34a;color:#fff;text-align:center;padding:13px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;margin-top:12px;">
+    ✓ Confirmar asistencia del paciente
+  </a>
+  <p style="margin:6px 0 0;font-size:11px;color:#94a3b8;text-align:center;">Un clic marca al paciente como atendido y envía el email de post-visita</p>
+</td></tr>` : ''}`
   return centerBase(String(d.center_name||''), `Nueva reserva de ${String(d.patient_name||'')}`, 'linear-gradient(135deg,#1e3a5f,#1d4ed8)', '#a5b4fc', 'rgba(165,180,252,.15)', '🔔 Nueva reserva', body)
 }
 
@@ -1267,6 +1276,27 @@ function tplCenterPostVisita(d: Record<string,unknown>): string {
   <p style="margin:0;color:#374151;font-size:13px;line-height:1.6;">Podés compartirnos cómo fue tu experiencia — tu opinión nos ayuda a seguir mejorando.</p>
 </td></tr>`
   return centerBase(String(d.center_name||''), `Gracias por visitarnos`, 'linear-gradient(135deg,#064e3b,#065f46)', '#6ee7b7', 'rgba(110,231,183,.15)', '❤️ Post-visita', body)
+}
+
+function tplCenterCoupon(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const code = d.coupon_code || 'CITADOC10'
+  const discount = d.discount || '10% de descuento'
+  const body = `
+<tr><td style="padding:28px 32px;">
+  <p style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700;">Hola, ${safe(d.patient_name)} 🎁</p>
+  <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7;">Tenemos un regalo especial para vos de parte de <strong>${safe(d.center_name)}</strong>.</p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fdf4ff,#ede9fe);border:2px solid #e9d5ff;border-radius:14px;margin-bottom:20px;">
+    <tr><td style="padding:20px 24px;text-align:center;">
+      <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:2px;">Tu cupón exclusivo</p>
+      <p style="margin:0 0 8px;font-size:26px;font-weight:800;color:#4c1d95;letter-spacing:3px;">${safe(code)}</p>
+      <p style="margin:0;font-size:14px;font-weight:600;color:#6b21a8;">${safe(discount)}</p>
+    </td></tr>
+  </table>
+  ${d.booking_url ? `<a href="${safe(d.booking_url as string)}" style="display:block;background:#7c3aed;color:#fff;text-align:center;padding:13px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Reservar con descuento →</a>` : ''}
+  ${d.expiry ? `<p style="margin:12px 0 0;font-size:11px;color:#94a3b8;text-align:center;">Válido hasta: ${safe(d.expiry)}</p>` : ''}
+</td></tr>`
+  return centerBase(String(d.center_name||''), `Un regalo de ${String(d.center_name||'')}`, 'linear-gradient(135deg,#4c1d95,#7c3aed)', '#e9d5ff', 'rgba(233,213,255,.15)', '🎁 Cupón de descuento', body)
 }
 
 // ── Send via Resend ───────────────────────────────────────────────────────────
@@ -1551,6 +1581,11 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'center_postvista': {
         const subject = `Gracias por visitarnos — ${data.center_name || ''}`
         await sendEmail(to_email, subject, tplCenterPostVisita(data as Record<string,unknown>))
+        break
+      }
+      case 'center_coupon': {
+        const subject = `🎁 Un regalo de ${data.center_name || 'tu centro médico'}`
+        await sendEmail(to_email, subject, tplCenterCoupon(data as Record<string,unknown>))
         break
       }
 

@@ -181,6 +181,41 @@ async function runPostVisita() {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
+
+  // ── One-click confirmation via GET ────────────────────────────────────────
+  if (req.method === 'GET') {
+    const url = new URL(req.url)
+    const action = url.searchParams.get('action')
+    const leadId = url.searchParams.get('lead_id')
+    if (action === 'confirm' && leadId) {
+      const { data: lead, error } = await sb.from('center_leads').select('id,nombre,atendido,email,center_id,centers(nombre,slug)').eq('id', leadId).single()
+      if (error || !lead) return new Response('<html><body style="font-family:sans-serif;text-align:center;padding:3rem"><h2>❌ No se encontró la reserva</h2></body></html>', { headers: { 'Content-Type': 'text/html' } })
+      if (!lead.atendido) {
+        await sb.from('center_leads').update({ atendido: true, followup_postvista_sent: false }).eq('id', leadId)
+        // Trigger post-visita email to patient
+        const center = lead.centers as {nombre:string, slug?:string}
+        if (lead.email && center?.nombre) {
+          await sendEmail('center_postvista', {
+            to_email: lead.email, patient_name: lead.nombre||'',
+            center_name: center.nombre,
+            booking_url: center.slug ? `https://doctor-center.citadoc.lat/${center.slug}` : null,
+          })
+        }
+      }
+      const centerName = (lead.centers as {nombre:string})?.nombre || 'el centro'
+      return new Response(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asistencia confirmada</title></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0fdf4;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:1rem">
+<div style="background:#fff;border-radius:20px;padding:2.5rem 2rem;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)">
+  <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+  <h2 style="margin:0 0 .5rem;color:#0f172a;font-size:1.3rem">Asistencia confirmada</h2>
+  <p style="color:#374151;font-size:.9rem;margin:0 0 1.5rem;line-height:1.6">${lead.nombre || 'El paciente'} fue marcado como atendido en <strong>${centerName}</strong>.<br>Se enviará el email de post-visita automáticamente.</p>
+  <a href="javascript:window.close()" style="font-size:.82rem;color:#94a3b8;text-decoration:none">Cerrar ventana</a>
+</div></body></html>`, { headers: { 'Content-Type': 'text/html' } })
+    }
+    return new Response('Not found', { status: 404 })
+  }
+
   try {
     const [c, r, n, p] = await Promise.all([
       runConfirmaciones(),

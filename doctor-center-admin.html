@@ -176,6 +176,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .btn-remove-logo{background:none;border:1.5px solid var(--border);color:var(--muted);border-radius:7px;padding:.3rem .65rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s;margin-top:.35rem;display:none}
 .btn-remove-logo:hover{border-color:#fca5a5;color:var(--red);background:#fee2e2}
 
+/* TABS */
+.admin-tabs{display:flex;gap:.35rem;margin-bottom:1.5rem;border-bottom:2px solid var(--border);padding-bottom:0}
+.admin-tab{padding:.65rem 1.25rem;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;border-radius:8px 8px 0 0}
+.admin-tab:hover{color:var(--ink);background:#f9fafb}
+.admin-tab.active{color:var(--ink);border-bottom-color:var(--red)}
+
+/* LEADS TABLE */
+.leads-search{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;margin-bottom:1rem;transition:border-color .15s}
+.leads-search:focus{border-color:var(--red)}
+.leads-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.leads-table th{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:.5rem .75rem;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap}
+.leads-table td{padding:.6rem .75rem;border-bottom:1px solid #f5f5f5;vertical-align:middle;color:var(--ink)}
+.leads-table tr:last-child td{border-bottom:none}
+.leads-table tr:hover td{background:#fafafa}
+.lead-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:.15rem .55rem;border-radius:20px;white-space:nowrap}
+.lead-badge.atendido{background:var(--green-lite);color:var(--green)}
+.lead-badge.pendiente{background:#fffbeb;color:#92400e}
+.lead-badge.noshow{background:#fee2e2;color:#dc2626}
+.btn-atendido{background:none;border:1.5px solid var(--border);border-radius:7px;padding:.3rem .65rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;white-space:nowrap}
+.btn-atendido:hover{border-color:var(--green);color:var(--green);background:var(--green-lite)}
+.btn-atendido.done{border-color:var(--green);color:var(--green);background:var(--green-lite);cursor:default}
+.leads-empty{text-align:center;padding:2rem;color:var(--muted);font-size:.82rem}
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+
+/* FOLLOWUP SENDER */
+.followup-row{display:grid;grid-template-columns:1fr 1fr auto;gap:.75rem;align-items:end}
+@media(max-width:560px){.followup-row{grid-template-columns:1fr}}
+
 /* TOAST */
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.82rem;font-weight:600;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s}
 .toast.show{transform:translateY(0);opacity:1}
@@ -219,6 +247,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
   </div>
 
   <div class="main">
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="tabBtnFrontend" onclick="switchTab('frontend')">
+        🌐 Frontend <span style="font-size:.7rem;color:var(--muted);font-weight:500">· Lo que se ve</span>
+      </button>
+      <button class="admin-tab" id="tabBtnBackend" onclick="switchTab('backend')">
+        ⚙️ Backend <span style="font-size:.7rem;color:var(--muted);font-weight:500">· Seguimiento</span>
+      </button>
+    </div>
+
+    <!-- TAB FRONTEND -->
+    <div id="tabFrontend">
 
     <!-- 1. PORTADA -->
     <div class="section-card">
@@ -526,6 +567,80 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         Guardar horarios
       </button>
     </div>
+
+    </div><!-- /tabFrontend -->
+
+    <!-- TAB BACKEND -->
+    <div id="tabBackend" style="display:none">
+
+      <!-- ENVIAR FOLLOWUP MANUAL -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <div>
+            <div class="section-title">Enviar followup</div>
+            <div class="section-sub">Dispará un email de seguimiento manual a cualquier paciente</div>
+          </div>
+        </div>
+        <div class="followup-row">
+          <div class="field-group">
+            <label class="field-label">Email del paciente</label>
+            <input class="field-input" id="fupEmail" placeholder="paciente@email.com" type="email" list="leadsEmailList">
+            <datalist id="leadsEmailList"></datalist>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Tipo de followup</label>
+            <select class="field-input" id="fupType" style="cursor:pointer">
+              <option value="center_reminder">📅 Recordatorio de turno</option>
+              <option value="center_noshow">👋 No-show — reagendar</option>
+              <option value="center_postvista">❤️ Post-visita — gracias</option>
+              <option value="center_coupon">🎁 Cupón de descuento</option>
+              <option value="center_confirm">✓ Bienvenida / confirmación</option>
+            </select>
+          </div>
+          <div class="field-group" style="justify-content:flex-end">
+            <button class="btn-save" id="btnSendFollowup" onclick="sendManualFollowup()" style="margin-top:0;height:44px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Enviar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLA DE RESERVAS/PACIENTES -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div>
+            <div class="section-title">Reservas y pacientes</div>
+            <div class="section-sub">Historial de leads — marcá asistencia para activar el followup post-visita</div>
+          </div>
+        </div>
+        <input class="leads-search" id="leadsSearch" placeholder="Buscar por nombre, cédula, mail o teléfono..." oninput="filterLeads()">
+        <div class="table-wrap">
+          <table class="leads-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Mail</th>
+                <th>Teléfono</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody">
+              <tr><td colspan="9" class="leads-empty">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="leadsCount" style="font-size:.75rem;color:var(--muted);margin-top:.6rem;text-align:right"></div>
+      </div>
+
+    </div><!-- /tabBackend -->
 
   </div><!-- /main -->
 </div><!-- /app -->
@@ -1206,6 +1321,130 @@ async function commitImport() {
     btn.disabled = false; btn.textContent = 'Importar servicios'
   }
 }
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  el('tabFrontend').style.display  = tab === 'frontend' ? '' : 'none'
+  el('tabBackend').style.display   = tab === 'backend'  ? '' : 'none'
+  el('tabBtnFrontend').classList.toggle('active', tab === 'frontend')
+  el('tabBtnBackend').classList.toggle('active',  tab === 'backend')
+  if (tab === 'backend') loadLeads()
+}
+
+// ── BACKEND: LEADS ────────────────────────────────────────────────────────────
+let _allLeads = []
+
+async function loadLeads() {
+  if (!_center) return
+  const { data, error } = await sbGet('center_leads',
+    `center_id=eq.${_center.id}&select=*&order=created_at.desc&limit=300`)
+  if (error || !data) return
+  _allLeads = data
+  // Populate email datalist
+  const dl = el('leadsEmailList')
+  if (dl) {
+    const emails = [...new Set(data.filter(l=>l.email).map(l=>l.email))]
+    dl.innerHTML = emails.map(e=>`<option value="${esc(e)}">`).join('')
+  }
+  renderLeads(_allLeads)
+}
+
+function filterLeads() {
+  const q = (el('leadsSearch').value || '').toLowerCase()
+  if (!q) { renderLeads(_allLeads); return }
+  const filtered = _allLeads.filter(l =>
+    (l.nombre||'').toLowerCase().includes(q) ||
+    (l.email||'').toLowerCase().includes(q) ||
+    (l.cedula||'').toLowerCase().includes(q) ||
+    (l.telefono||'').toLowerCase().includes(q)
+  )
+  renderLeads(filtered)
+}
+
+function renderLeads(leads) {
+  const tbody = el('leadsTableBody')
+  const count = el('leadsCount')
+  if (!leads.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="leads-empty">Sin resultados</td></tr>`
+    if (count) count.textContent = ''
+    return
+  }
+  if (count) count.textContent = `${leads.length} registro${leads.length !== 1 ? 's' : ''}`
+  const today = new Date().toISOString().split('T')[0]
+  tbody.innerHTML = leads.map(l => {
+    const isNoShow = !l.atendido && l.fecha_pref && l.fecha_pref < today
+    const badge = l.atendido
+      ? '<span class="lead-badge atendido">✓ Atendido</span>'
+      : isNoShow
+        ? '<span class="lead-badge noshow">No se presentó</span>'
+        : '<span class="lead-badge pendiente">Pendiente</span>'
+    const svcs = l.servicios ? (() => { try { const a = typeof l.servicios === 'string' ? JSON.parse(l.servicios) : l.servicios; return a.map(s=>s.nombre).join(', ') } catch { return '' } })() : ''
+    return `<tr>
+      <td style="font-weight:600;min-width:120px">${esc(l.nombre||'—')}<br><span style="font-size:.65rem;color:var(--muted)">${esc(svcs)}</span></td>
+      <td>${esc(l.cedula||'—')}</td>
+      <td style="font-size:.78rem">${esc(l.email||'—')}</td>
+      <td>${esc(l.telefono||'—')}</td>
+      <td style="white-space:nowrap">${l.fecha_pref||'—'}</td>
+      <td>${l.hora||'—'}</td>
+      <td style="font-weight:700">${l.total_est?'$'+l.total_est:'—'}</td>
+      <td>${badge}</td>
+      <td>${!l.atendido ? `<button class="btn-atendido" onclick="markAtendido('${l.id}',this)">✓ Atendido</button>` : ''}</td>
+    </tr>`
+  }).join('')
+}
+
+async function markAtendido(id, btn) {
+  btn.disabled = true; btn.textContent = '...'
+  const { error } = await sbPatch('center_leads', 'id=eq.'+id, { atendido: true })
+  if (error) { toast('Error al actualizar', 'err'); btn.disabled = false; btn.textContent = '✓ Atendido'; return }
+  const lead = _allLeads.find(l => l.id === id)
+  if (lead) lead.atendido = true
+  btn.classList.add('done'); btn.textContent = '✓ Listo'
+  // Trigger post-visita followup
+  if (lead?.email && _center?.nombre) {
+    await fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+      body: JSON.stringify({ type: 'center_postvista', to_email: lead.email, patient_name: lead.nombre||'', center_name: _center.nombre, booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}` })
+    })
+  }
+  toast('Marcado como atendido — se enviará post-visita', 'ok')
+  filterLeads()
+}
+
+async function sendManualFollowup() {
+  const email = (el('fupEmail').value || '').trim()
+  const type  = el('fupType').value
+  if (!email || !email.includes('@')) { toast('Email inválido', 'err'); return }
+  if (!_center) { toast('Centro no cargado', 'err'); return }
+  const btn = el('btnSendFollowup')
+  btn.disabled = true; btn.innerHTML = '...'
+  // Find lead for this email to get patient name
+  const lead = _allLeads.find(l => l.email === email)
+  const body = {
+    type, to_email: email,
+    patient_name: lead?.nombre || email.split('@')[0],
+    center_name:  _center.nombre,
+    center_phone: _center.whatsapp || _center.telefono || '',
+    booking_url:  `https://doctor-center.citadoc.lat/${_center.slug||''}`,
+    fecha:        lead?.fecha_pref || '',
+    hora:         lead?.hora || '',
+    servicios:    '',
+  }
+  try {
+    const res = await fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+      body: JSON.stringify(body)
+    })
+    if (res.ok) toast('Followup enviado a ' + email, 'ok')
+    else toast('Error al enviar', 'err')
+  } catch(e) { toast('Error: ' + e.message, 'err') }
+  btn.disabled = false
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar'
+}
+
+let _SUPABASE_URL = SB_URL, _SUPABASE_ANON = SB_ANON
 
 // ── HORARIOS DE ATENCIÓN ───────────────────────────────────────────────────────
 const SCH_DAYS = [
