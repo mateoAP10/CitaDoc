@@ -51,7 +51,7 @@ async function runConfirmaciones() {
   const { data } = await sb
     .from('center_citas')
     .select('*, center_patients(nombre, email, telefono, cedula), centers(nombre, email, whatsapp, telefono)')
-    .eq('followup_confirm_sent', false)
+    .is('email_confirm_at', null)          // timestamp null = nunca enviado
     .gte('created_at', since)
     .order('created_at')
     .limit(50)
@@ -76,7 +76,7 @@ async function runConfirmaciones() {
         servicios: fmtServices(c.servicios), total: c.total_est?`$${c.total_est}`:'',
       })
     }
-    await sb.from('center_citas').update({ followup_confirm_sent: true }).eq('id', c.id)
+    await sb.from('center_citas').update({ email_confirm_at: new Date().toISOString(), followup_confirm_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] confirmaciones: ${sent}`)
@@ -90,7 +90,7 @@ async function runRecordatorios() {
   const { data } = await sb
     .from('center_citas')
     .select('*, center_patients(nombre, email, telefono), centers(nombre, whatsapp, telefono)')
-    .eq('fecha_pref', tStr).eq('followup_reminder_sent', false).eq('atendido', false)
+    .eq('fecha_pref', tStr).is('email_reminder_at', null).eq('atendido', false)
     .limit(100)
 
   if (!data?.length) return 0
@@ -104,7 +104,7 @@ async function runRecordatorios() {
       center_phone: center.whatsapp||center.telefono||'',
       fecha: fmtDate(tStr), hora: c.hora||null, servicios: fmtServices(c.servicios),
     })
-    await sb.from('center_citas').update({ followup_reminder_sent: true }).eq('id', c.id)
+    await sb.from('center_citas').update({ email_reminder_at: new Date().toISOString(), followup_reminder_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] recordatorios: ${sent}`)
@@ -120,7 +120,7 @@ async function runNoShow() {
     .select('*, center_patients(nombre, email, telefono), centers(nombre, whatsapp, telefono, slug)')
     .gte('fecha_pref', from.toISOString().split('T')[0])
     .lte('fecha_pref', to.toISOString().split('T')[0])
-    .eq('atendido', false).eq('followup_noshow_sent', false)
+    .eq('atendido', false).is('email_noshow_at', null)
     .limit(100)
 
   if (!data?.length) return 0
@@ -135,7 +135,7 @@ async function runNoShow() {
       booking_url: center.slug?`https://doctor-center.citadoc.lat/${center.slug}`:null,
       servicios: fmtServices(c.servicios),
     })
-    await sb.from('center_citas').update({ followup_noshow_sent: true }).eq('id', c.id)
+    await sb.from('center_citas').update({ email_noshow_at: new Date().toISOString(), followup_noshow_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] no-show: ${sent}`)
@@ -148,7 +148,8 @@ async function runPostVisita() {
   const { data } = await sb
     .from('center_citas')
     .select('*, center_patients(nombre, email), centers(nombre, slug)')
-    .eq('atendido', true).eq('followup_postvista_sent', false)
+    .eq('atendido', true)
+    .is('email_postvista_at', null)        // nunca enviado
     .gte('fecha_pref', since.toISOString().split('T')[0])
     .limit(100)
 
@@ -162,7 +163,7 @@ async function runPostVisita() {
       to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
       booking_url: center.slug?`https://doctor-center.citadoc.lat/${center.slug}`:null,
     })
-    await sb.from('center_citas').update({ followup_postvista_sent: true }).eq('id', c.id)
+    await sb.from('center_citas').update({ email_postvista_at: new Date().toISOString(), followup_postvista_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] post-visita: ${sent}`)

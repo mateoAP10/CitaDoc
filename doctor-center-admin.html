@@ -1429,7 +1429,7 @@ async function loadLeads() {
 
   // Cargar citas para agregar stats
   const { data: citas } = await sbGet('center_citas',
-    `center_id=eq.${_center.id}&select=id,patient_id,fecha_pref,atendido,total_est,servicios&order=fecha_pref.desc&limit=1000`)
+    `center_id=eq.${_center.id}&select=id,patient_id,fecha_pref,hora,atendido,estado,total_est,servicios,nota,email_confirm_at,email_reminder_at,email_noshow_at,email_postvista_at&order=fecha_pref.desc&limit=1000`)
   const citasArr = citas || []
 
   // Enriquecer cada paciente con stats de sus citas
@@ -1543,10 +1543,11 @@ function renderCitasRow(patientId) {
   </table>`
 }
 
-const ESTADO_EMAIL = {
-  atendido:  { type: 'center_postvista',  toast: 'Email de agradecimiento enviado ✓' },
-  noshow:    { type: 'center_noshow',     toast: 'Email de no-show enviado — le pedimos reagendar ✓' },
-  cancelado: { type: 'center_noshow',     toast: 'Email de reagendamiento enviado ✓' },
+// Qué email enviar y qué campo timestamp marcar por estado
+const ESTADO_CFG = {
+  atendido:  { type: 'center_postvista', ts_field: 'email_postvista_at', toast: 'Email de agradecimiento enviado ✓' },
+  noshow:    { type: 'center_noshow',    ts_field: 'email_noshow_at',    toast: 'Email "no se presentó — reagendemos" enviado ✓' },
+  cancelado: { type: 'center_noshow',    ts_field: 'email_noshow_at',    toast: 'Email de reagendamiento enviado ✓' },
 }
 
 async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
@@ -1554,15 +1555,18 @@ async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
   const cita = (patient?._citas||[]).find(c => c.id === citaId)
   if (!cita) return
 
-  // Deselect si ya estaba activo (toggle off → pendiente)
   const estadoActual = cita.estado || (cita.atendido ? 'atendido' : 'pendiente')
   const targetEstado = estadoActual === nuevoEstado ? 'pendiente' : nuevoEstado
 
   btnClicked.disabled = true
-  const patch = {
-    estado:   targetEstado,
-    atendido: targetEstado === 'atendido',
-  }
+
+  const now = new Date().toISOString()
+  const patch = { estado: targetEstado, atendido: targetEstado === 'atendido' }
+  const cfg = ESTADO_CFG[targetEstado]
+
+  // Marcar timestamp del email que corresponde
+  if (cfg) patch[cfg.ts_field] = cita[cfg.ts_field] || null  // preservar si ya existía
+
   const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, patch)
   if (error) { toast('Error: '+error.message, 'err'); btnClicked.disabled=false; return }
 
@@ -1570,10 +1574,13 @@ async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
   cita.atendido = targetEstado === 'atendido'
   btnClicked.disabled = false
 
-  // Enviar email si corresponde
-  if (targetEstado !== 'pendiente') {
-    const cfg = ESTADO_EMAIL[targetEstado]
-    if (cfg && patient?.email && _center?.nombre) {
+  // Enviar email SOLO si el timestamp estaba null (nunca enviado)
+  if (targetEstado !== 'pendiente' && cfg && patient?.email && _center?.nombre) {
+    const tsActual = cita[cfg.ts_field]
+    if (!tsActual) {
+      // Marcar timestamp ANTES de enviar para evitar duplicados si hay doble clic
+      cita[cfg.ts_field] = now
+      await sbPatch('center_citas', 'id=eq.'+citaId, { [cfg.ts_field]: now })
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
@@ -1587,11 +1594,13 @@ async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
         })
       })
       toast(cfg.toast, 'ok')
+    } else {
+      const fecha = new Date(tsActual).toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+      toast(`Email ya enviado el ${fecha} — no se duplica`, 'ok')
     }
   }
 
   renderCitasRow(patientId)
-  // Refresh patient row stats
   await loadLeads()
 }
 
