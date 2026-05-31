@@ -1815,9 +1815,13 @@ function renderPackages() {
           ${p.descripcion?`<div class="pkg-desc">${esc(p.descripcion)}</div>`:''}
         </div>
       </div>
-      <ul class="pkg-items">
+      <ul class="pkg-items" id="pkgitems_${p.id}">
         ${incluye.slice(0,5).map(i=>`<li>${esc(i)}</li>`).join('')}
-        ${incluye.length>5?`<li style="color:var(--muted2)">+${incluye.length-5} más incluidos</li>`:''}
+        ${incluye.length>5?`
+        <div id="pkgextra_${p.id}" style="display:none">${incluye.slice(5).map(i=>`<li>${esc(i)}</li>`).join('')}</div>
+        <li style="list-style:none;padding-left:0" onclick="event.stopPropagation();pkgToggleExtra('${p.id}',${incluye.length-5})" id="pkgmore_${p.id}">
+          <span style="font-size:.72rem;color:var(--pkg-color,var(--red));font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px">+ ${incluye.length-5} más incluidos →</span>
+        </li>`:''}
       </ul>
       <div class="pkg-pricing">
         ${p.precio_regular?`<span class="pkg-price-old">$${p.precio_regular}</span>`:''}
@@ -1826,6 +1830,18 @@ function renderPackages() {
       </div>
     </div>`
   }).join('')
+}
+
+function pkgToggleExtra(id, count) {
+  const extra = document.getElementById('pkgextra_'+id)
+  const more  = document.getElementById('pkgmore_'+id)
+  if (!extra) return
+  const open = extra.style.display !== 'none'
+  extra.style.display = open ? 'none' : 'block'
+  if (more) {
+    const span = more.querySelector('span')
+    if (span) span.textContent = open ? '+ '+count+' más incluidos →' : '− Ver menos'
+  }
 }
 
 function togglePackage(id) {
