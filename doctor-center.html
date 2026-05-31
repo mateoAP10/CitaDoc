@@ -166,6 +166,24 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .calc-item-name{flex:1;font-size:.82rem;font-weight:500;color:var(--ink);text-align:left}
 .calc-item-price{font-size:.82rem;font-weight:700;color:var(--muted);white-space:nowrap}
 .calc-item.selected .calc-item-price{color:var(--red)}
+/* PACKAGE CARDS */
+.pkg-card{background:#fff;border:2px solid var(--border);border-radius:16px;padding:1.1rem 1.2rem;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.pkg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--pkg-color,var(--red));opacity:.7;transition:opacity .18s}
+.pkg-card:hover{border-color:var(--pkg-color,var(--red));box-shadow:0 4px 20px rgba(0,0,0,.1);transform:translateY(-1px)}
+.pkg-card.selected{border-color:var(--pkg-color,var(--red));background:color-mix(in srgb,var(--pkg-color,var(--red)) 5%,#fff)}
+.pkg-card.selected::before{opacity:1}
+.pkg-card-header{display:flex;align-items:center;gap:.65rem;margin-bottom:.75rem}
+.pkg-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pkg-name{font-size:.9rem;font-weight:800;color:var(--ink);line-height:1.2}
+.pkg-desc{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+.pkg-items{list-style:none;padding:0;margin:0 0 .85rem}
+.pkg-items li{font-size:.75rem;color:var(--ink2);padding:.2rem 0;padding-left:.9rem;position:relative}
+.pkg-items li::before{content:'✓';position:absolute;left:0;color:var(--pkg-color,var(--red));font-weight:700;font-size:.65rem;top:.3rem}
+.pkg-pricing{display:flex;align-items:flex-end;gap:.5rem}
+.pkg-price-old{font-size:.75rem;color:var(--muted2);text-decoration:line-through}
+.pkg-price-new{font-size:1.35rem;font-weight:800;line-height:1}
+.pkg-savings{font-size:.65rem;font-weight:700;color:#16a34a;background:#f0fdf4;padding:.15rem .5rem;border-radius:20px;margin-left:.25rem;align-self:center}
+.pkg-selected-badge{position:absolute;top:.65rem;right:.65rem;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:700}
 .calc-summary{background:var(--ink);border-radius:14px;padding:1.5rem;min-width:220px;position:sticky;top:80px}
 .calc-summary-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1rem}
 .calc-lines{display:flex;flex-direction:column;gap:.5rem;min-height:60px;margin-bottom:1rem}
@@ -1044,6 +1062,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
           </div>
         </div>
       </div>
+      <!-- PAQUETES PREMIUM -->
+      <div id="packagesSection" style="display:none;margin-bottom:1.5rem">
+        <div style="font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:.75rem">✦ Paquetes & Promociones</div>
+        <div id="packagesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem"></div>
+        <div style="height:1px;background:var(--border);margin:1.25rem 0"></div>
+      </div>
+
       <div class="calc-grid" id="calcGrid">
         <div class="calc-left">
           <div class="calc-tabs" id="calcTabsBar">
@@ -1723,9 +1748,11 @@ function _detectSlug() {
 const slug = _detectSlug()
 
 let _center   = null
-let _services = []
-let _doctors  = []
-let _selected = [] // {id, nombre, precio}
+let _services  = []
+let _doctors   = []
+let _packages  = []
+let _selPkgs   = [] // {id, nombre, precio_promo}
+let _selected  = [] // {id, nombre, precio}
 let _filterCat = 'all'
 let _searchQ   = ''
 let _filterIns = 'all'
@@ -1739,8 +1766,93 @@ async function init() {
     applyBranding(_center)
     const svcs = await dbGet('center_services', 'center_id=eq.'+_center.id+'&select=*&order=categoria,orden')
     if (svcs.length) { _services = svcs; renderServices() }
-    await loadDoctors()
+    await Promise.all([loadDoctors(), loadPackages()])
   }
+}
+
+async function loadPackages() {
+  if (!_center) return
+  const pkgs = await dbGet('center_packages', `center_id=eq.${_center.id}&activo=eq.true&select=*&order=orden,created_at`)
+  _packages = pkgs || []
+  renderPackages()
+}
+
+const PKG_ICONS_SVG = {
+  stethoscope:'<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/>',
+  baby:'<path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/>',
+  heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  lungs:'<path d="M12 5v12"/><path d="M5 12c-2.5 2.5-2.5 5 0 7s5 2.5 7 0"/><path d="M19 12c2.5 2.5 2.5 5 0 7s-5 2.5-7 0"/><path d="M5 9c-1-1-2-3-1-4s3-1 4 0l4 3 4-3c1-1 3-1 4 0s0 3-1 4"/>',
+  dna:'<path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m17 6-2.5-2.5"/><path d="m14 8-1-1"/><path d="m7 18 2.5 2.5"/><path d="m3.5 14.5.5.5"/><path d="m20 9 .5.5"/><path d="m6.5 17.5-1-1"/><path d="M2 9c6.667 6 13.333 0 20 6"/>',
+  bone:'<path d="M18.5 9.5a2.5 2.5 0 0 1 0 5L12 20l-6.5-5.5a2.5 2.5 0 1 1 3.536-3.536L12 14l2.964-2.964"/>',
+  eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  brain:'<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>',
+  pill:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+  activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  microscope:'<path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h.01"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+}
+
+function renderPackages() {
+  const sec  = document.getElementById('packagesSection')
+  const list = document.getElementById('packagesList')
+  if (!sec || !list) return
+  if (!_packages.length) { sec.style.display = 'none'; return }
+  sec.style.display = 'block'
+  list.innerHTML = _packages.map(p => {
+    const incluye = Array.isArray(p.incluye) ? p.incluye : (JSON.parse(p.incluye||'[]'))
+    const sel = _selPkgs.some(s => s.id === p.id)
+    const ahorro = p.precio_regular && p.precio_promo ? (p.precio_regular - p.precio_promo) : null
+    const color = p.color || '#0b7c6e'
+    const icSvg = PKG_ICONS_SVG[p.icono] || PKG_ICONS_SVG.stethoscope
+    return `<div class="pkg-card${sel?' selected':''}" style="--pkg-color:${color}" onclick="togglePackage('${p.id}')">
+      ${sel?`<div class="pkg-selected-badge" style="background:${color}">✓</div>`:''}
+      <div class="pkg-card-header">
+        <div class="pkg-icon" style="background:${color}18">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icSvg}</svg>
+        </div>
+        <div>
+          <div class="pkg-name">${esc(p.nombre)}</div>
+          ${p.descripcion?`<div class="pkg-desc">${esc(p.descripcion)}</div>`:''}
+        </div>
+      </div>
+      <ul class="pkg-items">
+        ${incluye.slice(0,5).map(i=>`<li>${esc(i)}</li>`).join('')}
+        ${incluye.length>5?`<li style="color:var(--muted2)">+${incluye.length-5} más incluidos</li>`:''}
+      </ul>
+      <div class="pkg-pricing">
+        ${p.precio_regular?`<span class="pkg-price-old">$${p.precio_regular}</span>`:''}
+        <span class="pkg-price-new" style="color:${color}">$${p.precio_promo}</span>
+        ${ahorro?`<span class="pkg-savings">Ahorras $${ahorro}</span>`:''}
+      </div>
+    </div>`
+  }).join('')
+}
+
+function togglePackage(id) {
+  const pkg = _packages.find(p => p.id === id)
+  if (!pkg) return
+  const idx = _selPkgs.findIndex(s => s.id === id)
+  if (idx >= 0) _selPkgs.splice(idx, 1)
+  else _selPkgs.push({ id, nombre: pkg.nombre, precio: pkg.precio_promo })
+  renderPackages()
+  updateCalcSummary()
+}
+
+function updateCalcSummary() {
+  const total  = el('calcTotal')
+  const lines  = el('calcLines')
+  const cta    = el('btnCalcCta')
+  const allSel = [..._selPkgs.map(p=>({nombre:p.nombre,precio:p.precio})), ..._selected]
+  const sum    = allSel.reduce((a,s) => a+(s.precio||0), 0)
+  if (!allSel.length) {
+    lines.innerHTML = '<div class="calc-empty">Seleccioná un servicio o paquete</div>'
+    total.textContent = '$0'
+    cta.disabled = true
+    return
+  }
+  lines.innerHTML = allSel.map(s => `<div class="calc-line"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`).join('')
+  total.textContent = '$' + sum
+  cta.disabled = false
 }
 
 function applyBranding(c) {
@@ -1897,25 +2009,6 @@ function toggleService(id, nombre, precio) {
   updateCalcSummary()
 }
 
-function updateCalcSummary() {
-  const lines  = el('calcLines')
-  const total  = el('calcTotal')
-  const btn    = el('btnCalcCta')
-  const sum    = _selected.reduce((a, s) => a + s.precio, 0)
-
-  if (!_selected.length) {
-    lines.innerHTML = '<div class="calc-empty">Seleccioná un servicio</div>'
-    total.textContent = '$0'
-    btn.disabled = true
-    return
-  }
-
-  lines.innerHTML = _selected.map(s =>
-    `<div class="calc-line"><span class="calc-line-name">${esc(s.nombre)}</span><span class="calc-line-price">$${s.precio}</span></div>`
-  ).join('')
-  total.textContent = '$' + sum
-  btn.disabled = false
-}
 
 // ── DOCTORS ───────────────────────────────────────────────────────────────────
 function matchConsultaService(esp) {
@@ -2284,8 +2377,10 @@ function selectModalSlot(slot, btn) {
 }
 
 async function openModalFromCalc() {
-  if (!_selected.length) return
-  const sum = _selected.reduce((a,s) => a+s.precio, 0)
+  const allSel = [..._selPkgs.map(p=>({id:p.id,nombre:p.nombre,precio:p.precio})), ..._selected]
+  if (!allSel.length) return
+  _selPkgs.forEach(p => { if (!_selected.find(s=>s.id===p.id)) _selected.push({id:p.id,nombre:p.nombre,precio:p.precio}) })
+  const sum = allSel.reduce((a,s) => a+s.precio, 0)
   el('modalServices').style.display = 'block'
   el('modalTotal').style.display    = 'flex'
   el('modalTotalAmt').textContent   = '$' + sum
