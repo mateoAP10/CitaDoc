@@ -611,10 +611,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       <div class="section-card">
         <div class="section-header">
           <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div>
+          <div style="flex:1">
             <div class="section-title">Reservas y pacientes</div>
             <div class="section-sub">Historial de leads — marcá asistencia para activar el followup post-visita</div>
           </div>
+          <button class="btn-save" onclick="abrirModalManual()" style="margin:0;white-space:nowrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Registrar paciente
+          </button>
         </div>
         <input class="leads-search" id="leadsSearch" placeholder="Buscar por nombre, cédula, mail o teléfono..." oninput="filterLeads()">
         <div class="table-wrap">
@@ -644,6 +648,65 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 
   </div><!-- /main -->
 </div><!-- /app -->
+
+<!-- MODAL REGISTRO MANUAL -->
+<div id="modalManual" onclick="if(event.target===this)cerrarModalManual()" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem">
+  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:18px;padding:1.75rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <div>
+        <div style="font-size:1rem;font-weight:800;color:var(--ink)">Registrar paciente</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Instagram, presencial u otro canal</div>
+      </div>
+      <button onclick="cerrarModalManual()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+
+    <div class="fields-grid" style="margin-bottom:1rem">
+      <div class="field-group full">
+        <label class="field-label">Nombre completo *</label>
+        <input class="field-input" id="mn_nombre" placeholder="Nombre y apellido">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Teléfono</label>
+        <input class="field-input" id="mn_telefono" type="tel" placeholder="+1 000 000 0000">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input class="field-input" id="mn_email" type="email" placeholder="correo@email.com">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Cédula / ID</label>
+        <input class="field-input" id="mn_cedula" placeholder="Opcional">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Canal de origen</label>
+        <select class="field-input" id="mn_canal">
+          <option value="instagram">📸 Instagram</option>
+          <option value="presencial">🏥 Presencial</option>
+          <option value="telefono">📞 Teléfono</option>
+          <option value="referido">🤝 Referido</option>
+          <option value="facebook">📘 Facebook</option>
+          <option value="otro">💬 Otro</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Fecha de atención</label>
+        <input class="field-input" id="mn_fecha" type="date">
+      </div>
+      <div class="field-group full">
+        <label class="field-label">Servicio / Nota</label>
+        <input class="field-input" id="mn_nota" placeholder="Ej: Consulta general, laboratorios...">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.6rem">
+      <button onclick="cerrarModalManual()" style="flex:1;padding:.7rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:inherit;font-size:.84rem;cursor:pointer;color:var(--muted)">Cancelar</button>
+      <button onclick="guardarPacienteManual()" id="btnGuardarManual" class="btn-save" style="flex:2;margin:0;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Guardar paciente
+      </button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1378,9 +1441,10 @@ function renderLeads(leads) {
       : isNoShow
         ? '<span class="lead-badge noshow">No se presentó</span>'
         : '<span class="lead-badge pendiente">Pendiente</span>'
-    const svcs = l.servicios ? (() => { try { const a = typeof l.servicios === 'string' ? JSON.parse(l.servicios) : l.servicios; return a.map(s=>s.nombre).join(', ') } catch { return '' } })() : ''
+    const svcs = l.servicios ? (() => { try { const a = typeof l.servicios === 'string' ? JSON.parse(l.servicios) : l.servicios; return a.map(s=>s.nombre).join(', ') } catch { return '' } })() : (l.nota||'')
+    const canalIcon = {instagram:'📸',presencial:'🏥',telefono:'📞',referido:'🤝',facebook:'📘',web:'🌐',otro:'💬'}[l.canal||'web']||'💬'
     return `<tr>
-      <td style="font-weight:600;min-width:120px">${esc(l.nombre||'—')}<br><span style="font-size:.65rem;color:var(--muted)">${esc(svcs)}</span></td>
+      <td style="font-weight:600;min-width:130px">${esc(l.nombre||'—')}<br><span style="font-size:.65rem;color:var(--muted)">${canalIcon} ${esc(l.canal||'web')}${svcs?' · '+esc(svcs.substring(0,40)):''}</span></td>
       <td>${esc(l.cedula||'—')}</td>
       <td style="font-size:.78rem">${esc(l.email||'—')}</td>
       <td>${esc(l.telefono||'—')}</td>
@@ -1445,6 +1509,63 @@ async function sendManualFollowup() {
 }
 
 let _SUPABASE_URL = SB_URL, _SUPABASE_ANON = SB_ANON
+
+// ── REGISTRO MANUAL ───────────────────────────────────────────────────────────
+function abrirModalManual() {
+  const m = el('modalManual')
+  if (!m) return
+  // Reset form
+  ;['mn_nombre','mn_telefono','mn_email','mn_cedula','mn_nota'].forEach(id => { const e=el(id); if(e) e.value='' })
+  el('mn_canal').value = 'instagram'
+  el('mn_fecha').value = new Date().toISOString().split('T')[0]
+  m.style.display = 'flex'
+  setTimeout(() => el('mn_nombre')?.focus(), 100)
+}
+
+function cerrarModalManual() {
+  const m = el('modalManual')
+  if (m) m.style.display = 'none'
+}
+
+async function guardarPacienteManual() {
+  const nombre = (el('mn_nombre')?.value || '').trim()
+  if (!nombre) { toast('El nombre es obligatorio', 'err'); return }
+  if (!_center) { toast('Centro no cargado', 'err'); return }
+
+  const btn = el('btnGuardarManual')
+  btn.disabled = true; btn.innerHTML = 'Guardando...'
+
+  const nota_parts = []
+  const canal = el('mn_canal')?.value || 'otro'
+  nota_parts.push('Canal: ' + canal)
+  if (el('mn_nota')?.value?.trim()) nota_parts.push(el('mn_nota').value.trim())
+
+  const payload = {
+    center_id:  _center.id,
+    nombre,
+    telefono:   (el('mn_telefono')?.value || '').trim() || null,
+    email:      (el('mn_email')?.value || '').trim()    || null,
+    cedula:     (el('mn_cedula')?.value || '').trim()   || null,
+    fecha_pref: el('mn_fecha')?.value || null,
+    canal,
+    nota:       nota_parts.join(' — ') || null,
+    followup_confirm_sent: false,
+  }
+
+  const { error } = await sbPost('center_leads', payload)
+  if (error) {
+    toast('Error al guardar: ' + (error.message || 'desconocido'), 'err')
+    btn.disabled = false
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'
+    return
+  }
+
+  toast(`${nombre} registrado ✓`, 'ok')
+  cerrarModalManual()
+  await loadLeads()
+  btn.disabled = false
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'
+}
 
 // ── HORARIOS DE ATENCIÓN ───────────────────────────────────────────────────────
 const SCH_DAYS = [
