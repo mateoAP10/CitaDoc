@@ -2441,17 +2441,28 @@ async function submitReserva() {
     : _selected
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
-  // Guardar lead en DB
+  // Guardar lead en DB — fundamental para el followup engine
   try {
-    await dbPost('center_leads', {
-      center_id: _center?.id, nombre, telefono,
-      cedula: cedula||null, email: email||null,
-      fecha_pref: fecha||null, hora: null,
-      nota: _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
-      servicios: leadsServices.length ? JSON.stringify(leadsServices) : null,
-      total_est: leadsTotal||null,
-    })
-  } catch(e) { console.warn('lead save:', e) }
+    const leadPayload = {
+      center_id: _center?.id || null,
+      nombre, telefono,
+      cedula:     cedula  || null,
+      email:      email   || null,
+      fecha_pref: fecha   || null,
+      hora:       null,
+      nota:       _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
+      servicios:  leadsServices.length ? JSON.stringify(leadsServices) : null,
+      total_est:  leadsTotal || null,
+    }
+    const r = await xhrReq(
+      'POST',
+      SB_URL + '/rest/v1/center_leads',
+      H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+      JSON.stringify(leadPayload)
+    )
+    if (!r.ok) console.error('[center_leads] insert failed:', r.text)
+    else console.log('[center_leads] lead guardado ✓')
+  } catch(e) { console.error('[center_leads] error de red:', e) }
 
   // Construir mensaje WA premium
   const centerName = _center?.nombre || 'el centro'
