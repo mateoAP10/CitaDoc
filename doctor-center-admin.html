@@ -632,14 +632,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <table class="leads-table">
             <thead>
               <tr>
-                <th>Nombre</th>
+                <th>Paciente</th>
                 <th>Cédula</th>
                 <th>Mail</th>
                 <th>Teléfono</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Total</th>
-                <th>Estado</th>
+                <th>Canal</th>
+                <th>Citas</th>
+                <th>Última visita</th>
                 <th></th>
               </tr>
             </thead>
@@ -1408,18 +1407,37 @@ function switchTab(tab) {
 }
 
 // ── BACKEND: LEADS ────────────────────────────────────────────────────────────
-let _allLeads = []
+let _allLeads = []   // patients con citas agregadas
 
 async function loadLeads() {
   if (!_center) return
-  const { data, error } = await sbGet('center_leads',
-    `center_id=eq.${_center.id}&select=*&order=created_at.desc&limit=300`)
-  if (error || !data) return
-  _allLeads = data
-  // Populate email datalist
+  // Cargar pacientes únicos del centro
+  const { data: patients } = await sbGet('center_patients',
+    `center_id=eq.${_center.id}&select=*&order=created_at.desc&limit=500`)
+  if (!patients) return
+
+  // Cargar citas para agregar stats
+  const { data: citas } = await sbGet('center_citas',
+    `center_id=eq.${_center.id}&select=id,patient_id,fecha_pref,atendido,total_est,servicios&order=fecha_pref.desc&limit=1000`)
+  const citasArr = citas || []
+
+  // Enriquecer cada paciente con stats de sus citas
+  _allLeads = patients.map(p => {
+    const myCitas = citasArr.filter(c => c.patient_id === p.id)
+    const lastCita = myCitas[0]
+    return {
+      ...p,
+      _citas_count: myCitas.length,
+      _last_fecha: lastCita?.fecha_pref || null,
+      _last_atendido: lastCita?.atendido || false,
+      _citas: myCitas,
+    }
+  })
+
+  // Email datalist para followup
   const dl = el('leadsEmailList')
   if (dl) {
-    const emails = [...new Set(data.filter(l=>l.email).map(l=>l.email))]
+    const emails = [...new Set(patients.filter(p=>p.email).map(p=>p.email))]
     dl.innerHTML = emails.map(e=>`<option value="${esc(e)}">`).join('')
   }
   renderLeads(_allLeads)
@@ -1428,65 +1446,127 @@ async function loadLeads() {
 function filterLeads() {
   const q = (el('leadsSearch').value || '').toLowerCase()
   if (!q) { renderLeads(_allLeads); return }
-  const filtered = _allLeads.filter(l =>
+  renderLeads(_allLeads.filter(l =>
     (l.nombre||'').toLowerCase().includes(q) ||
     (l.email||'').toLowerCase().includes(q) ||
     (l.cedula||'').toLowerCase().includes(q) ||
     (l.telefono||'').toLowerCase().includes(q)
-  )
-  renderLeads(filtered)
+  ))
 }
 
-function renderLeads(leads) {
+function renderLeads(patients) {
   const tbody = el('leadsTableBody')
   const count = el('leadsCount')
-  if (!leads.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="leads-empty">Sin resultados</td></tr>`
+  if (!patients.length) {
+    tbody.innerHTML = `<tr><td colspan="8" class="leads-empty">Sin pacientes registrados aún</td></tr>`
     if (count) count.textContent = ''
     return
   }
-  if (count) count.textContent = `${leads.length} registro${leads.length !== 1 ? 's' : ''}`
-  const today = new Date().toISOString().split('T')[0]
-  tbody.innerHTML = leads.map(l => {
-    const isNoShow = !l.atendido && l.fecha_pref && l.fecha_pref < today
-    const badge = l.atendido
-      ? '<span class="lead-badge atendido">✓ Atendido</span>'
-      : isNoShow
-        ? '<span class="lead-badge noshow">No se presentó</span>'
-        : '<span class="lead-badge pendiente">Pendiente</span>'
-    const svcs = l.servicios ? (() => { try { const a = typeof l.servicios === 'string' ? JSON.parse(l.servicios) : l.servicios; return a.map(s=>s.nombre).join(', ') } catch { return '' } })() : (l.nota||'')
-    const canalIcon = {instagram:'📸',presencial:'🏥',telefono:'📞',referido:'🤝',facebook:'📘',web:'🌐',otro:'💬'}[l.canal||'web']||'💬'
-    return `<tr>
-      <td style="font-weight:600;min-width:130px">${esc(l.nombre||'—')}<br><span style="font-size:.65rem;color:var(--muted)">${canalIcon} ${esc(l.canal||'web')}${svcs?' · '+esc(svcs.substring(0,40)):''}</span></td>
-      <td>${esc(l.cedula||'—')}</td>
-      <td style="font-size:.78rem">${esc(l.email||'—')}</td>
-      <td>${esc(l.telefono||'—')}</td>
-      <td style="white-space:nowrap">${l.fecha_pref||'—'}</td>
-      <td>${l.hora||'—'}</td>
-      <td style="font-weight:700">${l.total_est?'$'+l.total_est:'—'}</td>
-      <td>${badge}</td>
-      <td>${!l.atendido ? `<button class="btn-atendido" onclick="markAtendido('${l.id}',this)">✓ Atendido</button>` : ''}</td>
+  if (count) count.textContent = `${patients.length} paciente${patients.length !== 1 ? 's' : ''}`
+  const canalIcon = k => ({instagram:'📸',presencial:'🏥',telefono:'📞',referido:'🤝',facebook:'📘',web:'🌐',otro:'💬'}[k||'web']||'💬')
+  tbody.innerHTML = patients.map(p => {
+    const ini = (p.nombre||'P').charAt(0).toUpperCase()
+    const lastFecha = p._last_fecha || '—'
+    const citasBadge = p._citas_count > 0
+      ? `<span style="display:inline-block;background:#eff6ff;color:#1d4ed8;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:20px">${p._citas_count} cita${p._citas_count!==1?'s':''}</span>`
+      : '<span style="font-size:.72rem;color:var(--muted)">—</span>'
+    return `<tr style="cursor:pointer" onclick="toggleCitas('${p.id}')">
+      <td style="min-width:140px">
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--red-lite);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;flex-shrink:0">${ini}</div>
+          <div><div style="font-weight:700;font-size:.85rem">${esc(p.nombre)}</div>
+          <div style="font-size:.65rem;color:var(--muted)">${canalIcon(p.canal)} ${esc(p.canal||'web')}</div></div>
+        </div>
+      </td>
+      <td style="font-size:.8rem">${esc(p.cedula||'—')}</td>
+      <td style="font-size:.78rem">${esc(p.email||'—')}</td>
+      <td style="font-size:.8rem">${esc(p.telefono||'—')}</td>
+      <td>${canalIcon(p.canal)} <span style="font-size:.78rem">${esc(p.canal||'web')}</span></td>
+      <td>${citasBadge}</td>
+      <td style="font-size:.78rem;white-space:nowrap">${lastFecha}</td>
+      <td><button class="btn-atendido" style="font-size:.68rem" onclick="event.stopPropagation();abrirNuevaCita('${p.id}','${esc(p.nombre)}')">+ Cita</button></td>
+    </tr>
+    <tr id="citas_${p.id}" style="display:none">
+      <td colspan="8" style="padding:0 0 .5rem 3.5rem;background:#fafafa">
+        <div id="citasContent_${p.id}" style="font-size:.78rem;color:var(--muted);padding:.5rem 0">Cargando...</div>
+      </td>
     </tr>`
   }).join('')
 }
 
-async function markAtendido(id, btn) {
+function toggleCitas(patientId) {
+  const row = el('citas_'+patientId)
+  if (!row) return
+  const open = row.style.display !== 'none'
+  row.style.display = open ? 'none' : 'table-row'
+  if (!open) renderCitasRow(patientId)
+}
+
+function renderCitasRow(patientId) {
+  const patient = _allLeads.find(p => p.id === patientId)
+  const wrap = el('citasContent_'+patientId)
+  if (!wrap || !patient) return
+  const citas = patient._citas || []
+  if (!citas.length) { wrap.innerHTML = '<em>Sin citas registradas</em>'; return }
+  wrap.innerHTML = `<table style="width:100%;border-collapse:collapse;margin-top:.25rem">
+    <tr style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">
+      <td style="padding:.3rem .5rem">Fecha</td><td>Hora</td><td>Servicios</td><td>Total</td><td>Estado</td><td></td>
+    </tr>
+    ${citas.map(c => {
+      const svcs = c.servicios ? (Array.isArray(c.servicios)?c.servicios:JSON.parse(c.servicios||'[]')).map(s=>s.nombre).join(', ') : '—'
+      const badge = c.atendido
+        ? '<span class="lead-badge atendido">✓ Atendido</span>'
+        : '<span class="lead-badge pendiente">Pendiente</span>'
+      return `<tr style="border-top:1px solid #f0f0f0">
+        <td style="padding:.35rem .5rem;white-space:nowrap">${c.fecha_pref||'—'}</td>
+        <td>${c.hora||'—'}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(svcs)}</td>
+        <td>${c.total_est?'$'+c.total_est:'—'}</td>
+        <td>${badge}</td>
+        <td>${!c.atendido?`<button class="btn-atendido" style="font-size:.65rem" onclick="markAtendido('${c.id}','${patientId}',this)">✓ Atendido</button>`:''}</td>
+      </tr>`
+    }).join('')}
+  </table>`
+}
+
+async function markAtendido(citaId, patientId, btn) {
   btn.disabled = true; btn.textContent = '...'
-  const { error } = await sbPatch('center_leads', 'id=eq.'+id, { atendido: true })
+  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { atendido: true })
   if (error) { toast('Error al actualizar', 'err'); btn.disabled = false; btn.textContent = '✓ Atendido'; return }
-  const lead = _allLeads.find(l => l.id === id)
-  if (lead) lead.atendido = true
+  // Update local state
+  const patient = _allLeads.find(p => p.id === patientId)
+  if (patient) {
+    const cita = (patient._citas||[]).find(c => c.id === citaId)
+    if (cita) cita.atendido = true
+  }
   btn.classList.add('done'); btn.textContent = '✓ Listo'
-  // Trigger post-visita followup
-  if (lead?.email && _center?.nombre) {
-    await fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+  // Post-visita email
+  if (patient?.email && _center?.nombre) {
+    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
-      body: JSON.stringify({ type: 'center_postvista', to_email: lead.email, patient_name: lead.nombre||'', center_name: _center.nombre, booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}` })
+      body: JSON.stringify({ type: 'center_postvista', to_email: patient.email, patient_name: patient.nombre||'', center_name: _center.nombre, booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}` })
     })
   }
-  toast('Marcado como atendido — se enviará post-visita', 'ok')
-  filterLeads()
+  toast('Atendido ✓ — se enviará post-visita', 'ok')
+  renderCitasRow(patientId)
+}
+
+function abrirNuevaCita(patientId, nombre) {
+  // Pre-fill el modal manual con el paciente ya seleccionado
+  const patient = _allLeads.find(p => p.id === patientId)
+  if (!patient) return
+  abrirModalManual()
+  setTimeout(() => {
+    el('mn_nombre').value  = patient.nombre  || ''
+    el('mn_telefono').value= patient.telefono|| ''
+    el('mn_email').value   = patient.email   || ''
+    el('mn_cedula').value  = patient.cedula  || ''
+    el('mn_canal').value   = patient.canal   || 'presencial'
+    el('mn_nombre').disabled = true  // nombre fijo, ya existe el paciente
+    // Store patient_id for when saving
+    el('modalManual').dataset.existingPatientId = patientId
+  }, 50)
 }
 
 async function sendManualFollowup() {
@@ -1590,27 +1670,45 @@ async function guardarPacienteManual() {
   nota_parts.push('Canal: ' + canal)
   if (el('mn_nota')?.value?.trim()) nota_parts.push(el('mn_nota').value.trim())
 
-  const payload = {
-    center_id:  _center.id,
-    nombre,
-    telefono:   (el('mn_telefono')?.value || '').trim() || null,
-    email:      (el('mn_email')?.value || '').trim()    || null,
-    cedula:     (el('mn_cedula')?.value || '').trim()   || null,
-    fecha_pref: el('mn_fecha')?.value || null,
-    canal,
-    nota:       nota_parts.join(' — ') || null,
-    followup_confirm_sent: false,
+  const telefono = (el('mn_telefono')?.value||'').trim()
+  const email    = (el('mn_email')?.value||'').trim()   ||null
+  const cedula   = (el('mn_cedula')?.value||'').trim()  ||null
+  const fecha    = el('mn_fecha')?.value||null
+  const nota     = nota_parts.join(' — ')||null
+  const existingPatientId = el('modalManual')?.dataset.existingPatientId || null
+
+  let patientId = existingPatientId
+
+  if (!patientId) {
+    // Find-or-create paciente
+    if (email || cedula) {
+      const searchField = email ? `email=eq.${encodeURIComponent(email)}` : `cedula=eq.${encodeURIComponent(cedula)}`
+      const { data: found } = await sbGet('center_patients', `center_id=eq.${_center.id}&${searchField}&limit=1`)
+      if (found?.length) patientId = found[0].id
+    }
+    if (!patientId) {
+      const { data: np, error: ne } = await sbPost('center_patients', {
+        center_id: _center.id, nombre, telefono: telefono||null, email, cedula, canal
+      })
+      if (ne) { toast('Error: '+ne.message, 'err'); btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'; return }
+      patientId = np?.id
+    }
   }
 
-  const { error } = await sbPost('center_leads', payload)
+  // Registrar cita
+  const { error } = await sbPost('center_citas', {
+    center_id: _center.id, patient_id: patientId,
+    fecha_pref: fecha, canal, nota,
+  })
   if (error) {
-    toast('Error al guardar: ' + (error.message || 'desconocido'), 'err')
-    btn.disabled = false
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'
+    toast('Error al guardar: '+(error.message||'desconocido'), 'err')
+    btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'
     return
   }
 
   toast(`${nombre} registrado ✓`, 'ok')
+  if (el('modalManual')) delete el('modalManual').dataset.existingPatientId
+  if (el('mn_nombre')) el('mn_nombre').disabled = false
   cerrarModalManual()
   await loadLeads()
   btn.disabled = false

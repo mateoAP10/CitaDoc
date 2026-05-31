@@ -33,146 +33,136 @@ function fmtServices(servicios: unknown): string {
   } catch { return '' }
 }
 
-// ── 1. CONFIRMACIÓN ── leads sin confirmar de las últimas 2h con email ────────
+// Helper: join citas + patients + centers
+async function getCitasWithPatient(filters: Record<string, unknown>, extra?: string) {
+  let q = sb.from('center_citas')
+    .select('*, center_patients(nombre, email, telefono, cedula), centers(nombre, email, whatsapp, telefono, slug)')
+  for (const [k, v] of Object.entries(filters)) {
+    // deno-lint-ignore no-explicit-any
+    q = (q as any).eq(k, v)
+  }
+  if (extra === 'has_email') q = (q as any).not('center_patients.email', 'is', null)
+  return q.limit(100)
+}
+
+// ── 1. CONFIRMACIÓN ── citas nuevas sin confirmar ──────────────────────────
 async function runConfirmaciones() {
   const since = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-  const { data: leads } = await sb
-    .from('center_leads')
-    .select('*, centers(nombre, email, telefono, whatsapp, color_primary)')
+  const { data } = await sb
+    .from('center_citas')
+    .select('*, center_patients(nombre, email, telefono, cedula), centers(nombre, email, whatsapp, telefono)')
     .eq('followup_confirm_sent', false)
-    .not('email', 'is', null)
     .gte('created_at', since)
     .order('created_at')
     .limit(50)
 
-  if (!leads?.length) return 0
+  if (!data?.length) return 0
   let sent = 0
-  for (const l of leads) {
-    const center = l.centers as {nombre:string, email:string, telefono?:string, whatsapp?:string, color_primary?:string}
-    if (!center?.nombre) continue
+  for (const c of data) {
+    const p = c.center_patients as {nombre:string, email:string, telefono?:string}
+    const center = c.centers as {nombre:string, email?:string, whatsapp?:string, telefono?:string}
+    if (!p?.email || !center?.nombre) continue
     await sendEmail('center_confirm', {
-      to_email:      l.email,
-      patient_name:  l.nombre,
-      center_name:   center.nombre,
-      center_phone:  center.whatsapp || center.telefono || '',
-      fecha:         l.fecha_pref ? fmtDate(l.fecha_pref) : null,
-      hora:          l.hora || null,
-      servicios:     fmtServices(l.servicios),
-      total:         l.total_est ? `$${l.total_est}` : null,
+      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
+      center_phone: center.whatsapp||center.telefono||'',
+      fecha: c.fecha_pref ? fmtDate(c.fecha_pref) : null,
+      hora: c.hora||null, servicios: fmtServices(c.servicios), total: c.total_est?`$${c.total_est}`:null,
     })
-    // Notify admin
     if (center.email) {
       await sendEmail('center_admin_lead', {
-        to_email:     center.email,
-        center_name:  center.nombre,
-        patient_name: l.nombre,
-        telefono:     l.telefono || '',
-        email:        l.email,
-        fecha:        l.fecha_pref ? fmtDate(l.fecha_pref) : 'Sin fecha',
-        hora:         l.hora || 'Sin hora',
-        servicios:    fmtServices(l.servicios),
-        total:        l.total_est ? `$${l.total_est}` : '',
+        to_email: center.email, center_name: center.nombre, patient_name: p.nombre,
+        lead_id: c.id, telefono: p.telefono||'', email: p.email,
+        fecha: c.fecha_pref?fmtDate(c.fecha_pref):'Sin fecha', hora: c.hora||'Sin hora',
+        servicios: fmtServices(c.servicios), total: c.total_est?`$${c.total_est}`:'',
       })
     }
-    await sb.from('center_leads').update({ followup_confirm_sent: true }).eq('id', l.id)
+    await sb.from('center_citas').update({ followup_confirm_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] confirmaciones: ${sent}`)
   return sent
 }
 
-// ── 2. RECORDATORIO ── citas mañana, no recordadas aún ───────────────────────
+// ── 2. RECORDATORIO ── citas mañana ────────────────────────────────────────
 async function runRecordatorios() {
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
   const tStr = tomorrow.toISOString().split('T')[0]
-  const { data: leads } = await sb
-    .from('center_leads')
-    .select('*, centers(nombre, email, whatsapp, telefono)')
-    .eq('fecha_pref', tStr)
-    .eq('followup_reminder_sent', false)
-    .eq('atendido', false)
-    .not('email', 'is', null)
+  const { data } = await sb
+    .from('center_citas')
+    .select('*, center_patients(nombre, email, telefono), centers(nombre, whatsapp, telefono)')
+    .eq('fecha_pref', tStr).eq('followup_reminder_sent', false).eq('atendido', false)
     .limit(100)
 
-  if (!leads?.length) return 0
+  if (!data?.length) return 0
   let sent = 0
-  for (const l of leads) {
-    const center = l.centers as {nombre:string, whatsapp?:string, telefono?:string}
-    if (!center?.nombre) continue
+  for (const c of data) {
+    const p = c.center_patients as {nombre:string, email?:string}
+    const center = c.centers as {nombre:string, whatsapp?:string, telefono?:string}
+    if (!p?.email || !center?.nombre) continue
     await sendEmail('center_reminder', {
-      to_email:     l.email,
-      patient_name: l.nombre,
-      center_name:  center.nombre,
-      center_phone: center.whatsapp || center.telefono || '',
-      fecha:        fmtDate(tStr),
-      hora:         l.hora || null,
-      servicios:    fmtServices(l.servicios),
+      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
+      center_phone: center.whatsapp||center.telefono||'',
+      fecha: fmtDate(tStr), hora: c.hora||null, servicios: fmtServices(c.servicios),
     })
-    await sb.from('center_leads').update({ followup_reminder_sent: true }).eq('id', l.id)
+    await sb.from('center_citas').update({ followup_reminder_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] recordatorios: ${sent}`)
   return sent
 }
 
-// ── 3. NO-SHOW ── fecha pasada hace 1-3 días, no atendidos, no notificados ────
+// ── 3. NO-SHOW ── fecha pasada 1-3 días, no atendidos ──────────────────────
 async function runNoShow() {
   const from = new Date(); from.setDate(from.getDate() - 3)
   const to   = new Date(); to.setDate(to.getDate() - 1)
-  const { data: leads } = await sb
-    .from('center_leads')
-    .select('*, centers(nombre, whatsapp, telefono, slug)')
+  const { data } = await sb
+    .from('center_citas')
+    .select('*, center_patients(nombre, email, telefono), centers(nombre, whatsapp, telefono, slug)')
     .gte('fecha_pref', from.toISOString().split('T')[0])
     .lte('fecha_pref', to.toISOString().split('T')[0])
-    .eq('atendido', false)
-    .eq('followup_noshow_sent', false)
-    .not('email', 'is', null)
+    .eq('atendido', false).eq('followup_noshow_sent', false)
     .limit(100)
 
-  if (!leads?.length) return 0
+  if (!data?.length) return 0
   let sent = 0
-  for (const l of leads) {
-    const center = l.centers as {nombre:string, whatsapp?:string, telefono?:string, slug?:string}
-    if (!center?.nombre) continue
+  for (const c of data) {
+    const p = c.center_patients as {nombre:string, email?:string}
+    const center = c.centers as {nombre:string, whatsapp?:string, telefono?:string, slug?:string}
+    if (!p?.email || !center?.nombre) continue
     await sendEmail('center_noshow', {
-      to_email:     l.email,
-      patient_name: l.nombre,
-      center_name:  center.nombre,
-      center_phone: center.whatsapp || center.telefono || '',
-      booking_url:  center.slug ? `https://doctor-center.citadoc.lat/${center.slug}` : null,
-      servicios:    fmtServices(l.servicios),
+      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
+      center_phone: center.whatsapp||center.telefono||'',
+      booking_url: center.slug?`https://doctor-center.citadoc.lat/${center.slug}`:null,
+      servicios: fmtServices(c.servicios),
     })
-    await sb.from('center_leads').update({ followup_noshow_sent: true }).eq('id', l.id)
+    await sb.from('center_citas').update({ followup_noshow_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] no-show: ${sent}`)
   return sent
 }
 
-// ── 4. POST-VISITA ── atendidos hoy/ayer sin followup ─────────────────────────
+// ── 4. POST-VISITA ── recién atendidos ────────────────────────────────────
 async function runPostVisita() {
   const since = new Date(); since.setDate(since.getDate() - 2)
-  const { data: leads } = await sb
-    .from('center_leads')
-    .select('*, centers(nombre, slug)')
-    .eq('atendido', true)
-    .eq('followup_postvista_sent', false)
+  const { data } = await sb
+    .from('center_citas')
+    .select('*, center_patients(nombre, email), centers(nombre, slug)')
+    .eq('atendido', true).eq('followup_postvista_sent', false)
     .gte('fecha_pref', since.toISOString().split('T')[0])
-    .not('email', 'is', null)
     .limit(100)
 
-  if (!leads?.length) return 0
+  if (!data?.length) return 0
   let sent = 0
-  for (const l of leads) {
-    const center = l.centers as {nombre:string, slug?:string}
-    if (!center?.nombre) continue
+  for (const c of data) {
+    const p = c.center_patients as {nombre:string, email?:string}
+    const center = c.centers as {nombre:string, slug?:string}
+    if (!p?.email || !center?.nombre) continue
     await sendEmail('center_postvista', {
-      to_email:     l.email,
-      patient_name: l.nombre,
-      center_name:  center.nombre,
-      booking_url:  center.slug ? `https://doctor-center.citadoc.lat/${center.slug}` : null,
+      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
+      booking_url: center.slug?`https://doctor-center.citadoc.lat/${center.slug}`:null,
     })
-    await sb.from('center_leads').update({ followup_postvista_sent: true }).eq('id', l.id)
+    await sb.from('center_citas').update({ followup_postvista_sent: true }).eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] post-visita: ${sent}`)
@@ -188,28 +178,31 @@ Deno.serve(async (req) => {
     const action = url.searchParams.get('action')
     const leadId = url.searchParams.get('lead_id')
     if (action === 'confirm' && leadId) {
-      const { data: lead, error } = await sb.from('center_leads').select('id,nombre,atendido,email,center_id,centers(nombre,slug)').eq('id', leadId).single()
-      if (error || !lead) return new Response('<html><body style="font-family:sans-serif;text-align:center;padding:3rem"><h2>❌ No se encontró la reserva</h2></body></html>', { headers: { 'Content-Type': 'text/html' } })
-      if (!lead.atendido) {
-        await sb.from('center_leads').update({ atendido: true, followup_postvista_sent: false }).eq('id', leadId)
-        // Trigger post-visita email to patient
-        const center = lead.centers as {nombre:string, slug?:string}
-        if (lead.email && center?.nombre) {
+      const { data: cita, error } = await sb.from('center_citas')
+        .select('id,atendido,center_patients(nombre,email),centers(nombre,slug)')
+        .eq('id', leadId).single()
+      if (error || !cita) return new Response('<html><body style="font-family:sans-serif;text-align:center;padding:3rem"><h2>❌ No se encontró la cita</h2></body></html>', { headers: { 'Content-Type': 'text/html' } })
+      const patient = cita.center_patients as {nombre:string, email?:string}
+      const centerData = cita.centers as {nombre:string, slug?:string}
+      if (!cita.atendido) {
+        await sb.from('center_citas').update({ atendido: true, followup_postvista_sent: false }).eq('id', leadId)
+        if (patient?.email && centerData?.nombre) {
           await sendEmail('center_postvista', {
-            to_email: lead.email, patient_name: lead.nombre||'',
-            center_name: center.nombre,
-            booking_url: center.slug ? `https://doctor-center.citadoc.lat/${center.slug}` : null,
+            to_email: patient.email, patient_name: patient.nombre||'',
+            center_name: centerData.nombre,
+            booking_url: centerData.slug ? `https://doctor-center.citadoc.lat/${centerData.slug}` : null,
           })
         }
       }
-      const centerName = (lead.centers as {nombre:string})?.nombre || 'el centro'
+      const centerName = centerData?.nombre || 'el centro'
+      const patientName = patient?.nombre || 'El paciente'
       return new Response(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Asistencia confirmada</title></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0fdf4;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:1rem">
 <div style="background:#fff;border-radius:20px;padding:2.5rem 2rem;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)">
   <div style="font-size:3rem;margin-bottom:1rem">✅</div>
   <h2 style="margin:0 0 .5rem;color:#0f172a;font-size:1.3rem">Asistencia confirmada</h2>
-  <p style="color:#374151;font-size:.9rem;margin:0 0 1.5rem;line-height:1.6">${lead.nombre || 'El paciente'} fue marcado como atendido en <strong>${centerName}</strong>.<br>Se enviará el email de post-visita automáticamente.</p>
+  <p style="color:#374151;font-size:.9rem;margin:0 0 1.5rem;line-height:1.6">${patientName} fue marcado como atendido en <strong>${centerName}</strong>.<br>Se enviará el email de post-visita automáticamente.</p>
   <a href="javascript:window.close()" style="font-size:.82rem;color:#94a3b8;text-decoration:none">Cerrar ventana</a>
 </div></body></html>`, { headers: { 'Content-Type': 'text/html' } })
     }

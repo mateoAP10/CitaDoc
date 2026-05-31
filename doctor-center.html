@@ -2441,28 +2441,69 @@ async function submitReserva() {
     : _selected
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
-  // Guardar lead en DB — fundamental para el followup engine
+  // ── Guardar en DB: find-or-create paciente + cita ──────────────────────────
   try {
-    const leadPayload = {
-      center_id: _center?.id || null,
-      nombre, telefono,
-      cedula:     cedula  || null,
-      email:      email   || null,
-      fecha_pref: fecha   || null,
-      hora:       null,
-      nota:       _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
-      servicios:  leadsServices.length ? JSON.stringify(leadsServices) : null,
-      total_est:  leadsTotal || null,
+    const centerId = _center?.id || null
+    let patientId = null
+
+    // 1. Buscar paciente existente por email o cédula
+    if (centerId && (email || cedula)) {
+      const searchField = email ? `email=eq.${encodeURIComponent(email)}` : `cedula=eq.${encodeURIComponent(cedula)}`
+      const found = await xhrReq('GET',
+        `${SB_URL}/rest/v1/center_patients?center_id=eq.${centerId}&${searchField}&limit=1`,
+        H(null))
+      if (found.ok) {
+        const rows = JSON.parse(found.text || '[]')
+        if (rows.length) {
+          patientId = rows[0].id
+          // Actualizar datos si faltan
+          const patch = {}
+          if (!rows[0].telefono && telefono) patch.telefono = telefono
+          if (!rows[0].email && email) patch.email = email
+          if (!rows[0].cedula && cedula) patch.cedula = cedula
+          if (Object.keys(patch).length) {
+            await xhrReq('PATCH',
+              `${SB_URL}/rest/v1/center_patients?id=eq.${patientId}`,
+              H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+              JSON.stringify(patch))
+          }
+          console.log('[patients] paciente existente ✓', patientId)
+        }
+      }
     }
-    const r = await xhrReq(
-      'POST',
-      SB_URL + '/rest/v1/center_leads',
+
+    // 2. Crear paciente si no existe
+    if (!patientId && centerId) {
+      const cr = await xhrReq('POST',
+        `${SB_URL}/rest/v1/center_patients`,
+        H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
+        JSON.stringify({ center_id: centerId, nombre, email: email||null, telefono, cedula: cedula||null, canal: 'web' }))
+      if (cr.ok) {
+        const data = JSON.parse(cr.text || '[]')
+        patientId = Array.isArray(data) ? data[0]?.id : data?.id
+        console.log('[patients] paciente creado ✓', patientId)
+      } else { console.error('[patients] create failed:', cr.text) }
+    }
+
+    // 3. Registrar cita
+    const citaPayload = {
+      center_id:  centerId,
+      patient_id: patientId || null,
+      fecha_pref: fecha || null,
+      hora:       null,
+      servicios:  leadsServices.length ? leadsServices : null,
+      total_est:  leadsTotal || null,
+      canal:      'web',
+      nota:       _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
+    }
+    const cr2 = await xhrReq('POST',
+      `${SB_URL}/rest/v1/center_citas`,
       H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-      JSON.stringify(leadPayload)
-    )
-    if (!r.ok) console.error('[center_leads] insert failed:', r.text)
-    else console.log('[center_leads] lead guardado ✓')
-  } catch(e) { console.error('[center_leads] error de red:', e) }
+      JSON.stringify(citaPayload))
+    if (!cr2.ok) console.error('[citas] insert failed:', cr2.text)
+    else console.log('[citas] cita registrada ✓')
+
+  } catch(e) { console.error('[booking] error:', e) }
 
   // Construir mensaje WA premium
   const centerName = _center?.nombre || 'el centro'
