@@ -1589,7 +1589,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
         </button>
       </div>
 
-      <!-- SLOT PICKER — shown when booking a specific doctor -->
+      <!-- SLOT PICKER -->
       <div id="slotPicker" style="display:none">
         <div class="modal-section-label">Elegí un día</div>
         <div class="modal-days" id="modalDays">
@@ -2360,19 +2360,20 @@ async function genCenterSlots(sch) {
   }
 
   if (!available.length) {
-    days.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin disponibilidad próxima. Configura horarios en el panel.</div>'
+    days.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin disponibilidad próxima. Configurá los horarios en el panel.</div>'
     el('fechaGroup').style.display = 'block'
     return
   }
 
+  window._centerSlotDays = available
   days.innerHTML = available.map((a,i) =>
-    `<button class="day-btn${i===0?' active':''}" onclick="selectCenterDay(${i})" id="cdBtn${i}"
-      style="padding:.45rem .8rem;border:1.5px solid ${i===0?'var(--red)':'var(--border)'};border-radius:9px;background:${i===0?'var(--red)':'#fff'};color:${i===0?'#fff':'var(--ink)'};font-family:DM Sans,sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;margin:.2rem .15rem .2rem 0">
-      ${esc(a.label)}
-    </button>`
+    `<div class="day-pill avail${i===0?' sel':''}" onclick="selectCenterDay(${i})" id="cdPill${i}">` +
+    `<span class="day-pill-dow">${DIAS_C[a.date.getDay()]}</span>` +
+    `<span class="day-pill-n">${a.date.getDate()}</span>` +
+    `<span class="day-pill-mon">${MESES_C[a.date.getMonth()]}</span>` +
+    `</div>`
   ).join('')
 
-  window._centerSlotDays = available
   selectCenterDay(0)
 }
 
@@ -2398,32 +2399,23 @@ function selectCenterDay(idx) {
   const sel = days[idx]
   _modalDate = sel.dateStr
   _modalSlot = null
-  // Update day buttons
+  // Update day pills
   days.forEach((_,i) => {
-    const btn = document.getElementById('cdBtn'+i)
-    if (!btn) return
-    btn.style.background = i===idx?'var(--red)':'#fff'
-    btn.style.color      = i===idx?'#fff':'var(--ink)'
-    btn.style.borderColor= i===idx?'var(--red)':'var(--border)'
+    const pill = document.getElementById('cdPill'+i)
+    if (pill) pill.classList.toggle('sel', i===idx)
   })
-  // Render slots
-  const grid = el('slotsGrid')
-  el('slotTitle').textContent = 'Horarios — '+sel.label
-  grid.innerHTML = sel.slots.map(s =>
-    `<button class="slot-btn" onclick="selectCenterSlot('${s}',this)"
-      style="padding:.48rem .6rem;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s">
-      ${s}
-    </button>`
-  ).join('')
+  // Render slots using existing slot-btn class
+  el('slotTitle').textContent = 'Horarios disponibles'
+  el('slotsGrid').innerHTML = sel.slots.length
+    ? sel.slots.map(s => `<button class="slot-btn" onclick="selectCenterSlot('${s}',this)">${s}</button>`).join('')
+    : '<div style="font-size:.8rem;color:var(--muted2);padding:.25rem 0">Sin turnos para este día</div>'
   el('slotWrap').style.display = 'block'
 }
 
 function selectCenterSlot(slot, btn) {
   _modalSlot = slot
-  document.querySelectorAll('#slotsGrid .slot-btn').forEach(b => {
-    b.style.background='#fff'; b.style.color='var(--ink)'; b.style.borderColor='var(--border)'
-  })
-  btn.style.background='var(--red)'; btn.style.color='#fff'; btn.style.borderColor='var(--red)'
+  el('slotsGrid').querySelectorAll('.slot-btn').forEach(b => b.classList.remove('sel'))
+  btn.classList.add('sel')
 }
 
 function closeModal() {
