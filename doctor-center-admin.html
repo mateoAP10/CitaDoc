@@ -203,6 +203,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 /* FOLLOWUP SENDER */
 .followup-row{display:grid;grid-template-columns:1fr 1fr auto;gap:.75rem;align-items:end}
 @media(max-width:560px){.followup-row{grid-template-columns:1fr}}
+/* COMBOBOX DROPDOWN */
+.fup-opt{display:flex;align-items:center;gap:.6rem;padding:.6rem .85rem;cursor:pointer;transition:background .1s;border-bottom:1px solid #f5f5f5}
+.fup-opt:last-child{border-bottom:none}
+.fup-opt:hover{background:#f9fafb}
+.fup-opt-name{font-size:.83rem;font-weight:600;color:var(--ink)}
+.fup-opt-email{font-size:.72rem;color:var(--muted)}
 
 /* TOAST */
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.82rem;font-weight:600;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s}
@@ -583,10 +589,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           </div>
         </div>
         <div class="followup-row">
-          <div class="field-group">
+          <div class="field-group" style="position:relative">
             <label class="field-label">Email del paciente</label>
-            <input class="field-input" id="fupEmail" placeholder="paciente@email.com" type="email" list="leadsEmailList">
-            <datalist id="leadsEmailList"></datalist>
+            <input class="field-input" id="fupEmail" placeholder="Escribe o elige un paciente..." autocomplete="off"
+              oninput="fupFilterDropdown(this.value)" onfocus="fupFilterDropdown(this.value)" onblur="setTimeout(()=>fupCloseDropdown(),150)">
+            <div id="fupDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:100;max-height:220px;overflow-y:auto;margin-top:3px"></div>
           </div>
           <div class="field-group">
             <label class="field-label">Tipo de followup</label>
@@ -1509,6 +1516,43 @@ async function sendManualFollowup() {
 }
 
 let _SUPABASE_URL = SB_URL, _SUPABASE_ANON = SB_ANON
+
+// ── FOLLOWUP COMBOBOX ─────────────────────────────────────────────────────────
+function fupFilterDropdown(q) {
+  const drop = el('fupDropdown')
+  if (!drop) return
+  q = (q||'').toLowerCase().trim()
+  // Unique patients with email from _allLeads
+  const seen = new Set()
+  const opts = _allLeads
+    .filter(l => l.email && !seen.has(l.email) && seen.add(l.email))
+    .filter(l => !q || l.nombre?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) || l.telefono?.includes(q))
+    .slice(0, 8)
+  if (!opts.length) { drop.style.display = 'none'; return }
+  drop.innerHTML = opts.map(l => {
+    const ini = (l.nombre||'P').charAt(0).toUpperCase()
+    return `<div class="fup-opt" onmousedown="fupSelect('${esc(l.email)}','${esc(l.nombre||'')}')">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--red-lite);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;flex-shrink:0">${ini}</div>
+      <div>
+        <div class="fup-opt-name">${esc(l.nombre||l.email)}</div>
+        <div class="fup-opt-email">${esc(l.email)}</div>
+      </div>
+    </div>`
+  }).join('')
+  drop.style.display = 'block'
+}
+
+function fupSelect(email, nombre) {
+  const inp = el('fupEmail')
+  if (inp) inp.value = email
+  fupCloseDropdown()
+  inp?.focus()
+}
+
+function fupCloseDropdown() {
+  const d = el('fupDropdown')
+  if (d) d.style.display = 'none'
+}
 
 // ── REGISTRO MANUAL ───────────────────────────────────────────────────────────
 function abrirModalManual() {
