@@ -247,11 +247,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .day-pill-dow{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
 .day-pill-n{font-size:.95rem;font-weight:800;line-height:1.2}
 .day-pill-mon{font-size:.52rem;opacity:.7}
-.slots-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.25rem}
-.slot-btn{padding:.38rem .65rem;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--ink)}
+.slots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem;margin-bottom:.25rem}
+.slot-btn{padding:.55rem .4rem;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink);text-align:center;letter-spacing:.01em}
 .slot-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
-.slot-btn.sel{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important}
-.slot-btn.booked{opacity:.4;cursor:not-allowed;background:var(--bg2);color:var(--muted2);pointer-events:none}
+.slot-btn.sel{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;box-shadow:0 2px 8px rgba(204,41,54,.3)}
+.slot-btn.booked{opacity:.38;cursor:not-allowed;background:#f9fafb;color:var(--muted);pointer-events:none;text-decoration:line-through;font-weight:400}
+.slots-period-label{grid-column:1/-1;font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:.35rem 0 .1rem;border-top:1px solid var(--border);margin-top:.1rem}
+.slots-period-label:first-child{border-top:none;margin-top:0}
 .btn-submit:disabled{opacity:.5;cursor:not-allowed}
 .modal-lab-notice{display:flex;align-items:center;gap:.55rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:.65rem .85rem;font-size:.8rem;font-weight:600;color:#92400e;margin-bottom:.85rem}
 .modal-lab-notice svg{flex-shrink:0;width:16px;height:16px;color:#d97706}
@@ -2355,7 +2357,7 @@ async function genCenterSlots(sch) {
     if (!cfg || !cfg.activo) continue
     const dateStr = d.toISOString().split('T')[0]
     const slots = genCenterDaySlots(cfg.desde, cfg.hasta, dur, dateStr, booked, d)
-    if (slots.length) available.push({ date: d, dateStr, label: d.toLocaleDateString('es',{weekday:'short',day:'numeric',month:'short'}), slots })
+    if (slots.some(s=>!s.taken)) available.push({ date: d, dateStr, slots })
     if (available.length >= 7) break
   }
 
@@ -2383,12 +2385,13 @@ function genCenterDaySlots(desde, hasta, durMin, dateStr, booked, dateObj) {
   const startMin = sh*60+sm, endMin = eh*60+em
   const now = new Date()
   const isToday = dateObj.toDateString() === now.toDateString()
-  const nowMin = isToday ? now.getHours()*60+now.getMinutes()+30 : 0
+  const nowMin = isToday ? now.getHours()*60+now.getMinutes()+15 : 0
   const slots = []
   for (let t=startMin; t+durMin<=endMin; t+=durMin) {
     if (t < nowMin) continue
     const h = String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')
-    if (!booked.some(b=>b.fecha_pref===dateStr&&b.hora===h)) slots.push(h)
+    const taken = booked.some(b=>b.fecha_pref===dateStr&&b.hora===h)
+    slots.push({ h, taken })
   }
   return slots
 }
@@ -2404,11 +2407,20 @@ function selectCenterDay(idx) {
     const pill = document.getElementById('cdPill'+i)
     if (pill) pill.classList.toggle('sel', i===idx)
   })
-  // Render slots using existing slot-btn class
+  // Render slots grouped by Mañana / Tarde
   el('slotTitle').textContent = 'Horarios disponibles'
-  el('slotsGrid').innerHTML = sel.slots.length
-    ? sel.slots.map(s => `<button class="slot-btn" onclick="selectCenterSlot('${s}',this)">${s}</button>`).join('')
-    : '<div style="font-size:.8rem;color:var(--muted2);padding:.25rem 0">Sin turnos para este día</div>'
+  const am = sel.slots.filter(s => parseInt(s.h) < 12)
+  const pm = sel.slots.filter(s => parseInt(s.h) >= 12)
+  let html = ''
+  if (am.length) {
+    html += '<div class="slots-period-label">Mañana</div>'
+    html += am.map(s => `<button class="slot-btn${s.taken?' booked':''}" ${s.taken?'disabled':''} onclick="selectCenterSlot('${s.h}',this)">${s.h}</button>`).join('')
+  }
+  if (pm.length) {
+    html += '<div class="slots-period-label">Tarde</div>'
+    html += pm.map(s => `<button class="slot-btn${s.taken?' booked':''}" ${s.taken?'disabled':''} onclick="selectCenterSlot('${s.h}',this)">${s.h}</button>`).join('')
+  }
+  el('slotsGrid').innerHTML = html || '<div style="font-size:.8rem;color:var(--muted2);padding:.25rem 0;grid-column:1/-1">Sin turnos disponibles</div>'
   el('slotWrap').style.display = 'block'
 }
 
