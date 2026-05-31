@@ -166,6 +166,10 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .calc-item-name{flex:1;font-size:.82rem;font-weight:500;color:var(--ink);text-align:left}
 .calc-item-price{font-size:.82rem;font-weight:700;color:var(--muted);white-space:nowrap}
 .calc-item.selected .calc-item-price{color:var(--red)}
+/* PACKAGE CATEGORIES */
+.pkg-cat-header{display:flex;align-items:center;gap:.65rem;margin:1.1rem 0 .6rem;grid-column:1/-1}
+.pkg-cat-label{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);white-space:nowrap}
+.pkg-cat-line{flex:1;height:1px;background:var(--border)}
 /* PACKAGE CARDS */
 .pkg-card{background:#fff;border:2px solid var(--border);border-radius:16px;padding:1.1rem 1.2rem;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
 .pkg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--pkg-color,var(--red));opacity:.7;transition:opacity .18s}
@@ -1798,7 +1802,16 @@ function renderPackages() {
   if (!sec || !list) return
   if (!_packages.length) { sec.style.display = 'none'; return }
   sec.style.display = 'block'
-  list.innerHTML = _packages.map(p => {
+  // Group by categoria
+  const cats = [...new Set(_packages.map(p=>p.categoria||'General'))]
+  const items = []
+  cats.forEach(cat => {
+    items.push({ type:'header', cat })
+    _packages.filter(p=>(p.categoria||'General')===cat).forEach(p => items.push({ type:'pkg', p }))
+  })
+  list.innerHTML = items.map(item => {
+    if (item.type === 'header') return `<div class="pkg-cat-header"><div class="pkg-cat-line"></div><span class="pkg-cat-label">${esc(item.cat)}</span><div class="pkg-cat-line"></div></div>`
+    const p = item.p
     const incluye = Array.isArray(p.incluye) ? p.incluye : (JSON.parse(p.incluye||'[]'))
     const sel = _selPkgs.some(s => s.id === p.id)
     const ahorro = p.precio_regular && p.precio_promo ? (p.precio_regular - p.precio_promo) : null

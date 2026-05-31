@@ -600,9 +600,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         <div style="font-size:.78rem;font-weight:800;color:var(--ink);margin-bottom:.9rem" id="pkgFormTitle">Nuevo paquete</div>
         <input type="hidden" id="pkgEditId">
         <div class="fields-grid" style="margin-bottom:.85rem">
-          <div class="field-group full">
+          <div class="field-group">
             <label class="field-label">Nombre del paquete *</label>
             <input class="field-input" id="pkgNombre" placeholder="Ej: Perfil Prenatal Inicial">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Categoría</label>
+            <input class="field-input" id="pkgCategoria" placeholder="Ej: Embarazo" list="pkgCatSugg" autocomplete="off">
+            <datalist id="pkgCatSugg">
+              <option value="General">
+              <option value="Embarazo">
+              <option value="Cardiovascular">
+              <option value="Pediátrico">
+              <option value="Oncología">
+              <option value="Deportivo">
+              <option value="Ejecutivo">
+              <option value="Adulto Mayor">
+              <option value="Check-up">
+            </datalist>
           </div>
           <div class="field-group full">
             <label class="field-label">Descripción corta</label>
@@ -1903,6 +1918,7 @@ function openPkgForm(pkg) {
   document.getElementById('pkgFormTitle').textContent = pkg ? 'Editar paquete' : 'Nuevo paquete'
   document.getElementById('pkgEditId').value    = pkg?.id || ''
   document.getElementById('pkgNombre').value    = pkg?.nombre || ''
+  document.getElementById('pkgCategoria').value = pkg?.categoria || 'General'
   document.getElementById('pkgDesc').value      = pkg?.descripcion || ''
   document.getElementById('pkgIncluye').value   = pkg ? (Array.isArray(pkg.incluye)?pkg.incluye:JSON.parse(pkg.incluye||'[]')).join('\n') : ''
   document.getElementById('pkgPrecioReg').value  = pkg?.precio_regular || ''
@@ -1935,6 +1951,7 @@ async function savePkg() {
   const payload = {
     center_id: _center.id,
     nombre,
+    categoria: (document.getElementById('pkgCategoria').value||'').trim()||'General',
     descripcion: (document.getElementById('pkgDesc').value||'').trim()||null,
     incluye,
     precio_regular: parseFloat(document.getElementById('pkgPrecioReg').value||'0')||null,
@@ -1989,7 +2006,10 @@ function renderPackages() {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${p.color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icSvg(p.icono)}</svg>
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:.85rem;font-weight:700;color:var(--ink)">${esc(p.nombre)}</div>
+        <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+          <div style="font-size:.85rem;font-weight:700;color:var(--ink)">${esc(p.nombre)}</div>
+          <span style="font-size:.6rem;font-weight:700;padding:.1rem .45rem;border-radius:20px;background:${p.color}18;color:${p.color}">${esc(p.categoria||'General')}</span>
+        </div>
         <div style="font-size:.7rem;color:var(--muted)">${incluye.slice(0,3).map(i=>esc(i)).join(' · ')}${incluye.length>3?' +'+(incluye.length-3)+' más':''}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
