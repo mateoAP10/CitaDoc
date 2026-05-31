@@ -2467,14 +2467,41 @@ async function submitReserva() {
     : _selected
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
-  await dbPost('center_leads', {
+  const leadRes = await dbPost('center_leads', {
     center_id: _center?.id, nombre, telefono,
     cedula: cedula||null, email: email||null,
     fecha_pref: fecha||null, hora: _modalSlot||null,
     nota: _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
     servicios: leadsServices.length ? JSON.stringify(leadsServices) : null,
     total_est: leadsTotal||null,
+    followup_confirm_sent: !!email,  // mark sent if we'll fire it now
   })
+
+  // Confirmación inmediata si hay email
+  if (email && _center?.nombre) {
+    const svcsStr = leadsServices.map(s=>s.nombre).join(', ')
+    sendDocEmail({
+      ..._brand(),
+      type:'center_confirm', to_email:email,
+      patient_name:nombre, center_name:_center.nombre,
+      center_phone:_center.whatsapp||_center.telefono||'',
+      fecha: fecha||null, hora:_modalSlot||null,
+      servicios:svcsStr||null,
+      total: leadsTotal ? '$'+leadsTotal : null,
+    }, false)
+    // Admin notification
+    if (_center.email) {
+      sendDocEmail({
+        ..._brand(),
+        type:'center_admin_lead', to_email:_center.email,
+        center_name:_center.nombre, patient_name:nombre,
+        telefono:telefono, email:email,
+        fecha:fecha||'Sin fecha', hora:_modalSlot||'Sin hora',
+        servicios:svcsStr||'—',
+        total: leadsTotal ? '$'+leadsTotal : '',
+      }, false)
+    }
+  }
 
   const waNum   = _center?.whatsapp || '593989173062'
   const docLine = _modalDoctor ? `\n\nMédico: ${_modalDoctor.nombre}` : ''

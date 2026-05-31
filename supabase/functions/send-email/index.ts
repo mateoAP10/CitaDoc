@@ -1162,6 +1162,113 @@ function tplWebGenerada(d: { nombre: string; especialidad: string; ciudad: strin
 </body></html>`
 }
 
+// ── CENTER FOLLOWUP TEMPLATES ─────────────────────────────────────────────────
+function centerBase(centerName: string, preheader: string, headerBg: string, badgeColor: string, badgeBg: string, badgeText: string, body: string): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${safe(preheader)}</title></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:36px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+<tr><td style="padding-bottom:16px;text-align:center;">
+  <span style="font-size:11px;font-weight:800;color:#0f172a;letter-spacing:2px;text-transform:uppercase;">${safe(centerName)}</span>
+  <span style="font-size:10px;color:#94a3b8;margin-left:6px;">· vía CitaDoc</span>
+</td></tr>
+<tr><td style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="background:${headerBg};padding:28px 32px 24px;">
+  <table cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>
+    <td style="background:${badgeBg};border-radius:100px;padding:4px 12px;">
+      <span style="color:${badgeColor};font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">${safe(badgeText)}</span>
+    </td></tr></table>
+  <p style="margin:0;color:rgba(255,255,255,.7);font-size:13px;">${safe(preheader)}</p>
+</td></tr>
+${body}
+</table></td></tr>
+<tr><td style="padding:16px 0 0;text-align:center;">
+  <p style="margin:0;color:#cbd5e1;font-size:11px;">CitaDoc · <a href="https://citadoc.lat" style="color:#cbd5e1;text-decoration:none;">citadoc.lat</a></p>
+</td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
+function tplCenterConfirm(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const body = `
+<tr><td style="padding:28px 32px 8px;">
+  <p style="margin:0 0 20px;color:#0f172a;font-size:16px;font-weight:700;">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7;">Recibimos tu solicitud. El equipo de <strong>${safe(d.center_name)}</strong> la revisará y te confirmará a la brevedad.</p>
+  ${d.fecha || d.hora ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;margin-bottom:20px;">
+    <tr><td style="padding:16px 20px;">
+      ${d.fecha ? `<p style="margin:0 0 6px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Fecha solicitada</p><p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#0f172a;">${safe(d.fecha)}${d.hora?` a las <strong>${safe(d.hora)}</strong>`:''}</p>` : ''}
+      ${d.servicios ? `<p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Servicios</p><p style="margin:0;font-size:13px;color:#374151;">${safe(d.servicios)}</p>` : ''}
+    </td></tr>
+  </table>` : ''}
+  ${d.center_phone ? `<p style="margin:0 0 24px;color:#374151;font-size:13px;">¿Preguntas? Escríbenos: <strong>${safe(d.center_phone)}</strong></p>` : ''}
+</td></tr>
+<tr><td style="padding:0 32px 28px;">
+  <p style="margin:0;color:#94a3b8;font-size:11px;font-style:italic;">Este mensaje fue generado automáticamente por CitaDoc. No es necesario responder.</p>
+</td></tr>`
+  return centerBase(String(d.center_name||''), `Solicitud recibida en ${String(d.center_name||'')}`, 'linear-gradient(135deg,#0f172a,#1e3a5f)', '#93c5fd', 'rgba(147,197,253,.15)', '✓ Solicitud recibida', body)
+}
+
+function tplCenterAdminLead(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const body = `
+<tr><td style="padding:24px 32px;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    ${[['Paciente',String(d.patient_name||'')],['Teléfono',String(d.telefono||'—')],['Email',String(d.email||'—')],['Fecha',String(d.fecha||'Sin fecha')],['Hora',String(d.hora||'Sin hora')],['Servicios',String(d.servicios||'—')],['Total est.',String(d.total||'—')]].map(([l,v],i)=>`
+    <tr><td style="padding:8px 0;${i>0?'border-top:1px solid #f1f5f9;':''}">
+      <p style="margin:0 0 2px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">${safe(l)}</p>
+      <p style="margin:0;font-size:14px;font-weight:600;color:#0f172a;">${safe(v)}</p>
+    </td></tr>`).join('')}
+  </table>
+</td></tr>`
+  return centerBase(String(d.center_name||''), `Nueva reserva de ${String(d.patient_name||'')}`, 'linear-gradient(135deg,#1e3a5f,#1d4ed8)', '#a5b4fc', 'rgba(165,180,252,.15)', '🔔 Nueva reserva', body)
+}
+
+function tplCenterReminder(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const body = `
+<tr><td style="padding:28px 32px;">
+  <p style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700;">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7;">Te recordamos que mañana tenés turno en <strong>${safe(d.center_name)}</strong>.</p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fefce8;border:1.5px solid #fde68a;border-radius:12px;margin-bottom:20px;">
+    <tr><td style="padding:16px 20px;">
+      <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:1px;">📅 Tu turno</p>
+      <p style="margin:0;font-size:15px;font-weight:700;color:#0f172a;">${safe(d.fecha)}${d.hora?` · <strong>${safe(d.hora)}</strong>`:''}</p>
+      ${d.servicios ? `<p style="margin:6px 0 0;font-size:12px;color:#374151;">${safe(d.servicios)}</p>` : ''}
+    </td></tr>
+  </table>
+  ${d.center_phone ? `<p style="margin:0;color:#374151;font-size:13px;">¿Necesitás cancelar o cambiar? Contactanos: <strong>${safe(d.center_phone)}</strong></p>` : ''}
+</td></tr>`
+  return centerBase(String(d.center_name||''), 'Tu turno es mañana', 'linear-gradient(135deg,#78350f,#92400e)', '#fcd34d', 'rgba(252,211,77,.15)', '⏰ Recordatorio de turno', body)
+}
+
+function tplCenterNoShow(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const body = `
+<tr><td style="padding:28px 32px;">
+  <p style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700;">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7;">Notamos que no pudiste asistir a tu turno en <strong>${safe(d.center_name)}</strong>. ¡No hay problema! Podés reagendar cuando quieras.</p>
+  ${d.booking_url ? `<tr></tr><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding-bottom:20px;"><a href="${safe(d.booking_url)}" style="display:block;background:#0f172a;color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Reservar nuevo turno →</a></td></tr></table>` : ''}
+  ${d.center_phone ? `<p style="margin:0;color:#374151;font-size:13px;">O contactanos directamente: <strong>${safe(d.center_phone)}</strong></p>` : ''}
+</td></tr>`
+  return centerBase(String(d.center_name||''), 'Te esperamos — reagendá tu turno', 'linear-gradient(135deg,#0f172a,#1e293b)', '#94a3b8', 'rgba(148,163,184,.15)', '👋 ¿Cómo estás?', body)
+}
+
+function tplCenterPostVisita(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const body = `
+<tr><td style="padding:28px 32px;">
+  <p style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700;">Gracias por visitarnos, ${safe(d.patient_name)} ✨</p>
+  <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7;">Fue un gusto atenderte en <strong>${safe(d.center_name)}</strong>. Esperamos que te hayas sentido bien y que el servicio haya superado tus expectativas.</p>
+  ${d.booking_url ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr><td><a href="${safe(d.booking_url)}" style="display:block;background:#0f172a;color:#fff;text-align:center;padding:13px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">Reservar próximo turno</a></td></tr></table>` : ''}
+  <p style="margin:0;color:#374151;font-size:13px;line-height:1.6;">Podés compartirnos cómo fue tu experiencia — tu opinión nos ayuda a seguir mejorando.</p>
+</td></tr>`
+  return centerBase(String(d.center_name||''), `Gracias por visitarnos`, 'linear-gradient(135deg,#064e3b,#065f46)', '#6ee7b7', 'rgba(110,231,183,.15)', '❤️ Post-visita', body)
+}
+
 // ── Send via Resend ───────────────────────────────────────────────────────────
 async function sendEmail(to: string, subject: string, html: string, attachments?: {filename: string, content: string}[]) {
   if (!RESEND_API_KEY) { console.warn('[send-email] No RESEND_API_KEY'); return }
@@ -1417,6 +1524,33 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
           subject,
           tplGrowthWelcome(data.medico_nombre || '', state, data.bio_generada || null, data.medico_slug || '')
         )
+        break
+      }
+
+      // ── CENTER FOLLOWUP TEMPLATES ────────────────────────────────────────────
+      case 'center_confirm': {
+        const subject = `Tu solicitud en ${data.center_name || 'el centro'} fue recibida ✓`
+        await sendEmail(to_email, subject, tplCenterConfirm(data as Record<string,unknown>))
+        break
+      }
+      case 'center_admin_lead': {
+        const subject = `Nueva reserva — ${data.patient_name || 'Paciente'}`
+        await sendEmail(to_email, subject, tplCenterAdminLead(data as Record<string,unknown>))
+        break
+      }
+      case 'center_reminder': {
+        const subject = `Recordatorio: tu turno es mañana — ${data.center_name || ''}`
+        await sendEmail(to_email, subject, tplCenterReminder(data as Record<string,unknown>))
+        break
+      }
+      case 'center_noshow': {
+        const subject = `¿Cómo estás? Queremos reagendarte — ${data.center_name || ''}`
+        await sendEmail(to_email, subject, tplCenterNoShow(data as Record<string,unknown>))
+        break
+      }
+      case 'center_postvista': {
+        const subject = `Gracias por visitarnos — ${data.center_name || ''}`
+        await sendEmail(to_email, subject, tplCenterPostVisita(data as Record<string,unknown>))
         break
       }
 
