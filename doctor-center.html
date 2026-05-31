@@ -234,8 +234,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
 .modal-section-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:.85rem 0 .5rem}
 .modal-wa-opt{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.1rem}
 .modal-wa-opt .modal-section-label{margin-top:0}
-.btn-modal-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:.55rem;padding:.72rem 1rem;background:#25d366;color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;text-decoration:none;transition:opacity .15s}
-.btn-modal-wa:hover{opacity:.88}
+.btn-modal-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.9rem 1rem;background:linear-gradient(135deg,#25d366 0%,#128c7e 100%);color:#fff;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;text-decoration:none;transition:all .2s;box-shadow:0 4px 16px rgba(37,211,102,.35);letter-spacing:.01em;position:relative;overflow:hidden}
+.btn-modal-wa::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 60%);pointer-events:none}
+.btn-modal-wa:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(37,211,102,.45)}
+.btn-modal-wa:active{transform:translateY(0);box-shadow:0 2px 8px rgba(37,211,102,.3)}
 .btn-modal-online{width:100%;display:flex;align-items:center;justify-content:center;gap:.45rem;padding:.72rem 1rem;background:#fff;border:1.5px solid var(--red);color:var(--red);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-modal-online:hover{background:var(--red-lite)}
 .modal-days{display:flex;gap:.4rem;overflow-x:auto;padding:.25rem 0 .65rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
@@ -1571,36 +1573,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
     <div id="modalContent">
       <div class="modal-lab-notice" id="labNotice" style="display:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Los laboratorios inician a las <strong>8:00 am</strong>. Tu turno será agendado desde esa hora.
+        Los laboratorios inician a las <strong>8:00 am</strong>.
       </div>
       <div class="modal-services" id="modalServices" style="display:none"></div>
       <div class="modal-total" id="modalTotal" style="display:none">
-        <div class="modal-total-label">Precio consulta</div>
+        <div class="modal-total-label">Total estimado</div>
         <div class="modal-total-amount" id="modalTotalAmt">$0</div>
-      </div>
-
-      <!-- BOOKING OPTIONS — WA / online / both -->
-      <div class="modal-wa-opt" id="modalWaOpt" style="display:none">
-        <div class="modal-section-label">¿Cómo querés agendar?</div>
-        <a class="btn-modal-wa" id="modalWaLink" href="#" target="_blank" rel="noopener">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
-          Escribir por WhatsApp
-        </a>
-        <button class="btn-modal-online" id="modalOnlineBtn" style="display:none" onclick="modalShowOnlineForm()">
-          📅 Agendar con fecha y hora
-        </button>
-      </div>
-
-      <!-- SLOT PICKER -->
-      <div id="slotPicker" style="display:none">
-        <div class="modal-section-label">Elegí un día</div>
-        <div class="modal-days" id="modalDays">
-          <div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>
-        </div>
-        <div id="slotWrap" style="display:none">
-          <div class="modal-section-label" id="slotTitle">Horarios disponibles</div>
-          <div class="slots-grid" id="slotsGrid"></div>
-        </div>
       </div>
 
       <!-- PATIENT FORM -->
@@ -1611,23 +1589,23 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
       <div class="form-row">
         <div class="form-group" style="margin:0">
           <label>Teléfono / WhatsApp</label>
-          <input class="form-control" id="fTelefono" type="tel" placeholder="+593..." autocomplete="tel">
+          <input class="form-control" id="fTelefono" type="tel" placeholder="+1..." autocomplete="tel">
         </div>
         <div class="form-group" style="margin:0">
           <label>Cédula / ID</label>
-          <input class="form-control" id="fCedula" placeholder="0000000000" inputmode="numeric" maxlength="15">
+          <input class="form-control" id="fCedula" placeholder="Opcional" inputmode="numeric" maxlength="15">
         </div>
       </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input class="form-control" id="fEmail" type="email" placeholder="tu@email.com" autocomplete="email">
-      </div>
-      <!-- Fecha general — solo cuando no hay slot picker activo -->
       <div class="form-group" id="fechaGroup">
         <label>¿Cuándo preferís atenderte?</label>
         <input class="form-control" id="fFecha" type="date">
       </div>
-      <button class="btn-submit" id="btnSubmit" onclick="submitReserva()">Solicitar turno →</button>
+
+      <button class="btn-modal-wa" id="btnSubmit" onclick="submitReserva()" style="margin-top:.85rem">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+        Solicitar por WhatsApp
+      </button>
+      <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:.55rem">Te abrirá WhatsApp con tu solicitud lista para enviar</p>
     </div>
     <div id="modalChannelContent" style="display:none">
       <div class="modal-channel">
@@ -2316,16 +2294,9 @@ async function openModalFromCalc() {
   el('modalOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
 
-  // Si el centro tiene schedule_config, mostrar slot picker
-  const sch = _center?.schedule_config
-  if (sch && sch.dias) {
-    el('slotPicker').style.display = 'block'
-    el('fechaGroup').style.display = 'none'
-    await genCenterSlots(sch)
-  } else {
-    el('slotPicker').style.display = 'none'
-    el('fechaGroup').style.display = 'block'
-  }
+  // Siempre fecha libre — sin slot picker en el flujo de calculadora
+  el('slotPicker').style.display = 'none'
+  el('fechaGroup').style.display = 'block'
 }
 
 async function genCenterSlots(sch) {
@@ -2452,95 +2423,50 @@ async function submitReserva() {
   const nombre   = el('fNombre').value.trim()
   const telefono = el('fTelefono').value.trim()
   const cedula   = el('fCedula').value.trim()
-  const email    = el('fEmail').value.trim()
-  const fecha    = _modalDate || el('fFecha').value
+  const fecha    = el('fFecha')?.value || ''
 
-  if (!nombre || !telefono) { alert('Por favor completá nombre y teléfono.'); return }
-  if (_modalDoctor && _modalDoctor.online && !_modalSlot) { alert('Por favor seleccioná un horario.'); return }
-  if (!_modalDoctor && _center?.schedule_config?.dias && !_modalSlot) { alert('Por favor seleccioná un horario disponible.'); return }
+  if (!nombre || !telefono) { alert('Por favor completá tu nombre y teléfono.'); return }
 
   const btn = el('btnSubmit')
-  btn.disabled = true; btn.textContent = 'Guardando...'
+  btn.disabled = true
+  btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg> Abriendo WhatsApp...'
 
   const leadsServices = _modalDoctor
     ? [{ id: _modalDoctor.svcId||'', nombre: _modalDoctor.svcNombre, precio: _modalDoctor.precio||0 }]
     : _selected
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
-  const leadRes = await dbPost('center_leads', {
-    center_id: _center?.id, nombre, telefono,
-    cedula: cedula||null, email: email||null,
-    fecha_pref: fecha||null, hora: _modalSlot||null,
-    nota: _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
-    servicios: leadsServices.length ? JSON.stringify(leadsServices) : null,
-    total_est: leadsTotal||null,
-    followup_confirm_sent: !!email,  // mark sent if we'll fire it now
-  })
+  // Guardar lead en DB
+  try {
+    await dbPost('center_leads', {
+      center_id: _center?.id, nombre, telefono,
+      cedula: cedula||null, email: null,
+      fecha_pref: fecha||null, hora: null,
+      nota: _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
+      servicios: leadsServices.length ? JSON.stringify(leadsServices) : null,
+      total_est: leadsTotal||null,
+    })
+  } catch(e) { console.warn('lead save:', e) }
 
-  // Confirmación inmediata si hay email
-  if (email && _center?.nombre) {
-    const svcsStr = leadsServices.map(s=>s.nombre).join(', ')
-    sendDocEmail({
-      ..._brand(),
-      type:'center_confirm', to_email:email,
-      patient_name:nombre, center_name:_center.nombre,
-      center_phone:_center.whatsapp||_center.telefono||'',
-      fecha: fecha||null, hora:_modalSlot||null,
-      servicios:svcsStr||null,
-      total: leadsTotal ? '$'+leadsTotal : null,
-    }, false)
-    // Admin notification
-    if (_center.email) {
-      sendDocEmail({
-        ..._brand(),
-        type:'center_admin_lead', to_email:_center.email,
-        center_name:_center.nombre, patient_name:nombre,
-        telefono:telefono, email:email,
-        fecha:fecha||'Sin fecha', hora:_modalSlot||'Sin hora',
-        servicios:svcsStr||'—',
-        total: leadsTotal ? '$'+leadsTotal : '',
-      }, false)
-    }
+  // Construir mensaje WA premium
+  const centerName = _center?.nombre || 'el centro'
+  const docLine  = _modalDoctor ? `\n🩺 Médico: ${_modalDoctor.nombre}` : ''
+  const fechaLine= fecha ? `\n📅 Fecha preferida: ${fecha}` : ''
+  const cedLine  = cedula ? `\n🪪 Cédula / ID: ${cedula}` : ''
+  const svcLines = leadsServices.length
+    ? '\n\n📋 Servicios de interés:\n' + leadsServices.map(s=>`   • ${s.nombre}${s.precio?' — $'+s.precio:''}`).join('\n')
+    : ''
+  const totalLine= leadsTotal > 0 ? `\n💰 Total estimado: $${leadsTotal}` : ''
+  const msg = `Hola *${centerName}* 👋\n\nQuisiera solicitar un turno.\n\n👤 Nombre: *${nombre}*\n📱 Teléfono: ${telefono}${cedLine}${fechaLine}${docLine}${svcLines}${totalLine}\n\n¿Tienen disponibilidad?`
+
+  const waNum = (_center?.whatsapp || '').replace(/\D/g,'')
+  if (waNum) {
+    window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg), '_blank')
   }
 
-  const waNum   = _center?.whatsapp || '593989173062'
-  const docLine = _modalDoctor ? `\n\nMédico: ${_modalDoctor.nombre}` : ''
-  const slotLine= _modalSlot ? `\nHorario: ${fecha} a las ${_modalSlot}` : (fecha?`\nFecha preferida: ${fecha}`:'')
-  const cedLine = cedula ? `\nCédula: ${cedula}` : ''
-  const svcs    = leadsServices.length ? '\n\nServicios:\n'+leadsServices.map(s=>'• '+s.nombre+(s.precio?(' ($'+s.precio+')'):'') ).join('\n') : ''
-  const waMsg   = encodeURIComponent(`Hola, soy ${nombre}. Quisiera solicitar un turno.${docLine}${cedLine}${slotLine}${svcs}`)
-
-  _pendingReserva = { nombre, email, fecha, cedula, leadsServices, waNum, waMsg, _modalDoctor: _modalDoctor ? {..._modalDoctor} : null }
-
-  btn.disabled = false; btn.textContent = 'Solicitar turno →'
-  el('modalContent').style.display = 'none'
-  el('modalChannelContent').style.display = 'block'
-
-  el('btnChannelWa').onclick = () => {
-    window.open('https://wa.me/'+waNum+'?text='+waMsg, '_blank')
-    showModalSuccess(false)
-  }
-  el('btnChannelMail').onclick = () => {
-    const docName = _pendingReserva._modalDoctor?.nombre || _docFullName() || 'tu médico'
-    const _ls = _pendingReserva.leadsServices || []
-    const _lt = _ls.reduce((a,s)=>a+(s.precio||0), 0)
-    const emailPayload = {
-      ..._brand(),
-      type:'appointment', to_email: email || _center?.email,
-      patient_name:nombre, doctor_name:docName,
-      appointment_date:fecha||'Por confirmar',
-      appointment_time:_modalSlot||'Por confirmar',
-      appointment_location:_center?.nombre||'Doctor Center',
-      appointment_mode:'Solicitud de cita',
-      services: _ls.length ? JSON.stringify(_ls) : '',
-      services_total: _lt > 0 ? String(_lt) : '',
-    }
-    // Email al paciente
-    if (email) sendDocEmail({ ...emailPayload, to_email: email }, true)
-    // Email al centro
-    if (_center?.email) sendDocEmail({ ...emailPayload, to_email: _center.email }, true)
-    showModalSuccess(true)
-  }
+  btn.disabled = false
+  btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg> Solicitar por WhatsApp'
+  showModalSuccess(false)
 }
 
 function showModalSuccess(byEmail) {
