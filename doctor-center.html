@@ -1844,7 +1844,7 @@ function renderPackages() {
   list.innerHTML = visible.map(p => {
     const incluye = Array.isArray(p.incluye) ? p.incluye : (JSON.parse(p.incluye||'[]'))
     const sel   = _selPkgs.some(s => s.id === p.id)
-    const ahorro= p.precio_regular && p.precio_promo ? (p.precio_regular - p.precio_promo) : null
+    const ahorro= p.precio_regular && p.precio_promo ? +((p.precio_regular - p.precio_promo).toFixed(2)) : null
     const color = p.color || '#0b7c6e'
     const icSvg = PKG_ICONS_SVG[p.icono] || PKG_ICONS_SVG.stethoscope
     return `<div class="pkg-card${sel?' selected':''}" style="--pkg-color:${color}" onclick="togglePackage('${p.id}')">

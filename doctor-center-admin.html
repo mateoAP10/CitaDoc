@@ -2000,7 +2000,7 @@ function renderPackages() {
   const icSvg = key => (PKG_ICONS.find(i=>i.key===key)||PKG_ICONS[0]).svg
   list.innerHTML = _packages.map(p => {
     const incluye = Array.isArray(p.incluye)?p.incluye:(JSON.parse(p.incluye||'[]'))
-    const ahorro = p.precio_regular && p.precio_promo ? p.precio_regular - p.precio_promo : null
+    const ahorro = p.precio_regular && p.precio_promo ? +((p.precio_regular - p.precio_promo).toFixed(2)) : null
     return `<div style="display:flex;align-items:center;gap:.75rem;padding:.75rem;border:1.5px solid var(--border);border-radius:11px;margin-bottom:.45rem;background:#fff">
       <div style="width:40px;height:40px;border-radius:10px;background:${p.color}22;display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${p.color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icSvg(p.icono)}</svg>
