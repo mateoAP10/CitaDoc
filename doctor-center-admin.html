@@ -496,6 +496,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       </div>
     </div>
 
+    <!-- HORARIOS DE ATENCIÓN -->
+    <div class="section-card" id="scheduleCard">
+      <div class="section-header">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Horarios de atención</div>
+          <div class="section-sub">Define los días y horas en que el centro acepta reservas online</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding:.75rem 1rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px">
+        <label style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Duración del turno</label>
+        <select id="schDuracion" class="field-input" style="width:140px;margin:0">
+          <option value="15">15 minutos</option>
+          <option value="20">20 minutos</option>
+          <option value="30" selected>30 minutos</option>
+          <option value="45">45 minutos</option>
+          <option value="60">1 hora</option>
+        </select>
+      </div>
+
+      <div id="schDays"></div>
+
+      <button class="btn-save" onclick="saveSchedule()" id="btnSaveSchedule" style="margin-top:1rem">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Guardar horarios
+      </button>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /app -->
 
@@ -598,6 +629,7 @@ async function ensureCenter() {
       _center = data[0]
       fillInfoForm(_center)
       fillPhotoSettings(_center)
+      renderSchedule(_center.schedule_config)
       if (_center.portada_url) showPortada(_center.portada_url)
       return true
     } catch(e) { return false }
@@ -1172,6 +1204,69 @@ async function commitImport() {
     toast('Error al importar: ' + e.message, 'err')
   } finally {
     btn.disabled = false; btn.textContent = 'Importar servicios'
+  }
+}
+
+// ── HORARIOS DE ATENCIÓN ───────────────────────────────────────────────────────
+const SCH_DAYS = [
+  {key:'lun',label:'Lunes'},{key:'mar',label:'Martes'},{key:'mie',label:'Miércoles'},
+  {key:'jue',label:'Jueves'},{key:'vie',label:'Viernes'},
+  {key:'sab',label:'Sábado'},{key:'dom',label:'Domingo'}
+]
+
+function renderSchedule(config) {
+  const c = config || {}
+  const dias = c.dias || {}
+  const dur = c.duracion || 30
+  el('schDuracion').value = dur
+
+  const wrap = el('schDays')
+  wrap.innerHTML = ''
+  SCH_DAYS.forEach(d => {
+    const day = dias[d.key] || { activo: ['lun','mar','mie','jue','vie'].includes(d.key), desde:'08:00', hasta:'18:00' }
+    const row = document.createElement('div')
+    row.style.cssText = 'display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;border-radius:10px;border:1.5px solid var(--border);margin-bottom:.45rem;background:#fff;transition:border-color .15s'
+    row.innerHTML = `
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;min-width:100px">
+        <input type="checkbox" id="sch_${d.key}" ${day.activo?'checked':''} onchange="schToggle('${d.key}',this.checked)" style="width:16px;height:16px;accent-color:var(--red);cursor:pointer">
+        <span style="font-size:.85rem;font-weight:600;color:var(--ink)">${d.label}</span>
+      </label>
+      <div id="sch_range_${d.key}" style="display:${day.activo?'flex':'none'};align-items:center;gap:.5rem;flex:1">
+        <input type="time" id="sch_desde_${d.key}" value="${day.desde||'08:00'}" class="field-input" style="width:110px;margin:0;padding:.45rem .65rem;font-size:.85rem">
+        <span style="font-size:.78rem;color:var(--muted)">a</span>
+        <input type="time" id="sch_hasta_${d.key}" value="${day.hasta||'18:00'}" class="field-input" style="width:110px;margin:0;padding:.45rem .65rem;font-size:.85rem">
+      </div>
+      <span id="sch_off_${d.key}" style="display:${day.activo?'none':'block'};font-size:.78rem;color:var(--muted);margin-left:.25rem">Cerrado</span>
+    `
+    wrap.appendChild(row)
+  })
+}
+
+function schToggle(key, active) {
+  el('sch_range_'+key).style.display = active ? 'flex' : 'none'
+  el('sch_off_'+key).style.display   = active ? 'none' : 'block'
+}
+
+async function saveSchedule() {
+  if (!_center) { toast('Primero guarda la información del centro', 'err'); return }
+  const btn = el('btnSaveSchedule')
+  btn.disabled = true; btn.textContent = 'Guardando...'
+  const dias = {}
+  SCH_DAYS.forEach(d => {
+    const activo = el('sch_'+d.key)?.checked || false
+    dias[d.key] = { activo, desde: el('sch_desde_'+d.key)?.value||'08:00', hasta: el('sch_hasta_'+d.key)?.value||'18:00' }
+  })
+  const config = { duracion: parseInt(el('schDuracion').value)||30, dias }
+  try {
+    const res = await sbPatch('centers', 'id=eq.'+_center.id, { schedule_config: config })
+    if (res.error) throw new Error(res.error.message)
+    _center.schedule_config = config
+    toast('Horarios guardados', 'ok')
+    btn.textContent = '✓ Guardado'; btn.classList.add('saved')
+    setTimeout(() => { btn.textContent = 'Guardar horarios'; btn.classList.remove('saved'); btn.disabled = false }, 2000)
+  } catch(e) {
+    toast('Error: '+e.message, 'err')
+    btn.disabled = false; btn.textContent = 'Guardar horarios'
   }
 }
 

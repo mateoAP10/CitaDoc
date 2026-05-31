@@ -2299,7 +2299,7 @@ function selectModalSlot(slot, btn) {
   btn.classList.add('sel')
 }
 
-function openModalFromCalc() {
+async function openModalFromCalc() {
   if (!_selected.length) return
   const sum = _selected.reduce((a,s) => a+s.precio, 0)
   el('modalServices').style.display = 'block'
@@ -2308,12 +2308,122 @@ function openModalFromCalc() {
   el('modalServices').innerHTML = _selected.map(s =>
     `<div class="modal-service-row"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`
   ).join('')
-  // Show notice if any service is lab or imagen
   const selIds = new Set(_selected.map(x=>x.id))
   const hasLab = _services.filter(s => selIds.has(s.id)).some(s => s.categoria==='laboratorio')
   el('labNotice').style.display = hasLab ? 'flex' : 'none'
   el('modalOverlay').classList.add('open')
   document.body.style.overflow = 'hidden'
+
+  // Si el centro tiene schedule_config, mostrar slot picker
+  const sch = _center?.schedule_config
+  if (sch && sch.dias) {
+    el('slotPicker').style.display = 'block'
+    el('fechaGroup').style.display = 'none'
+    await genCenterSlots(sch)
+  } else {
+    el('slotPicker').style.display = 'none'
+    el('fechaGroup').style.display = 'block'
+  }
+}
+
+async function genCenterSlots(sch) {
+  const days = el('modalDays')
+  days.innerHTML = '<div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>'
+  el('slotWrap').style.display = 'none'
+  _modalDate = null; _modalSlot = null
+
+  const dur = sch.duracion || 30
+  const diasConfig = sch.dias || {}
+  const DOW_KEYS = ['dom','lun','mar','mie','jue','vie','sab']
+  const today = new Date(); today.setHours(0,0,0,0)
+  const available = []
+
+  // Fetch booked slots for this center for next 30 days
+  const from = today.toISOString().split('T')[0]
+  const toD = new Date(today); toD.setDate(toD.getDate()+30)
+  const to = toD.toISOString().split('T')[0]
+  let booked = []
+  try {
+    const r = await dbGet('center_leads', `center_id=eq.${_center.id}&fecha_pref=gte.${from}&fecha_pref=lte.${to}&select=fecha_pref,hora`)
+    booked = r || []
+  } catch(e) {}
+
+  for (let i=0; i<30; i++) {
+    const d = new Date(today); d.setDate(today.getDate()+i)
+    const dow = DOW_KEYS[d.getDay()]
+    const cfg = diasConfig[dow]
+    if (!cfg || !cfg.activo) continue
+    const dateStr = d.toISOString().split('T')[0]
+    const slots = genCenterDaySlots(cfg.desde, cfg.hasta, dur, dateStr, booked, d)
+    if (slots.length) available.push({ date: d, dateStr, label: d.toLocaleDateString('es',{weekday:'short',day:'numeric',month:'short'}), slots })
+    if (available.length >= 7) break
+  }
+
+  if (!available.length) {
+    days.innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin disponibilidad próxima. Configura horarios en el panel.</div>'
+    el('fechaGroup').style.display = 'block'
+    return
+  }
+
+  days.innerHTML = available.map((a,i) =>
+    `<button class="day-btn${i===0?' active':''}" onclick="selectCenterDay(${i})" id="cdBtn${i}"
+      style="padding:.45rem .8rem;border:1.5px solid ${i===0?'var(--red)':'var(--border)'};border-radius:9px;background:${i===0?'var(--red)':'#fff'};color:${i===0?'#fff':'var(--ink)'};font-family:DM Sans,sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;margin:.2rem .15rem .2rem 0">
+      ${esc(a.label)}
+    </button>`
+  ).join('')
+
+  window._centerSlotDays = available
+  selectCenterDay(0)
+}
+
+function genCenterDaySlots(desde, hasta, durMin, dateStr, booked, dateObj) {
+  const [sh,sm] = desde.split(':').map(Number)
+  const [eh,em] = hasta.split(':').map(Number)
+  const startMin = sh*60+sm, endMin = eh*60+em
+  const now = new Date()
+  const isToday = dateObj.toDateString() === now.toDateString()
+  const nowMin = isToday ? now.getHours()*60+now.getMinutes()+30 : 0
+  const slots = []
+  for (let t=startMin; t+durMin<=endMin; t+=durMin) {
+    if (t < nowMin) continue
+    const h = String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')
+    if (!booked.some(b=>b.fecha_pref===dateStr&&b.hora===h)) slots.push(h)
+  }
+  return slots
+}
+
+function selectCenterDay(idx) {
+  const days = window._centerSlotDays
+  if (!days || !days[idx]) return
+  const sel = days[idx]
+  _modalDate = sel.dateStr
+  _modalSlot = null
+  // Update day buttons
+  days.forEach((_,i) => {
+    const btn = document.getElementById('cdBtn'+i)
+    if (!btn) return
+    btn.style.background = i===idx?'var(--red)':'#fff'
+    btn.style.color      = i===idx?'#fff':'var(--ink)'
+    btn.style.borderColor= i===idx?'var(--red)':'var(--border)'
+  })
+  // Render slots
+  const grid = el('slotsGrid')
+  el('slotTitle').textContent = 'Horarios — '+sel.label
+  grid.innerHTML = sel.slots.map(s =>
+    `<button class="slot-btn" onclick="selectCenterSlot('${s}',this)"
+      style="padding:.48rem .6rem;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-family:DM Sans,sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s">
+      ${s}
+    </button>`
+  ).join('')
+  el('slotWrap').style.display = 'block'
+}
+
+function selectCenterSlot(slot, btn) {
+  _modalSlot = slot
+  document.querySelectorAll('#slotsGrid .slot-btn').forEach(b => {
+    b.style.background='#fff'; b.style.color='var(--ink)'; b.style.borderColor='var(--border)'
+  })
+  btn.style.background='var(--red)'; btn.style.color='#fff'; btn.style.borderColor='var(--red)'
 }
 
 function closeModal() {
@@ -2343,6 +2453,7 @@ async function submitReserva() {
 
   if (!nombre || !telefono) { alert('Por favor completá nombre y teléfono.'); return }
   if (_modalDoctor && _modalDoctor.online && !_modalSlot) { alert('Por favor seleccioná un horario.'); return }
+  if (!_modalDoctor && _center?.schedule_config?.dias && !_modalSlot) { alert('Por favor seleccioná un horario disponible.'); return }
 
   const btn = el('btnSubmit')
   btn.disabled = true; btn.textContent = 'Guardando...'
