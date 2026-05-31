@@ -1596,6 +1596,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
           <input class="form-control" id="fCedula" placeholder="Opcional" inputmode="numeric" maxlength="15">
         </div>
       </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input class="form-control" id="fEmail" type="email" placeholder="tu@email.com" autocomplete="email">
+      </div>
       <div class="form-group" id="fechaGroup">
         <label>¿Cuándo preferís atenderte?</label>
         <input class="form-control" id="fFecha" type="date">
@@ -2423,6 +2427,7 @@ async function submitReserva() {
   const nombre   = el('fNombre').value.trim()
   const telefono = el('fTelefono').value.trim()
   const cedula   = el('fCedula').value.trim()
+  const email    = (el('fEmail')?.value||'').trim()
   const fecha    = el('fFecha')?.value || ''
 
   if (!nombre || !telefono) { alert('Por favor completá tu nombre y teléfono.'); return }
@@ -2440,7 +2445,7 @@ async function submitReserva() {
   try {
     await dbPost('center_leads', {
       center_id: _center?.id, nombre, telefono,
-      cedula: cedula||null, email: null,
+      cedula: cedula||null, email: email||null,
       fecha_pref: fecha||null, hora: null,
       nota: _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
       servicios: leadsServices.length ? JSON.stringify(leadsServices) : null,
@@ -2453,11 +2458,12 @@ async function submitReserva() {
   const docLine  = _modalDoctor ? `\n🩺 Médico: ${_modalDoctor.nombre}` : ''
   const fechaLine= fecha ? `\n📅 Fecha preferida: ${fecha}` : ''
   const cedLine  = cedula ? `\n🪪 Cédula / ID: ${cedula}` : ''
+  const emailLine= email  ? `\n✉️ Email: ${email}` : ''
   const svcLines = leadsServices.length
     ? '\n\n📋 Servicios de interés:\n' + leadsServices.map(s=>`   • ${s.nombre}${s.precio?' — $'+s.precio:''}`).join('\n')
     : ''
   const totalLine= leadsTotal > 0 ? `\n💰 Total estimado: $${leadsTotal}` : ''
-  const msg = `Hola *${centerName}* 👋\n\nQuisiera solicitar un turno.\n\n👤 Nombre: *${nombre}*\n📱 Teléfono: ${telefono}${cedLine}${fechaLine}${docLine}${svcLines}${totalLine}\n\n¿Tienen disponibilidad?`
+  const msg = `Hola *${centerName}* 👋\n\nQuisiera solicitar un turno.\n\n👤 Nombre: *${nombre}*\n📱 Teléfono: ${telefono}${emailLine}${cedLine}${fechaLine}${docLine}${svcLines}${totalLine}\n\n¿Tienen disponibilidad?`
 
   const waNum = (_center?.whatsapp || '').replace(/\D/g,'')
   if (waNum) {
