@@ -792,15 +792,23 @@ function stgPublicUrl(bucket, path) {
 
 // ── GATE ──────────────────────────────────────────────────────────────────────
 document.getElementById('keyInput').addEventListener('keydown', e => { if(e.key==='Enter') checkKey() })
+function unlockAdmin() {
+  sessionStorage.setItem('dc_admin_auth', '1')
+  document.getElementById('gate').style.display = 'none'
+  document.getElementById('app').style.display  = 'block'
+  init()
+}
+
 function checkKey() {
   if (document.getElementById('keyInput').value === ADMIN_PASS) {
-    document.getElementById('gate').style.display = 'none'
-    document.getElementById('app').style.display  = 'block'
-    init()
+    unlockAdmin()
   } else {
     document.getElementById('gateErr').textContent = 'Contraseña incorrecta'
   }
 }
+
+// Auto-unlock si ya estaba autenticado en esta sesión del browser
+if (sessionStorage.getItem('dc_admin_auth') === '1') unlockAdmin()
 
 // ── ENSURE CENTER ─────────────────────────────────────────────────────────────
 let _centerLoading = null
