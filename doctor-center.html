@@ -941,9 +941,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:32px 5vw;margin-
   .doctor-spec{font-size:.68rem}
   .btn-agendar-sm{font-size:.74rem;padding:.46rem .3rem}
 
-  /* Modal — bottom sheet */
-  .modal-overlay{align-items:flex-end;padding:0}
-  .modal{border-radius:20px 20px 0 0;padding:1.1rem 1.25rem 1.5rem;max-height:92svh}
+  /* Modal — bottom sheet, por encima del float-nav */
+  .modal-overlay{align-items:flex-end;padding:0;padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+  .modal{border-radius:20px 20px 0 0;padding:1.1rem 1.25rem 1.5rem;max-height:calc(92svh - 58px)}
   .form-row{grid-template-columns:1fr}
   .modal-total-amount{font-size:2.2rem}
 
@@ -2477,17 +2477,17 @@ function selectModalSlot(slot, btn) {
 }
 
 async function openModalFromCalc() {
+  // Combinar paquetes + servicios SIN mutar _selected
   const allSel = [..._selPkgs.map(p=>({id:p.id,nombre:p.nombre,precio:p.precio})), ..._selected]
   if (!allSel.length) return
-  _selPkgs.forEach(p => { if (!_selected.find(s=>s.id===p.id)) _selected.push({id:p.id,nombre:p.nombre,precio:p.precio}) })
-  const sum = allSel.reduce((a,s) => a+s.precio, 0)
+  const sum = allSel.reduce((a,s) => a+(s.precio||0), 0)
   el('modalServices').style.display = 'block'
   el('modalTotal').style.display    = 'flex'
   el('modalTotalAmt').textContent   = '$' + sum
-  el('modalServices').innerHTML = _selected.map(s =>
+  el('modalServices').innerHTML = allSel.map(s =>
     `<div class="modal-service-row"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`
   ).join('')
-  const selIds = new Set(_selected.map(x=>x.id))
+  const selIds = new Set(allSel.map(x=>x.id))
   const hasLab = _services.filter(s => selIds.has(s.id)).some(s => s.categoria==='laboratorio')
   el('labNotice').style.display = hasLab ? 'flex' : 'none'
   el('modalOverlay').classList.add('open')
@@ -2639,9 +2639,10 @@ async function submitReserva() {
   btn.disabled = true
   btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg> Abriendo WhatsApp...'
 
+  // Combinar paquetes + servicios individuales (sin duplicar)
   const leadsServices = _modalDoctor
     ? [{ id: _modalDoctor.svcId||'', nombre: _modalDoctor.svcNombre, precio: _modalDoctor.precio||0 }]
-    : _selected
+    : [..._selPkgs.map(p=>({id:p.id,nombre:p.nombre,precio:p.precio})), ..._selected]
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
   // ── Guardar en DB: find-or-create paciente + cita ──────────────────────────
