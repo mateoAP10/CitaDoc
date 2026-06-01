@@ -1934,14 +1934,15 @@ function updateCalcSummary() {
   const allSel = [..._selPkgs.map(p=>({nombre:p.nombre,precio:p.precio})), ..._selected]
   const sum    = allSel.reduce((a,s) => a+(s.precio||0), 0)
   const hasItems = allSel.length > 0
+  const bar = el('calcStickyBar')
   if (!hasItems) {
     if (lines) lines.innerHTML = '<div class="calc-empty">Seleccioná un servicio o paquete</div>'
     if (total) total.textContent = '$0'
-    if (stickyAmt) stickyAmt.textContent = '$0'
     if (cta) cta.disabled = true
-    if (stickyCta) { stickyCta.disabled = true; stickyCta.textContent = 'Seleccionar →' }
+    if (bar) bar.style.display = 'none'
     return
   }
+  if (bar) bar.style.display = 'flex'
   if (stickyCta) stickyCta.textContent = 'Reservar →'
   if (lines) lines.innerHTML = allSel.map(s => `<div class="calc-line"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`).join('')
   const totalStr = '$' + sum
@@ -2350,6 +2351,7 @@ function openModal() {
   el('slotPicker').style.display    = 'none'
   el('fechaGroup').style.display    = 'block'
   el('modalOverlay').classList.add('open')
+  _stickyBarVisible(false)
   document.body.style.overflow = 'hidden'
 }
 
@@ -2416,6 +2418,7 @@ async function openModalForDoctor(encoded) {
   }
 
   el('modalOverlay').classList.add('open')
+  _stickyBarVisible(false)
   document.body.style.overflow = 'hidden'
 }
 
@@ -2487,6 +2490,7 @@ async function openModalFromCalc() {
   const hasLab = _services.filter(s => selIds.has(s.id)).some(s => s.categoria==='laboratorio')
   el('labNotice').style.display = hasLab ? 'flex' : 'none'
   el('modalOverlay').classList.add('open')
+  _stickyBarVisible(false)
   document.body.style.overflow = 'hidden'
 
   // Siempre fecha libre — sin slot picker en el flujo de calculadora
@@ -2596,10 +2600,20 @@ function selectCenterSlot(slot, btn) {
   btn.classList.add('sel')
 }
 
+function _stickyBarVisible(show) {
+  const bar = el('calcStickyBar')
+  if (!bar) return
+  const allSel = [..._selPkgs, ..._selected]
+  // Only show if has items AND requested to show
+  if (show && allSel.length) bar.style.display = 'flex'
+  else bar.style.display = 'none'
+}
+
 function closeModal() {
   _modalDoctor = null; _modalDisp = {}; _modalDate = null; _modalSlot = null; _pendingReserva = null
   el('modalOverlay').classList.remove('open')
   document.body.style.overflow = ''
+  _stickyBarVisible(true)
   el('modalContent').style.display = 'block'
   el('modalChannelContent').style.display = 'none'
   el('modalSuccessContent').style.display = 'none'
