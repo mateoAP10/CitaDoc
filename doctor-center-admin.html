@@ -1853,10 +1853,42 @@ async function loadNewTurnos() {
       <div class="turno-fecha">
         <div class="turno-fecha-dia">${fechaLabel}</div>
         <div class="turno-fecha-label">Turno</div>
-        <button class="btn-atendido" style="margin-top:.4rem;font-size:.65rem" onclick="markAtendido('${c.id}','${c.patient_id}',this)">✓ Atendido</button>
+        <div style="display:flex;gap:.3rem;margin-top:.4rem">
+          <button class="btn-atendido" style="font-size:.65rem" onclick="markAtendido('${c.id}','${c.patient_id}',this)">✓ Asistió</button>
+          <button style="border:1.5px solid #fca5a5;background:#fff5f5;border-radius:7px;padding:.3rem .55rem;font-family:'DM Sans',sans-serif;font-size:.65rem;font-weight:700;cursor:pointer;color:#dc2626;white-space:nowrap;transition:all .15s" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'" onclick="cancelarTurno('${c.id}','${c.patient_id}',this)">✕ Cancelar</button>
+        </div>
       </div>
     </div>`
   }).join('')
+}
+
+async function cancelarTurno(citaId, patientId, btn) {
+  btn.disabled = true; btn.textContent = '...'
+  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { estado: 'cancelado', atendido: false })
+  if (error) { toast('Error: '+error.message, 'err'); btn.disabled=false; btn.textContent='✕ Cancelar'; return }
+
+  // Email de reagendamiento al paciente
+  const patient = (await sbGet('center_patients', `id=eq.${patientId}&select=nombre,email`)).data?.[0]
+  if (patient?.email && _center?.nombre) {
+    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+      body: JSON.stringify({
+        type: 'center_noshow',
+        to_email: patient.email,
+        patient_name: patient.nombre||'',
+        center_name: _center.nombre,
+        center_phone: _center.whatsapp||_center.telefono||'',
+        booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}`,
+      })
+    })
+    toast('Turno cancelado — email de reagendamiento enviado ✓', 'ok')
+  } else {
+    toast('Turno cancelado ✓', 'ok')
+  }
+  await loadNewTurnos()
+  // Refrescar también la tabla de pacientes si está cargada
+  if (_allLeads.length) filterLeads()
 }
 
 // ── REGISTRO MANUAL ───────────────────────────────────────────────────────────
