@@ -1810,7 +1810,7 @@ async function loadNewTurnos() {
   if (!_center) return
   const today = new Date().toISOString().split('T')[0]
   const { data: citas } = await sbGet('center_citas',
-    `center_id=eq.${_center.id}&atendido=eq.false&fecha_pref=gte.${today}&select=id,patient_id,fecha_pref,hora,servicios,total_est,nota,created_at,estado&order=fecha_pref.asc&limit=50`)
+    `center_id=eq.${_center.id}&atendido=eq.false&estado=neq.cancelado&fecha_pref=gte.${today}&select=id,patient_id,fecha_pref,hora,servicios,total_est,nota,created_at,estado&order=fecha_pref.asc&limit=50`)
   const { data: patients } = await sbGet('center_patients',
     `center_id=eq.${_center.id}&select=id,nombre,email,telefono,cedula,canal`)
 
