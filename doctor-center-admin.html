@@ -193,6 +193,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .estado-btn.cancelado{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
 .estado-btn.cancelado.active{background:#2563eb;border-color:#2563eb;color:#fff}
 
+/* NUEVOS TURNOS CARDS */
+.turno-card{background:#fff;border:2px solid #fca5a5;border-radius:14px;padding:1rem 1.1rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.85rem;transition:box-shadow .15s}
+.turno-card:hover{box-shadow:0 4px 16px rgba(220,38,38,.12)}
+.turno-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#ef4444);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0}
+.turno-info{flex:1;min-width:0}
+.turno-nombre{font-size:.95rem;font-weight:800;color:var(--ink)}
+.turno-meta{font-size:.72rem;color:var(--muted);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.turno-fecha{text-align:right;flex-shrink:0}
+.turno-fecha-dia{font-size:1.1rem;font-weight:800;color:#dc2626;line-height:1.1}
+.turno-fecha-label{font-size:.6rem;font-weight:700;color:#dc2626;opacity:.6;text-transform:uppercase;letter-spacing:.06em}
+.turno-empty{font-size:.82rem;color:var(--muted);padding:.75rem 0;text-align:center}
+
 /* LEADS TABLE */
 .leads-search{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;margin-bottom:1rem;transition:border-color .15s}
 .leads-search:focus{border-color:var(--red)}
@@ -272,6 +284,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       </button>
       <button class="admin-tab" id="tabBtnBackend" onclick="switchTab('backend')">
         ⚙️ Backend <span style="font-size:.7rem;color:var(--muted);font-weight:500">· Seguimiento</span>
+        <span id="newTurnosBadge" style="display:none;background:#dc2626;color:#fff;font-size:.6rem;font-weight:800;border-radius:50%;width:16px;height:16px;align-items:center;justify-content:center;margin-left:.3rem"></span>
       </button>
     </div>
 
@@ -673,6 +686,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
     <!-- TAB BACKEND -->
     <div id="tabBackend" style="display:none">
 
+      <!-- NUEVOS TURNOS -->
+      <div class="section-card" id="newTurnosCard" style="border:2px solid #fca5a5;background:#fff5f5">
+        <div class="section-header" style="margin-bottom:.75rem">
+          <div class="section-icon" style="background:#fee2e2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div style="flex:1">
+            <div class="section-title" style="color:#dc2626">🔴 Nuevos turnos</div>
+            <div class="section-sub">Solicitudes pendientes — desaparecen automáticamente cuando pasa la fecha</div>
+          </div>
+          <button onclick="loadNewTurnos()" style="background:none;border:1.5px solid #fca5a5;border-radius:8px;padding:.3rem .65rem;font-size:.72rem;font-weight:700;color:#dc2626;cursor:pointer">↺ Actualizar</button>
+        </div>
+        <div id="newTurnosList"><div style="font-size:.82rem;color:var(--muted);padding:.5rem 0">Cargando...</div></div>
+      </div>
+
       <!-- ENVIAR FOLLOWUP MANUAL -->
       <div class="section-card">
         <div class="section-header">
@@ -941,6 +969,7 @@ async function init() {
   renderDocs()
   renderServices()
   await loadPackages()
+  loadNewTurnos()  // carga en background para el badge
 }
 
 // ── PORTADA ───────────────────────────────────────────────────────────────────
@@ -1498,7 +1527,7 @@ function switchTab(tab) {
   el('tabBackend').style.display   = tab === 'backend'  ? '' : 'none'
   el('tabBtnFrontend').classList.toggle('active', tab === 'frontend')
   el('tabBtnBackend').classList.toggle('active',  tab === 'backend')
-  if (tab === 'backend') loadLeads()
+  if (tab === 'backend') { loadNewTurnos(); loadLeads() }
 }
 
 // ── BACKEND: LEADS ────────────────────────────────────────────────────────────
@@ -1774,6 +1803,60 @@ function fupSelect(email, nombre) {
 function fupCloseDropdown() {
   const d = el('fupDropdown')
   if (d) d.style.display = 'none'
+}
+
+// ── NUEVOS TURNOS ─────────────────────────────────────────────────────────────
+async function loadNewTurnos() {
+  if (!_center) return
+  const today = new Date().toISOString().split('T')[0]
+  const { data: citas } = await sbGet('center_citas',
+    `center_id=eq.${_center.id}&atendido=eq.false&fecha_pref=gte.${today}&select=id,patient_id,fecha_pref,hora,servicios,total_est,nota,created_at,estado&order=fecha_pref.asc&limit=50`)
+  const { data: patients } = await sbGet('center_patients',
+    `center_id=eq.${_center.id}&select=id,nombre,email,telefono,cedula,canal`)
+
+  const pMap = {}
+  ;(patients||[]).forEach(p => pMap[p.id] = p)
+
+  const list = document.getElementById('newTurnosList')
+  if (!list) return
+
+  const items = (citas||[]).map(c => ({ ...c, _patient: pMap[c.patient_id] || {} }))
+
+  if (!items.length) {
+    list.innerHTML = '<div class="turno-empty">Sin nuevos turnos pendientes ✓</div>'
+    // Update tab badge
+    const badge = document.getElementById('newTurnosBadge')
+    if (badge) badge.style.display = 'none'
+    return
+  }
+
+  // Update tab badge
+  const badge = document.getElementById('newTurnosBadge')
+  if (badge) { badge.textContent = items.length; badge.style.display = 'inline-flex' }
+
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+  list.innerHTML = items.map(c => {
+    const p = c._patient
+    const ini = (p.nombre||'?').charAt(0).toUpperCase()
+    const fechaParts = (c.fecha_pref||'').split('-')
+    const fechaLabel = fechaParts.length===3 ? `${parseInt(fechaParts[2])} ${months[parseInt(fechaParts[1])-1]}` : (c.fecha_pref||'Sin fecha')
+    const svcs = c.servicios ? (() => { try { const a=Array.isArray(c.servicios)?c.servicios:JSON.parse(c.servicios||'[]'); return a.map(s=>s.nombre).join(', ') } catch { return '' } })() : (c.nota||'')
+    const meta = [p.telefono, p.email, svcs].filter(Boolean).join(' · ')
+    return `<div class="turno-card">
+      <div class="turno-avatar">${esc(ini)}</div>
+      <div class="turno-info">
+        <div class="turno-nombre">${esc(p.nombre||'Paciente')}</div>
+        <div class="turno-meta">${esc(meta.substring(0,80))}</div>
+        ${c.hora?`<div style="font-size:.7rem;font-weight:700;color:#dc2626;margin-top:.2rem">🕐 ${c.hora}</div>`:''}
+        ${c.total_est?`<div style="font-size:.7rem;color:var(--muted);margin-top:.1rem">💰 $${c.total_est}</div>`:''}
+      </div>
+      <div class="turno-fecha">
+        <div class="turno-fecha-dia">${fechaLabel}</div>
+        <div class="turno-fecha-label">Turno</div>
+        <button class="btn-atendido" style="margin-top:.4rem;font-size:.65rem" onclick="markAtendido('${c.id}','${c.patient_id}',this)">✓ Atendido</button>
+      </div>
+    </div>`
+  }).join('')
 }
 
 // ── REGISTRO MANUAL ───────────────────────────────────────────────────────────

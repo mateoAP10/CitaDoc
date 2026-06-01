@@ -2702,10 +2702,33 @@ async function submitReserva() {
     }
     const cr2 = await xhrReq('POST',
       `${SB_URL}/rest/v1/center_citas`,
-      H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+      H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
       JSON.stringify(citaPayload))
-    if (!cr2.ok) console.error('[citas] insert failed:', cr2.text)
-    else console.log('[citas] cita registrada ✓')
+    if (!cr2.ok) { console.error('[citas] insert failed:', cr2.text) }
+    else {
+      console.log('[citas] cita registrada ✓')
+      // Alarma 2: email inmediato al admin del centro
+      const citaId = JSON.parse(cr2.text)?.[0]?.id || null
+      if (_center?.email) {
+        fetch(`${SB_URL}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_ANON}` },
+          body: JSON.stringify({
+            type: 'center_admin_lead',
+            to_email: _center.email,
+            center_name: _center.nombre || '',
+            patient_name: nombre,
+            lead_id: citaId,
+            telefono: telefono,
+            email: email || '',
+            fecha: fecha || 'Sin fecha',
+            hora: 'Por confirmar',
+            servicios: leadsServices.map(s=>s.nombre).join(', ') || '—',
+            total: leadsTotal ? '$'+leadsTotal : '',
+          })
+        }).catch(e => console.warn('[admin-email]', e))
+      }
+    }
 
   } catch(e) { console.error('[booking] error:', e) }
 
