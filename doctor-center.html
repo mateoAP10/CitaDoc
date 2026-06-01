@@ -1939,9 +1939,10 @@ function updateCalcSummary() {
     if (total) total.textContent = '$0'
     if (stickyAmt) stickyAmt.textContent = '$0'
     if (cta) cta.disabled = true
-    if (stickyCta) stickyCta.disabled = true
+    if (stickyCta) { stickyCta.disabled = true; stickyCta.textContent = 'Seleccionar →' }
     return
   }
+  if (stickyCta) stickyCta.textContent = 'Reservar →'
   if (lines) lines.innerHTML = allSel.map(s => `<div class="calc-line"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`).join('')
   const totalStr = '$' + sum
   if (total) total.textContent = totalStr
@@ -4105,7 +4106,7 @@ window.addEventListener('scroll', () => {
   const sy = window.scrollY
   navEl.classList.toggle('scrolled', sy > 60)
   const fn = el('floatNav')
-  if (fn) fn.classList.toggle('hidden', sy > _lastSY + 8 && sy > 120)
+  // float-nav siempre visible
   _lastSY = sy
 }, {passive:true})
 
