@@ -218,6 +218,7 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 /* STICKY TOTAL BAR — mobile only */
 .calc-sticky-bar{display:none;position:fixed;bottom:calc(58px + env(safe-area-inset-bottom,0px));left:0;right:0;z-index:201;background:var(--ink);padding:.85rem 1.25rem;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 -2px 16px rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.08)}
 .calc-sticky-total{display:flex;flex-direction:column}
+body.modal-open .calc-sticky-bar{display:none!important}
 .calc-sticky-label{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
 .calc-sticky-amount{font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1.1}
 .calc-sticky-cta{background:var(--red);color:#fff;border:none;border-radius:10px;padding:.65rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s;flex-shrink:0}
@@ -2601,12 +2602,9 @@ function selectCenterSlot(slot, btn) {
 }
 
 function _stickyBarVisible(show) {
-  const bar = el('calcStickyBar')
-  if (!bar) return
-  const allSel = [..._selPkgs, ..._selected]
-  // Only show if has items AND requested to show
-  if (show && allSel.length) bar.style.display = 'flex'
-  else bar.style.display = 'none'
+  if (!show) document.body.classList.add('modal-open')
+  else document.body.classList.remove('modal-open')
+  updateCalcSummary()
 }
 
 function closeModal() {
