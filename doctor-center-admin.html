@@ -719,7 +719,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           </div>
           <div class="field-group">
             <label class="field-label">Tipo de followup</label>
-            <select class="field-input" id="fupType" style="cursor:pointer">
+            <select class="field-input" id="fupType" style="cursor:pointer" onchange="fupToggleDetails()">
               <option value="center_reminder">📅 Recordatorio de turno</option>
               <option value="center_noshow">👋 No-show — reagendar</option>
               <option value="center_postvista">❤️ Post-visita — gracias</option>
@@ -727,11 +727,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
               <option value="center_confirm">✓ Bienvenida / confirmación</option>
             </select>
           </div>
-          <div class="field-group" style="justify-content:flex-end">
+          <div class="field-group" style="justify-content:flex-end;flex-direction:row;align-items:flex-end;gap:.4rem">
+            <button onclick="fupToggleDetails(true)" id="btnFupDetails" title="Agregar detalles al email"
+              style="height:44px;width:44px;border:1.5px solid var(--border);border-radius:9px;background:#fff;cursor:pointer;font-size:1.1rem;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s"
+              onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+              onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">+</button>
             <button class="btn-save" id="btnSendFollowup" onclick="sendManualFollowup()" style="margin-top:0;height:44px">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               Enviar
             </button>
+          </div>
+        </div>
+
+        <!-- Panel de detalles expandible -->
+        <div id="fupDetailsPanel" style="display:none;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;padding:.9rem 1rem;margin-top:.75rem">
+          <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Detalles del email</div>
+          <div class="fields-grid" style="gap:.6rem">
+            <div class="field-group">
+              <label class="field-label">Fecha del turno</label>
+              <input class="field-input" id="fupFecha" type="date">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Hora del turno</label>
+              <input class="field-input" id="fupHora" type="time">
+            </div>
+            <div class="field-group full">
+              <label class="field-label">Nombre del médico</label>
+              <input class="field-input" id="fupMedico" placeholder="Dr. Nombre Apellido">
+            </div>
           </div>
         </div>
       </div>
@@ -826,7 +849,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       </div>
     </div>
 
-    <div style="display:flex;gap:.6rem">
+    <!-- Email a enviar -->
+    <div style="margin-top:.75rem;padding:.85rem 1rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Email a enviar al paciente</div>
+      <select class="field-input" id="mn_email_tipo" onchange="mnToggleEmailDetails()" style="margin-bottom:.65rem;cursor:pointer">
+        <option value="">Sin email</option>
+        <option value="center_confirm">✓ Bienvenida / confirmación de turno</option>
+        <option value="center_bienvenida_simple">👋 Bienvenida simple</option>
+      </select>
+      <div id="mn_email_details" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:.55rem">
+        <div class="field-group" style="margin:0">
+          <label class="field-label">Fecha del turno</label>
+          <input class="field-input" id="mn_email_fecha" type="date">
+        </div>
+        <div class="field-group" style="margin:0">
+          <label class="field-label">Hora</label>
+          <input class="field-input" id="mn_email_hora" type="time">
+        </div>
+        <div class="field-group full" style="grid-column:1/-1;margin:0">
+          <label class="field-label">Nombre del médico</label>
+          <input class="field-input" id="mn_email_medico" placeholder="Dr. Nombre Apellido">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.6rem;margin-top:.85rem">
       <button onclick="cerrarModalManual()" style="flex:1;padding:.7rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:inherit;font-size:.84rem;cursor:pointer;color:var(--muted)">Cancelar</button>
       <button onclick="guardarPacienteManual()" id="btnGuardarManual" class="btn-save" style="flex:2;margin:0;justify-content:center">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1734,6 +1781,20 @@ function abrirNuevaCita(patientId, nombre) {
   }, 50)
 }
 
+function fupToggleDetails(forceOpen) {
+  const panel = el('fupDetailsPanel')
+  const btn   = el('btnFupDetails')
+  if (!panel) return
+  const open = forceOpen === true ? true : panel.style.display === 'none'
+  panel.style.display = open ? 'block' : 'none'
+  if (btn) {
+    btn.textContent = open ? '−' : '+'
+    btn.style.background = open ? 'var(--red-lite)' : '#fff'
+    btn.style.borderColor= open ? 'var(--red)' : 'var(--border)'
+    btn.style.color      = open ? 'var(--red)' : 'var(--muted)'
+  }
+}
+
 async function sendManualFollowup() {
   const email = (el('fupEmail').value || '').trim()
   const type  = el('fupType').value
@@ -1741,16 +1802,20 @@ async function sendManualFollowup() {
   if (!_center) { toast('Centro no cargado', 'err'); return }
   const btn = el('btnSendFollowup')
   btn.disabled = true; btn.innerHTML = '...'
-  // Find lead for this email to get patient name
   const lead = _allLeads.find(l => l.email === email)
+  // Detalles del panel expandible
+  const detFecha  = (el('fupFecha')?.value || '').trim()
+  const detHora   = (el('fupHora')?.value  || '').trim()
+  const detMedico = (el('fupMedico')?.value|| '').trim()
   const body = {
     type, to_email: email,
     patient_name: lead?.nombre || email.split('@')[0],
     center_name:  _center.nombre,
     center_phone: _center.whatsapp || _center.telefono || '',
     booking_url:  `https://doctor-center.citadoc.lat/${_center.slug||''}`,
-    fecha:        lead?.fecha_pref || '',
-    hora:         lead?.hora || '',
+    fecha:        detFecha  || lead?.fecha_pref || '',
+    hora:         detHora   || lead?.hora       || '',
+    doctor_name:  detMedico || _center.nombre   || '',
     servicios:    '',
   }
   try {
@@ -1892,13 +1957,23 @@ async function cancelarTurno(citaId, patientId, btn) {
 }
 
 // ── REGISTRO MANUAL ───────────────────────────────────────────────────────────
+function mnToggleEmailDetails() {
+  const tipo = el('mn_email_tipo')?.value
+  const det  = el('mn_email_details')
+  if (!det) return
+  det.style.display = (tipo === 'center_confirm') ? 'grid' : 'none'
+}
+
 function abrirModalManual() {
   const m = el('modalManual')
   if (!m) return
-  // Reset form
-  ;['mn_nombre','mn_telefono','mn_email','mn_cedula','mn_nota'].forEach(id => { const e=el(id); if(e) e.value='' })
+  ;['mn_nombre','mn_telefono','mn_email','mn_cedula','mn_nota','mn_email_fecha','mn_email_hora','mn_email_medico'].forEach(id => { const e=el(id); if(e) e.value='' })
   el('mn_canal').value = 'instagram'
   el('mn_fecha').value = new Date().toISOString().split('T')[0]
+  el('mn_email_tipo').value = ''
+  if (el('mn_email_details')) el('mn_email_details').style.display = 'none'
+  if (el('mn_nombre')) el('mn_nombre').disabled = false
+  delete m.dataset.existingPatientId
   m.style.display = 'flex'
   setTimeout(() => el('mn_nombre')?.focus(), 100)
 }
@@ -1946,10 +2021,11 @@ async function guardarPacienteManual() {
     }
   }
 
-  // Registrar cita
-  const { error } = await sbPost('center_citas', {
+  // Registrar cita — followup_confirm_sent=true para que el cron no auto-envíe
+  const { data: citaData, error } = await sbPost('center_citas', {
     center_id: _center.id, patient_id: patientId,
     fecha_pref: fecha, canal, nota,
+    followup_confirm_sent: true,  // no auto-confirmación para registros manuales
   })
   if (error) {
     toast('Error al guardar: '+(error.message||'desconocido'), 'err')
@@ -1957,7 +2033,33 @@ async function guardarPacienteManual() {
     return
   }
 
-  toast(`${nombre} registrado ✓`, 'ok')
+  // Enviar email elegido por el admin
+  const emailTipo = el('mn_email_tipo')?.value || ''
+  const patEmail  = (el('mn_email')?.value||'').trim() || email
+  if (emailTipo && patEmail && _center?.nombre) {
+    const emailFecha  = el('mn_email_fecha')?.value  || fecha || ''
+    const emailHora   = el('mn_email_hora')?.value   || ''
+    const emailMedico = el('mn_email_medico')?.value || ''
+    const emailType   = emailTipo === 'center_bienvenida_simple' ? 'center_confirm' : emailTipo
+    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+      body: JSON.stringify({
+        type: emailType,
+        to_email: patEmail,
+        patient_name: nombre,
+        center_name:  _center.nombre,
+        center_phone: _center.whatsapp||_center.telefono||'',
+        fecha:  emailFecha  ? new Date(emailFecha+'T12:00:00').toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) : null,
+        hora:   emailHora   || null,
+        doctor_name: emailMedico || _center.nombre,
+      })
+    }).catch(e => console.warn('[manual-email]', e))
+    toast(`${nombre} registrado ✓ — email enviado`, 'ok')
+  } else {
+    toast(`${nombre} registrado ✓`, 'ok')
+  }
+
   if (el('modalManual')) delete el('modalManual').dataset.existingPatientId
   if (el('mn_nombre')) el('mn_nombre').disabled = false
   cerrarModalManual()
