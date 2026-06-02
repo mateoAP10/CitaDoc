@@ -207,6 +207,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .pac-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
 .pac-btn.primary{background:var(--red);color:#fff;border-color:var(--red)}
 .pac-btn.primary:hover{background:var(--red-dark)}
+/* TIMELINE DE CITAS */
+.cita-timeline{display:flex;flex-direction:column;gap:0;padding:.1rem 0}
+.cita-row{display:flex;align-items:center;gap:.75rem;padding:.65rem .5rem;border-radius:10px;transition:background .12s;position:relative;cursor:default}
+.cita-row:hover{background:#f9fafb}
+.cita-timeline-line{position:absolute;left:19px;top:0;bottom:0;width:1.5px;background:#f0f0f0;z-index:0}
+.cita-timeline-line:first-of-type{top:50%}
+.cita-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;position:relative;z-index:1;border:2px solid #fff;box-shadow:0 0 0 1.5px currentColor}
+.cita-date-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;width:40px;height:40px;border-radius:10px;flex-shrink:0;position:relative;z-index:1}
+.cita-date-day{font-size:.88rem;font-weight:800;line-height:1.1}
+.cita-date-mon{font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
+.cita-body{flex:1;min-width:0}
+.cita-title{font-size:.82rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cita-sub{font-size:.68rem;color:var(--muted);margin-top:.1rem;display:flex;align-items:center;gap:.4rem}
+.cita-state-badge{font-size:.58rem;font-weight:700;padding:.15rem .55rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.cita-menu-btn{width:26px;height:26px;border:1.5px solid var(--border);border-radius:7px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:.65rem;color:var(--muted);letter-spacing:.05em;font-weight:700}
+.cita-menu-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
+.cita-menu{position:absolute;right:0;top:110%;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:50;min-width:160px;overflow:hidden;animation:fadeIn .12s ease}
+.cita-menu-item{display:flex;align-items:center;gap:.5rem;padding:.55rem .85rem;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .1s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.cita-menu-item:hover{background:#f9fafb}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 /* ESTADO CITA */
 .estado-btns{display:flex;gap:.3rem;flex-wrap:nowrap}
 .estado-btn{border:1.5px solid var(--border);background:#fff;border-radius:7px;padding:.28rem .5rem;font-family:'DM Sans',sans-serif;font-size:.65rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.3}
@@ -1806,33 +1826,70 @@ function renderCitasRow(patientId) {
   const wrap = el('citasContent_'+patientId)
   if (!wrap || !patient) return
   const citas = patient._citas || []
-  if (!citas.length) { wrap.innerHTML = '<em style="color:var(--muted);font-size:.78rem">Sin citas registradas</em>'; return }
-  wrap.innerHTML = `<table style="width:100%;border-collapse:collapse;margin-top:.25rem">
-    <tr style="font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">
-      <td style="padding:.3rem .5rem">Fecha</td><td>Hora</td><td>Servicios</td><td>Total</td><td colspan="2">Estado</td>
-    </tr>
-    ${citas.map(c => {
-      const svcs = c.servicios ? (() => { try { const a = Array.isArray(c.servicios)?c.servicios:JSON.parse(c.servicios||'[]'); return a.map(s=>s.nombre).join(', ') } catch { return '—' } })() : (c.nota||'—')
+  if (!citas.length) {
+    wrap.innerHTML = '<div style="font-size:.78rem;color:var(--muted);font-style:italic;padding:.25rem 0">Sin citas registradas</div>'
+    return
+  }
+
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+  const estadoCfg = {
+    atendido:  { bg:'#f0fdf4', color:'#15803d', dot:'#16a34a', label:'✓ Asistió'     },
+    noshow:    { bg:'#fff7ed', color:'#c2410c', dot:'#ea580c', label:'✗ No vino'      },
+    cancelado: { bg:'#eff6ff', color:'#1d4ed8', dot:'#2563eb', label:'↻ Reagendó'    },
+    pendiente: { bg:'#f9fafb', color:'#6b7280', dot:'#d1d5db', label:'Pendiente'      },
+  }
+
+  wrap.innerHTML = `<div class="cita-timeline">
+    ${citas.map((c, i) => {
+      const svcs = c.servicios ? (() => { try { const a=Array.isArray(c.servicios)?c.servicios:JSON.parse(c.servicios||'[]'); return a.map(s=>s.nombre).join(' · ') } catch { return '' } })() : ''
+      const nota = c.nota?.replace(/^Canal:[^—]+—?\s*/,'') || ''
+      const label = svcs || nota || '—'
       const estado = c.estado || (c.atendido ? 'atendido' : 'pendiente')
-      return `<tr style="border-top:1px solid #f0f0f0">
-        <td style="padding:.4rem .5rem;white-space:nowrap;font-size:.8rem">${c.fecha_pref||'—'}</td>
-        <td style="font-size:.8rem">${c.hora||'—'}</td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem">${esc(svcs)}</td>
-        <td style="font-size:.8rem;font-weight:700">${c.total_est?'$'+c.total_est:'—'}</td>
-        <td>
-          ${c.patient_confirmed
-            ? `<span style="font-size:.6rem;font-weight:700;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:20px;padding:.15rem .5rem;white-space:nowrap;display:inline-block;margin-bottom:.3rem">✓ Confirmó</span><br>`
-            : ''}
-          <div class="estado-btns">
-            <button class="estado-btn atendido${estado==='atendido'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','atendido',this)" title="Atendido">✓ Asistió</button>
-            <button class="estado-btn noshow${estado==='noshow'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','noshow',this)" title="No se presentó">✗ No vino</button>
-            <button class="estado-btn cancelado${estado==='cancelado'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','cancelado',this)" title="Canceló / Reagendar">↻ Reagendar</button>
+      const cfg = estadoCfg[estado] || estadoCfg.pendiente
+      const fp = (c.fecha_pref||'').split('-')
+      const day = fp[2] ? parseInt(fp[2]) : '—'
+      const mon = fp[1] ? months[parseInt(fp[1])-1] : ''
+      return `<div class="cita-row" id="citar_${c.id}" style="position:relative">
+        ${i < citas.length-1 ? `<div style="position:absolute;left:19px;top:50%;bottom:-10px;width:1.5px;background:#f0f0f0;z-index:0"></div>` : ''}
+        <div class="cita-date-pill" style="background:${cfg.bg};color:${cfg.color}">
+          <div class="cita-date-day">${day}</div>
+          <div class="cita-date-mon">${mon}</div>
+        </div>
+        <div class="cita-body">
+          <div class="cita-title">${esc(label.substring(0,45))}</div>
+          <div class="cita-sub">
+            ${c.hora ? `<span style="font-weight:600;color:var(--ink)">${c.hora}</span><span style="opacity:.3">·</span>` : ''}
+            ${c.total_est ? `<span>$${c.total_est}</span><span style="opacity:.3">·</span>` : ''}
+            ${c.patient_confirmed ? `<span style="color:#16a34a;font-weight:700">✓ Confirmó</span>` : ''}
           </div>
-        </td>
-      </tr>`
+        </div>
+        <span class="cita-state-badge" style="background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.dot}30">${cfg.label}</span>
+        <div style="position:relative">
+          <button class="cita-menu-btn" onclick="event.stopPropagation();citaMenuToggle('${c.id}','${patientId}')">···</button>
+          <div id="citaMenu_${c.id}" class="cita-menu" style="display:none">
+            <button class="cita-menu-item" style="color:#15803d" onclick="setCitaEstado('${c.id}','${patientId}','atendido',this);citaMenuClose('${c.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Asistió
+            </button>
+            <button class="cita-menu-item" style="color:#c2410c" onclick="setCitaEstado('${c.id}','${patientId}','noshow',this);citaMenuClose('${c.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> No vino
+            </button>
+            <button class="cita-menu-item" style="color:#1d4ed8" onclick="setCitaEstado('${c.id}','${patientId}','cancelado',this);citaMenuClose('${c.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg> Reagendar
+            </button>
+          </div>
+        </div>
+      </div>`
     }).join('')}
-  </table>`
+  </div>`
 }
+
+function citaMenuToggle(citaId, patientId) {
+  document.querySelectorAll('.cita-menu').forEach(m => { if (m.id !== 'citaMenu_'+citaId) m.style.display='none' })
+  const m = el('citaMenu_'+citaId)
+  if (m) m.style.display = m.style.display==='none' ? 'block' : 'none'
+}
+function citaMenuClose(citaId) { const m=el('citaMenu_'+citaId); if(m) m.style.display='none' }
+document.addEventListener('click', () => document.querySelectorAll('.cita-menu').forEach(m=>m.style.display='none'))
 
 // Qué email enviar y qué campo timestamp marcar por estado
 const ESTADO_CFG = {
