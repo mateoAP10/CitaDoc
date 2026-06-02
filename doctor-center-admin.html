@@ -2240,7 +2240,6 @@ let _citaPatientId = null
 function abrirModalCita(prePatientId, preNombre, preEmail, preTel) {
   _citaPatientId = prePatientId || null
   ;['cita_fecha','cita_hora','cita_medico','cita_nota','citaBuscarPac'].forEach(id=>{const e=el(id);if(e)e.value=''})
-  el('cita_email_tipo').value=''
   el('cita_fecha').value=new Date().toISOString().split('T')[0]
   // Si viene con paciente pre-seleccionado
   if (prePatientId && preNombre) {
