@@ -1779,6 +1779,8 @@ function renderLeads(patients) {
             ${lastFecha?`<span style="font-size:.65rem;color:var(--muted);margin-left:.4rem">· ${lastFecha}</span>`:''}
           </div>
           <div class="pac-actions">
+            <button class="pac-btn" onclick="event.stopPropagation();editarPaciente('${p.id}')" title="Editar">✏️</button>
+            <button class="pac-btn" onclick="event.stopPropagation();borrarPaciente('${p.id}','${esc(p.nombre||'')}')" title="Eliminar" style="color:var(--red);border-color:#fca5a5" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff'">🗑</button>
             <button class="pac-btn primary" onclick="event.stopPropagation();abrirNuevaCita('${p.id}','${esc(p.nombre||'')}')">+ Cita</button>
           </div>
         </div>
@@ -2071,6 +2073,36 @@ async function cancelarTurno(citaId, patientId, btn) {
 }
 
 // ── REGISTRO MANUAL ───────────────────────────────────────────────────────────
+// ── EDITAR / BORRAR PACIENTE ──────────────────────────────────────────────────
+function editarPaciente(id) {
+  const p = _allLeads.find(x => x.id === id)
+  if (!p) return
+  abrirModalPaciente()
+  setTimeout(() => {
+    el('mn_nombre').value  = p.nombre  || ''
+    el('mn_telefono').value= p.telefono|| ''
+    el('mn_email').value   = p.email   || ''
+    el('mn_cedula').value  = p.cedula  || ''
+    el('mn_canal').value   = p.canal   || 'otro'
+    el('modalManual').dataset.editId = id
+    const btn = el('btnGuardarPaciente')
+    if (btn) btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar cambios'
+  }, 50)
+}
+
+async function borrarPaciente(id, nombre) {
+  if (!confirm(`¿Eliminar a ${nombre}? Se borrarán también sus citas registradas.`)) return
+  const { error } = await sbPatch('center_patients', 'id=eq.'+id, { nombre: null })
+  // Borrar via DELETE
+  await fetch(`${SB_URL}/rest/v1/center_patients?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: { apikey: SB_ANON, Authorization: 'Bearer '+SB_ANON }
+  })
+  toast(`${nombre} eliminado`, 'ok')
+  await loadLeads()
+  await loadNewTurnos()
+}
+
 // ── MODAL PACIENTE (solo datos personales) ────────────────────────────────────
 function abrirModalPaciente() {
   ;['mn_nombre','mn_telefono','mn_email','mn_cedula'].forEach(id=>{const e=el(id);if(e)e.value=''})
@@ -2078,7 +2110,12 @@ function abrirModalPaciente() {
   el('modalManual').style.display='flex'
   setTimeout(()=>el('mn_nombre')?.focus(),100)
 }
-function cerrarModalPaciente() { el('modalManual').style.display='none' }
+function cerrarModalPaciente() {
+  const m = el('modalManual')
+  if (m) { m.style.display='none'; delete m.dataset.editId }
+  const btn = el('btnGuardarPaciente')
+  if (btn) btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Guardar paciente'
+}
 // mantener cerrarModalManual como alias
 function cerrarModalManual() { cerrarModalPaciente() }
 
@@ -2092,17 +2129,28 @@ async function guardarNuevoPaciente() {
   if (!_center) return
   const btn = el('btnGuardarPaciente')
   btn.disabled=true; btn.textContent='Guardando...'
-  // Find-or-create
-  let patientId = null
-  if (email||cedula) {
-    const sf = email?`email=eq.${encodeURIComponent(email)}`:`cedula=eq.${encodeURIComponent(cedula)}`
-    const {data:found} = await sbGet('center_patients',`center_id=eq.${_center.id}&${sf}&limit=1`)
-    if (found?.length) { toast(`${nombre} ya está registrado — no se duplicó`,'ok'); cerrarModalPaciente(); await loadLeads(); btn.disabled=false; btn.textContent='Guardar paciente'; return }
+  const editId = el('modalManual')?.dataset.editId || null
+
+  if (editId) {
+    // EDITAR
+    const {error} = await sbPatch('center_patients','id=eq.'+editId,{nombre,telefono:telefono||null,email,cedula,canal})
+    btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Guardar paciente'
+    if (error) { toast('Error: '+error.message,'err'); return }
+    toast(`${nombre} actualizado ✓`,'ok')
+    delete el('modalManual').dataset.editId
+  } else {
+    // CREAR
+    if (email||cedula) {
+      const sf = email?`email=eq.${encodeURIComponent(email)}`:`cedula=eq.${encodeURIComponent(cedula)}`
+      const {data:found} = await sbGet('center_patients',`center_id=eq.${_center.id}&${sf}&limit=1`)
+      if (found?.length) { toast(`${nombre} ya está registrado — no se duplicó`,'ok'); cerrarModalPaciente(); await loadLeads(); btn.disabled=false; return }
+    }
+    const {error} = await sbPost('center_patients',{center_id:_center.id,nombre,telefono:telefono||null,email,cedula,canal})
+    btn.disabled=false
+    if (error) { toast('Error: '+error.message,'err'); return }
+    toast(`${nombre} registrado ✓`,'ok')
   }
-  const {data:np, error} = await sbPost('center_patients',{center_id:_center.id,nombre,telefono:telefono||null,email,cedula,canal})
-  btn.disabled=false; btn.textContent='Guardar paciente'
-  if (error) { toast('Error: '+error.message,'err'); return }
-  toast(`${nombre} registrado ✓`,'ok')
+
   cerrarModalPaciente()
   await loadLeads()
 }
