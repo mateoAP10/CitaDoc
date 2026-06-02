@@ -976,13 +976,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
     </div>
 
     <div style="padding:.85rem 1rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;margin-bottom:1rem">
-      <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.55rem">Email al paciente</div>
-      <select class="field-input" id="cita_email_tipo" onchange="citaToggleEmailDetails()" style="cursor:pointer;margin-bottom:0">
-        <option value="">Sin email</option>
-        <option value="center_confirm">📅 Confirmación de turno</option>
-        <option value="center_remind_manual">🔔 Recordatorio simple</option>
-      </select>
-    </div>
+      
 
     <div style="display:flex;gap:.6rem">
       <button onclick="cerrarModalCita()" style="flex:1;padding:.7rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:inherit;font-size:.84rem;cursor:pointer;color:var(--muted)">Cancelar</button>
@@ -2306,7 +2300,6 @@ async function guardarNuevaCita() {
   const hora   = el('cita_hora')?.value||null
   const medico = (el('cita_medico')?.value||'').trim()
   const nota   = (el('cita_nota')?.value||'').trim()||null
-  const emailTipo = el('cita_email_tipo')?.value||''
 
   const btn = el('btnGuardarCita')
   btn.disabled=true; btn.textContent='Guardando...'
@@ -2320,13 +2313,13 @@ async function guardarNuevaCita() {
 
   // Email al paciente
   const patient = _allLeads.find(p=>p.id===_citaPatientId)
-  if (emailTipo && patient?.email && _center?.nombre) {
+  if (patient?.email && _center?.nombre) {
     const fmtFecha = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) : ''
     fetch(`${_SUPABASE_URL}/functions/v1/send-email`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
       body: JSON.stringify({
-        type: emailTipo==='center_remind_manual'?'center_reminder':'center_confirm',
+        type: 'center_reminder',
         to_email: patient.email, patient_name: patient.nombre||'',
         center_name: _center.nombre, center_phone: _center.whatsapp||_center.telefono||'',
         fecha: fmtFecha, hora: hora||null,
