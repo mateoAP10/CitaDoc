@@ -1737,7 +1737,7 @@ function renderLeads(patients) {
     return
   }
   if (count) count.textContent = `${patients.length} paciente${patients.length!==1?'s':''}`
-  const canalIcon = k=>({instagram:'📸',presencial:'🏥',telefono:'📞',referido:'🤝',facebook:'📘',web:'🌐',otro:'💬'}[k||'web']||'💬')
+  const canalIcon = k=>({'instagram':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>`,'presencial':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,'telefono':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,'referido':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,'facebook':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,'web':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,'otro':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,'default':`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`}[k||'web']||`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`)
 
   // Agrupar por primera letra
   const groups = {}
@@ -1769,9 +1769,9 @@ function renderLeads(patients) {
           </div>
         </div>
         <div class="pac-contact">
-          ${p.telefono?`<span>📱 ${esc(p.telefono)}</span>`:''}
-          ${p.email?`<span>✉ ${esc(p.email)}</span>`:''}
-          ${p.cedula?`<span>🪪 ${esc(p.cedula)}</span>`:''}
+          ${p.telefono?`<span style="display:flex;align-items:center;gap:.35rem"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> ${esc(p.telefono)}</span>`:''}
+          ${p.email?`<span style="display:flex;align-items:center;gap:.35rem"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> ${esc(p.email)}</span>`:''}
+          ${p.cedula?`<span style="display:flex;align-items:center;gap:.35rem"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> ${esc(p.cedula)}</span>`:''}
         </div>
         <div class="pac-footer">
           <div>
@@ -1779,9 +1779,9 @@ function renderLeads(patients) {
             ${lastFecha?`<span style="font-size:.65rem;color:var(--muted);margin-left:.4rem">· ${lastFecha}</span>`:''}
           </div>
           <div class="pac-actions">
-            <button class="pac-btn" onclick="event.stopPropagation();editarPaciente('${p.id}')" title="Editar">✏️</button>
-            <button class="pac-btn" onclick="event.stopPropagation();borrarPaciente('${p.id}','${esc(p.nombre||'')}')" title="Eliminar" style="color:var(--red);border-color:#fca5a5" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff'">🗑</button>
-            <button class="pac-btn primary" onclick="event.stopPropagation();abrirNuevaCita('${p.id}','${esc(p.nombre||'')}')">+ Cita</button>
+            <button class="pac-btn" onclick="event.stopPropagation();editarPaciente('${p.id}')" title="Editar" style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="pac-btn" onclick="event.stopPropagation();borrarPaciente('${p.id}','${esc(p.nombre||'')}')" title="Eliminar" style="color:var(--red);border-color:#fca5a5;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+            <button class="pac-btn primary" onclick="event.stopPropagation();abrirNuevaCita('${p.id}','${esc(p.nombre||'')}')" style="display:flex;align-items:center;gap:.3rem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg> Cita</button>
           </div>
         </div>
         <div id="citas_${p.id}" style="display:none;margin-top:.75rem;border-top:1px solid #f5f5f5;padding-top:.75rem">
@@ -2425,7 +2425,7 @@ function renderPackages() {
         ${ahorro?`<div style="font-size:.62rem;color:#16a34a;font-weight:700">Ahorras $${ahorro}</div>`:''}
       </div>
       <div style="display:flex;gap:.3rem;flex-shrink:0">
-        <button class="btn-del" onclick="openPkgForm(${JSON.stringify(p).replace(/"/g,'&quot;')})" title="Editar">✏️</button>
+        <button class="btn-del" onclick="openPkgForm(${JSON.stringify(p).replace(/"/g,'&quot;')})" title="Editar" style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
         <button class="btn-del" onclick="deletePkg('${p.id}')" title="Eliminar">🗑</button>
       </div>
     </div>`
