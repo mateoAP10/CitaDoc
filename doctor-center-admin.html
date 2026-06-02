@@ -182,6 +182,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .admin-tab:hover{color:var(--ink);background:#f9fafb}
 .admin-tab.active{color:var(--ink);border-bottom-color:var(--red)}
 
+/* PATIENT CARDS */
+.pac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem;margin-top:.85rem}
+.pac-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem 1.1rem;cursor:pointer;transition:all .18s;position:relative}
+.pac-card:hover{border-color:var(--red);box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-1px)}
+.pac-card-top{display:flex;align-items:center;gap:.75rem;margin-bottom:.65rem}
+.pac-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#fff;flex-shrink:0}
+.pac-name{font-size:.9rem;font-weight:800;color:var(--ink);line-height:1.2}
+.pac-canal{font-size:.62rem;font-weight:700;color:var(--muted);margin-top:.1rem}
+.pac-contact{display:flex;flex-direction:column;gap:.2rem;margin-bottom:.65rem}
+.pac-contact span{font-size:.72rem;color:var(--muted)}
+.pac-footer{display:flex;align-items:center;justify-content:space-between;padding-top:.6rem;border-top:1px solid #f5f5f5}
+.pac-citas-badge{font-size:.68rem;font-weight:700;background:#eff6ff;color:#1d4ed8;padding:.15rem .55rem;border-radius:20px}
+.pac-citas-badge.none{background:#f9fafb;color:var(--muted)}
+.pac-actions{display:flex;gap:.3rem}
+.pac-btn{border:1.5px solid var(--border);background:#fff;border-radius:8px;padding:.28rem .65rem;font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;white-space:nowrap}
+.pac-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-lite)}
+.pac-btn.primary{background:var(--red);color:#fff;border-color:var(--red)}
+.pac-btn.primary:hover{background:var(--red-dark)}
 /* ESTADO CITA */
 .estado-btns{display:flex;gap:.3rem;flex-wrap:nowrap}
 .estado-btn{border:1.5px solid var(--border);background:#fff;border-radius:7px;padding:.28rem .5rem;font-family:'DM Sans',sans-serif;font-size:.65rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.3}
@@ -767,30 +785,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
             <div class="section-title">Reservas y pacientes</div>
             <div class="section-sub">Historial de leads — marcá asistencia para activar el followup post-visita</div>
           </div>
-          <button class="btn-save" onclick="abrirModalManual()" style="margin:0;white-space:nowrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Registrar paciente
-          </button>
+          <div style="display:flex;gap:.45rem;flex-shrink:0">
+            <button onclick="abrirModalPaciente()" style="padding:.45rem .9rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--ink);white-space:nowrap;display:flex;align-items:center;gap:.3rem">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              + Paciente
+            </button>
+            <button class="btn-save" onclick="abrirModalCita()" style="margin:0;white-space:nowrap">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              + Cita
+            </button>
+          </div>
         </div>
         <input class="leads-search" id="leadsSearch" placeholder="Buscar por nombre, cédula, mail o teléfono..." oninput="filterLeads()">
-        <div class="table-wrap">
-          <table class="leads-table">
-            <thead>
-              <tr>
-                <th>Paciente</th>
-                <th>Cédula</th>
-                <th>Mail</th>
-                <th>Teléfono</th>
-                <th>Canal</th>
-                <th>Citas</th>
-                <th>Última visita</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="leadsTableBody">
-              <tr><td colspan="9" class="leads-empty">Cargando...</td></tr>
-            </tbody>
-          </table>
+        <div id="pacCardsGrid" class="pac-grid">
+          <div style="grid-column:1/-1;font-size:.82rem;color:var(--muted);text-align:center;padding:2rem">Cargando...</div>
         </div>
         <div id="leadsCount" style="font-size:.75rem;color:var(--muted);margin-top:.6rem;text-align:right"></div>
       </div>
@@ -839,53 +847,76 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <option value="otro">💬 Otro</option>
         </select>
       </div>
+    </div>
+
+    <div style="display:flex;gap:.6rem;margin-top:1rem">
+      <button onclick="cerrarModalPaciente()" style="flex:1;padding:.7rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:inherit;font-size:.84rem;cursor:pointer;color:var(--muted)">Cancelar</button>
+      <button onclick="guardarNuevoPaciente()" id="btnGuardarPaciente" class="btn-save" style="flex:2;margin:0;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Guardar paciente
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA CITA -->
+<div id="modalCita" onclick="if(event.target===this)cerrarModalCita()" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem">
+  <div onclick="event.stopPropagation()" style="background:#fff;border-radius:18px;padding:1.75rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <div>
+        <div style="font-size:1rem;font-weight:800;color:var(--ink)">Nueva cita</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.1rem">Asigná un turno a un paciente registrado</div>
+      </div>
+      <button onclick="cerrarModalCita()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+
+    <!-- Buscador de paciente -->
+    <div style="margin-bottom:1rem;position:relative">
+      <label class="field-label" style="margin-bottom:.3rem">Paciente *</label>
+      <div id="citaPacienteSelected" style="display:none;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:.65rem .9rem;display:flex;align-items:center;gap:.65rem;cursor:pointer" onclick="limpiarCitaPaciente()">
+        <div id="citaPacienteAvatar" style="width:32px;height:32px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.82rem;flex-shrink:0"></div>
+        <div style="flex:1"><div id="citaPacienteNombre" style="font-size:.88rem;font-weight:700;color:#15803d"></div><div id="citaPacienteMeta" style="font-size:.68rem;color:#16a34a"></div></div>
+        <span style="font-size:.72rem;color:#86efac">✕ cambiar</span>
+      </div>
+      <input class="field-input" id="citaBuscarPac" placeholder="Buscar por nombre, email o teléfono..." autocomplete="off"
+        oninput="citaBuscarPaciente(this.value)" onfocus="citaBuscarPaciente(this.value)"
+        onblur="setTimeout(()=>citaCerrarDrop(),180)" style="margin:0">
+      <div id="citaPacDrop" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:100;max-height:200px;overflow-y:auto;margin-top:3px"></div>
+    </div>
+
+    <div class="fields-grid" style="margin-bottom:1rem">
       <div class="field-group">
-        <label class="field-label">Fecha de atención</label>
-        <input class="field-input" id="mn_fecha" type="date">
+        <label class="field-label">Fecha *</label>
+        <input class="field-input" id="cita_fecha" type="date">
       </div>
       <div class="field-group">
-        <label class="field-label">Hora del turno</label>
-        <input class="field-input" id="mn_hora" type="time">
+        <label class="field-label">Hora</label>
+        <input class="field-input" id="cita_hora" type="time">
       </div>
       <div class="field-group full">
         <label class="field-label">Médico tratante</label>
-        <input class="field-input" id="mn_medico" placeholder="Dr. Nombre Apellido">
+        <input class="field-input" id="cita_medico" placeholder="Dr. Nombre Apellido">
       </div>
       <div class="field-group full">
         <label class="field-label">Servicio / Nota</label>
-        <input class="field-input" id="mn_nota" placeholder="Ej: Consulta general, laboratorios...">
+        <input class="field-input" id="cita_nota" placeholder="Ej: Consulta general, laboratorios...">
       </div>
     </div>
 
-    <!-- Email a enviar -->
-    <div style="margin-top:.75rem;padding:.85rem 1rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px">
-      <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Email a enviar al paciente</div>
-      <select class="field-input" id="mn_email_tipo" onchange="mnToggleEmailDetails()" style="margin-bottom:.65rem;cursor:pointer">
+    <div style="padding:.85rem 1rem;background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;margin-bottom:1rem">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.55rem">Email al paciente</div>
+      <select class="field-input" id="cita_email_tipo" onchange="citaToggleEmailDetails()" style="cursor:pointer;margin-bottom:0">
         <option value="">Sin email</option>
-        <option value="center_confirm">✓ Bienvenida / confirmación de turno</option>
-        <option value="center_bienvenida_simple">👋 Bienvenida simple</option>
+        <option value="center_confirm">📅 Confirmación de turno</option>
+        <option value="center_remind_manual">🔔 Recordatorio simple</option>
       </select>
-      <div id="mn_email_details" style="display:none;display:grid;grid-template-columns:1fr 1fr;gap:.55rem">
-        <div class="field-group" style="margin:0">
-          <label class="field-label">Fecha del turno</label>
-          <input class="field-input" id="mn_email_fecha" type="date">
-        </div>
-        <div class="field-group" style="margin:0">
-          <label class="field-label">Hora</label>
-          <input class="field-input" id="mn_email_hora" type="time">
-        </div>
-        <div class="field-group full" style="grid-column:1/-1;margin:0">
-          <label class="field-label">Nombre del médico</label>
-          <input class="field-input" id="mn_email_medico" placeholder="Dr. Nombre Apellido">
-        </div>
-      </div>
     </div>
 
-    <div style="display:flex;gap:.6rem;margin-top:.85rem">
-      <button onclick="cerrarModalManual()" style="flex:1;padding:.7rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:inherit;font-size:.84rem;cursor:pointer;color:var(--muted)">Cancelar</button>
-      <button onclick="guardarPacienteManual()" id="btnGuardarManual" class="btn-save" style="flex:2;margin:0;justify-content:center">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Guardar paciente
+    <div style="display:flex;gap:.6rem">
+      <button onclick="cerrarModalCita()" style="flex:1;padding:.7rem;border:1.5px solid var(--border);border-radius:9px;background:#fff;font-family:inherit;font-size:.84rem;cursor:pointer;color:var(--muted)">Cancelar</button>
+      <button onclick="guardarNuevaCita()" id="btnGuardarCita" class="btn-save" style="flex:2;margin:0;justify-content:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Guardar cita
       </button>
     </div>
   </div>
@@ -1633,43 +1664,60 @@ function filterLeads() {
   ))
 }
 
+// Paleta de colores para avatares
+const PAC_COLORS = ['#dc2626','#2563eb','#7c3aed','#059669','#c2410c','#0891b2','#be185d','#65a30d']
+function pacColor(nombre) { let h=0; for(const c of nombre||'P') h+=c.charCodeAt(0); return PAC_COLORS[h%PAC_COLORS.length] }
+
 function renderLeads(patients) {
-  const tbody = el('leadsTableBody')
   const count = el('leadsCount')
+  // Reemplazar tabla por grid de cards
+  let container = el('pacCardsGrid')
+  if (!container) {
+    const tw = el('leadsTableBody')?.closest('.table-wrap')
+    if (tw) { tw.outerHTML = '<div id="pacCardsGrid" class="pac-grid"></div>'; }
+    container = el('pacCardsGrid')
+  }
+  if (!container) return
+
   if (!patients.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="leads-empty">Sin pacientes registrados aún</td></tr>`
+    container.innerHTML = '<div style="grid-column:1/-1;font-size:.82rem;color:var(--muted);text-align:center;padding:2rem">Sin pacientes registrados aún</div>'
     if (count) count.textContent = ''
     return
   }
-  if (count) count.textContent = `${patients.length} paciente${patients.length !== 1 ? 's' : ''}`
-  const canalIcon = k => ({instagram:'📸',presencial:'🏥',telefono:'📞',referido:'🤝',facebook:'📘',web:'🌐',otro:'💬'}[k||'web']||'💬')
-  tbody.innerHTML = patients.map(p => {
+  if (count) count.textContent = `${patients.length} paciente${patients.length!==1?'s':''}`
+  const canalIcon = k=>({instagram:'📸',presencial:'🏥',telefono:'📞',referido:'🤝',facebook:'📘',web:'🌐',otro:'💬'}[k||'web']||'💬')
+
+  container.innerHTML = patients.map(p => {
     const ini = (p.nombre||'P').charAt(0).toUpperCase()
-    const lastFecha = p._last_fecha || '—'
-    const citasBadge = p._citas_count > 0
-      ? `<span style="display:inline-block;background:#eff6ff;color:#1d4ed8;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:20px">${p._citas_count} cita${p._citas_count!==1?'s':''}</span>`
-      : '<span style="font-size:.72rem;color:var(--muted)">—</span>'
-    return `<tr style="cursor:pointer" onclick="toggleCitas('${p.id}')">
-      <td style="min-width:140px">
-        <div style="display:flex;align-items:center;gap:.6rem">
-          <div style="width:32px;height:32px;border-radius:50%;background:var(--red-lite);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;flex-shrink:0">${ini}</div>
-          <div><div style="font-weight:700;font-size:.85rem">${esc(p.nombre)}</div>
-          <div style="font-size:.65rem;color:var(--muted)">${canalIcon(p.canal)} ${esc(p.canal||'web')}</div></div>
+    const color = pacColor(p.nombre||'P')
+    const citasN = p._citas_count||0
+    const lastFecha = p._last_fecha || null
+    return `<div class="pac-card" onclick="toggleCitas('${p.id}')" id="pac_card_${p.id}">
+      <div class="pac-card-top">
+        <div class="pac-avatar" style="background:${color}">${esc(ini)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="pac-name">${esc(p.nombre||'—')}</div>
+          <div class="pac-canal">${canalIcon(p.canal)} ${esc(p.canal||'web')}</div>
         </div>
-      </td>
-      <td style="font-size:.8rem">${esc(p.cedula||'—')}</td>
-      <td style="font-size:.78rem">${esc(p.email||'—')}</td>
-      <td style="font-size:.8rem">${esc(p.telefono||'—')}</td>
-      <td>${canalIcon(p.canal)} <span style="font-size:.78rem">${esc(p.canal||'web')}</span></td>
-      <td>${citasBadge}</td>
-      <td style="font-size:.78rem;white-space:nowrap">${lastFecha}</td>
-      <td><button class="btn-atendido" style="font-size:.68rem" onclick="event.stopPropagation();abrirNuevaCita('${p.id}','${esc(p.nombre)}')">+ Cita</button></td>
-    </tr>
-    <tr id="citas_${p.id}" style="display:none">
-      <td colspan="8" style="padding:0 0 .5rem 3.5rem;background:#fafafa">
-        <div id="citasContent_${p.id}" style="font-size:.78rem;color:var(--muted);padding:.5rem 0">Cargando...</div>
-      </td>
-    </tr>`
+      </div>
+      <div class="pac-contact">
+        ${p.telefono?`<span>📱 ${esc(p.telefono)}</span>`:''}
+        ${p.email?`<span>✉ ${esc(p.email)}</span>`:''}
+        ${p.cedula?`<span>🪪 ${esc(p.cedula)}</span>`:''}
+      </div>
+      <div class="pac-footer">
+        <div>
+          <span class="pac-citas-badge${citasN===0?' none':''}">${citasN===0?'Sin citas':citasN+' cita'+(citasN!==1?'s':'')}</span>
+          ${lastFecha?`<span style="font-size:.65rem;color:var(--muted);margin-left:.4rem">· ${lastFecha}</span>`:''}
+        </div>
+        <div class="pac-actions">
+          <button class="pac-btn primary" onclick="event.stopPropagation();abrirNuevaCita('${p.id}','${esc(p.nombre||'')}')">+ Cita</button>
+        </div>
+      </div>
+      <div id="citas_${p.id}" style="display:none;margin-top:.75rem;border-top:1px solid #f5f5f5;padding-top:.75rem">
+        <div id="citasContent_${p.id}" style="font-size:.78rem;color:var(--muted)">Cargando...</div>
+      </div>
+    </div>`
   }).join('')
 }
 
@@ -1677,7 +1725,7 @@ function toggleCitas(patientId) {
   const row = el('citas_'+patientId)
   if (!row) return
   const open = row.style.display !== 'none'
-  row.style.display = open ? 'none' : 'table-row'
+  row.style.display = open ? 'none' : 'block'
   if (!open) renderCitasRow(patientId)
 }
 
@@ -1773,20 +1821,8 @@ async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
 }
 
 function abrirNuevaCita(patientId, nombre) {
-  // Pre-fill el modal manual con el paciente ya seleccionado
-  const patient = _allLeads.find(p => p.id === patientId)
-  if (!patient) return
-  abrirModalManual()
-  setTimeout(() => {
-    el('mn_nombre').value  = patient.nombre  || ''
-    el('mn_telefono').value= patient.telefono|| ''
-    el('mn_email').value   = patient.email   || ''
-    el('mn_cedula').value  = patient.cedula  || ''
-    el('mn_canal').value   = patient.canal   || 'presencial'
-    el('mn_nombre').disabled = true  // nombre fijo, ya existe el paciente
-    // Store patient_id for when saving
-    el('modalManual').dataset.existingPatientId = patientId
-  }, 50)
+  const p = _allLeads.find(x => x.id === patientId)
+  abrirModalCita(patientId, nombre, p?.email||'', p?.telefono||'')
 }
 
 function fupToggleDetails(forceOpen) {
@@ -1965,117 +2001,143 @@ async function cancelarTurno(citaId, patientId, btn) {
 }
 
 // ── REGISTRO MANUAL ───────────────────────────────────────────────────────────
-function mnToggleEmailDetails() {
-  const tipo = el('mn_email_tipo')?.value
-  const det  = el('mn_email_details')
-  if (!det) return
-  det.style.display = (tipo === 'center_confirm') ? 'grid' : 'none'
+// ── MODAL PACIENTE (solo datos personales) ────────────────────────────────────
+function abrirModalPaciente() {
+  ;['mn_nombre','mn_telefono','mn_email','mn_cedula'].forEach(id=>{const e=el(id);if(e)e.value=''})
+  el('mn_canal').value='instagram'
+  el('modalManual').style.display='flex'
+  setTimeout(()=>el('mn_nombre')?.focus(),100)
 }
+function cerrarModalPaciente() { el('modalManual').style.display='none' }
+// mantener cerrarModalManual como alias
+function cerrarModalManual() { cerrarModalPaciente() }
 
-function abrirModalManual() {
-  const m = el('modalManual')
-  if (!m) return
-  ;['mn_nombre','mn_telefono','mn_email','mn_cedula','mn_nota','mn_hora','mn_medico','mn_email_fecha','mn_email_hora','mn_email_medico'].forEach(id => { const e=el(id); if(e) e.value='' })
-  el('mn_canal').value = 'instagram'
-  el('mn_fecha').value = new Date().toISOString().split('T')[0]
-  el('mn_email_tipo').value = ''
-  if (el('mn_email_details')) el('mn_email_details').style.display = 'none'
-  if (el('mn_nombre')) el('mn_nombre').disabled = false
-  delete m.dataset.existingPatientId
-  m.style.display = 'flex'
-  setTimeout(() => el('mn_nombre')?.focus(), 100)
-}
-
-function cerrarModalManual() {
-  const m = el('modalManual')
-  if (m) m.style.display = 'none'
-}
-
-async function guardarPacienteManual() {
-  const nombre = (el('mn_nombre')?.value || '').trim()
-  if (!nombre) { toast('El nombre es obligatorio', 'err'); return }
-  if (!_center) { toast('Centro no cargado', 'err'); return }
-
-  const btn = el('btnGuardarManual')
-  btn.disabled = true; btn.innerHTML = 'Guardando...'
-
-  const nota_parts = []
-  const canal = el('mn_canal')?.value || 'otro'
-  nota_parts.push('Canal: ' + canal)
-  if (el('mn_nota')?.value?.trim()) nota_parts.push(el('mn_nota').value.trim())
-
+async function guardarNuevoPaciente() {
+  const nombre   = (el('mn_nombre')?.value||'').trim()
   const telefono = (el('mn_telefono')?.value||'').trim()
-  const email    = (el('mn_email')?.value||'').trim()   ||null
-  const cedula   = (el('mn_cedula')?.value||'').trim()  ||null
-  const fecha    = el('mn_fecha')?.value||null
-  const nota     = nota_parts.join(' — ')||null
-  const existingPatientId = el('modalManual')?.dataset.existingPatientId || null
-
-  let patientId = existingPatientId
-
-  if (!patientId) {
-    // Find-or-create paciente
-    if (email || cedula) {
-      const searchField = email ? `email=eq.${encodeURIComponent(email)}` : `cedula=eq.${encodeURIComponent(cedula)}`
-      const { data: found } = await sbGet('center_patients', `center_id=eq.${_center.id}&${searchField}&limit=1`)
-      if (found?.length) patientId = found[0].id
-    }
-    if (!patientId) {
-      const { data: np, error: ne } = await sbPost('center_patients', {
-        center_id: _center.id, nombre, telefono: telefono||null, email, cedula, canal
-      })
-      if (ne) { toast('Error: '+ne.message, 'err'); btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'; return }
-      patientId = np?.id
-    }
+  const email    = (el('mn_email')?.value||'').trim()||null
+  const cedula   = (el('mn_cedula')?.value||'').trim()||null
+  const canal    = el('mn_canal')?.value||'otro'
+  if (!nombre) { toast('Nombre obligatorio','err'); return }
+  if (!_center) return
+  const btn = el('btnGuardarPaciente')
+  btn.disabled=true; btn.textContent='Guardando...'
+  // Find-or-create
+  let patientId = null
+  if (email||cedula) {
+    const sf = email?`email=eq.${encodeURIComponent(email)}`:`cedula=eq.${encodeURIComponent(cedula)}`
+    const {data:found} = await sbGet('center_patients',`center_id=eq.${_center.id}&${sf}&limit=1`)
+    if (found?.length) { toast(`${nombre} ya está registrado — no se duplicó`,'ok'); cerrarModalPaciente(); await loadLeads(); btn.disabled=false; btn.textContent='Guardar paciente'; return }
   }
-
-  // Registrar cita — followup_confirm_sent=true para que el cron no auto-envíe
-  const { data: citaData, error } = await sbPost('center_citas', {
-    center_id: _center.id, patient_id: patientId,
-    fecha_pref: fecha,
-    hora: (el('mn_hora')?.value||null),
-    canal, nota,
-    followup_confirm_sent: true,  // no auto-confirmación para registros manuales
-  })
-  if (error) {
-    toast('Error al guardar: '+(error.message||'desconocido'), 'err')
-    btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'
-    return
-  }
-
-  // Enviar email elegido por el admin
-  const emailTipo = el('mn_email_tipo')?.value || ''
-  const patEmail  = (el('mn_email')?.value||'').trim() || email
-  if (emailTipo && patEmail && _center?.nombre) {
-    const emailFecha  = el('mn_email_fecha')?.value  || fecha || ''
-    const emailHora   = el('mn_email_hora')?.value   || (el('mn_hora')?.value||'')
-    const emailMedico = el('mn_email_medico')?.value || (el('mn_medico')?.value||'')
-    const emailType   = emailTipo === 'center_bienvenida_simple' ? 'center_confirm' : emailTipo
-    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
-      body: JSON.stringify({
-        type: emailType,
-        to_email: patEmail,
-        patient_name: nombre,
-        center_name:  _center.nombre,
-        center_phone: _center.whatsapp||_center.telefono||'',
-        fecha:  emailFecha  ? new Date(emailFecha+'T12:00:00').toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) : null,
-        hora:   emailHora   || null,
-        doctor_name: emailMedico || _center.nombre,
-      })
-    }).catch(e => console.warn('[manual-email]', e))
-    toast(`${nombre} registrado ✓ — email enviado`, 'ok')
-  } else {
-    toast(`${nombre} registrado ✓`, 'ok')
-  }
-
-  if (el('modalManual')) delete el('modalManual').dataset.existingPatientId
-  if (el('mn_nombre')) el('mn_nombre').disabled = false
-  cerrarModalManual()
+  const {data:np, error} = await sbPost('center_patients',{center_id:_center.id,nombre,telefono:telefono||null,email,cedula,canal})
+  btn.disabled=false; btn.textContent='Guardar paciente'
+  if (error) { toast('Error: '+error.message,'err'); return }
+  toast(`${nombre} registrado ✓`,'ok')
+  cerrarModalPaciente()
   await loadLeads()
-  btn.disabled = false
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paciente'
+}
+
+// ── MODAL CITA ────────────────────────────────────────────────────────────────
+let _citaPatientId = null
+
+function abrirModalCita(prePatientId, preNombre, preEmail, preTel) {
+  _citaPatientId = prePatientId || null
+  ;['cita_fecha','cita_hora','cita_medico','cita_nota','citaBuscarPac'].forEach(id=>{const e=el(id);if(e)e.value=''})
+  el('cita_email_tipo').value=''
+  el('cita_fecha').value=new Date().toISOString().split('T')[0]
+  // Si viene con paciente pre-seleccionado
+  if (prePatientId && preNombre) {
+    _mostrarCitaPaciente(prePatientId, preNombre, preEmail||'', preTel||'')
+  } else {
+    el('citaPacienteSelected').style.display='none'
+    el('citaBuscarPac').style.display='block'
+    el('citaBuscarPac').value=''
+  }
+  el('modalCita').style.display='flex'
+  setTimeout(()=>{ if(!prePatientId) el('citaBuscarPac')?.focus() },100)
+}
+function cerrarModalCita() { el('modalCita').style.display='none'; _citaPatientId=null }
+function citaToggleEmailDetails(){}
+
+function _mostrarCitaPaciente(id, nombre, email, tel) {
+  _citaPatientId = id
+  el('citaPacienteAvatar').textContent = nombre.charAt(0).toUpperCase()
+  el('citaPacienteNombre').textContent = nombre
+  el('citaPacienteMeta').textContent   = [email,tel].filter(Boolean).join(' · ')
+  el('citaPacienteSelected').style.display = 'flex'
+  el('citaBuscarPac').style.display = 'none'
+  el('citaPacDrop').style.display   = 'none'
+}
+function limpiarCitaPaciente() {
+  _citaPatientId = null
+  el('citaPacienteSelected').style.display = 'none'
+  el('citaBuscarPac').style.display = 'block'
+  el('citaBuscarPac').value = ''
+  el('citaBuscarPac').focus()
+}
+
+function citaBuscarPaciente(q) {
+  const drop = el('citaPacDrop')
+  if (!drop) return
+  q = (q||'').toLowerCase().trim()
+  const opts = _allLeads
+    .filter(p => !q || (p.nombre||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q) || (p.telefono||'').includes(q))
+    .slice(0,8)
+  if (!opts.length) { drop.style.display='none'; return }
+  drop.innerHTML = opts.map(p => {
+    const ini=(p.nombre||'P').charAt(0).toUpperCase()
+    return `<div class="fup-opt" onmousedown="_mostrarCitaPaciente('${p.id}','${esc(p.nombre||'')}','${esc(p.email||'')}','${esc(p.telefono||'')}')">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--red-lite);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;flex-shrink:0">${ini}</div>
+      <div><div class="fup-opt-name">${esc(p.nombre||'')}</div><div class="fup-opt-email">${esc([p.email,p.telefono].filter(Boolean).join(' · '))}</div></div>
+    </div>`
+  }).join('')
+  drop.style.display='block'
+}
+function citaCerrarDrop() { const d=el('citaPacDrop'); if(d) d.style.display='none' }
+
+async function guardarNuevaCita() {
+  if (!_citaPatientId) { toast('Seleccioná un paciente','err'); return }
+  if (!_center) return
+  const fecha  = el('cita_fecha')?.value||null
+  if (!fecha) { toast('Fecha obligatoria','err'); return }
+  const hora   = el('cita_hora')?.value||null
+  const medico = (el('cita_medico')?.value||'').trim()
+  const nota   = (el('cita_nota')?.value||'').trim()||null
+  const emailTipo = el('cita_email_tipo')?.value||''
+
+  const btn = el('btnGuardarCita')
+  btn.disabled=true; btn.textContent='Guardando...'
+
+  const {data:cita, error} = await sbPost('center_citas',{
+    center_id: _center.id, patient_id: _citaPatientId,
+    fecha_pref: fecha, hora, nota: [medico?'Médico: '+medico:'',nota].filter(Boolean).join(' — ')||null,
+    canal: 'presencial', followup_confirm_sent: true,
+  })
+  if (error) { toast('Error: '+error.message,'err'); btn.disabled=false; btn.textContent='Guardar cita'; return }
+
+  // Email al paciente
+  const patient = _allLeads.find(p=>p.id===_citaPatientId)
+  if (emailTipo && patient?.email && _center?.nombre) {
+    const fmtFecha = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) : ''
+    fetch(`${_SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+      body: JSON.stringify({
+        type: emailTipo==='center_remind_manual'?'center_reminder':'center_confirm',
+        to_email: patient.email, patient_name: patient.nombre||'',
+        center_name: _center.nombre, center_phone: _center.whatsapp||_center.telefono||'',
+        fecha: fmtFecha, hora: hora||null, doctor_name: medico||_center.nombre,
+      })
+    }).catch(e=>console.warn(e))
+    toast('Cita registrada ✓ — email enviado','ok')
+  } else {
+    toast('Cita registrada ✓','ok')
+  }
+
+  cerrarModalCita()
+  await loadLeads()
+  await loadNewTurnos()
+  btn.disabled=false; btn.textContent='Guardar cita'
 }
 
 // ── PAQUETES & PROMOCIONES ────────────────────────────────────────────────────
