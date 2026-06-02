@@ -1831,6 +1831,8 @@ function renderCitasRow(patientId) {
     return
   }
 
+  const showAll = wrap.dataset.showAll === '1'
+  const visible = showAll ? citas : citas.slice(0, 3)
   const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
   const estadoCfg = {
     atendido:  { bg:'#f0fdf4', color:'#15803d', dot:'#16a34a', label:'✓ Asistió'     },
@@ -1840,7 +1842,7 @@ function renderCitasRow(patientId) {
   }
 
   wrap.innerHTML = `<div class="cita-timeline">
-    ${citas.map((c, i) => {
+    ${visible.map((c, i) => {
       const svcs = c.servicios ? (() => { try { const a=Array.isArray(c.servicios)?c.servicios:JSON.parse(c.servicios||'[]'); return a.map(s=>s.nombre).join(' · ') } catch { return '' } })() : ''
       const nota = c.nota?.replace(/^Canal:[^—]+—?\s*/,'') || ''
       const label = svcs || nota || '—'
@@ -1880,7 +1882,24 @@ function renderCitasRow(patientId) {
         </div>
       </div>`
     }).join('')}
-  </div>`
+  </div>
+  ${!showAll && citas.length > 3 ? `
+  <button onclick="event.stopPropagation();citasVerMas('${patientId}')" style="margin-top:.5rem;width:100%;padding:.45rem;border:1.5px dashed var(--border);border-radius:9px;background:none;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+    Ver ${citas.length - 3} cita${citas.length-3!==1?'s':''} más →
+  </button>` : ''}
+  ${showAll && citas.length > 3 ? `
+  <button onclick="event.stopPropagation();citasVerMenos('${patientId}')" style="margin-top:.5rem;width:100%;padding:.45rem;border:1.5px dashed var(--border);border-radius:9px;background:none;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer">
+    ↑ Ver menos
+  </button>` : ''}`
+}
+
+function citasVerMas(patientId) {
+  const wrap = el('citasContent_'+patientId)
+  if (wrap) { wrap.dataset.showAll = '1'; renderCitasRow(patientId) }
+}
+function citasVerMenos(patientId) {
+  const wrap = el('citasContent_'+patientId)
+  if (wrap) { wrap.dataset.showAll = '0'; renderCitasRow(patientId) }
 }
 
 function citaMenuToggle(citaId, patientId) {
