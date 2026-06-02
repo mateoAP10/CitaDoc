@@ -2329,7 +2329,9 @@ async function guardarNuevaCita() {
         type: emailTipo==='center_remind_manual'?'center_reminder':'center_confirm',
         to_email: patient.email, patient_name: patient.nombre||'',
         center_name: _center.nombre, center_phone: _center.whatsapp||_center.telefono||'',
-        fecha: fmtFecha, hora: hora||null, doctor_name: medico||_center.nombre,
+        fecha: fmtFecha, hora: hora||null,
+        doctor_name: medico||_center.nombre,
+        servicios: nota||null,
       })
     }).catch(e=>console.warn(e))
     toast('Cita registrada ✓ — email enviado','ok')

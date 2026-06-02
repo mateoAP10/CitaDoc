@@ -1198,10 +1198,11 @@ function tplCenterConfirm(d: Record<string,unknown>): string {
 <tr><td style="padding:28px 32px 8px;">
   <p style="margin:0 0 20px;color:#0f172a;font-size:16px;font-weight:700;">Hola, ${safe(d.patient_name)} 👋</p>
   <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7;">Recibimos tu solicitud. El equipo de <strong>${safe(d.center_name)}</strong> la revisará y te confirmará a la brevedad.</p>
-  ${d.fecha || d.hora ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;margin-bottom:20px;">
+  ${d.fecha || d.hora || d.doctor_name || d.servicios ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;margin-bottom:20px;">
     <tr><td style="padding:16px 20px;">
-      ${d.fecha ? `<p style="margin:0 0 6px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Fecha solicitada</p><p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#0f172a;">${safe(d.fecha)}${d.hora?` a las <strong>${safe(d.hora)}</strong>`:''}</p>` : ''}
-      ${d.servicios ? `<p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Servicios</p><p style="margin:0;font-size:13px;color:#374151;">${safe(d.servicios)}</p>` : ''}
+      ${d.fecha ? `<p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Fecha y hora</p><p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#0f172a;">${safe(d.fecha)}${d.hora?` · <strong>${safe(d.hora)}</strong>`:''}</p>` : ''}
+      ${d.doctor_name ? `<p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Médico tratante</p><p style="margin:0 0 12px;font-size:14px;font-weight:600;color:#0f172a;">${safe(d.doctor_name)}</p>` : ''}
+      ${d.servicios ? `<p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Servicio</p><p style="margin:0;font-size:13px;color:#374151;">${safe(d.servicios)}</p>` : ''}
     </td></tr>
   </table>` : ''}
   ${d.center_phone ? `<p style="margin:0 0 24px;color:#374151;font-size:13px;">¿Preguntas? Escríbenos: <strong>${safe(d.center_phone)}</strong></p>` : ''}
