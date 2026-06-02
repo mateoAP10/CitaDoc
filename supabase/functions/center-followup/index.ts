@@ -56,12 +56,12 @@ function extractDoctorName(center: Record<string, unknown>): string | null {
   return `${m.titulo || 'Dr.'} ${m.nombre} ${m.apellido}`.trim()
 }
 
-// ── 1. CONFIRMACIÓN ── citas nuevas sin confirmar ──────────────────────────
+// ── 1. NUEVA CITA ── siempre envía recordatorio simple al paciente ──────────
 async function runConfirmaciones() {
   const since = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
   const { data } = await sb
     .from('center_citas')
-    .select('*, center_patients(nombre, email, telefono, cedula), centers(nombre, email, whatsapp, telefono, center_doctors(orden, medicos(nombre, apellido, titulo)))')
+    .select('id, center_id, fecha_pref, hora, servicios, center_patients(nombre, email), centers(nombre, whatsapp, telefono, center_doctors(orden, medicos(nombre, apellido, titulo)))')
     .is('email_confirm_at', null)
     .gte('created_at', since)
     .order('created_at')
@@ -70,27 +70,23 @@ async function runConfirmaciones() {
   if (!data?.length) return 0
   let sent = 0
   for (const c of data) {
-    const p      = c.center_patients as {nombre:string, email:string, telefono?:string}
+    const p      = c.center_patients as { nombre: string; email?: string }
     const center = c.centers as Record<string, unknown>
-    if (!p?.email || !center?.nombre) continue
-    const doctorName = extractDoctorName(center)
+    if (!p?.email) continue
+
     await sendEmail('center_confirm', {
-      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
-      center_phone: (center.whatsapp||center.telefono||'') as string,
-      doctor_name: doctorName,
-      fecha: c.fecha_pref ? fmtDate(c.fecha_pref) : null,
-      hora: c.hora||null, servicios: fmtServices(c.servicios), total: c.total_est?`$${c.total_est}`:null,
+      to_email:    p.email,
+      patient_name: p.nombre,
+      center_name:  center.nombre,
+      doctor_name:  extractDoctorName(center),
+      fecha:        c.fecha_pref ? fmtDate(c.fecha_pref) : null,
+      hora:         c.hora || null,
+      servicios:    fmtServices(c.servicios),
     })
-    if (center.email) {
-      await sendEmail('center_admin_lead', {
-        to_email: center.email as string, center_name: center.nombre as string,
-        patient_name: p.nombre, doctor_name: doctorName,
-        lead_id: c.id, telefono: p.telefono||'', email: p.email,
-        fecha: c.fecha_pref?fmtDate(c.fecha_pref):'Sin fecha', hora: c.hora||'Sin hora',
-        servicios: fmtServices(c.servicios), total: c.total_est?`$${c.total_est}`:'',
-      })
-    }
-    await sb.from('center_citas').update({ email_confirm_at: new Date().toISOString(), followup_confirm_sent: true }).eq('id', c.id)
+
+    await sb.from('center_citas')
+      .update({ email_confirm_at: new Date().toISOString(), followup_confirm_sent: true })
+      .eq('id', c.id)
     sent++
   }
   console.log(`[center-followup] confirmaciones: ${sent}`)
