@@ -45,13 +45,24 @@ async function getCitasWithPatient(filters: Record<string, unknown>, extra?: str
   return q.limit(100)
 }
 
+// ── Helper: nombre del médico principal de un centro ──────────────────────
+function extractDoctorName(center: Record<string, unknown>): string | null {
+  // deno-lint-ignore no-explicit-any
+  const docs: any[] = (center.center_doctors as any[]) || []
+  if (!docs.length) return null
+  const sorted = [...docs].sort((a, b) => (a.orden||0) - (b.orden||0))
+  const m = sorted[0]?.medicos
+  if (!m) return null
+  return `${m.titulo || 'Dr.'} ${m.nombre} ${m.apellido}`.trim()
+}
+
 // ── 1. CONFIRMACIÓN ── citas nuevas sin confirmar ──────────────────────────
 async function runConfirmaciones() {
   const since = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
   const { data } = await sb
     .from('center_citas')
-    .select('*, center_patients(nombre, email, telefono, cedula), centers(nombre, email, whatsapp, telefono)')
-    .is('email_confirm_at', null)          // timestamp null = nunca enviado
+    .select('*, center_patients(nombre, email, telefono, cedula), centers(nombre, email, whatsapp, telefono, center_doctors(orden, medicos(nombre, apellido, titulo)))')
+    .is('email_confirm_at', null)
     .gte('created_at', since)
     .order('created_at')
     .limit(50)
@@ -59,18 +70,21 @@ async function runConfirmaciones() {
   if (!data?.length) return 0
   let sent = 0
   for (const c of data) {
-    const p = c.center_patients as {nombre:string, email:string, telefono?:string}
-    const center = c.centers as {nombre:string, email?:string, whatsapp?:string, telefono?:string}
+    const p      = c.center_patients as {nombre:string, email:string, telefono?:string}
+    const center = c.centers as Record<string, unknown>
     if (!p?.email || !center?.nombre) continue
+    const doctorName = extractDoctorName(center)
     await sendEmail('center_confirm', {
       to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
-      center_phone: center.whatsapp||center.telefono||'',
+      center_phone: (center.whatsapp||center.telefono||'') as string,
+      doctor_name: doctorName,
       fecha: c.fecha_pref ? fmtDate(c.fecha_pref) : null,
       hora: c.hora||null, servicios: fmtServices(c.servicios), total: c.total_est?`$${c.total_est}`:null,
     })
     if (center.email) {
       await sendEmail('center_admin_lead', {
-        to_email: center.email, center_name: center.nombre, patient_name: p.nombre,
+        to_email: center.email as string, center_name: center.nombre as string,
+        patient_name: p.nombre, doctor_name: doctorName,
         lead_id: c.id, telefono: p.telefono||'', email: p.email,
         fecha: c.fecha_pref?fmtDate(c.fecha_pref):'Sin fecha', hora: c.hora||'Sin hora',
         servicios: fmtServices(c.servicios), total: c.total_est?`$${c.total_est}`:'',
@@ -93,18 +107,19 @@ async function runRecordatorios() {
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
   const tStr = tomorrow.toISOString().split('T')[0]
   const { data } = await sb.from('center_citas')
-    .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono)')
+    .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono,center_doctors(orden,medicos(nombre,apellido,titulo)))')
     .eq('fecha_pref', tStr).is('email_reminder_at', null).eq('atendido', false).neq('estado','cancelado').limit(100)
 
   if (!data?.length) return 0
   let sent = 0
   for (const c of data) {
     const p = c.center_patients as {nombre:string, email?:string}
-    const center = c.centers as {nombre:string, whatsapp?:string, telefono?:string}
+    const center = c.centers as Record<string, unknown>
     if (!p?.email || !center?.nombre) continue
     await sendEmail('center_reminder', {
-      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
-      center_phone: center.whatsapp||center.telefono||'',
+      to_email: p.email, patient_name: p.nombre, center_name: center.nombre as string,
+      center_phone: (center.whatsapp||center.telefono||'') as string,
+      doctor_name: extractDoctorName(center),
       fecha: fmtDate(tStr), hora: c.hora||null, servicios: fmtServices(c.servicios),
       confirm_url: confirmUrl(c.id), cancel_url: cancelUrl(c.id),
     })
@@ -121,7 +136,7 @@ async function runRecordatorios3h() {
   const today = now.toISOString().split('T')[0]
   const inMin = now.getHours()*60 + now.getMinutes()
   const { data } = await sb.from('center_citas')
-    .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono)')
+    .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono,center_doctors(orden,medicos(nombre,apellido,titulo)))')
     .eq('fecha_pref', today).is('email_reminder_3h_at', null).eq('atendido', false).neq('estado','cancelado')
     .not('hora','is',null).limit(100)
 
@@ -134,11 +149,12 @@ async function runRecordatorios3h() {
     const diffMin = citaMin - inMin
     if (diffMin < 150 || diffMin > 210) continue  // ventana 2.5h–3.5h antes
     const p = c.center_patients as {nombre:string, email?:string}
-    const center = c.centers as {nombre:string, whatsapp?:string, telefono?:string}
+    const center = c.centers as Record<string, unknown>
     if (!p?.email || !center?.nombre) continue
     await sendEmail('center_reminder', {
-      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
-      center_phone: center.whatsapp||center.telefono||'',
+      to_email: p.email, patient_name: p.nombre, center_name: center.nombre as string,
+      center_phone: (center.whatsapp||center.telefono||'') as string,
+      doctor_name: extractDoctorName(center),
       fecha: fmtDate(today), hora: c.hora, servicios: fmtServices(c.servicios),
       confirm_url: confirmUrl(c.id), cancel_url: cancelUrl(c.id),
       es_3h: true,
