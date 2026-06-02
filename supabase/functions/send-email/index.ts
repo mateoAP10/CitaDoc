@@ -1238,20 +1238,39 @@ ${confirmUrl ? `<tr><td style="padding:0 32px 24px;">
 
 function tplCenterReminder(d: Record<string,unknown>): string {
   const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const is3h = d.es_3h === true
+  const headline = is3h
+    ? `Tu turno es <strong>hoy a las ${safe(d.hora||'')}</strong> — en menos de 3 horas.`
+    : `Te recordamos que mañana tenés turno en <strong>${safe(d.center_name)}</strong>.`
+  const badge = is3h ? '⚡ En 3 horas' : '⏰ Recordatorio — mañana'
+  const confirmUrl = safe(d.confirm_url||'')
+  const cancelUrl  = safe(d.cancel_url||'')
   const body = `
-<tr><td style="padding:28px 32px;">
-  <p style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700;">Hola, ${safe(d.patient_name)} 👋</p>
-  <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7;">Te recordamos que mañana tenés turno en <strong>${safe(d.center_name)}</strong>.</p>
+<tr><td style="padding:28px 32px 16px;">
+  <p style="margin:0 0 14px;color:#0f172a;font-size:16px;font-weight:700;">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0 0 18px;color:#374151;font-size:14px;line-height:1.7;">${headline}</p>
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#fefce8;border:1.5px solid #fde68a;border-radius:12px;margin-bottom:20px;">
     <tr><td style="padding:16px 20px;">
-      <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:1px;">📅 Tu turno</p>
+      <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:1px;">Tu turno</p>
       <p style="margin:0;font-size:15px;font-weight:700;color:#0f172a;">${safe(d.fecha)}${d.hora?` · <strong>${safe(d.hora)}</strong>`:''}</p>
       ${d.servicios ? `<p style="margin:6px 0 0;font-size:12px;color:#374151;">${safe(d.servicios)}</p>` : ''}
     </td></tr>
   </table>
-  ${d.center_phone ? `<p style="margin:0;color:#374151;font-size:13px;">¿Necesitás cancelar o cambiar? Contactanos: <strong>${safe(d.center_phone)}</strong></p>` : ''}
+</td></tr>
+${confirmUrl ? `<tr><td style="padding:0 32px 8px;">
+  <a href="${confirmUrl}" style="display:block;background:#16a34a;color:#fff;text-align:center;padding:14px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">
+    ✓ Confirmar mi asistencia
+  </a>
+</td></tr>
+<tr><td style="padding:0 32px 20px;">
+  <a href="${cancelUrl}" style="display:block;background:#f8fafc;color:#64748b;text-align:center;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:1.5px solid #e2e8f0;">
+    ✕ No puedo asistir — cancelar turno
+  </a>
+</td></tr>` : ''}
+<tr><td style="padding:0 32px 24px;">
+  <p style="margin:0;color:#94a3b8;font-size:11px;text-align:center;">Un clic confirma o cancela tu turno. No necesitás llamar.</p>
 </td></tr>`
-  return centerBase(String(d.center_name||''), 'Tu turno es mañana', 'linear-gradient(135deg,#78350f,#92400e)', '#fcd34d', 'rgba(252,211,77,.15)', '⏰ Recordatorio de turno', body)
+  return centerBase(String(d.center_name||''), is3h ? 'Tu turno es hoy' : 'Tu turno es mañana', 'linear-gradient(135deg,#78350f,#92400e)', '#fcd34d', 'rgba(252,211,77,.15)', badge, body)
 }
 
 function tplCenterNoShow(d: Record<string,unknown>): string {

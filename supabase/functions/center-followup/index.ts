@@ -83,16 +83,18 @@ async function runConfirmaciones() {
   return sent
 }
 
-// ── 2. RECORDATORIO ── citas mañana ────────────────────────────────────────
+const BASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/center-followup'
+
+function confirmUrl(citaId: string) { return `${BASE_URL}?action=patient_confirm&cita_id=${citaId}` }
+function cancelUrl(citaId: string)  { return `${BASE_URL}?action=patient_cancel&cita_id=${citaId}` }
+
+// ── 2a. RECORDATORIO 24H ───────────────────────────────────────────────────
 async function runRecordatorios() {
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
   const tStr = tomorrow.toISOString().split('T')[0]
-  const { data } = await sb
-    .from('center_citas')
-    .select('*, center_patients(nombre, email, telefono), centers(nombre, whatsapp, telefono)')
-    .eq('fecha_pref', tStr).is('email_reminder_at', null).eq('atendido', false)
-    .neq('estado', 'cancelado')
-    .limit(100)
+  const { data } = await sb.from('center_citas')
+    .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono)')
+    .eq('fecha_pref', tStr).is('email_reminder_at', null).eq('atendido', false).neq('estado','cancelado').limit(100)
 
   if (!data?.length) return 0
   let sent = 0
@@ -104,11 +106,47 @@ async function runRecordatorios() {
       to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
       center_phone: center.whatsapp||center.telefono||'',
       fecha: fmtDate(tStr), hora: c.hora||null, servicios: fmtServices(c.servicios),
+      confirm_url: confirmUrl(c.id), cancel_url: cancelUrl(c.id),
     })
     await sb.from('center_citas').update({ email_reminder_at: new Date().toISOString(), followup_reminder_sent: true }).eq('id', c.id)
     sent++
   }
-  console.log(`[center-followup] recordatorios: ${sent}`)
+  console.log(`[center-followup] recordatorios 24h: ${sent}`)
+  return sent
+}
+
+// ── 2b. RECORDATORIO 3H ───────────────────────────────────────────────────
+async function runRecordatorios3h() {
+  const now   = new Date()
+  const today = now.toISOString().split('T')[0]
+  const inMin = now.getHours()*60 + now.getMinutes()
+  const { data } = await sb.from('center_citas')
+    .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono)')
+    .eq('fecha_pref', today).is('email_reminder_3h_at', null).eq('atendido', false).neq('estado','cancelado')
+    .not('hora','is',null).limit(100)
+
+  if (!data?.length) return 0
+  let sent = 0
+  for (const c of data) {
+    if (!c.hora) continue
+    const [h,m] = c.hora.split(':').map(Number)
+    const citaMin = h*60+m
+    const diffMin = citaMin - inMin
+    if (diffMin < 150 || diffMin > 210) continue  // ventana 2.5h–3.5h antes
+    const p = c.center_patients as {nombre:string, email?:string}
+    const center = c.centers as {nombre:string, whatsapp?:string, telefono?:string}
+    if (!p?.email || !center?.nombre) continue
+    await sendEmail('center_reminder', {
+      to_email: p.email, patient_name: p.nombre, center_name: center.nombre,
+      center_phone: center.whatsapp||center.telefono||'',
+      fecha: fmtDate(today), hora: c.hora, servicios: fmtServices(c.servicios),
+      confirm_url: confirmUrl(c.id), cancel_url: cancelUrl(c.id),
+      es_3h: true,
+    })
+    await sb.from('center_citas').update({ email_reminder_3h_at: new Date().toISOString() }).eq('id', c.id)
+    sent++
+  }
+  console.log(`[center-followup] recordatorios 3h: ${sent}`)
   return sent
 }
 
@@ -174,51 +212,76 @@ async function runPostVisita() {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
 
-  // ── One-click confirmation via GET ────────────────────────────────────────
+  // ── Patient action via GET (confirm / cancel) ─────────────────────────────
   if (req.method === 'GET') {
-    const url = new URL(req.url)
+    const url  = new URL(req.url)
     const action = url.searchParams.get('action')
-    const leadId = url.searchParams.get('lead_id')
-    if (action === 'confirm' && leadId) {
-      const { data: cita, error } = await sb.from('center_citas')
-        .select('id,atendido,center_patients(nombre,email),centers(nombre,slug)')
-        .eq('id', leadId).single()
-      if (error || !cita) return new Response('<html><body style="font-family:sans-serif;text-align:center;padding:3rem"><h2>❌ No se encontró la cita</h2></body></html>', { headers: { 'Content-Type': 'text/html' } })
-      const patient = cita.center_patients as {nombre:string, email?:string}
-      const centerData = cita.centers as {nombre:string, slug?:string}
-      if (!cita.atendido) {
-        await sb.from('center_citas').update({ atendido: true, followup_postvista_sent: false }).eq('id', leadId)
-        if (patient?.email && centerData?.nombre) {
-          await sendEmail('center_postvista', {
-            to_email: patient.email, patient_name: patient.nombre||'',
-            center_name: centerData.nombre,
-            booking_url: centerData.slug ? `https://doctor-center.citadoc.lat/${centerData.slug}` : null,
+    const citaId = url.searchParams.get('cita_id') || url.searchParams.get('lead_id')
+
+    if ((action === 'patient_confirm' || action === 'patient_cancel' || action === 'confirm') && citaId) {
+      const { data: cita } = await sb.from('center_citas')
+        .select('id,atendido,estado,fecha_pref,hora,center_patients(nombre,email),centers(nombre,slug,email,whatsapp,telefono)')
+        .eq('id', citaId).single()
+      if (!cita) return new Response('<html><body style="font-family:sans-serif;text-align:center;padding:3rem;background:#f1f5f9"><h2>❌ No se encontró la cita</h2></body></html>', { headers: { 'Content-Type': 'text/html' } })
+
+      const patient    = cita.center_patients as {nombre:string, email?:string}
+      const center     = cita.centers        as {nombre:string, slug?:string, email?:string, whatsapp?:string, telefono?:string}
+      const centerName = center?.nombre || 'el centro'
+      const patName    = patient?.nombre || 'Paciente'
+      const bookingUrl = center?.slug ? `https://doctor-center.citadoc.lat/${center.slug}` : null
+
+      if (action === 'patient_confirm' || action === 'confirm') {
+        await sb.from('center_citas').update({ patient_confirmed: true, patient_confirmed_at: new Date().toISOString() }).eq('id', citaId)
+        // Notify admin
+        if (center?.email) {
+          await sendEmail('center_admin_lead', {
+            to_email: center.email, center_name: centerName, patient_name: patName,
+            lead_id: citaId, telefono: '', email: patient?.email||'',
+            fecha: cita.fecha_pref||'', hora: cita.hora||'', servicios: '✓ Confirmó asistencia', total: '',
           })
         }
-      }
-      const centerName = centerData?.nombre || 'el centro'
-      const patientName = patient?.nombre || 'El paciente'
-      return new Response(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Asistencia confirmada</title></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0fdf4;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:1rem">
-<div style="background:#fff;border-radius:20px;padding:2.5rem 2rem;max-width:400px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)">
-  <div style="font-size:3rem;margin-bottom:1rem">✅</div>
-  <h2 style="margin:0 0 .5rem;color:#0f172a;font-size:1.3rem">Asistencia confirmada</h2>
-  <p style="color:#374151;font-size:.9rem;margin:0 0 1.5rem;line-height:1.6">${patientName} fue marcado como atendido en <strong>${centerName}</strong>.<br>Se enviará el email de post-visita automáticamente.</p>
-  <a href="javascript:window.close()" style="font-size:.82rem;color:#94a3b8;text-decoration:none">Cerrar ventana</a>
+        return new Response(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Confirmado</title></head>
+<body style="margin:0;padding:1rem;background:#f0fdf4;font-family:-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:20px;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)">
+  <div style="width:64px;height:64px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.8rem">✅</div>
+  <h2 style="margin:0 0 .5rem;color:#0f172a;font-size:1.2rem">¡Asistencia confirmada!</h2>
+  <p style="color:#374151;font-size:.88rem;margin:0 0 1.25rem;line-height:1.6">Gracias, <strong>${patName}</strong>.<br>Te esperamos en <strong>${centerName}</strong>${cita.fecha_pref ? ` el ${cita.fecha_pref}` : ''}${cita.hora ? ` a las ${cita.hora}` : ''}.</p>
+  <p style="color:#94a3b8;font-size:.75rem;margin:0">Podés cerrar esta ventana.</p>
 </div></body></html>`, { headers: { 'Content-Type': 'text/html' } })
+      }
+
+      if (action === 'patient_cancel') {
+        await sb.from('center_citas').update({ estado: 'cancelado', followup_confirm_sent: true }).eq('id', citaId)
+        // Send reschedule email
+        if (patient?.email && center?.nombre) {
+          await sendEmail('center_noshow', {
+            to_email: patient.email, patient_name: patName, center_name: centerName,
+            center_phone: center.whatsapp||center.telefono||'', booking_url: bookingUrl,
+          })
+        }
+        return new Response(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cancelado</title></head>
+<body style="margin:0;padding:1rem;background:#fff7ed;font-family:-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:20px;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)">
+  <div style="width:64px;height:64px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.8rem">📅</div>
+  <h2 style="margin:0 0 .5rem;color:#0f172a;font-size:1.2rem">Turno cancelado</h2>
+  <p style="color:#374151;font-size:.88rem;margin:0 0 1.25rem;line-height:1.6">Entendemos que los planes cambian, <strong>${patName}</strong>.<br>Te enviamos un email para que puedas reagendar cuando quieras.</p>
+  ${bookingUrl ? `<a href="${bookingUrl}" style="display:inline-block;background:#0f172a;color:#fff;padding:.75rem 1.5rem;border-radius:10px;font-size:.88rem;font-weight:700;text-decoration:none;margin-bottom:.75rem">Reservar nuevo turno →</a><br>` : ''}
+  <p style="color:#94a3b8;font-size:.75rem;margin:0">Podés cerrar esta ventana.</p>
+</div></body></html>`, { headers: { 'Content-Type': 'text/html' } })
+      }
     }
     return new Response('Not found', { status: 404 })
   }
 
   try {
-    const [c, r, n, p] = await Promise.all([
+    const [c, r, r3, n, p] = await Promise.all([
       runConfirmaciones(),
       runRecordatorios(),
+      runRecordatorios3h(),
       runNoShow(),
       runPostVisita(),
     ])
-    return new Response(JSON.stringify({ ok: true, confirm: c, reminder: r, noshow: n, postvista: p }), {
+    return new Response(JSON.stringify({ ok: true, confirm: c, reminder_24h: r, reminder_3h: r3, noshow: n, postvista: p }), {
       headers: { 'Content-Type': 'application/json' }
     })
   } catch(e) {
