@@ -115,6 +115,44 @@ function scoreLead(lead: {
   return { score: Math.min(score, 10), reason: reasons.join(' · ') }
 }
 
+// ── Detector de centros/clínicas — NO son médicos individuales ───────────────
+
+const CENTER_SIGNALS = [
+  /centro\s+(médico|dermatol|estét|clín)/i,
+  /clínica|clinica/i,
+  /consultorio\s+\w+\s+\w+/i,   // consultorio con nombre compuesto = institución
+  /instituto\s+(médico|dermatol)/i,
+  /\bestetica\b|\bestética\b/i,  // spa/estética general, no médico
+  /spa\b/i,
+  /salud\s+\w+\s+\w+/i,
+  /especialidades\s+médicas/i,
+  /\bgroup\b|\bgroup\b|\bcorp\b/i,
+  /equipo\s+(de\s+)?médic/i,
+  /nuestros\s+médicos/i,
+  /\bteam\b/i,
+]
+
+function isCenter(title: string, description: string, handle: string): boolean {
+  const combined = (title + ' ' + description + ' ' + handle).toLowerCase()
+  // Si tiene señal de centro → descartar
+  if (CENTER_SIGNALS.some(r => r.test(combined))) return true
+  // Si el handle empieza con palabras de institución
+  if (/^(centro|clinica|cl_|clinic|estetica|salud|instituto|dermo_center|skin_center)/i.test(handle)) return true
+  return false
+}
+
+// ── Detector de médico individual ─────────────────────────────────────────────
+
+function isIndividualDoctor(title: string, description: string, handle: string): boolean {
+  const combined = (title + ' ' + description).toLowerCase()
+  const handleLow = handle.toLowerCase()
+  // Señales fuertes de médico individual
+  if (/^(dr|dra|dr\.|dra\.)/.test(combined)) return true
+  if (/^(dr|dra)[\._]/.test(handleLow)) return true
+  if (/\bmd\b|\bespecialista\b|\bmédico\b|\bmédica\b|\bcirujano\b|\bcirujana\b/.test(combined)) return true
+  return false
+}
+
 // ── Extractor de señales ──────────────────────────────────────────────────────
 
 function extractSignals(title: string, description: string, url: string) {
@@ -128,11 +166,13 @@ function extractSignals(title: string, description: string, url: string) {
   const website_url      = realUrls[0] || ''
   const whatsapp_visible = /whatsapp|wa\.me|\+\d{10,}/i.test(description)
 
-  // Nombre: extraer sin títulos universitarios/cargos
   let doctor_name = (title.match(/^([^(|·@•\-–]+)/)?.[1] ?? '').trim()
   doctor_name = doctor_name.replace(/\s+(MD|DR|DRA|MÉDICO|MÉDICA|DOCTOR|DOCTORA)\.?\s*$/i, '').trim()
 
-  return { instagram_handle, website_detected, website_url, whatsapp_visible, bio_snippet: description.slice(0, 300), doctor_name }
+  const looksLikeCenter    = isCenter(title, description, instagram_handle || '')
+  const looksLikeDoctor    = isIndividualDoctor(title, description, instagram_handle || '')
+
+  return { instagram_handle, website_detected, website_url, whatsapp_visible, bio_snippet: description.slice(0, 300), doctor_name, looksLikeCenter, looksLikeDoctor }
 }
 
 // ── Selección de batch de queries ─────────────────────────────────────────────
@@ -304,8 +344,9 @@ serve(async (req) => {
   const queryLog: { query: string; found: number; qualified: number }[] = []
 
   for (const target of targets) {
-    const query    = `site:instagram.com "${target.specialty}" "${target.city}"`
-    const braveUrl = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=20&country=ec&search_lang=es`
+    // Brave funciona mejor sin site: y filtrando instagram.com en los resultados
+    const query    = `${target.specialty} ${target.city} Ecuador instagram.com`
+    const braveUrl = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=20&search_lang=es&safesearch=off`
 
     let results: { url: string; title: string; description: string }[] = []
     try {
@@ -333,7 +374,10 @@ serve(async (req) => {
       const signals = extractSignals(r.title || '', r.description || '', r.url)
       if (!signals.instagram_handle) continue
 
-      const { score, reason } = scoreLead({
+      // Descartar centros/clínicas — solo queremos médicos individuales
+      if (signals.looksLikeCenter) continue
+
+      const { score: baseScore, reason } = scoreLead({
         specialty:        target.specialty,
         city:             target.city,
         tier:             target.tier,
@@ -342,6 +386,8 @@ serve(async (req) => {
         bio_snippet:      signals.bio_snippet,
         whatsapp_visible: signals.whatsapp_visible,
       })
+      // Boost si confirma ser médico individual
+      const score = signals.looksLikeDoctor ? Math.min(baseScore + 2, 10) : baseScore
 
       if (score < minScore) continue
 
@@ -387,14 +433,36 @@ serve(async (req) => {
     }
   }
 
-  // ── Upsert Instagram leads (conflict on instagram_handle) ────────────────
+  // ── Insert — skip duplicates por instagram_handle o profile_url ─────────
   let inserted = 0
+  let lastError = ''
+
+  // Cargar handles ya existentes para deduplicar sin upsert
+  const handles = allLeads.map(l => l.instagram_handle).filter(Boolean)
+  const urls    = allLeads.map(l => l.profile_url).filter(Boolean)
+
+  const { data: existingHandles } = handles.length
+    ? await sb.from('doctor_leads').select('instagram_handle').in('instagram_handle', handles)
+    : { data: [] }
+  const { data: existingUrls } = urls.length
+    ? await sb.from('doctor_leads').select('profile_url').in('profile_url', urls)
+    : { data: [] }
+
+  const knownHandles = new Set((existingHandles || []).map((r: Record<string,string>) => r.instagram_handle))
+  const knownUrls    = new Set((existingUrls    || []).map((r: Record<string,string>) => r.profile_url))
+
   for (const lead of allLeads) {
-    if (!lead.instagram_handle) continue
-    const { error } = await sb
-      .from('doctor_leads')
-      .upsert(lead, { onConflict: 'instagram_handle', ignoreDuplicates: true })
-    if (!error) inserted++
+    const isDup = (lead.instagram_handle && knownHandles.has(lead.instagram_handle))
+               || knownUrls.has(lead.profile_url)
+    if (isDup) continue
+    const { error } = await sb.from('doctor_leads').insert(lead)
+    if (!error) {
+      inserted++
+      if (lead.instagram_handle) knownHandles.add(lead.instagram_handle)
+      knownUrls.add(lead.profile_url)
+    } else {
+      lastError = error.message
+    }
   }
 
   // ── Upsert Maps leads (conflict on profile_url) ──────────────────────────
@@ -418,6 +486,7 @@ serve(async (req) => {
     found_total:  queryLog.reduce((a, q) => a + q.found, 0),
     qualified:    allLeads.length,
     inserted,
+    last_error: lastError || null,
     maps_qualified: mapsLeads.length,
     maps_inserted:  insertedMaps,
     maps_enabled:   !!MAPS_KEY,
