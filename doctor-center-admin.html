@@ -1680,7 +1680,7 @@ async function loadLeads() {
 
   // Cargar citas para agregar stats
   const { data: citas } = await sbGet('center_citas',
-    `center_id=eq.${_center.id}&select=id,patient_id,fecha_pref,hora,atendido,estado,total_est,servicios,nota,email_confirm_at,email_reminder_at,email_noshow_at,email_postvista_at&order=fecha_pref.desc&limit=1000`)
+    `center_id=eq.${_center.id}&select=id,patient_id,fecha_pref,hora,atendido,estado,total_est,servicios,nota,patient_confirmed,email_confirm_at,email_reminder_at,email_noshow_at,email_postvista_at&order=fecha_pref.desc&limit=1000`)
   const citasArr = citas || []
 
   // Enriquecer cada paciente con stats de sus citas
@@ -1820,6 +1820,9 @@ function renderCitasRow(patientId) {
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem">${esc(svcs)}</td>
         <td style="font-size:.8rem;font-weight:700">${c.total_est?'$'+c.total_est:'—'}</td>
         <td>
+          ${c.patient_confirmed
+            ? `<span style="font-size:.6rem;font-weight:700;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:20px;padding:.15rem .5rem;white-space:nowrap;display:inline-block;margin-bottom:.3rem">✓ Confirmó</span><br>`
+            : ''}
           <div class="estado-btns">
             <button class="estado-btn atendido${estado==='atendido'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','atendido',this)" title="Atendido">✓ Asistió</button>
             <button class="estado-btn noshow${estado==='noshow'?' active':''}" onclick="setCitaEstado('${c.id}','${patientId}','noshow',this)" title="No se presentó">✗ No vino</button>
@@ -1991,7 +1994,7 @@ async function loadNewTurnos() {
   if (!_center) return
   const today = new Date().toISOString().split('T')[0]
   const { data: citas } = await sbGet('center_citas',
-    `center_id=eq.${_center.id}&atendido=eq.false&estado=neq.cancelado&fecha_pref=gte.${today}&select=id,patient_id,fecha_pref,hora,servicios,total_est,nota,created_at,estado&order=fecha_pref.asc&limit=50`)
+    `center_id=eq.${_center.id}&atendido=eq.false&estado=neq.cancelado&fecha_pref=gte.${today}&select=id,patient_id,fecha_pref,hora,servicios,total_est,nota,created_at,estado,patient_confirmed,patient_confirmed_at&order=fecha_pref.asc&limit=50`)
   const { data: patients } = await sbGet('center_patients',
     `center_id=eq.${_center.id}&select=id,nombre,email,telefono,cedula,canal`)
 
@@ -2026,7 +2029,13 @@ async function loadNewTurnos() {
     return `<div class="turno-card">
       <div class="turno-avatar">${esc(ini)}</div>
       <div class="turno-info">
-        <div class="turno-nombre">${esc(p.nombre||'Paciente')}</div>
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+          <div class="turno-nombre">${esc(p.nombre||'Paciente')}</div>
+          ${c.patient_confirmed
+            ? `<span style="font-size:.6rem;font-weight:700;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:20px;padding:.1rem .5rem;white-space:nowrap">✓ Confirmó</span>`
+            : `<span style="font-size:.6rem;font-weight:700;background:#f9fafb;color:#9ca3af;border:1px solid #e5e7eb;border-radius:20px;padding:.1rem .5rem;white-space:nowrap">Sin confirmar</span>`
+          }
+        </div>
         <div class="turno-meta">${esc(meta.substring(0,80))}</div>
         ${c.hora?`<div style="font-size:.7rem;font-weight:700;color:#dc2626;margin-top:.2rem">🕐 ${c.hora}</div>`:''}
         ${c.total_est?`<div style="font-size:.7rem;color:var(--muted);margin-top:.1rem">💰 $${c.total_est}</div>`:''}
