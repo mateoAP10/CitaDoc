@@ -7,17 +7,86 @@ const SEND_EMAIL_URL   = `${SUPABASE_URL}/functions/v1/send-email`
 
 const sb = createClient(SUPABASE_URL, SUPABASE_SRV_KEY)
 
-function htmlPage(title: string, body: string, color = '#10b981'): string {
-  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>CitaDoc</title></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;">
-<div style="max-width:420px;width:100%;margin:40px 16px;background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0;text-align:center;">
-  <div style="background:${color};padding:40px 32px 32px;">
-    <p style="margin:0 0 12px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CITADOC</p>
-    <h1 style="margin:0;color:#fff;font-size:24px;font-weight:700;line-height:1.2;">${title}</h1>
+const BASE_STYLES = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px 16px}.card{width:100%;max-width:400px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.10)}.header{padding:40px 32px 32px;text-align:center}.icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:22px}.chip{display:inline-block;padding:4px 14px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px}h1{font-size:22px;font-weight:700;line-height:1.3;margin-bottom:8px}p.sub{font-size:14px;opacity:.6;margin:0}.body{padding:28px 32px 32px}.detail-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f1f5f9}.detail-row:last-of-type{border-bottom:none}.detail-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8}.detail-value{font-size:14px;font-weight:600;color:#0f172a;text-align:right}.cta{display:block;margin-top:24px;padding:14px;border-radius:12px;text-align:center;font-size:15px;font-weight:700;text-decoration:none}.footer{margin-top:20px;text-align:center;font-size:11px;color:#cbd5e1}`
+
+function pageConfirmed(doctorName: string, fecha: string, hora: string, modalidad: string): string {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><title>Cita Confirmada</title>
+<style>${BASE_STYLES}body{background:#f0fdf4}.header{background:linear-gradient(135deg,#052a27,#0a3d35)}.icon{background:rgba(255,255,255,.12)}.chip{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7)}h1{color:#fff}p.sub{color:rgba(255,255,255,.55)}.cta{background:#f0fdf4;color:#065f46}</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="icon">✓</div>
+    <div class="chip">Asistencia confirmada</div>
+    <h1>¡Nos vemos el ${fecha}!</h1>
+    <p class="sub">Con ${doctorName}</p>
   </div>
-  <div style="padding:32px;">
-    ${body}
-    <p style="margin:24px 0 0;color:#94a3b8;font-size:12px;">CitaDoc · hola@citadoc.lat</p>
+  <div class="body">
+    <div class="detail-row">
+      <span class="detail-label">Fecha</span>
+      <span class="detail-value">${fecha}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Hora</span>
+      <span class="detail-value">${hora}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Médico</span>
+      <span class="detail-value">${doctorName}</span>
+    </div>
+    ${modalidad ? `<div class="detail-row">
+      <span class="detail-label">Modalidad</span>
+      <span class="detail-value">${modalidad}</span>
+    </div>` : ''}
+    <p class="footer">CitaDoc · hola@citadoc.lat</p>
+  </div>
+</div>
+</body></html>`
+}
+
+function pageCancelled(doctorName: string, fecha: string, hora: string, profileUrl: string): string {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><title>Cita Cancelada</title>
+<style>${BASE_STYLES}body{background:#f8fafc}.header{background:linear-gradient(135deg,#0f172a,#1e293b)}.icon{background:rgba(255,255,255,.08)}.chip{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}h1{color:#fff}p.sub{color:rgba(255,255,255,.45)}.cta{background:#0f172a;color:#fff}</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="icon">📅</div>
+    <div class="chip">Cita cancelada</div>
+    <h1>Tu cita quedó cancelada.</h1>
+    <p class="sub">Los planes cambian — sin problema.</p>
+  </div>
+  <div class="body">
+    <div class="detail-row">
+      <span class="detail-label">Fecha</span>
+      <span class="detail-value">${fecha}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Hora</span>
+      <span class="detail-value">${hora}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Médico</span>
+      <span class="detail-value">${doctorName}</span>
+    </div>
+    ${profileUrl ? `<a href="${profileUrl}" class="cta">Reagendar cita →</a>` : ''}
+    <p class="footer">CitaDoc · hola@citadoc.lat</p>
+  </div>
+</div>
+</body></html>`
+}
+
+function pageError(msg: string): string {
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><title>CitaDoc</title>
+<style>${BASE_STYLES}body{background:#f8fafc}.header{background:#f1f5f9}.icon{background:#e2e8f0}.chip{background:#e2e8f0;color:#94a3b8}h1{color:#0f172a}p.sub{color:#94a3b8}</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="icon">🔗</div>
+    <div class="chip">Enlace inválido</div>
+    <h1>${msg}</h1>
+    <p class="sub">CitaDoc · hola@citadoc.lat</p>
   </div>
 </div>
 </body></html>`
@@ -27,14 +96,12 @@ serve(async (req) => {
   const url    = new URL(req.url)
   const action = url.searchParams.get('action')
   const citaId = url.searchParams.get('cita_id')
+  const HTML   = { headers: { 'Content-Type': 'text/html' } }
 
   if (!citaId || !action) {
-    return new Response(htmlPage('Enlace inválido', '<p style="color:#6b7280;">Este enlace no es válido o ha expirado.</p>', '#ef4444'), {
-      headers: { 'Content-Type': 'text/html' }
-    })
+    return new Response(pageError('Enlace no válido o expirado.'), HTML)
   }
 
-  // Load cita + medico
   const { data: cita, error } = await sb
     .from('citas')
     .select('*, medicos(titulo, nombre, apellido, email, slug)')
@@ -42,15 +109,7 @@ serve(async (req) => {
     .single()
 
   if (error || !cita) {
-    return new Response(htmlPage('Cita no encontrada', '<p style="color:#6b7280;">No pudimos encontrar esta cita.</p>', '#ef4444'), {
-      headers: { 'Content-Type': 'text/html' }
-    })
-  }
-
-  if (cita.estado === 'cancelada') {
-    return new Response(htmlPage('Cita ya cancelada', '<p style="color:#6b7280;">Esta cita ya fue cancelada anteriormente.</p>', '#64748b'), {
-      headers: { 'Content-Type': 'text/html' }
-    })
+    return new Response(pageError('No pudimos encontrar esta cita.'), HTML)
   }
 
   // deno-lint-ignore no-explicit-any
@@ -58,14 +117,21 @@ serve(async (req) => {
   const doctorName = medico ? `${medico.titulo || 'Dr.'} ${medico.nombre} ${medico.apellido}` : 'tu médico'
   const doctorEmail= medico?.email
   const slug       = medico?.slug || ''
-  const profileUrl = `https://citadoc.lat/citadoc-perfil.html?slug=${slug}`
+  const profileUrl = slug ? `https://citadoc.lat/citadoc-perfil.html?slug=${slug}` : ''
   const fecha      = new Date(cita.fecha + 'T12:00:00').toLocaleDateString('es', {
     weekday: 'long', day: 'numeric', month: 'long'
   })
+  const modalidad  = cita.modalidad === 'virtual' ? '💻 Virtual' : cita.modalidad === 'presencial' ? '🏥 Presencial' : ''
 
-  // ── CONFIRM ──────────────────────────────────────────────────────────────
+  // ── ALREADY CANCELLED ─────────────────────────────────────────────────────
+  if (cita.estado === 'cancelada' && action !== 'cancel') {
+    return new Response(pageCancelled(doctorName, fecha, cita.hora, profileUrl), HTML)
+  }
+
+  // ── CONFIRM ───────────────────────────────────────────────────────────────
   if (action === 'confirm') {
-    // Notify doctor
+    await sb.from('citas').update({ paciente_confirmado: true }).eq('id', citaId)
+
     if (doctorEmail) {
       await fetch(SEND_EMAIL_URL, {
         method: 'POST',
@@ -84,19 +150,13 @@ serve(async (req) => {
       }).catch(() => {})
     }
 
-    return new Response(htmlPage(
-      '¡Cita confirmada!',
-      `<p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 8px;">Tu cita con <strong>${doctorName}</strong><br>el <strong>${fecha} a las ${cita.hora}</strong><br>está confirmada.</p>
-       <p style="color:#6b7280;font-size:13px;margin:0;">Le hemos notificado a tu médico.</p>`,
-      '#10b981'
-    ), { headers: { 'Content-Type': 'text/html' } })
+    return new Response(pageConfirmed(doctorName, fecha, cita.hora, modalidad), HTML)
   }
 
-  // ── CANCEL ───────────────────────────────────────────────────────────────
+  // ── CANCEL ────────────────────────────────────────────────────────────────
   if (action === 'cancel') {
-    await sb.from('citas').update({ estado: 'cancelada' }).eq('id', citaId)
+    await sb.from('citas').update({ estado: 'cancelada', cancelada_at: new Date().toISOString() }).eq('id', citaId)
 
-    // Notify doctor
     if (doctorEmail) {
       await fetch(SEND_EMAIL_URL, {
         method: 'POST',
@@ -115,23 +175,16 @@ serve(async (req) => {
       }).catch(() => {})
     }
 
-    return new Response(htmlPage(
-      'Cita cancelada',
-      `<p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 8px;">Tu cita del <strong>${fecha} a las ${cita.hora}</strong> con <strong>${doctorName}</strong> ha sido cancelada.</p>
-       <p style="color:#6b7280;font-size:13px;margin:0;">Tu médico ha sido notificado.</p>`,
-      '#ef4444'
-    ), { headers: { 'Content-Type': 'text/html' } })
+    return new Response(pageCancelled(doctorName, fecha, cita.hora, profileUrl), HTML)
   }
 
-  // ── RESCHEDULE → redirect to profile ─────────────────────────────────────
+  // ── RESCHEDULE → perfil público ───────────────────────────────────────────
   if (action === 'reschedule') {
     return new Response(null, {
       status: 302,
-      headers: { 'Location': profileUrl }
+      headers: { 'Location': profileUrl || 'https://citadoc.lat' }
     })
   }
 
-  return new Response(htmlPage('Acción inválida', '<p style="color:#6b7280;">Acción no reconocida.</p>', '#64748b'), {
-    headers: { 'Content-Type': 'text/html' }
-  })
+  return new Response(pageError('Acción no reconocida.'), HTML)
 })

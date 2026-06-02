@@ -350,6 +350,90 @@ function tplReminder(d: Record<string, string>): string {
 </body></html>`
 }
 
+function tplReminder3h(d: Record<string, string>): string {
+  const modeClean = (d.appointment_mode || '').replace(/^[^\w]+ /, '')
+  const base      = 'https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/cita-action'
+  const id        = d.cita_id || ''
+  const confirmUrl    = `${base}?action=confirm&cita_id=${id}`
+  const cancelUrl     = `${base}?action=cancel&cita_id=${id}`
+  const rescheduleUrl = `${base}?action=reschedule&cita_id=${id}`
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:40px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+<tr><td style="padding-bottom:20px;text-align:center;">
+  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CITADOC</span>
+</td></tr>
+
+<tr><td style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+<table width="100%" cellpadding="0" cellspacing="0">
+
+<tr><td style="background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);padding:36px 40px 28px;border-bottom:1px solid #fed7aa;">
+  <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;"><tr>
+    <td style="background:#fed7aa;border-radius:100px;padding:5px 14px;">
+      <span style="color:#9a3412;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Recordatorio — Hoy</span>
+    </td>
+  </tr></table>
+  <h1 style="margin:0 0 8px;color:#0f172a;font-size:22px;font-weight:700;line-height:1.3;">Tu cita es<br>en 3 horas.</h1>
+  <p style="margin:0;color:#78716c;font-size:14px;">Confirma para que tu médico sepa que vas.</p>
+</td></tr>
+
+<tr><td style="padding:32px 40px 28px;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="padding-bottom:18px;border-bottom:1px solid #f1f5f9;">
+      <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Médico</p>
+      <p style="margin:0;color:#0f172a;font-size:15px;font-weight:600;">${d.doctor_name || ''}</p>
+    </td></tr>
+    <tr><td style="padding-top:18px;">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td style="width:50%;vertical-align:top;padding-right:16px;">
+          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Fecha</p>
+          <p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">${d.appointment_date || ''}</p>
+        </td>
+        <td style="width:50%;vertical-align:top;padding-left:16px;">
+          <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Hora</p>
+          <p style="margin:0;color:#0f172a;font-size:22px;font-weight:700;">${d.appointment_time || ''}</p>
+        </td>
+      </tr></table>
+    </td></tr>
+    ${modeClean ? `<tr><td style="padding-top:18px;">
+      <p style="margin:0 0 3px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;">Modalidad</p>
+      <p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;">${modeClean}</p>
+    </td></tr>` : ''}
+  </table>
+</td></tr>
+
+<tr><td style="padding:0 40px 12px;">
+  <a href="${confirmUrl}" style="display:block;background:#10b981;color:#fff;text-align:center;padding:15px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;">
+    ✓ Confirmo mi asistencia
+  </a>
+</td></tr>
+
+<tr><td style="padding:0 40px 36px;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td style="width:50%;padding-right:6px;">
+      <a href="${rescheduleUrl}" style="display:block;background:#f1f5f9;color:#374151;text-align:center;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;">
+        📅 Reprogramar
+      </a>
+    </td>
+    <td style="width:50%;padding-left:6px;">
+      <a href="${cancelUrl}" style="display:block;background:#f1f5f9;color:#ef4444;text-align:center;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:1px solid #fecaca;">
+        ✕ Cancelar cita
+      </a>
+    </td>
+  </tr></table>
+</td></tr>
+
+<tr><td style="padding:20px 0 0;text-align:center;">
+  <p style="margin:0;color:#cbd5e1;font-size:11px;">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#cbd5e1;text-decoration:none;">hola@citadoc.lat</a></p>
+</td></tr>
+
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplDocs(htmlBody: string): string {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
@@ -762,18 +846,21 @@ function tplWelcomeFree(nombre: string, titulo: string): string {
 </body></html>`
 }
 
-function tplReviewRequest(d: Record<string, any>): string {
-  const reviewUrl  = d.review_url || ''
+function tplPostConsulta(d: Record<string, any>): string {
+  const reviewUrl    = d.review_url || ''
   const doctorNombre = d.doctor_nombre || 'tu médico'
-  const paciente   = d.paciente_nombre || ''
+  const paciente     = d.paciente_nombre || ''
+  const firstName    = paciente ? ', ' + paciente.split(' ')[0] : ''
 
-  const starLinks = [1,2,3,4,5].map(n => {
-    const emojis = ['😕','😐','🙂','😊','🤩']
-    return `<td style="text-align:center;padding:0 4px">
-      <a href="${reviewUrl}&r=${n}" style="display:block;font-size:38px;text-decoration:none;line-height:1">${emojis[n-1]}</a>
-      <div style="color:#94a3b8;font-size:10px;margin-top:4px;font-weight:600">${n}★</div>
-    </td>`
-  }).join('')
+  const emojis = ['😕','😐','🙂','😊','🤩']
+  const labels = ['Mejorable','Regular','Buena','Muy buena','Excelente']
+  const starLinks = [1,2,3,4,5].map(n => `
+    <td style="text-align:center;padding:0 5px">
+      <a href="${reviewUrl}&r=${n}" style="display:block;text-decoration:none">
+        <div style="font-size:36px;line-height:1;margin-bottom:6px">${emojis[n-1]}</div>
+        <div style="color:#94a3b8;font-size:10px;font-weight:600;letter-spacing:.3px">${labels[n-1]}</div>
+      </a>
+    </td>`).join('')
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif">
@@ -787,20 +874,70 @@ function tplReviewRequest(d: Record<string, any>): string {
 <tr><td style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
 <table width="100%" cellpadding="0" cellspacing="0">
 
-<tr><td style="background:linear-gradient(135deg,#052a27,#073d36);padding:36px 40px 28px;text-align:center">
-  <p style="margin:0 0 6px;color:rgba(255,255,255,.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Tu opinión importa</p>
-  <h1 style="margin:0;color:#fff;font-size:22px;font-weight:700;line-height:1.3">¿Cómo estuvo tu cita${paciente ? ', '+paciente.split(' ')[0] : ''}?</h1>
-  <p style="margin:8px 0 0;color:rgba(255,255,255,.45);font-size:14px">Con ${doctorNombre}</p>
+<tr><td style="background:linear-gradient(135deg,#052a27,#0a3d35);padding:36px 40px 32px;text-align:center">
+  <div style="width:48px;height:48px;background:rgba(255,255,255,.1);border-radius:50%;margin:0 auto 18px;line-height:48px;font-size:20px;text-align:center">✓</div>
+  <p style="margin:0 0 8px;color:rgba(255,255,255,.45);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Consulta completada</p>
+  <h1 style="margin:0 0 8px;color:#fff;font-size:22px;font-weight:700;line-height:1.3">Gracias por tu consulta${firstName}.</h1>
+  <p style="margin:0;color:rgba(255,255,255,.45);font-size:14px">Con ${doctorNombre}</p>
 </td></tr>
 
-<tr><td style="padding:36px 40px;text-align:center">
-  <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">Toca cómo te sentiste — toma 2 segundos.</p>
+<tr><td style="padding:32px 40px 12px;text-align:center">
+  <p style="margin:0 0 8px;color:#0f172a;font-size:16px;font-weight:600;line-height:1.5">Esperamos que te hayas sentido<br>en buenas manos.</p>
+  <p style="margin:0 0 28px;color:#64748b;font-size:14px;line-height:1.6">¿Cómo fue tu experiencia hoy?</p>
 
-  <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px">
+  <table cellpadding="0" cellspacing="0" style="margin:0 auto 20px">
     <tr>${starLinks}</tr>
   </table>
 
-  <p style="margin:0;color:#cbd5e1;font-size:12px">Tu reseña es anónima y ayuda a otros pacientes</p>
+  <p style="margin:0;color:#cbd5e1;font-size:12px">Un toque — 2 segundos. Tu reseña ayuda a otros pacientes.</p>
+</td></tr>
+
+<tr><td style="padding:24px 40px 28px;text-align:center;border-top:1px solid #f1f5f9">
+  <p style="margin:0;color:#94a3b8;font-size:12px">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#94a3b8;text-decoration:none">hola@citadoc.lat</a></p>
+</td></tr>
+
+</table></td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
+function tplReschedulePrompt(d: Record<string, any>): string {
+  const doctorNombre = d.doctor_nombre || 'tu médico'
+  const paciente     = d.paciente_nombre || ''
+  const firstName    = paciente ? ', ' + paciente.split(' ')[0] : ''
+  const profileUrl   = d.profile_url || 'https://citadoc.lat'
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc"><tr><td align="center" style="padding:40px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
+
+<tr><td style="padding-bottom:20px;text-align:center">
+  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase">CITADOC</span>
+</td></tr>
+
+<tr><td style="background:#fff;border-radius:20px;overflow:hidden;border:1px solid #e2e8f0">
+<table width="100%" cellpadding="0" cellspacing="0">
+
+<tr><td style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:36px 40px 32px;text-align:center">
+  <div style="width:48px;height:48px;background:rgba(255,255,255,.08);border-radius:50%;margin:0 auto 18px;line-height:48px;font-size:22px;text-align:center">📅</div>
+  <p style="margin:0 0 8px;color:rgba(255,255,255,.4);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Los planes cambian</p>
+  <h1 style="margin:0 0 8px;color:#fff;font-size:21px;font-weight:700;line-height:1.3">¿Te gustaría encontrar<br>otro momento${firstName}?</h1>
+  <p style="margin:0;color:rgba(255,255,255,.45);font-size:14px">${doctorNombre} tiene disponibilidad.</p>
+</td></tr>
+
+<tr><td style="padding:32px 40px 36px;text-align:center">
+  <p style="margin:0 0 28px;color:#475569;font-size:15px;line-height:1.7">Sabemos que a veces algo surge.<br>Puedes elegir el día y la hora que mejor te quede.</p>
+
+  <table cellpadding="0" cellspacing="0" style="margin:0 auto">
+    <tr><td>
+      <a href="${profileUrl}" style="display:inline-block;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;text-decoration:none;padding:15px 32px;border-radius:12px;font-size:15px;font-weight:700">
+        Ver disponibilidad →
+      </a>
+    </td></tr>
+  </table>
+
+  <p style="margin:24px 0 0;color:#cbd5e1;font-size:12px">Te esperamos cuando puedas.</p>
 </td></tr>
 
 <tr><td style="padding:0 40px 28px;text-align:center;border-top:1px solid #f1f5f9">
@@ -1439,6 +1576,12 @@ serve(async (req) => {
         break
       }
 
+      case 'reminder_3h': {
+        const subject = `Tu cita con ${data.doctor_name || 'tu médico'} es en 3 horas`
+        await sendEmail(to_email, subject, tplReminder3h(data))
+        break
+      }
+
       case 'web_generada': {
         const isReal = data.is_real === true || data.is_real === 'true'
         const subject = isReal
@@ -1530,9 +1673,16 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
         break
       }
 
-      case 'review_request': {
-        const subject = `¿Cómo fue tu cita con ${data.doctor_nombre || 'tu médico'}?`
-        await sendEmail(to_email, subject, tplReviewRequest(data))
+      case 'reschedule_prompt': {
+        const subject = `${data.doctor_nombre || 'Tu médico'} tiene disponibilidad — ¿reagendamos?`
+        await sendEmail(to_email, subject, tplReschedulePrompt(data))
+        break
+      }
+
+      case 'review_request':
+      case 'post_consulta': {
+        const subject = `¿Cómo fue tu consulta con ${data.doctor_nombre || 'tu médico'}?`
+        await sendEmail(to_email, subject, tplPostConsulta(data))
         break
       }
 

@@ -29,6 +29,8 @@ const SPECS_T1 = [
   'nutricionista',
   'psicóloga', 'psicólogo',
   'médico funcional',
+  'psiquiatra',
+  'obstetra',
 ]
 
 // Tier 2 specs: alta conversión, práctica privada activa
@@ -38,18 +40,35 @@ const SPECS_T2 = [
   'cardiólogo', 'cardióloga',
   'pediatra',
   'endocrinólogo', 'endocrinóloga',
-  'urólogo',
-  'oftalmólogo',
+  'urólogo', 'uróloga',
+  'oftalmólogo', 'oftalmóloga',
+  'oncólogo', 'oncóloga',
+  'neumólogo', 'neumóloga',
+  'alergólogo', 'alergóloga',
+  'cirujano general',
+  'nefrólogo', 'nefróloga',
+  'infectólogo', 'infectóloga',
+  'neurocirujano', 'neurocirujana',
 ]
 
 // Tier 3 specs: volumen, larga cola
 const SPECS_T3 = [
-  'gastroenterólogo',
+  'gastroenterólogo', 'gastroenteróloga',
   'otorrinolaringólogo',
   'médico general',
   'internista',
-  'reumatólogo',
-  'neurólogo',
+  'reumatólogo', 'reumatóloga',
+  'neurólogo', 'neuróloga',
+  'hematólogo', 'hematóloga',
+  'geriatra',
+  'fisiatra',
+  'proctólogo', 'proctóloga',
+  'angiólogo', 'angióloga',
+  'hepatólogo', 'hepatóloga',
+  'médico deportivo',
+  'neonatólogo', 'neonatóloga',
+  'médico del trabajo',
+  'cirujano vascular',
 ]
 
 function buildMatrix(): { specialty: string; city: string; tier: number }[] {
@@ -201,6 +220,9 @@ const MAPS_QUERIES_T1 = [
   'dermatóloga', 'dermatólogo', 'cirujano plástico', 'cirujana plástica',
   'médico estético', 'odontólogo estético', 'ginecóloga', 'nutricionista',
   'traumatólogo', 'ortopedista', 'cardiólogo', 'pediatra', 'psicóloga',
+  'psiquiatra', 'oncólogo', 'neumólogo', 'alergólogo', 'urólogo',
+  'oftalmólogo', 'nefrólogo', 'infectólogo', 'neurocirujano',
+  'gastroenterólogo', 'reumatólogo', 'endocrinólogo', 'fisiatra',
 ]
 
 async function fetchGoogleMapsLeads(

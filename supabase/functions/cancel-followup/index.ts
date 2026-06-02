@@ -8,27 +8,22 @@ Deno.serve(async () => {
   try {
     const sb  = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     const now = new Date()
-    const today = now.toISOString().split('T')[0]
 
-    // HH:MM de hace 2 horas — para filtrar citas de hoy que ya terminaron
-    const twoHoursAgoHHMM = new Date(now.getTime() - 2 * 3600000)
-      .toTimeString().slice(0, 5)
+    // Citas canceladas hace entre 45 y 75 minutos (ventana centrada en 1h)
+    const from = new Date(now.getTime() - 75 * 60000).toISOString()
+    const to   = new Date(now.getTime() - 45 * 60000).toISOString()
 
-    const { data: allCitas } = await sb
+    const { data: citas } = await sb
       .from('citas')
       .select('id, medico_id, paciente_email, paciente_nombre, fecha, hora')
-      .lte('fecha', today)
-      .neq('estado', 'cancelada')
-      .eq('review_sent', false)
+      .eq('estado', 'cancelada')
+      .eq('reschedule_prompt_sent', false)
       .not('paciente_email', 'is', null)
-
-    // Citas de días pasados: todas. Citas de hoy: solo si la hora ya pasó hace 2h+
-    const citas = (allCitas || []).filter(c =>
-      c.fecha < today || (c.hora && c.hora.slice(0, 5) <= twoHoursAgoHHMM)
-    )
+      .gte('cancelada_at', from)
+      .lte('cancelada_at', to)
 
     let sent = 0
-    for (const cita of citas) {
+    for (const cita of citas || []) {
       const { data: m } = await sb
         .from('medicos')
         .select('nombre, apellido, titulo, slug, plan')
@@ -37,11 +32,11 @@ Deno.serve(async () => {
 
       if (!m) continue
       if (!['pro', 'destacado', 'pro_web'].includes(m.plan)) {
-        await sb.from('citas').update({ review_sent: true }).eq('id', cita.id)
+        await sb.from('citas').update({ reschedule_prompt_sent: true }).eq('id', cita.id)
         continue
       }
 
-      const reviewUrl = `${SUPABASE_URL}/functions/v1/cita-review?cita_id=${cita.id}&medico_id=${cita.medico_id}`
+      const profileUrl = `https://citadoc.lat/citadoc-perfil.html?slug=${m.slug}`
 
       await fetch(SEND_EMAIL_URL, {
         method: 'POST',
@@ -50,16 +45,15 @@ Deno.serve(async () => {
           'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
         },
         body: JSON.stringify({
-          type:            'post_consulta',
+          type:            'reschedule_prompt',
           to_email:        cita.paciente_email,
           paciente_nombre: cita.paciente_nombre,
           doctor_nombre:   `${m.titulo || 'Dr.'} ${m.nombre} ${m.apellido}`,
-          doctor_slug:     m.slug,
-          review_url:      reviewUrl,
+          profile_url:     profileUrl,
         }),
       }).catch(() => {})
 
-      await sb.from('citas').update({ review_sent: true }).eq('id', cita.id)
+      await sb.from('citas').update({ reschedule_prompt_sent: true }).eq('id', cita.id)
       sent++
     }
 

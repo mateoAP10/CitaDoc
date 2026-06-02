@@ -122,20 +122,30 @@ serve(async (req) => {
     ? `${BASE_URL}/citadoc-registro.html?from=invite&demo=${demo_slug}`
     : `${BASE_URL}/citadoc-registro.html?from=invite`
 
-  const { data: linkData, error: linkError } = await sb.auth.admin.generateLink({
+  // Intentar invite, si ya existe usar magiclink
+  let magic_link = redirectTo
+  const { data: inviteData, error: inviteError } = await sb.auth.admin.generateLink({
     type: 'invite',
     email,
     options: { redirectTo },
   })
 
-  if (linkError) {
-    console.error('[invite] generateLink error:', linkError)
-    return json({ error: linkError.message }, 500)
+  if (inviteError) {
+    // Usuario ya registrado — generar magic link para login directo
+    const { data: mlData, error: mlError } = await sb.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+      options: { redirectTo: 'https://citadoc.lat/citadoc-dashboard.html' },
+    })
+    if (mlError) {
+      // Último fallback: link directo al dashboard
+      magic_link = 'https://citadoc.lat/citadoc-dashboard.html'
+    } else {
+      magic_link = mlData.properties?.action_link || redirectTo
+    }
+  } else {
+    magic_link = inviteData.properties?.action_link || redirectTo
   }
-
-  const magic_link = linkData.properties?.action_link || linkData.properties?.hashed_token
-    ? `${SUPABASE_URL}/auth/v1/verify?token=${linkData.properties?.hashed_token}&type=invite&redirect_to=${encodeURIComponent(redirectTo)}`
-    : redirectTo
 
   // 2. Enviar email premium via Resend
   const demo_url = demo_slug ? `${BASE_URL}/demo.html?slug=${demo_slug}` : null
