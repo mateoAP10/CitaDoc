@@ -843,6 +843,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         <label class="field-label">Fecha de atención</label>
         <input class="field-input" id="mn_fecha" type="date">
       </div>
+      <div class="field-group">
+        <label class="field-label">Hora del turno</label>
+        <input class="field-input" id="mn_hora" type="time">
+      </div>
+      <div class="field-group full">
+        <label class="field-label">Médico tratante</label>
+        <input class="field-input" id="mn_medico" placeholder="Dr. Nombre Apellido">
+      </div>
       <div class="field-group full">
         <label class="field-label">Servicio / Nota</label>
         <input class="field-input" id="mn_nota" placeholder="Ej: Consulta general, laboratorios...">
@@ -1967,7 +1975,7 @@ function mnToggleEmailDetails() {
 function abrirModalManual() {
   const m = el('modalManual')
   if (!m) return
-  ;['mn_nombre','mn_telefono','mn_email','mn_cedula','mn_nota','mn_email_fecha','mn_email_hora','mn_email_medico'].forEach(id => { const e=el(id); if(e) e.value='' })
+  ;['mn_nombre','mn_telefono','mn_email','mn_cedula','mn_nota','mn_hora','mn_medico','mn_email_fecha','mn_email_hora','mn_email_medico'].forEach(id => { const e=el(id); if(e) e.value='' })
   el('mn_canal').value = 'instagram'
   el('mn_fecha').value = new Date().toISOString().split('T')[0]
   el('mn_email_tipo').value = ''
@@ -2024,7 +2032,9 @@ async function guardarPacienteManual() {
   // Registrar cita — followup_confirm_sent=true para que el cron no auto-envíe
   const { data: citaData, error } = await sbPost('center_citas', {
     center_id: _center.id, patient_id: patientId,
-    fecha_pref: fecha, canal, nota,
+    fecha_pref: fecha,
+    hora: (el('mn_hora')?.value||null),
+    canal, nota,
     followup_confirm_sent: true,  // no auto-confirmación para registros manuales
   })
   if (error) {
@@ -2038,8 +2048,8 @@ async function guardarPacienteManual() {
   const patEmail  = (el('mn_email')?.value||'').trim() || email
   if (emailTipo && patEmail && _center?.nombre) {
     const emailFecha  = el('mn_email_fecha')?.value  || fecha || ''
-    const emailHora   = el('mn_email_hora')?.value   || ''
-    const emailMedico = el('mn_email_medico')?.value || ''
+    const emailHora   = el('mn_email_hora')?.value   || (el('mn_hora')?.value||'')
+    const emailMedico = el('mn_email_medico')?.value || (el('mn_medico')?.value||'')
     const emailType   = emailTipo === 'center_bienvenida_simple' ? 'center_confirm' : emailTipo
     fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
