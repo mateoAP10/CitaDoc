@@ -810,6 +810,51 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         <div id="leadsCount" style="font-size:.75rem;color:var(--muted);margin-top:.6rem;text-align:right"></div>
       </div>
 
+      <!-- PANEL DE AUTOMATIZACIÓN -->
+      <div id="autoPanel" style="background:#080e1a;border-radius:18px;padding:1.75rem;margin-top:.25rem;position:relative;overflow:hidden;border:1px solid rgba(0,255,180,.12)">
+        <!-- Grid de fondo -->
+        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,180,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,180,.03) 1px,transparent 1px);background-size:28px 28px;pointer-events:none"></div>
+        <!-- Glow superior -->
+        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:300px;height:80px;background:radial-gradient(ellipse,rgba(0,255,180,.15),transparent 70%);pointer-events:none"></div>
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;position:relative">
+          <div style="display:flex;align-items:center;gap:.75rem">
+            <div style="width:10px;height:10px;border-radius:50%;background:#00ffb4;box-shadow:0 0 10px #00ffb4,0 0 20px rgba(0,255,180,.4);animation:apulse 2s infinite"></div>
+            <span style="font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#00ffb4">Sistema de automatización</span>
+          </div>
+          <div style="font-family:monospace;font-size:.65rem;color:rgba(0,255,180,.45);letter-spacing:.08em" id="autoTimestamp">--:--:--</div>
+        </div>
+
+        <!-- Grid de automatismos -->
+        <div id="autoNodes" style="display:flex;flex-direction:column;gap:.55rem;position:relative"></div>
+
+        <!-- Footer -->
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid rgba(0,255,180,.1);display:flex;align-items:center;justify-content:space-between;position:relative">
+          <span style="font-family:monospace;font-size:.65rem;color:rgba(255,255,255,.25);letter-spacing:.06em">DOCTOR CENTER · CITADOC ENGINE v2.0</span>
+          <span id="autoSummary" style="font-family:monospace;font-size:.65rem;color:rgba(0,255,180,.6);letter-spacing:.06em">7 AUTOMATISMOS ACTIVOS</span>
+        </div>
+      </div>
+
+      <style>
+        @keyframes apulse{0%,100%{opacity:1;box-shadow:0 0 8px #00ffb4,0 0 16px rgba(0,255,180,.4)}50%{opacity:.5;box-shadow:0 0 4px #00ffb4}}
+        @keyframes adot{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+        @keyframes ascan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+        .auto-node{display:flex;align-items:center;gap:.85rem;padding:.6rem .9rem;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);position:relative;overflow:hidden;transition:border-color .3s}
+        .auto-node::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:3px 0 0 3px}
+        .auto-node.active::before{background:#00ffb4;box-shadow:0 0 8px rgba(0,255,180,.6)}
+        .auto-node.idle::before{background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,.5)}
+        .auto-node.instant::before{background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.5)}
+        .auto-node .scan-line{position:absolute;top:0;bottom:0;width:30px;background:linear-gradient(90deg,transparent,rgba(0,255,180,.08),transparent);animation:ascan 3s ease-in-out infinite}
+        .auto-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem}
+        .auto-label{flex:1;min-width:0}
+        .auto-name{font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;color:rgba(255,255,255,.85);line-height:1.2}
+        .auto-desc{font-family:monospace;font-size:.6rem;color:rgba(255,255,255,.3);letter-spacing:.04em;margin-top:.15rem}
+        .auto-dots{display:flex;gap:3px;align-items:center;flex-shrink:0}
+        .auto-dot{width:6px;height:6px;border-radius:50%}
+        .auto-badge{font-family:monospace;font-size:.58rem;font-weight:700;padding:.18rem .55rem;border-radius:20px;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
+      </style>
+
     </div><!-- /tabBackend -->
 
   </div><!-- /main -->
@@ -2413,6 +2458,60 @@ function toast(msg, type='ok') {
   t.className = 'toast show ' + type
   clearTimeout(_toastTimer)
   _toastTimer = setTimeout(() => t.className = 'toast', 2800)
+}
+
+// ── PANEL DE AUTOMATIZACIÓN ───────────────────────────────────────────────────
+const AUTO_NODES = [
+  { icon:'⚡', name:'ENGINE FOLLOWUP',        desc:'CRON · CADA HORA · SUPABASE EDGE',      type:'active',  badge:'EN VIVO',    color:'#00ffb4', delay:0   },
+  { icon:'✅', name:'CONFIRMACIÓN AUTOMÁTICA', desc:'TRIGGER · AL RESERVAR DESDE WEB',        type:'instant', badge:'INSTANTÁNEO',color:'#f59e0b', delay:200 },
+  { icon:'🔔', name:'RECORDATORIO DE TURNO',   desc:'CRON · 24H ANTES DE LA CITA',           type:'active',  badge:'PROGRAMADO', color:'#00ffb4', delay:400 },
+  { icon:'👋', name:'RECOVERY NO-SHOW',        desc:'CRON · 1-3 DÍAS SIN ASISTENCIA',        type:'active',  badge:'VIGILANDO',  color:'#00ffb4', delay:600 },
+  { icon:'❤️', name:'POST-VISITA',             desc:'TRIGGER · AL MARCAR ATENDIDO',          type:'instant', badge:'INSTANTÁNEO',color:'#f59e0b', delay:800 },
+  { icon:'🔴', name:'ALERTA NUEVOS TURNOS',    desc:'PANEL ADMIN · TIEMPO REAL',             type:'idle',    badge:'ACTIVO',     color:'#3b82f6', delay:1000},
+  { icon:'💬', name:'WHATSAPP DIRECTO',        desc:'TRIGGER · MENSAJE PRE-LLENADO AL PACIENTE',type:'instant',badge:'INSTANTÁNEO',color:'#f59e0b',delay:1200},
+]
+
+function initAutoPanel() {
+  const wrap = document.getElementById('autoNodes')
+  if (!wrap) return
+  wrap.innerHTML = AUTO_NODES.map((n,i) => `
+    <div class="auto-node ${n.type}" id="autoNode${i}" style="opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s">
+      <div class="scan-line"></div>
+      <div class="auto-icon" style="background:${n.color}15;border:1px solid ${n.color}30">${n.icon}</div>
+      <div class="auto-label">
+        <div class="auto-name">${n.name}</div>
+        <div class="auto-desc">${n.desc}</div>
+      </div>
+      <div class="auto-dots" id="autoDots${i}">
+        <div class="auto-dot" style="background:${n.color};animation:adot 1.4s ease-in-out ${n.delay*0+0}ms infinite"></div>
+        <div class="auto-dot" style="background:${n.color};animation:adot 1.4s ease-in-out ${200}ms infinite"></div>
+        <div class="auto-dot" style="background:${n.color};animation:adot 1.4s ease-in-out ${400}ms infinite"></div>
+      </div>
+      <div class="auto-badge" style="background:${n.color}18;color:${n.color};border:1px solid ${n.color}30">${n.badge}</div>
+    </div>`).join('')
+
+  // Animar entrada secuencial
+  AUTO_NODES.forEach((n,i) => {
+    setTimeout(() => {
+      const node = document.getElementById('autoNode'+i)
+      if (node) { node.style.opacity='1'; node.style.transform='translateY(0)' }
+    }, n.delay + 300)
+  })
+
+  // Clock en vivo
+  function tick() {
+    const ts = document.getElementById('autoTimestamp')
+    if (ts) ts.textContent = new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+  }
+  tick()
+  setInterval(tick, 1000)
+}
+
+// Inicializar cuando se abre el tab backend
+const _origSwitchTab = switchTab
+switchTab = function(tab) {
+  _origSwitchTab(tab)
+  if (tab === 'backend') setTimeout(initAutoPanel, 100)
 }
 
 // Auto-unlock al final — todas las variables ya están declaradas
