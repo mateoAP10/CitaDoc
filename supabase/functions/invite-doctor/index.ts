@@ -122,17 +122,10 @@ serve(async (req) => {
     .limit(1)
 
   if (!existing || existing.length === 0) {
-    // Obtener user_id del auth
-    const { data: users } = await sb.auth.admin.listUsers()
-    const authUser = users?.users?.find((u: { email: string }) => u.email === email)
-    const userId = authUser?.id
+    const userId = linkData?.user?.id
 
-    // Slug único
     const baseSlug = `dr-${slugify(nombre)}${apellido ? '-' + slugify(apellido.split(' ')[0]) : ''}`
-    const { data: slugCheck } = await sb
-      .from('medicos')
-      .select('slug')
-      .like('slug', `${baseSlug}%`)
+    const { data: slugCheck } = await sb.from('medicos').select('slug').like('slug', `${baseSlug}%`)
     const slug = slugCheck && slugCheck.length > 0
       ? `${baseSlug}-${Math.random().toString(36).slice(2, 5)}`
       : baseSlug
@@ -142,14 +135,14 @@ serve(async (req) => {
       email,
       nombre,
       apellido,
-      titulo:        'Dr.',
-      especialidades: specialty ? [specialty] : [],
-      ciudad:        city || '',
+      titulo:              'Dr.',
+      especialidades:      specialty ? [specialty] : [],
+      ciudad:              city || '',
       slug,
-      activo:        true,
-      plan:          'free',
+      activo:              true,
+      plan:                'free',
       subscription_status: 'trialing',
-      trial_ends_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+      trial_ends_at:       new Date(Date.now() + 30 * 86400000).toISOString(),
     })
   }
 
@@ -160,7 +153,7 @@ serve(async (req) => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_KEY}` },
     body: JSON.stringify({
-      from,
+      from:    FROM,
       to:      [email],
       subject: `${firstName}, configura tu contraseña CitaDoc`,
       html,
