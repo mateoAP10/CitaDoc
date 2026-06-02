@@ -91,6 +91,7 @@ async function runRecordatorios() {
     .from('center_citas')
     .select('*, center_patients(nombre, email, telefono), centers(nombre, whatsapp, telefono)')
     .eq('fecha_pref', tStr).is('email_reminder_at', null).eq('atendido', false)
+    .neq('estado', 'cancelado')
     .limit(100)
 
   if (!data?.length) return 0
@@ -120,7 +121,7 @@ async function runNoShow() {
     .select('*, center_patients(nombre, email, telefono), centers(nombre, whatsapp, telefono, slug)')
     .gte('fecha_pref', from.toISOString().split('T')[0])
     .lte('fecha_pref', to.toISOString().split('T')[0])
-    .eq('atendido', false).is('email_noshow_at', null)
+    .eq('atendido', false).is('email_noshow_at', null).neq('estado', 'cancelado')
     .limit(100)
 
   if (!data?.length) return 0
