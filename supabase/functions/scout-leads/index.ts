@@ -154,12 +154,118 @@ function selectBatch(batchSize: number, runIndex: number): typeof SEARCH_MATRIX 
   return batch
 }
 
+// ── Google Maps (Places Text Search) ─────────────────────────────────────────
+
+// Maps-specific queries: combinaciones specialty × city para Places
+const MAPS_QUERIES_T1 = [
+  'dermatóloga', 'dermatólogo', 'cirujano plástico', 'cirujana plástica',
+  'médico estético', 'odontólogo estético', 'ginecóloga', 'nutricionista',
+  'traumatólogo', 'ortopedista', 'cardiólogo', 'pediatra', 'psicóloga',
+]
+
+async function fetchGoogleMapsLeads(
+  specialty: string,
+  city: string,
+  apiKey: string,
+  tier: number,
+): Promise<ReturnType<typeof buildLead>[]> {
+  const query    = `${specialty} ${city} Ecuador`
+  const mapsUrl  = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=es&region=ec&key=${apiKey}`
+
+  let places: Record<string, unknown>[] = []
+  try {
+    const res = await fetch(mapsUrl)
+    if (res.ok) {
+      const data = await res.json()
+      places = (data.results || []).slice(0, 20)
+    } else {
+      console.warn(`[scout-maps] Places ${res.status} for: ${query}`)
+    }
+  } catch (e) {
+    console.error('[scout-maps] fetch error:', e)
+  }
+
+  const leads: ReturnType<typeof buildLead>[] = []
+  for (const p of places) {
+    const name    = String(p.name || '')
+    const address = String(p.formatted_address || '')
+    const placeId = String(p.place_id || '')
+    const rating  = Number(p.rating || 0)
+    const reviews = Number(p.user_ratings_total || 0)
+    const types   = (p.types as string[]) || []
+
+    // Solo negocios médicos/salud
+    const medTypes = ['doctor','dentist','hospital','health','physiotherapist','pharmacy']
+    if (!types.some(t => medTypes.includes(t))) continue
+
+    // No queremos cadenas/hospitales grandes
+    if (/hospital|clínica \w+ \d+|farma|farmacia/i.test(name)) continue
+
+    // Scoring Maps
+    let score = 0
+    const reasons: string[] = ['maps']
+
+    // Sin website = oportunidad (lo detectamos por ausencia en el registro básico)
+    score += 3; reasons.push('sin web conocida')
+
+    if (rating >= 4.5 && reviews >= 10) { score += 3; reasons.push(`⭐${rating}(${reviews})`) }
+    else if (rating >= 4.0)             { score += 2; reasons.push(`⭐${rating}`) }
+    else if (rating > 0)                { score += 1 }
+
+    // Tier ciudad
+    const cityLow = city.toLowerCase()
+    if (['quito','guayaquil','cuenca'].some(c => cityLow.includes(c))) score += 2
+    else score += 1
+
+    // Especialidad premium
+    const specLow = specialty.toLowerCase()
+    if (['plástic','estétic','dermatol','dental','odontol','nutrici','ginecol'].some(s => specLow.includes(s))) score += 2
+    else score += 1
+
+    if (tier === 1) score++
+
+    score = Math.min(score, 10)
+    if (score < 3) continue
+
+    const profileUrl = placeId
+      ? `https://maps.google.com/?cid=${placeId}`
+      : `https://maps.google.com/maps/search/${encodeURIComponent(name + ' ' + city)}`
+
+    leads.push(buildLead({
+      instagram_handle: null,
+      doctor_name:      name,
+      specialty,
+      city,
+      profile_url:      profileUrl,
+      website_detected: false,
+      website_url:      '',
+      whatsapp_visible: false,
+      bio_snippet:      `${address} · ⭐${rating} (${reviews} reseñas)`,
+      premium_score:    score,
+      score_reason:     reasons.join(' · '),
+      search_query:     query,
+      source:           'google-maps',
+    }))
+  }
+
+  return leads
+}
+
+function buildLead(l: {
+  instagram_handle: string | null
+  doctor_name: string; specialty: string; city: string
+  profile_url: string; website_detected: boolean; website_url: string
+  whatsapp_visible: boolean; bio_snippet: string
+  premium_score: number; score_reason: string; search_query: string; source: string
+}) { return l }
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
   const BRAVE_KEY    = Deno.env.get('BRAVE_SEARCH_API_KEY')
+  const MAPS_KEY     = Deno.env.get('GOOGLE_PLACES_API_KEY') || ''
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
   const SUPABASE_SVC = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
@@ -258,29 +364,64 @@ serve(async (req) => {
     }
 
     queryLog.push({ query, found: results.length, qualified })
-    // Pequeña pausa entre queries para no saturar la API
     await new Promise(r => setTimeout(r, 300))
   }
 
-  // Upsert — ignorar duplicados por instagram_handle
+  // ── Google Maps batch (3 queries por run, rotan independiente) ────────────
+  const mapsLeads: typeof allLeads = []
+  const mapsLog: { query: string; found: number; qualified: number }[] = []
+
+  if (MAPS_KEY) {
+    const mapsSpecialties = MAPS_QUERIES_T1
+    const mapsTargetCount = 3
+    const mapsStart = (runIndex * mapsTargetCount) % (mapsSpecialties.length * CITIES_T1.length)
+    const mapsCombos = []
+    for (const s of mapsSpecialties) for (const c of CITIES_T1) mapsCombos.push({ specialty: s, city: c })
+
+    for (let i = 0; i < mapsTargetCount; i++) {
+      const t = mapsCombos[(mapsStart + i) % mapsCombos.length]
+      const leads = await fetchGoogleMapsLeads(t.specialty, t.city, MAPS_KEY, 1)
+      mapsLeads.push(...leads)
+      mapsLog.push({ query: `maps:${t.specialty}/${t.city}`, found: leads.length, qualified: leads.length })
+      await new Promise(r => setTimeout(r, 400))
+    }
+  }
+
+  // ── Upsert Instagram leads (conflict on instagram_handle) ────────────────
   let inserted = 0
   for (const lead of allLeads) {
-    const key = lead.instagram_handle || lead.doctor_name
-    if (!key) continue
+    if (!lead.instagram_handle) continue
     const { error } = await sb
       .from('doctor_leads')
       .upsert(lead, { onConflict: 'instagram_handle', ignoreDuplicates: true })
     if (!error) inserted++
   }
 
+  // ── Upsert Maps leads (conflict on profile_url) ──────────────────────────
+  let insertedMaps = 0
+  for (const lead of mapsLeads) {
+    // Check if this Maps place already exists
+    const { data: exists } = await sb
+      .from('doctor_leads')
+      .select('id')
+      .eq('profile_url', lead.profile_url)
+      .limit(1)
+    if (exists && exists.length > 0) continue
+    const { error } = await sb.from('doctor_leads').insert(lead)
+    if (!error) insertedMaps++
+  }
+
   return json({
-    run_index:  runIndex,
-    batch_size: targets.length,
-    queries:    queryLog,
-    found_total: queryLog.reduce((a, q) => a + q.found, 0),
-    qualified:   allLeads.length,
+    run_index:    runIndex,
+    batch_size:   targets.length,
+    queries:      [...queryLog, ...mapsLog],
+    found_total:  queryLog.reduce((a, q) => a + q.found, 0),
+    qualified:    allLeads.length,
     inserted,
-    matrix_size: SEARCH_MATRIX.length,
-    timestamp:   new Date().toISOString(),
+    maps_qualified: mapsLeads.length,
+    maps_inserted:  insertedMaps,
+    maps_enabled:   !!MAPS_KEY,
+    matrix_size:  SEARCH_MATRIX.length,
+    timestamp:    new Date().toISOString(),
   })
 })
