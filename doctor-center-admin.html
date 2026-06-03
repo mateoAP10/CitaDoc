@@ -2122,18 +2122,62 @@ async function loadNewTurnos() {
   }).join('')
 }
 
+async function markAtendido(citaId, patientId, btn) {
+  btn.disabled = true; btn.textContent = '...'
+  const {data: citaData} = await sbGet('center_citas', `id=eq.${citaId}&select=atendido,email_postvista_at`)
+  const citaActual = citaData?.[0]
+  const yaEnviado  = !!citaActual?.email_postvista_at
+  const now        = new Date().toISOString()
+
+  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { atendido: true, estado: 'atendido', email_postvista_at: yaEnviado ? citaActual.email_postvista_at : now })
+  if (error) { toast('Error: '+error.message, 'err'); btn.disabled=false; btn.textContent='✓ Asistió'; return }
+
+  if (!yaEnviado) {
+    const patient = (await sbGet('center_patients', `id=eq.${patientId}&select=nombre,email`)).data?.[0]
+    if (patient?.email && _center?.nombre) {
+      fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+        body: JSON.stringify({
+          type: 'center_postvista',
+          to_email: patient.email,
+          patient_name: patient.nombre||'',
+          center_name: _center.nombre,
+          booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}`,
+        })
+      })
+      toast('Asistencia registrada — email de agradecimiento enviado ✓', 'ok')
+    } else {
+      toast('Asistencia registrada ✓', 'ok')
+    }
+  } else {
+    toast('Asistencia registrada ✓ — email ya enviado anteriormente', 'ok')
+  }
+  btn.textContent = '✓ Asistió'
+  btn.classList.add('done')
+  btn.disabled = true
+  await loadNewTurnos()
+}
+
 async function cancelarTurno(citaId, patientId, btn) {
   btn.disabled = true; btn.textContent = '...'
-  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { estado: 'cancelado', atendido: false })
+  // Verificar estado actual antes de enviar email
+  const {data: citaData} = await sbGet('center_citas', `id=eq.${citaId}&select=estado,email_noshow_at`)
+  const citaActual = citaData?.[0]
+  const yaEnviado = !!citaActual?.email_noshow_at
+
+  const now = new Date().toISOString()
+  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { estado: 'cancelado', atendido: false, email_noshow_at: yaEnviado ? citaActual.email_noshow_at : now })
   if (error) { toast('Error: '+error.message, 'err'); btn.disabled=false; btn.textContent='✕ Cancelar'; return }
 
-  // Email de reagendamiento al paciente
-  const patient = (await sbGet('center_patients', `id=eq.${patientId}&select=nombre,email`)).data?.[0]
-  if (patient?.email && _center?.nombre) {
-    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
-      body: JSON.stringify({
+  if (!yaEnviado) {
+    // Email de reagendamiento al paciente — solo si nunca se envió
+    const patient = (await sbGet('center_patients', `id=eq.${patientId}&select=nombre,email`)).data?.[0]
+    if (patient?.email && _center?.nombre) {
+      fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+        body: JSON.stringify({
         type: 'center_noshow',
         to_email: patient.email,
         patient_name: patient.nombre||'',
@@ -2142,9 +2186,12 @@ async function cancelarTurno(citaId, patientId, btn) {
         booking_url: `https://doctor-center.citadoc.lat/${_center.slug||''}`,
       })
     })
-    toast('Turno cancelado — email de reagendamiento enviado ✓', 'ok')
+      toast('Turno cancelado — email de reagendamiento enviado ✓', 'ok')
+    } else {
+      toast('Sin email — paciente no tiene correo', 'ok')
+    }
   } else {
-    toast('Turno cancelado ✓', 'ok')
+    toast('Turno cancelado ✓ — email ya enviado anteriormente', 'ok')
   }
   await loadNewTurnos()
   // Refrescar también la tabla de pacientes si está cargada
