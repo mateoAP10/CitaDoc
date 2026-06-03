@@ -280,8 +280,18 @@ Deno.serve(async (req) => {
       }
 
       if (action === 'patient_cancel') {
-        await sb.from('center_citas').update({ estado: 'cancelado', followup_confirm_sent: true }).eq('id', citaId)
-        // Send reschedule email
+        // Si ya estaba cancelado, solo mostrar la pantalla sin reenviar email
+        if (cita.estado === 'cancelado') {
+          return new Response(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cancelado</title></head>
+<body style="margin:0;padding:1rem;background:#fff7ed;font-family:-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:20px;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1)">
+  <div style="width:64px;height:64px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.8rem">📅</div>
+  <h2 style="margin:0 0 .5rem;color:#0f172a;font-size:1.2rem">Turno ya cancelado</h2>
+  <p style="color:#374151;font-size:.88rem;margin:0;line-height:1.6">Este turno ya fue cancelado anteriormente.</p>
+</div></body></html>`, { headers: { 'Content-Type': 'text/html' } })
+        }
+        await sb.from('center_citas').update({ estado: 'cancelado', followup_confirm_sent: true, email_noshow_at: new Date().toISOString() }).eq('id', citaId)
+        // Send reschedule email (una sola vez)
         if (patient?.email && center?.nombre) {
           await sendEmail('center_noshow', {
             to_email: patient.email, patient_name: patName, center_name: centerName,
