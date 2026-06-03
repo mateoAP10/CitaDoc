@@ -98,31 +98,48 @@ const BASE_URL = 'https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/center-f
 function confirmUrl(citaId: string) { return `${BASE_URL}?action=patient_confirm&cita_id=${citaId}` }
 function cancelUrl(citaId: string)  { return `${BASE_URL}?action=patient_cancel&cita_id=${citaId}` }
 
-// ── 2a. RECORDATORIO 24H ───────────────────────────────────────────────────
-async function runRecordatorios() {
-  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
-  const tStr = tomorrow.toISOString().split('T')[0]
+// ── 2a. RECORDATORIO 12H ───────────────────────────────────────────────────
+async function runRecordatorios12h() {
+  const now     = new Date()
+  const inMin   = now.getHours() * 60 + now.getMinutes()
+  const today   = now.toISOString().split('T')[0]
+  const tomorrow = new Date(now.getTime() + 86400000).toISOString().split('T')[0]
+
   const { data } = await sb.from('center_citas')
     .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono,center_doctors(orden,medicos(nombre,apellido,titulo)))')
-    .eq('fecha_pref', tStr).is('email_reminder_at', null).not('email_confirm_at', 'is', null).eq('atendido', false).neq('estado','cancelado').limit(100)
+    .in('fecha_pref', [today, tomorrow])
+    .is('email_reminder_at', null)
+    .not('email_confirm_at', 'is', null)
+    .eq('atendido', false)
+    .neq('estado', 'cancelado')
+    .not('hora', 'is', null)
+    .limit(100)
 
   if (!data?.length) return 0
   let sent = 0
   for (const c of data) {
-    const p = c.center_patients as {nombre:string, email?:string}
+    if (!c.hora) continue
+    const [h, m] = c.hora.split(':').map(Number)
+    const citaDayMin = h * 60 + m
+    const citaAbsMin = c.fecha_pref === today ? citaDayMin : citaDayMin + 1440
+    const diffMin    = citaAbsMin - inMin
+    if (diffMin < 690 || diffMin > 750) continue  // ventana 11.5h–12.5h
+
+    const p      = c.center_patients as {nombre:string, email?:string}
     const center = c.centers as Record<string, unknown>
     if (!p?.email || !center?.nombre) continue
+
     await sendEmail('center_reminder', {
       to_email: p.email, patient_name: p.nombre, center_name: center.nombre as string,
       center_phone: (center.whatsapp||center.telefono||'') as string,
       doctor_name: extractDoctorName(center),
-      fecha: fmtDate(tStr), hora: c.hora||null, servicios: fmtServices(c.servicios),
+      fecha: fmtDate(c.fecha_pref), hora: c.hora, servicios: fmtServices(c.servicios),
       confirm_url: confirmUrl(c.id), cancel_url: cancelUrl(c.id),
     })
     await sb.from('center_citas').update({ email_reminder_at: new Date().toISOString(), followup_reminder_sent: true }).eq('id', c.id)
     sent++
   }
-  console.log(`[center-followup] recordatorios 24h: ${sent}`)
+  console.log(`[center-followup] recordatorios 12h: ${sent}`)
   return sent
 }
 
@@ -286,14 +303,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const [c, r, r3, n, p] = await Promise.all([
+    const [c, r12, r3] = await Promise.all([
       runConfirmaciones(),
-      runRecordatorios(),
+      runRecordatorios12h(),
       runRecordatorios3h(),
-      runNoShow(),
-      runPostVisita(),
     ])
-    return new Response(JSON.stringify({ ok: true, confirm: c, reminder_24h: r, reminder_3h: r3, noshow: n, postvista: p }), {
+    return new Response(JSON.stringify({ ok: true, confirm: c, reminder_12h: r12, reminder_3h: r3 }), {
       headers: { 'Content-Type': 'application/json' }
     })
   } catch(e) {
