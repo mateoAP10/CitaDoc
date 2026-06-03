@@ -74,7 +74,7 @@ async function runConfirmaciones() {
     const center = c.centers as Record<string, unknown>
     if (!p?.email) continue
 
-    await sendEmail('center_confirm', {
+    await sendEmail('center_reminder', {
       to_email:    p.email,
       patient_name: p.nombre,
       center_name:  center.nombre,
@@ -104,7 +104,7 @@ async function runRecordatorios() {
   const tStr = tomorrow.toISOString().split('T')[0]
   const { data } = await sb.from('center_citas')
     .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono,center_doctors(orden,medicos(nombre,apellido,titulo)))')
-    .eq('fecha_pref', tStr).is('email_reminder_at', null).eq('atendido', false).neq('estado','cancelado').limit(100)
+    .eq('fecha_pref', tStr).is('email_reminder_at', null).not('email_confirm_at', 'is', null).eq('atendido', false).neq('estado','cancelado').limit(100)
 
   if (!data?.length) return 0
   let sent = 0
@@ -133,7 +133,7 @@ async function runRecordatorios3h() {
   const inMin = now.getHours()*60 + now.getMinutes()
   const { data } = await sb.from('center_citas')
     .select('id,fecha_pref,hora,servicios,center_patients(nombre,email,telefono),centers(nombre,whatsapp,telefono,center_doctors(orden,medicos(nombre,apellido,titulo)))')
-    .eq('fecha_pref', today).is('email_reminder_3h_at', null).eq('atendido', false).neq('estado','cancelado')
+    .eq('fecha_pref', today).is('email_reminder_3h_at', null).not('email_confirm_at', 'is', null).eq('atendido', false).neq('estado','cancelado')
     .not('hora','is',null).limit(100)
 
   if (!data?.length) return 0
