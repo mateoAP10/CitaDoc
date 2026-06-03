@@ -2307,6 +2307,7 @@ async function guardarNuevaCita() {
     center_id: _center.id, patient_id: _citaPatientId,
     fecha_pref: fecha, hora, nota: [medico?'Médico: '+medico:'',nota].filter(Boolean).join(' — ')||null,
     canal: 'presencial', followup_confirm_sent: true,
+    email_confirm_at: new Date().toISOString(),
   })
   if (error) { toast('Error: '+error.message,'err'); btn.disabled=false; btn.textContent='Guardar cita'; return }
 
