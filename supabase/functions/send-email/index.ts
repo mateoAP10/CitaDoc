@@ -1375,26 +1375,31 @@ ${confirmUrl ? `<tr><td style="padding:0 32px 24px;">
 }
 
 function tplCenterReminder(d: Record<string,unknown>): string {
-  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const safe       = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
   const is3h       = d.es_3h === true
+  const isConfirm  = !d.confirm_url  // sin botones = email de confirmación inicial
   const doctorName = safe(d.doctor_name || d.center_name || '')
   const confirmUrl = safe(d.confirm_url||'')
   const cancelUrl  = safe(d.cancel_url||'')
-  const badge      = is3h ? '⚡ Tu turno es hoy' : '📅 Tu turno está confirmado'
+  const horasLabel = is3h ? '3 horas' : '12 horas'
+  const headline   = isConfirm
+    ? `Tu turno con <strong>${doctorName}</strong> está confirmado.`
+    : `Faltan <strong>${horasLabel}</strong> para tu turno con <strong>${doctorName}</strong>.`
+  const badge = isConfirm ? '📅 Turno confirmado' : is3h ? '⚡ Faltan 3 horas' : '⏰ Faltan 12 horas'
 
   const body = `
-<tr><td style="padding:28px 32px 8px;text-align:center;">
-  <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600;letter-spacing:.5px;">Hola, ${safe(d.patient_name)} 👋 Tu turno con</p>
-  <p style="margin:0;color:#0f172a;font-size:24px;font-weight:800;letter-spacing:-.3px;line-height:1.2;text-transform:uppercase;">${doctorName}</p>
+<tr><td style="padding:28px 32px 20px;text-align:center;">
+  <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600;">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4;">${headline}</p>
 </td></tr>
 
-<tr><td style="padding:20px 32px 0;">
+<tr><td style="padding:0 32px 0;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;">
     <tr><td style="padding:18px 20px;">
       ${d.fecha ? `<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Fecha</p>
       <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#0f172a;">${safe(d.fecha)}</p>` : ''}
       ${d.hora ? `<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Hora</p>
-      <p style="margin:0 0 12px;font-size:22px;font-weight:800;color:#0f172a;">${safe(d.hora)}</p>` : ''}
+      <p style="margin:0 0 12px;font-size:26px;font-weight:800;color:#0f172a;">${safe(d.hora)}</p>` : ''}
       ${d.servicios ? `<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Servicio</p>
       <p style="margin:0;font-size:14px;font-weight:600;color:#374151;">${safe(d.servicios)}</p>` : ''}
     </td></tr>
@@ -1406,13 +1411,13 @@ ${confirmUrl ? `<tr><td style="padding:20px 32px 8px;">
     ✓ Confirmar mi asistencia
   </a>
 </td></tr>
-<tr><td style="padding:0 32px 20px;">
+<tr><td style="padding:0 32px 8px;">
   <a href="${cancelUrl}" style="display:block;background:#f8fafc;color:#64748b;text-align:center;padding:12px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;border:1.5px solid #e2e8f0;">
     ✕ No puedo asistir — cancelar
   </a>
 </td></tr>` : ''}
-<tr><td style="padding:0 32px 28px;text-align:center;">
-  <p style="margin:0;color:#94a3b8;font-size:11px;">Un clic confirma o cancela tu turno.</p>
+<tr><td style="padding:16px 32px 28px;text-align:center;">
+  <p style="margin:0;color:#94a3b8;font-size:11px;">${confirmUrl ? 'Un clic confirma o cancela tu turno.' : 'Te esperamos.'}</p>
 </td></tr>`
 
   return centerBase(String(d.center_name||''), badge, 'linear-gradient(135deg,#0f172a,#1e293b)', '#e2e8f0', 'rgba(226,232,240,.12)', badge, body)
