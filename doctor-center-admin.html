@@ -1173,12 +1173,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         <div id="labViewOrdenes" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
             <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Historial de órdenes</div>
-            <select id="labOrdenFiltro" class="lab-select" style="width:auto;font-size:.78rem" onchange="renderLabOrdenes()">
-              <option value="">Todas</option>
-              <option value="pendiente">Pendientes</option>
-              <option value="realizado">Realizadas</option>
-              <option value="pagado">Pagadas</option>
-            </select>
+
           </div>
           <div id="labOrdenesList">
             <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin órdenes aún</div>
@@ -3279,12 +3274,11 @@ async function generarOrdenLab() {
 // ── Render órdenes ────────────────────────────────────────────────────────
 async function renderLabOrdenes() {
   await loadLabOrders()
-  const filtro = el('labOrdenFiltro')?.value || ''
   const list   = el('labOrdenesList')
-  const orders = filtro ? _labOrders.filter(o => o.estado === filtro) : _labOrders
+  const orders = _labOrders.filter(o => o.estado === 'pendiente')
 
   if (!orders.length) {
-    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin órdenes aún</div>'
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin órdenes pendientes ✓</div>'
     return
   }
 
