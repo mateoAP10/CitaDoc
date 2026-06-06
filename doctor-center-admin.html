@@ -1090,7 +1090,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M12 5v14M5 12h14"/></svg>Nueva Orden
             </button>
             <button class="lab-sub-tab" id="labBtnOrdenes"    onclick="switchLabView('ordenes')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>Órdenes
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>Órdenes<span id="labOrdenesBadge" style="display:none;margin-left:5px;background:var(--red);color:#fff;border-radius:50px;font-size:.6rem;padding:.1rem .4rem;font-weight:800"></span>
             </button>
             <button class="lab-sub-tab" id="labBtnLiquidaciones" onclick="switchLabView('liquidaciones')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Liquidaciones
@@ -3039,6 +3039,12 @@ async function loadLabExams() {
 async function loadLabOrders() {
   const { data } = await sbGet('lab_orders', `center_id=eq.${_center.id}&order=created_at.desc&limit=100`)
   _labOrders = data || []
+  const pending = _labOrders.filter(o => o.estado === 'pendiente').length
+  const badge = el('labOrdenesBadge')
+  if (badge) {
+    badge.textContent = pending
+    badge.style.display = pending > 0 ? 'inline' : 'none'
+  }
 }
 
 async function loadLabMedicos() {
@@ -3249,7 +3255,8 @@ async function generarOrdenLab() {
         fecha_estudio:  fechaEstudio ? new Date(fechaEstudio+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}) : '',
         hora_estudio:   horaEstudio || '',
         total:          fmt(totals.total_precio_final),
-        order_id:      order.id.slice(0,8).toUpperCase(),
+        order_id:       order.id.slice(0,8).toUpperCase(),
+        exam_list:      items.map(e => e.descripcion + ' | ' + fmt(e.precio_final)).join('||'),
       })
     }).catch(()=>{})
   }

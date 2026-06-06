@@ -1448,31 +1448,41 @@ function tplCenterPostVisita(d: Record<string,unknown>): string {
 }
 
 function tplLabOrderConfirm(d: Record<string,unknown>): string {
-  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  const body = `
+  const safe  = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const exams = String(d.exam_list||'').split('||').filter(Boolean)
+  const body  = `
 <tr><td style="padding:28px 32px 20px;text-align:center">
-  <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600">Hola, ${safe(d.patient_name)} 👋</p>
-  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Tu orden de laboratorio<br>está <strong style="color:#0b7c6e">confirmada.</strong></p>
+  <p style="margin:0 0 6px;color:rgba(255,255,255,.5);font-size:12px;font-weight:600;letter-spacing:.5px">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0;color:#fff;font-size:21px;font-weight:700;line-height:1.35">Tu orden de laboratorio<br>está <strong>confirmada.</strong></p>
 </td></tr>
 <tr><td style="padding:0 32px 24px">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px">
-    <tr><td style="padding:18px 20px">
-      ${d.fecha_estudio ? `<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Fecha del estudio</p>
-      <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#0f172a">${safe(d.fecha_estudio)}${d.hora_estudio ? ' · <strong>'+safe(d.hora_estudio)+'</strong>' : ''}</p>` : ''}
-      ${d.doctor_name ? `<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Médico solicitante</p>
-      <p style="margin:0 0 12px;font-size:14px;font-weight:600;color:#0f172a">${safe(d.doctor_name)}</p>` : ''}
-      <p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Total</p>
-      <p style="margin:0;font-size:22px;font-weight:800;color:#0b7c6e">${safe(d.total||'')}</p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:14px;overflow:hidden">
+    <tr><td style="padding:18px 20px 0">
+      ${d.fecha_estudio ? `<p style="margin:0 0 2px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Fecha del estudio</p>
+      <p style="margin:0 0 14px;font-size:16px;font-weight:700;color:#0f172a">${safe(d.fecha_estudio)}${d.hora_estudio ? ' · '+safe(d.hora_estudio) : ''}</p>` : ''}
+      ${d.doctor_name ? `<p style="margin:0 0 2px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Médico solicitante</p>
+      <p style="margin:0 0 14px;font-size:14px;font-weight:600;color:#0f172a">${safe(d.doctor_name)}</p>` : ''}
+      ${exams.length ? `<p style="margin:0 0 8px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Estudios solicitados</p>
+      ${exams.map(e => `<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid #f1f5f9;font-size:13px">
+        <span style="font-weight:600;color:#0f172a">${safe(e.split('|')[0]||e)}</span>
+        <span style="font-weight:700;color:#0b7c6e">${safe(e.split('|')[1]||'')}</span>
+      </div>`).join('')}` : ''}
+    </td></tr>
+    <tr><td style="padding:14px 20px;background:#f0fdf4;border-top:2px solid #d1fae5">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.5px">Total</span>
+        <span style="font-size:22px;font-weight:800;color:#0b7c6e">${safe(d.total||'')}</span>
+      </div>
     </td></tr>
   </table>
 </td></tr>
-${d.center_phone ? `<tr><td style="padding:0 32px 20px;text-align:center">
-  <p style="margin:0;font-size:13px;color:#374151">¿Consultas? <strong>${safe(d.center_phone)}</strong></p>
+${d.center_phone ? `<tr><td style="padding:0 32px 16px;text-align:center">
+  <p style="margin:0;font-size:13px;color:rgba(255,255,255,.6)">¿Consultas? <strong style="color:#fff">${safe(d.center_phone)}</strong></p>
 </td></tr>` : ''}
 <tr><td style="padding:0 32px 28px;text-align:center">
-  <p style="margin:0;color:#94a3b8;font-size:11px">Te esperamos · ${safe(d.center_name||'')}</p>
+  <p style="margin:0;color:rgba(255,255,255,.35);font-size:11px">Te esperamos · ${safe(d.center_name||'')}</p>
 </td></tr>`
-  return centerBase(String(d.center_name||''), 'Orden de laboratorio confirmada', 'linear-gradient(135deg,#052a27,#0a3d35)', '#6ee7b7', 'rgba(110,231,183,.12)', '🔬 Laboratorio', body)
+  return centerBase(String(d.center_name||''), 'Orden de laboratorio confirmada', 'linear-gradient(135deg,#052a27,#083d2f)', '#6ee7b7', 'rgba(110,231,183,.15)', '🔬 Laboratorio', body)
 }
 
 function tplLabOrderRealizado(d: Record<string,unknown>): string {
