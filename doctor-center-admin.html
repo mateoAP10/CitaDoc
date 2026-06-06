@@ -285,12 +285,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .toast.err{background:#dc2626}
 
 /* ── LABORATORIO ─────────────────────────────────────────────────────────── */
-.lab-sub-tabs{display:flex;gap:.3rem;margin-bottom:1.5rem}
-.lab-sub-tab{padding:.5rem 1.1rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;font-family:inherit}
-.lab-sub-tab.active{background:var(--red);border-color:var(--red);color:#fff}
-.lab-layout{display:grid;grid-template-columns:1fr 320px;gap:1.25rem;align-items:start}
-@media(max-width:700px){.lab-layout{grid-template-columns:1fr}}
-.lab-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.lab-sub-tabs{display:flex;gap:.3rem;margin-bottom:1.25rem;flex-wrap:wrap;border-bottom:2px solid var(--border);padding-bottom:0}
+.lab-sub-tab{padding:.55rem 1rem;border-radius:8px 8px 0 0;border:1.5px solid transparent;border-bottom:none;background:transparent;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;font-family:inherit;margin-bottom:-2px}
+.lab-sub-tab.active{background:#fff;border-color:var(--border);border-bottom-color:#fff;color:var(--red)}
+.lab-layout{display:grid;grid-template-columns:1fr 300px;gap:1rem;align-items:start}
+@media(max-width:720px){.lab-layout{grid-template-columns:1fr}}
+.lab-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem}
 @media(max-width:500px){.lab-form-row{grid-template-columns:1fr}}
 .lab-search{width:100%;padding:.55rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:.85rem;outline:none;transition:border .15s}
 .lab-search:focus{border-color:var(--red)}
@@ -1088,8 +1088,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
                 <div>
                   <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Paciente</div>
                   <input class="lab-search" id="labPacienteSearch" placeholder="Buscar paciente..." oninput="labBuscarPaciente(this.value)" autocomplete="off">
-                  <div id="labPacienteSugg" style="position:relative"></div>
-                  <div id="labPacienteSelected" style="display:none;margin-top:.4rem;padding:.4rem .75rem;background:#f9fafb;border-radius:8px;font-size:.8rem;font-weight:600;display:flex;align-items:center;justify-content:space-between"></div>
+                  <div id="labPacienteSugg" style="position:relative;z-index:50"></div>
+                  <div id="labPacienteSelected" style="display:none;margin-top:.4rem;padding:.4rem .75rem;background:#f9fafb;border-radius:8px;font-size:.8rem;font-weight:600;align-items:center;justify-content:space-between"></div>
                 </div>
                 <div>
                   <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Médico solicitante</div>
@@ -3102,8 +3102,24 @@ function labSeleccionarPaciente(id, nombre, email) {
   _labPatientName = nombre
   const inp  = el('labPacienteSearch')
   const sugg = el('labPacienteSugg')
-  if (inp)  inp.value = nombre
+  const sel  = el('labPacienteSelected')
+  if (inp)  { inp.style.display = 'none'; inp.value = '' }
   if (sugg) sugg.innerHTML = ''
+  if (sel)  {
+    sel.style.display = 'flex'
+    sel.innerHTML = `<span><strong>${nombre}</strong>${email ? ' · <span style="color:var(--muted);font-size:.75rem">'+email+'</span>' : ''}</span>
+      <button onclick="labClearPaciente()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.9rem;padding:0 0 0 .5rem">✕</button>`
+  }
+  updateLabSummary()
+}
+
+function labClearPaciente() {
+  _labPatientId = null
+  _labPatientName = ''
+  const inp = el('labPacienteSearch')
+  const sel = el('labPacienteSelected')
+  if (inp) { inp.style.display = ''; inp.value = ''; inp.focus() }
+  if (sel) sel.style.display = 'none'
   updateLabSummary()
 }
 
