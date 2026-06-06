@@ -356,6 +356,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .lab-import-area:focus{border-color:var(--red)}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1211,16 +1212,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 
         <!-- ── MODAL IMPORTAR CSV ───────────────────────────────── -->
         <div id="labImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:1rem">
-          <div style="background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:540px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-              <div style="font-size:.9rem;font-weight:800">Importar exámenes desde CSV</div>
+          <div style="background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+              <div>
+                <div style="font-size:.9rem;font-weight:800">Importar catálogo</div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">Excel (.xlsx) o CSV</div>
+              </div>
               <button onclick="closeLabImport()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--muted)">✕</button>
             </div>
-            <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">Columnas esperadas: <code>descripcion, categoria, valor_lab, precio_final, ganancia_dres, ganancia_dc</code></p>
-            <textarea class="lab-import-area" id="labCSVArea" placeholder="Pega aquí el contenido CSV..."></textarea>
-            <div style="display:flex;gap:.5rem;margin-top:.75rem;justify-content:flex-end">
+
+            <!-- Drop zone / file picker -->
+            <div id="labDropZone" onclick="el('labFileInput').click()"
+              style="border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all .15s;background:#fafafa"
+              ondragover="event.preventDefault();this.style.borderColor='var(--red)'"
+              ondragleave="this.style.borderColor='var(--border)'"
+              ondrop="labHandleDrop(event)">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" style="margin-bottom:.75rem"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div style="font-size:.85rem;font-weight:700;color:var(--ink);margin-bottom:.25rem">Seleccionar archivo</div>
+              <div style="font-size:.72rem;color:var(--muted)">Excel (.xlsx) o CSV — o arrastrá acá</div>
+            </div>
+            <input type="file" id="labFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="labHandleFile(this.files[0])">
+
+            <!-- Preview -->
+            <div id="labImportPreview" style="display:none;margin-top:1rem">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                <div style="font-size:.75rem;font-weight:700;color:var(--muted)" id="labPreviewLabel">0 exámenes encontrados</div>
+                <button onclick="el('labFileInput').click()" style="background:none;border:none;font-size:.72rem;font-weight:700;color:var(--red);cursor:pointer">Cambiar archivo</button>
+              </div>
+              <div id="labPreviewTable" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;font-size:.75rem"></div>
+            </div>
+
+            <div style="display:flex;gap:.5rem;margin-top:1rem;justify-content:flex-end">
               <button class="lab-action-btn" onclick="closeLabImport()">Cancelar</button>
-              <button class="lab-action-btn primary" onclick="importLabCSV()">Importar</button>
+              <button class="lab-action-btn primary" id="btnConfirmImport" onclick="importLabCSV()" disabled>Importar</button>
             </div>
           </div>
         </div>
@@ -3401,30 +3425,103 @@ async function deleteLabExam(id) {
   loadLabExams()
 }
 
-// ── CSV Import ────────────────────────────────────────────────────────────
-function openLabImport()  { const m=el('labImportModal'); if(m){m.style.display='flex'} }
-function closeLabImport() { const m=el('labImportModal'); if(m){m.style.display='none'; el('labCSVArea').value=''} }
+// ── File Import (Excel / CSV) ─────────────────────────────────────────────
+let _labParsedRows = []
+
+function openLabImport() {
+  const m = el('labImportModal')
+  if (!m) return
+  m.style.display = 'flex'
+  el('labImportPreview').style.display = 'none'
+  el('labFileInput').value = ''
+  el('btnConfirmImport').disabled = true
+  el('labDropZone').style.display = ''
+  _labParsedRows = []
+}
+
+function closeLabImport() {
+  const m = el('labImportModal')
+  if (m) m.style.display = 'none'
+}
+
+function labHandleDrop(e) {
+  e.preventDefault()
+  el('labDropZone').style.borderColor = 'var(--border)'
+  const file = e.dataTransfer.files[0]
+  if (file) labHandleFile(file)
+}
+
+function labHandleFile(file) {
+  if (!file) return
+  const name = file.name.toLowerCase()
+  const reader = new FileReader()
+
+  if (name.endsWith('.csv')) {
+    reader.onload = e => labParseCSV(e.target.result)
+    reader.readAsText(file, 'UTF-8')
+  } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+    reader.onload = e => {
+      const wb   = XLSX.read(e.target.result, { type: 'array' })
+      const ws   = wb.Sheets[wb.SheetNames[0]]
+      const csv  = XLSX.utils.sheet_to_csv(ws)
+      labParseCSV(csv)
+    }
+    reader.readAsArrayBuffer(file)
+  } else {
+    toast('Formato no soportado — usá .xlsx o .csv', 'err')
+  }
+}
+
+function labParseCSV(raw) {
+  const lines  = raw.trim().split('\n').filter(l => l.trim())
+  const header = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase().replace(/\s+/g,'_'))
+  const rows   = lines.slice(1).map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')))
+
+  _labParsedRows = rows.filter(r => r[0]?.trim()).map(row => {
+    const obj = {}
+    header.forEach((h,i) => obj[h] = row[i]||'')
+    return {
+      center_id:     _center.id,
+      descripcion:   obj.descripcion || obj.descripci_n || row[0] || '',
+      categoria:     obj.categoria || 'Laboratorio',
+      valor_lab:     parseFloat(obj.valor_lab || obj.valor_del_labo || obj.costo_lab || row[2]) || 0,
+      precio_final:  parseFloat(obj.precio_final || obj.precio || row[3]) || 0,
+      ganancia_dres: parseFloat(obj.ganancia_dres || obj.ganancia_medico || row[4]) || 0,
+      ganancia_dc:   parseFloat(obj.ganancia_dc || obj.final_doctor_center || obj.ganancia_centro || row[5]) || 0,
+    }
+  }).filter(e => e.descripcion)
+
+  // Show preview
+  el('labPreviewLabel').textContent = _labParsedRows.length + ' exámenes encontrados'
+  el('labPreviewTable').innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="background:#f9fafb;position:sticky;top:0">
+      <th style="text-align:left;padding:.4rem .6rem;font-size:.7rem;font-weight:700;color:var(--muted)">Examen</th>
+      <th style="text-align:right;padding:.4rem .6rem;font-size:.7rem;font-weight:700;color:var(--muted)">Público</th>
+      <th style="text-align:right;padding:.4rem .6rem;font-size:.7rem;font-weight:700;color:#e65100">Lab</th>
+      <th style="text-align:right;padding:.4rem .6rem;font-size:.7rem;font-weight:700;color:#3949ab">Dres</th>
+      <th style="text-align:right;padding:.4rem .6rem;font-size:.7rem;font-weight:700;color:#2e7d32">DC</th>
+    </tr></thead>
+    <tbody>${_labParsedRows.map(e => `<tr style="border-top:1px solid #f3f4f6">
+      <td style="padding:.35rem .6rem;font-weight:600;color:var(--ink)">${e.descripcion}</td>
+      <td style="text-align:right;padding:.35rem .6rem;font-weight:700">${fmt(e.precio_final)}</td>
+      <td style="text-align:right;padding:.35rem .6rem;color:#e65100">${fmt(e.valor_lab)}</td>
+      <td style="text-align:right;padding:.35rem .6rem;color:#3949ab">${fmt(e.ganancia_dres)}</td>
+      <td style="text-align:right;padding:.35rem .6rem;color:#2e7d32">${fmt(e.ganancia_dc)}</td>
+    </tr>`).join('')}</tbody>
+  </table>`
+
+  el('labImportPreview').style.display = ''
+  el('labDropZone').style.display = 'none'
+  el('btnConfirmImport').disabled = _labParsedRows.length === 0
+}
 
 async function importLabCSV() {
-  const raw = el('labCSVArea')?.value?.trim()
-  if (!raw) return
-  const rows = raw.split('\n').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')))
-  const header = rows[0].map(h => h.toLowerCase().replace(/\s+/g,'_'))
-  const data   = rows.slice(1).filter(r => r.length >= 4 && r[0])
+  if (!_labParsedRows.length) return
+  const btn = el('btnConfirmImport')
+  btn.disabled = true; btn.textContent = 'Importando...'
 
   let inserted = 0
-  for (const row of data) {
-    const obj = {}
-    header.forEach((h,i) => obj[h] = row[i] || '')
-    const exam = {
-      center_id:     _center.id,
-      descripcion:   obj.descripcion || obj['descripci_n'] || row[0],
-      categoria:     obj.categoria || 'Laboratorio',
-      valor_lab:     parseFloat(obj.valor_lab || obj.valor_del_labo || row[2]) || 0,
-      precio_final:  parseFloat(obj.precio_final || row[3]) || 0,
-      ganancia_dres: parseFloat(obj.ganancia_dres || row[4]) || 0,
-      ganancia_dc:   parseFloat(obj.ganancia_dc || obj.final_doctor_center || row[5]) || 0,
-    }
+  for (const exam of _labParsedRows) {
     const { error } = await sbPost('lab_exams', exam)
     if (!error) inserted++
   }
@@ -3433,6 +3530,7 @@ async function importLabCSV() {
   closeLabImport()
   renderLabCatalogo()
   loadLabExams().then(renderLabExamsGrid)
+  btn.textContent = 'Importar'
 }
 
 // ── Add exam manually ─────────────────────────────────────────────────────
