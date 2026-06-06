@@ -3319,26 +3319,29 @@ async function generarOrdenLab() {
   }
   if (_emailToSend) {
     const medico = _labMedicos.find(m => m.id === medicoId)
-    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
-      body: JSON.stringify({
-        type:           'lab_order_confirm',
-        to_email:       _emailToSend,
-        patient_name:   _labPatientName || '',
-        center_name:    _center.nombre,
-        center_phone:   _center.whatsapp || _center.telefono || '',
-        doctor_name:    medico ? (medico.titulo||'Dr.')+' '+medico.nombre+' '+medico.apellido : '',
-        fecha_estudio:  fechaEstudio ? new Date(fechaEstudio+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}) : '',
-        hora_estudio:   horaEstudio || '',
-        total:          fmt(totals.total_precio_final),
-        order_id:       order.id.slice(0,8).toUpperCase(),
-        exam_list:      items.map(e => e.descripcion + ' | ' + fmt(e.precio_final)).join('||'),
+    try {
+      const emailResp = await fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+        body: JSON.stringify({
+          type:          'lab_order_confirm',
+          to_email:      _emailToSend,
+          patient_name:  _labPatientName || '',
+          center_name:   _center.nombre,
+          center_phone:  _center.whatsapp || _center.telefono || '',
+          doctor_name:   medico ? (medico.titulo||'Dr.')+' '+medico.nombre+' '+medico.apellido : '',
+          fecha_estudio: fechaEstudio ? new Date(fechaEstudio+'T12:00:00').toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}) : '',
+          hora_estudio:  horaEstudio || '',
+          total:         fmt(totals.total_precio_final),
+          order_id:      order.id.slice(0,8).toUpperCase(),
+          exam_list:     items.map(e => e.descripcion + '|' + fmt(e.precio_final)).join('||'),
+        })
       })
-    }).catch(()=>{})
+      if (!emailResp.ok) console.error('[lab email]', emailResp.status, await emailResp.text())
+    } catch(e) { console.error('[lab email]', e) }
   }
 
-  toast('Orden generada ✓ — email enviado al paciente', 'ok')
+  toast(_emailToSend ? 'Orden generada ✓ — email enviado al paciente' : 'Orden generada ✓', 'ok')
   _labSelected = {}
   _labPatientId = null
   _labPatientName = ''
