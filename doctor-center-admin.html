@@ -2996,7 +2996,7 @@ function renderLabCatFilters() {
   const cats = [...new Set(_labExamsAll.map(e => e.categoria).filter(Boolean))]
   const el_ = el('labCatFilters')
   if (!el_) return
-  el_.innerHTML = '<button class="lab-filter-btn active" onclick="labFiltrarCat('',this)">Todos</button>' +
+  el_.innerHTML = '<button class="lab-filter-btn active" onclick="labFiltrarCat(\'\',this)">Todos</button>' +
     cats.map(c => `<button class="lab-filter-btn" onclick="labFiltrarCat('${c}',this)">${c}</button>`).join('')
 }
 
@@ -3154,8 +3154,7 @@ async function generarOrdenLab() {
   const patient = _allLeads.find(p => p.id === _labPatientId)
   if (patient?.email) {
     const medico = _labMedicos.find(m => m.id === medicoId)
-    const examList = items.map(e => `${e.descripcion} — ${fmt(e.precio_final)}`).join('
-')
+    const examList = items.map(e => e.descripcion + ' — ' + fmt(e.precio_final)).join('\n')
     fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
@@ -3366,8 +3365,7 @@ function closeLabImport() { const m=el('labImportModal'); if(m){m.style.display=
 async function importLabCSV() {
   const raw = el('labCSVArea')?.value?.trim()
   if (!raw) return
-  const rows = raw.split('
-').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')))
+  const rows = raw.split('\n').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')))
   const header = rows[0].map(h => h.toLowerCase().replace(/\s+/g,'_'))
   const data   = rows.slice(1).filter(r => r.length >= 4 && r[0])
 
