@@ -377,14 +377,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .liq-btn-lab-total{background:#e65100;color:#fff}
 .liq-btn-lab-total:hover{background:#bf360c}
 .liq-paid-badge{font-size:.72rem;font-weight:700;color:#065f46;display:inline-flex;align-items:center;gap:.25rem}
-.liq-items-wrap{padding:.75rem 1.25rem;border-top:1px solid var(--border)}
-.liq-items-label{font-size:.58rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:.55rem}
-.liq-item-row{display:flex;justify-content:space-between;align-items:center;padding:.28rem 0}
-.liq-item-row+.liq-item-row{border-top:1px solid #f3f4f6}
-.liq-item-name{font-size:.76rem;font-weight:600;color:var(--ink)}
-.liq-item-right{display:flex;gap:.65rem;align-items:center;flex-shrink:0}
-.liq-item-date{font-size:.66rem;color:var(--muted)}
-.liq-item-price{font-size:.78rem;font-weight:700;color:#3949ab}
 /* Payment slide-up modal */
 .liq-modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);z-index:9000;display:none;align-items:flex-end;justify-content:center;padding:0 0 env(safe-area-inset-bottom)}
 .liq-modal-bg.open{display:flex}
@@ -405,6 +397,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .liq-modal-confirm.lab-color{background:#e65100}.liq-modal-confirm.lab-color:hover{background:#bf360c}
 /* legacy compat */
 .lab-liq-section{display:none}.lab-liq-header{display:none}.lab-liq-title{display:none}.lab-liq-amount{display:none}.lab-liq-history{display:none}
+/* ── HISTORIAL MENSUAL ──────────────────────────────── */
+.liq-hist-wrap{border-top:1px solid var(--border)}
+.liq-month-toggle{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.25rem;cursor:pointer;user-select:none;transition:background .12s}
+.liq-month-toggle:hover{background:#f9fafb}
+.liq-month-left{display:flex;align-items:center;gap:.5rem}
+.liq-month-name{font-size:.78rem;font-weight:700;color:var(--ink)}
+.liq-month-badge{font-size:.6rem;font-weight:700;padding:.12rem .4rem;border-radius:5px;white-space:nowrap}
+.liq-month-badge.paid{background:#d1fae5;color:#065f46}
+.liq-month-badge.pend{background:#fef3c7;color:#92400e}
+.liq-month-badge.mix{background:#e0e7ff;color:#3949ab}
+.liq-month-right{display:flex;align-items:center;gap:.45rem}
+.liq-month-total{font-size:.8rem;font-weight:800;color:var(--ink)}
+.liq-month-chevron{transition:transform .2s;flex-shrink:0}
+.liq-month-chevron.open{transform:rotate(180deg)}
+.liq-exam-row{display:flex;justify-content:space-between;align-items:center;padding:.3rem 1.25rem}
+.liq-exam-row:last-child{padding-bottom:.85rem}
+.liq-exam-row+.liq-exam-row{border-top:1px solid #f3f4f6}
+.liq-exam-name{font-size:.75rem;color:#374151;flex:1}
+.liq-exam-date{font-size:.65rem;color:var(--muted);flex-shrink:0;margin-right:.4rem}
+.liq-exam-price{font-size:.77rem;font-weight:700;flex-shrink:0}
+/* Hero lab monthly */
+.liq-hero-months{margin-top:.75rem;padding-top:.75rem;border-top:1px solid rgba(255,255,255,.08)}
+.liq-hero-month{display:flex;align-items:center;justify-content:space-between;padding:.4rem 0;cursor:pointer;user-select:none}
+.liq-hero-month-left{display:flex;align-items:center;gap:.45rem}
+.liq-hero-month-name{font-size:.72rem;font-weight:700;color:#94a3b8}
+.liq-hero-month-total{font-size:.75rem;font-weight:800;color:#fff}
+.liq-hero-exam-row{display:flex;justify-content:space-between;padding:.22rem 0;border-top:1px solid rgba(255,255,255,.05)}
+.liq-hero-exam-name{font-size:.68rem;color:#475569}
+.liq-hero-exam-price{font-size:.68rem;font-weight:700;color:#6ee7b7}
 .lab-import-area{width:100%;min-height:120px;border:1.5px solid var(--border);border-radius:9px;padding:.75rem;font-family:'DM Sans',sans-serif;font-size:.8rem;resize:vertical;outline:none}
 .lab-import-area:focus{border-color:var(--red)}
 </style>
@@ -1254,6 +1275,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
                 <span style="color:#475569">Sin pagos registrados</span>
               </div>
             </div>
+            <div class="liq-hero-months" id="labLiqLabMonths"></div>
           </div>
 
           <!-- Médicos -->
@@ -3475,9 +3497,42 @@ function avatarColor(str) {
   return _avatarPalette[h % _avatarPalette.length]
 }
 
+// helpers compartidos liquidaciones
+function _liqByMonth(orders) {
+  const map = {}
+  orders.forEach(o => {
+    const k = (o.created_at||'').slice(0,7)
+    if (!map[k]) map[k] = []
+    map[k].push(o)
+  })
+  return Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0]))
+}
+function _liqFmtMonth(k) {
+  const names=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  const [y,m]=k.split('-'); return names[parseInt(m)-1]+' '+y
+}
+function toggleLiqMonth(uid) {
+  const body=el(uid), chev=el('chev-'+uid)
+  if(!body) return
+  const open=body.style.display==='none'
+  body.style.display=open?'':'none'
+  if(chev) chev.classList.toggle('open',open)
+}
+
 async function renderLabLiquidaciones() {
   await loadLabOrders()
   const realizadas = _labOrders.filter(o => o.estado === 'realizado')
+
+  // ── UN SOLO FETCH para todos los items ───────────────────────────────────
+  const itemsMap = {}
+  if (realizadas.length) {
+    const ids = realizadas.map(o=>o.id).join(',')
+    const {data: allItems} = await sbGet('lab_order_items', `order_id=in.(${ids})`)
+    ;(allItems||[]).forEach(i => {
+      if (!itemsMap[i.order_id]) itemsMap[i.order_id] = []
+      itemsMap[i.order_id].push(i)
+    })
+  }
 
   // ── LAB EXTERNO ──────────────────────────────────────────────────────────
   const labPend = realizadas.filter(o => !o.lab_pagado)
@@ -3493,6 +3548,35 @@ async function renderLabLiquidaciones() {
     ? liqHist.map(l=>`<span class="liq-htag">${fmt(l.monto)} · ${l.fecha}</span>`).join('')
     : '<span style="color:#475569">Sin pagos registrados</span>'
 
+  // Lab historial mensual
+  const labMonths = _liqByMonth(realizadas)
+  el('labLiqLabMonths').innerHTML = labMonths.length ? labMonths.map(([key,orders],idx)=>{
+    const total = orders.reduce((s,o)=>s+Number(o.total_valor_lab),0)
+    const nPend = orders.filter(o=>!o.lab_pagado).length
+    const badgeCls = nPend===0?'paid':nPend===orders.length?'pend':'mix'
+    const badgeTxt = nPend===0?'✓ Pagado':`${nPend} pendiente${nPend>1?'s':''}`
+    const exams = orders.flatMap(o=>(itemsMap[o.id]||[]).map(i=>({...i,paid:o.lab_pagado,fecha:o.fecha_estudio||o.created_at.slice(0,10)})))
+    const uid=`lab-${key}`, open=idx===0
+    return `<div>
+      <div class="liq-hero-month" onclick="toggleLiqMonth('${uid}')">
+        <div class="liq-hero-month-left">
+          <span class="liq-hero-month-name">${_liqFmtMonth(key)}</span>
+          <span class="liq-month-badge ${badgeCls}" style="font-size:.58rem">${badgeTxt}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <span class="liq-hero-month-total">${fmt(total)}</span>
+          <svg id="chev-${uid}" class="liq-month-chevron${open?' open':''}" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div id="${uid}" style="${open?'':'display:none'}">
+        ${exams.length?exams.map(e=>`<div class="liq-hero-exam-row">
+          <span class="liq-hero-exam-name">${e.descripcion}${e.fecha?' · '+e.fecha:''}</span>
+          <span class="liq-hero-exam-price">${fmt(e.valor_lab)}</span>
+        </div>`).join(''):'<div class="liq-hero-exam-row"><span class="liq-hero-exam-name">Sin detalle</span></div>'}
+      </div>
+    </div>`
+  }).join('') : ''
+
   // ── MÉDICOS ───────────────────────────────────────────────────────────────
   const medsDiv = el('labLiqMedicos')
   if (!_labMedicos.length) {
@@ -3500,62 +3584,71 @@ async function renderLabLiquidaciones() {
     return
   }
 
-  const medsData = await Promise.all(_labMedicos.map(async m => {
-    const pendOrders = realizadas.filter(o => o.medico_id === m.id && !o.medico_pagado)
-    const paidOrders = realizadas.filter(o => o.medico_id === m.id && o.medico_pagado)
-    const totalPend = pendOrders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
-    const totalPaid = paidOrders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
-    const allItems = []
-    for (const o of pendOrders) {
-      const {data: items} = await sbGet('lab_order_items', `order_id=eq.${o.id}`)
-      if (items) allItems.push(...items.map(i=>({...i, fecha: o.fecha_estudio||o.created_at?.split('T')[0]})))
-    }
-    return { m, pendOrders, totalPend, totalPaid, allItems }
-  }))
+  const medsData = _labMedicos.map(m => {
+    const myOrders = realizadas.filter(o=>o.medico_id===m.id)
+    const totalPend = myOrders.filter(o=>!o.medico_pagado).reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
+    const months = _liqByMonth(myOrders)
+    return {m, myOrders, totalPend, months}
+  }).filter(x=>x.myOrders.length>0)
 
-  const active = medsData.filter(x => x.pendOrders.length > 0 || x.totalPaid > 0)
-  if (!active.length) {
-    medsDiv.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin comisiones pendientes</div>'
+  if (!medsData.length) {
+    medsDiv.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin comisiones registradas</div>'
     return
   }
 
-  medsDiv.innerHTML = active.map(({m, pendOrders, totalPend, totalPaid, allItems}) => {
-    const initials = ((m.nombre||'')[0]||(m.apellido||'')[0]||'?').toUpperCase() + ((m.apellido||'')[0]||'').toUpperCase()
-    const [bg, fg] = avatarColor(m.nombre+m.apellido)
-    const hasPending = totalPend > 0
+  medsDiv.innerHTML = medsData.map(({m, myOrders, totalPend, months})=>{
+    const initials=((m.nombre||'')[0]||'?').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase()
+    const [bg,fg]=avatarColor(m.nombre+m.apellido)
+    const hasPending=totalPend>0
+
+    const monthsHtml=months.map(([key,orders],idx)=>{
+      const total=orders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
+      const nPend=orders.filter(o=>!o.medico_pagado).length
+      const badgeCls=nPend===0?'paid':nPend===orders.length?'pend':'mix'
+      const badgeTxt=nPend===0?'✓ Pagado':`${nPend} pendiente${nPend>1?'s':''}`
+      const exams=orders.flatMap(o=>(itemsMap[o.id]||[]).map(i=>({...i,paid:o.medico_pagado,fecha:o.fecha_estudio||o.created_at.slice(0,10)})))
+      const uid=`med-${m.id}-${key}`, open=idx===0
+      return `
+      <div class="liq-month-toggle" onclick="toggleLiqMonth('${uid}')">
+        <div class="liq-month-left">
+          <span class="liq-month-name">${_liqFmtMonth(key)}</span>
+          <span class="liq-month-badge ${badgeCls}">${badgeTxt}</span>
+        </div>
+        <div class="liq-month-right">
+          <span class="liq-month-total">${fmt(total)}</span>
+          <svg id="chev-${uid}" class="liq-month-chevron${open?' open':''}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div id="${uid}" style="${open?'':'display:none'}">
+        ${exams.length?exams.map(e=>`<div class="liq-exam-row">
+          <span class="liq-exam-name">${e.descripcion}</span>
+          <span style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">
+            ${e.fecha?`<span class="liq-exam-date">${e.fecha}</span>`:''}
+            <span class="liq-exam-price" style="color:${e.paid?'#065f46':'#3949ab'}">${fmt(e.ganancia_dres)}</span>
+          </span>
+        </div>`).join(''):`<div class="liq-exam-row"><span class="liq-exam-name" style="color:var(--muted)">Sin detalle disponible</span></div>`}
+      </div>`
+    }).join('')
+
     return `
     <div class="liq-card">
       <div class="liq-card-head">
         <div class="liq-avatar" style="background:${bg};color:${fg}">${initials}</div>
         <div class="liq-card-info">
           <div class="liq-card-name">${m.titulo||'Dr.'} ${m.nombre} ${m.apellido}</div>
-          <div class="liq-card-meta">
-            ${pendOrders.length} estudio${pendOrders.length!==1?'s':''} pendiente${pendOrders.length!==1?'s':''}
-            ${totalPaid>0 ? ' · Hist. '+fmt(totalPaid) : ''}
-          </div>
+          <div class="liq-card-meta">${months.length} mes${months.length!==1?'es':''} · ${myOrders.length} estudio${myOrders.length!==1?'s':''} total</div>
         </div>
         <div class="liq-card-amount">
           <div class="liq-amount-val${hasPending?'':' zero'}">${fmt(totalPend)}</div>
           <div class="liq-amount-label">pendiente</div>
         </div>
       </div>
-      ${allItems.length ? `<div class="liq-items-wrap">
-        <div class="liq-items-label">Estudios pendientes de cobro</div>
-        ${allItems.map(i=>`<div class="liq-item-row">
-          <span class="liq-item-name">${i.descripcion}</span>
-          <span class="liq-item-right">
-            ${i.fecha?`<span class="liq-item-date">${i.fecha}</span>`:''}
-            <span class="liq-item-price">${fmt(i.ganancia_dres)}</span>
-          </span>
-        </div>`).join('')}
-      </div>` : ''}
+      <div class="liq-hist-wrap">${monthsHtml}</div>
       <div class="liq-card-actions">
-        ${hasPending ? `
+        ${hasPending?`
           <button class="liq-btn liq-btn-parcial" onclick="openLiqModal('medico','${m.id}','parcial')">Pago parcial</button>
           <button class="liq-btn liq-btn-total" onclick="openLiqModal('medico','${m.id}','total')">Liquidar todo</button>
-        ` : `<span class="liq-paid-badge">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Al día
-        </span>`}
+        `:`<span class="liq-paid-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Al día</span>`}
       </div>
     </div>`
   }).join('')
