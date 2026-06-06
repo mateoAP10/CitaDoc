@@ -1943,7 +1943,7 @@ function updateCalcSummary() {
     if (bar) bar.style.display = 'none'
     return
   }
-  if (bar) bar.style.display = 'flex'
+  if (bar) bar.style.display = window.innerWidth <= 768 ? 'flex' : 'none'
   if (stickyCta) stickyCta.textContent = 'Reservar →'
   if (lines) lines.innerHTML = allSel.map(s => `<div class="calc-line"><span>${esc(s.nombre)}</span><span style="font-weight:700">$${s.precio}</span></div>`).join('')
   const totalStr = '$' + sum
