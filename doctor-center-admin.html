@@ -3555,8 +3555,27 @@ async function renderLabLiquidaciones() {
     const nPend = orders.filter(o=>!o.lab_pagado).length
     const badgeCls = nPend===0?'paid':nPend===orders.length?'pend':'mix'
     const badgeTxt = nPend===0?'✓ Pagado':`${nPend} pendiente${nPend>1?'s':''}`
-    const exams = orders.flatMap(o=>(itemsMap[o.id]||[]).map(i=>({...i,paid:o.lab_pagado,fecha:o.fecha_estudio||o.created_at.slice(0,10)})))
     const uid=`lab-${key}`, open=idx===0
+    const ordersHtml = orders.map(o=>{
+      const fecha = o.fecha_estudio||o.created_at.slice(0,10)
+      const patient = _allLeads.find(p=>p.id===o.patient_id)
+      const pName = patient?.nombre||''
+      const items = itemsMap[o.id]||[]
+      const statusColor = o.lab_pagado?'#6ee7b7':'#fbbf24'
+      return `<div style="margin-bottom:.15rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0 .2rem;border-top:1px solid rgba(255,255,255,.07)">
+          <span style="font-size:.67rem;color:#94a3b8;font-weight:600">${fecha}${pName?' · '+pName:''}</span>
+          <span style="display:flex;align-items:center;gap:.35rem">
+            <span style="font-size:.65rem;color:${statusColor};font-weight:700">${o.lab_pagado?'✓ pagado':'pendiente'}</span>
+            <span style="font-size:.72rem;font-weight:800;color:#fff">${fmt(Number(o.total_valor_lab))}</span>
+          </span>
+        </div>
+        ${items.length?items.map(i=>`<div class="liq-hero-exam-row">
+          <span class="liq-hero-exam-name">— ${i.descripcion}</span>
+          <span class="liq-hero-exam-price">${fmt(i.valor_lab)}</span>
+        </div>`).join(''):`<div class="liq-hero-exam-row"><span class="liq-hero-exam-name" style="color:#334155">— Sin detalle de exámenes (total: ${fmt(Number(o.total_valor_lab))})</span></div>`}
+      </div>`
+    }).join('')
     return `<div>
       <div class="liq-hero-month" onclick="toggleLiqMonth('${uid}')">
         <div class="liq-hero-month-left">
@@ -3568,12 +3587,7 @@ async function renderLabLiquidaciones() {
           <svg id="chev-${uid}" class="liq-month-chevron${open?' open':''}" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
-      <div id="${uid}" style="${open?'':'display:none'}">
-        ${exams.length?exams.map(e=>`<div class="liq-hero-exam-row">
-          <span class="liq-hero-exam-name">${e.descripcion}${e.fecha?' · '+e.fecha:''}</span>
-          <span class="liq-hero-exam-price">${fmt(e.valor_lab)}</span>
-        </div>`).join(''):'<div class="liq-hero-exam-row"><span class="liq-hero-exam-name">Sin detalle</span></div>'}
-      </div>
+      <div id="${uid}" style="${open?'':'display:none'}">${ordersHtml}</div>
     </div>`
   }).join('') : ''
 
@@ -3606,8 +3620,27 @@ async function renderLabLiquidaciones() {
       const nPend=orders.filter(o=>!o.medico_pagado).length
       const badgeCls=nPend===0?'paid':nPend===orders.length?'pend':'mix'
       const badgeTxt=nPend===0?'✓ Pagado':`${nPend} pendiente${nPend>1?'s':''}`
-      const exams=orders.flatMap(o=>(itemsMap[o.id]||[]).map(i=>({...i,paid:o.medico_pagado,fecha:o.fecha_estudio||o.created_at.slice(0,10)})))
       const uid=`med-${m.id}-${key}`, open=idx===0
+      const ordersHtml=orders.map(o=>{
+        const fecha=o.fecha_estudio||o.created_at.slice(0,10)
+        const patient=_allLeads.find(p=>p.id===o.patient_id)
+        const pName=patient?.nombre||''
+        const items=itemsMap[o.id]||[]
+        const statusColor=o.medico_pagado?'#065f46':'#3949ab'
+        return `<div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:.38rem 1.25rem .2rem;border-top:1px solid #f1f5f9">
+            <span style="font-size:.68rem;color:var(--muted);font-weight:600">${fecha}${pName?' · '+pName:''}</span>
+            <span style="display:flex;align-items:center;gap:.35rem">
+              <span style="font-size:.65rem;color:${statusColor};font-weight:700">${o.medico_pagado?'✓ pagado':'pendiente'}</span>
+              <span style="font-size:.73rem;font-weight:800;color:${statusColor}">${fmt(Number(o.total_ganancia_dres))}</span>
+            </span>
+          </div>
+          ${items.length?items.map(i=>`<div class="liq-exam-row" style="padding-left:1.75rem">
+            <span class="liq-exam-name">— ${i.descripcion}</span>
+            <span class="liq-exam-price" style="color:${o.medico_pagado?'#065f46':'#3949ab'}">${fmt(i.ganancia_dres)}</span>
+          </div>`).join(''):`<div class="liq-exam-row" style="padding-left:1.75rem"><span class="liq-exam-name" style="color:var(--muted)">— Sin detalle (total: ${fmt(Number(o.total_ganancia_dres))})</span></div>`}
+        </div>`
+      }).join('')
       return `
       <div class="liq-month-toggle" onclick="toggleLiqMonth('${uid}')">
         <div class="liq-month-left">
@@ -3619,15 +3652,7 @@ async function renderLabLiquidaciones() {
           <svg id="chev-${uid}" class="liq-month-chevron${open?' open':''}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
-      <div id="${uid}" style="${open?'':'display:none'}">
-        ${exams.length?exams.map(e=>`<div class="liq-exam-row">
-          <span class="liq-exam-name">${e.descripcion}</span>
-          <span style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">
-            ${e.fecha?`<span class="liq-exam-date">${e.fecha}</span>`:''}
-            <span class="liq-exam-price" style="color:${e.paid?'#065f46':'#3949ab'}">${fmt(e.ganancia_dres)}</span>
-          </span>
-        </div>`).join(''):`<div class="liq-exam-row"><span class="liq-exam-name" style="color:var(--muted)">Sin detalle disponible</span></div>`}
-      </div>`
+      <div id="${uid}" style="${open?'':'display:none'}">${ordersHtml}</div>`
     }).join('')
 
     return `
