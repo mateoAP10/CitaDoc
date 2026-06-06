@@ -1447,6 +1447,34 @@ function tplCenterPostVisita(d: Record<string,unknown>): string {
   return centerBase(String(d.center_name||''), `Gracias por visitarnos`, 'linear-gradient(135deg,#064e3b,#065f46)', '#6ee7b7', 'rgba(110,231,183,.15)', '❤️ Post-visita', body)
 }
 
+function tplLabOrderConfirm(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const examLines = String(d.exam_list||'').split('\n').filter(Boolean)
+  const body = `
+<tr><td style="padding:28px 32px 8px;text-align:center">
+  <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Tu orden de laboratorio<br>está <strong style="color:#0b7c6e">confirmada.</strong></p>
+</td></tr>
+<tr><td style="padding:16px 32px 0">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px">
+    <tr><td style="padding:16px 20px">
+      <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Orden #${safe(d.order_id||'')}</p>
+      ${d.doctor_name ? `<p style="margin:0 0 10px;font-size:13px;color:#374151">Solicitado por <strong>${safe(d.doctor_name)}</strong></p>` : ''}
+      <p style="margin:0 0 8px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Exámenes</p>
+      ${examLines.map(l => `<p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#0f172a">${safe(l)}</p>`).join('')}
+      <p style="margin:12px 0 0;font-size:16px;font-weight:800;color:#0b7c6e;border-top:1px solid #e2e8f0;padding-top:10px">Total: ${safe(d.total||'')}</p>
+    </td></tr>
+  </table>
+</td></tr>
+${d.center_phone ? `<tr><td style="padding:16px 32px 0;text-align:center">
+  <p style="margin:0;font-size:13px;color:#374151">¿Consultas? Escribinos al <strong>${safe(d.center_phone)}</strong></p>
+</td></tr>` : ''}
+<tr><td style="padding:20px 32px 28px;text-align:center">
+  <p style="margin:0;color:#94a3b8;font-size:11px">Te esperamos. ${safe(d.center_name||'')}</p>
+</td></tr>`
+  return centerBase(String(d.center_name||''), '🔬 Orden de laboratorio confirmada', 'linear-gradient(135deg,#0f172a,#0b7c6e)', '#6ee7b7', 'rgba(110,231,183,.12)', '🔬 Laboratorio', body)
+}
+
 function tplCenterCoupon(d: Record<string,unknown>): string {
   const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
   const code = d.coupon_code || 'CITADOC10'
@@ -1768,6 +1796,12 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'center_coupon': {
         const subject = `🎁 Un regalo de ${data.center_name || 'tu centro médico'}`
         await sendEmail(to_email, subject, tplCenterCoupon(data as Record<string,unknown>))
+        break
+      }
+
+      case 'lab_order_confirm': {
+        const subject = `Orden de laboratorio confirmada — ${data.center_name||'tu centro médico'}`
+        await sendEmail(to_email, subject, tplLabOrderConfirm(data as Record<string,unknown>))
         break
       }
 

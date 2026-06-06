@@ -283,6 +283,77 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{background:var(--green)}
 .toast.err{background:#dc2626}
+
+/* ── LABORATORIO ─────────────────────────────────────────────────────────── */
+.lab-sub-tabs{display:flex;gap:.3rem;margin-bottom:1.5rem}
+.lab-sub-tab{padding:.5rem 1.1rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;font-family:inherit}
+.lab-sub-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.lab-layout{display:grid;grid-template-columns:1fr 320px;gap:1.25rem;align-items:start}
+@media(max-width:700px){.lab-layout{grid-template-columns:1fr}}
+.lab-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+@media(max-width:500px){.lab-form-row{grid-template-columns:1fr}}
+.lab-search{width:100%;padding:.55rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:.85rem;outline:none;transition:border .15s}
+.lab-search:focus{border-color:var(--red)}
+.lab-select{width:100%;padding:.55rem .85rem;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:.85rem;outline:none;background:#fff;cursor:pointer}
+.lab-exams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;margin-top:1rem}
+.lab-exam-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1rem;cursor:pointer;transition:all .18s;position:relative;user-select:none}
+.lab-exam-card:hover{border-color:var(--red);box-shadow:0 4px 16px rgba(204,41,54,.1)}
+.lab-exam-card.selected{border-color:var(--red);border-width:2px;background:#fff5f5}
+.lab-exam-card.selected::after{content:'✓';position:absolute;top:.6rem;right:.7rem;width:20px;height:20px;background:var(--red);color:#fff;border-radius:50%;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:20px;text-align:center}
+.lab-exam-name{font-size:.83rem;font-weight:700;color:var(--ink);margin-bottom:.5rem;line-height:1.3;padding-right:1.5rem}
+.lab-exam-price{font-size:1.3rem;font-weight:800;color:var(--red);margin-bottom:.6rem}
+.lab-exam-chips{display:flex;gap:.3rem;flex-wrap:wrap}
+.lab-chip{font-size:.62rem;font-weight:700;padding:.18rem .5rem;border-radius:50px;letter-spacing:.02em}
+.lab-chip.lab{background:#fff3e0;color:#e65100}
+.lab-chip.dres{background:#e8eaf6;color:#3949ab}
+.lab-chip.dc{background:#e8f5e9;color:#2e7d32}
+.lab-panel{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.25rem;position:sticky;top:80px}
+.lab-panel-title{font-size:.75rem;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
+.lab-panel-empty{text-align:center;padding:1.5rem 0;color:var(--muted);font-size:.82rem}
+.lab-panel-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.lab-panel-item:last-of-type{border-bottom:none}
+.lab-panel-item-name{font-weight:600;color:var(--ink);flex:1;padding-right:.5rem}
+.lab-panel-item-price{font-weight:700;color:var(--red);flex-shrink:0}
+.lab-panel-item-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0 .25rem;line-height:1}
+.lab-totals{margin-top:1rem;padding-top:1rem;border-top:2px solid var(--border)}
+.lab-total-row{display:flex;justify-content:space-between;padding:.3rem 0;font-size:.82rem}
+.lab-total-row .label{color:var(--muted);font-weight:500}
+.lab-total-row .value{font-weight:700}
+.lab-total-row.patient .value{color:var(--red);font-size:1rem}
+.lab-total-row.lab-cost .value{color:#e65100}
+.lab-total-row.dres-cost .value{color:#3949ab}
+.lab-total-row.dc-gain .value{color:#2e7d32}
+.lab-btn-generar{width:100%;margin-top:1rem;padding:.85rem;background:var(--red);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.9rem;font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:.01em}
+.lab-btn-generar:hover{background:var(--red-dark)}
+.lab-btn-generar:disabled{opacity:.5;cursor:not-allowed}
+.lab-exam-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.75rem}
+.lab-filter-btn{padding:.3rem .8rem;border-radius:50px;border:1.5px solid var(--border);background:#fff;font-size:.73rem;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit;transition:all .15s}
+.lab-filter-btn.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.lab-order-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:.75rem}
+.lab-order-header{display:flex;align-items:center;gap:.75rem;cursor:pointer}
+.lab-order-patient{font-weight:700;font-size:.9rem;flex:1}
+.lab-order-meta{font-size:.75rem;color:var(--muted)}
+.lab-order-total{font-weight:800;color:var(--red);font-size:.95rem}
+.lab-badge{display:inline-block;padding:.2rem .65rem;border-radius:50px;font-size:.65rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.lab-badge.pendiente{background:#fef3c7;color:#92400e}
+.lab-badge.realizado{background:#dbeafe;color:#1e40af}
+.lab-badge.pagado{background:#d1fae5;color:#065f46}
+.lab-order-detail{display:none;margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border)}
+.lab-order-detail.open{display:block}
+.lab-order-actions{display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap}
+.lab-action-btn{padding:.4rem .9rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink)}
+.lab-action-btn:hover{border-color:var(--red);color:var(--red)}
+.lab-action-btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.lab-action-btn.primary:hover{background:var(--red-dark)}
+.lab-liq-section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+.lab-liq-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.lab-liq-title{font-size:.85rem;font-weight:800;color:var(--ink)}
+.lab-liq-amount{font-size:1.4rem;font-weight:800}
+.lab-liq-amount.lab-cost{color:#e65100}
+.lab-liq-amount.dres-cost{color:#3949ab}
+.lab-liq-history{font-size:.75rem;color:var(--muted);margin-top:.5rem}
+.lab-import-area{width:100%;min-height:120px;border:1.5px solid var(--border);border-radius:9px;padding:.75rem;font-family:'DM Sans',sans-serif;font-size:.8rem;resize:vertical;outline:none}
+.lab-import-area:focus{border-color:var(--red)}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js"></script>
 </head>
@@ -330,6 +401,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       <button class="admin-tab" id="tabBtnBackend" onclick="switchTab('backend')">
         ⚙️ Backend <span style="font-size:.7rem;color:var(--muted);font-weight:500">· Seguimiento</span>
         <span id="newTurnosBadge" style="display:none;background:#dc2626;color:#fff;font-size:.6rem;font-weight:800;border-radius:50%;width:16px;height:16px;align-items:center;justify-content:center;margin-left:.3rem"></span>
+      </button>
+      <button class="admin-tab" id="tabBtnLab" onclick="switchTab('laboratorio')">
+        🔬 Laboratorio <span style="font-size:.7rem;color:var(--muted);font-weight:500">· Exámenes</span>
       </button>
     </div>
 
@@ -989,6 +1063,173 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 </div>
 
 <div class="toast" id="toast"></div>
+      </div><!-- tabBackend -->
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB LABORATORIO                                            -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tabLaboratorio" style="display:none">
+
+        <!-- Sub-tab nav -->
+        <div class="lab-sub-tabs">
+          <button class="lab-sub-tab active" id="labBtnNueva"  onclick="switchLabView('nueva')">🧪 Nueva Orden</button>
+          <button class="lab-sub-tab"        id="labBtnOrdenes" onclick="switchLabView('ordenes')">📋 Órdenes</button>
+          <button class="lab-sub-tab"        id="labBtnLiq"     onclick="switchLabView('liquidaciones')">💰 Liquidaciones</button>
+          <button class="lab-sub-tab"        id="labBtnCatalogo" onclick="switchLabView('catalogo')" style="margin-left:auto">⚙️ Catálogo</button>
+        </div>
+
+        <!-- ── NUEVA ORDEN ─────────────────────────────────────── -->
+        <div id="labViewNueva">
+          <div class="lab-layout">
+
+            <!-- Left: exam selector -->
+            <div>
+              <div class="lab-form-row">
+                <div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Paciente</div>
+                  <input class="lab-search" id="labPacienteSearch" placeholder="Buscar paciente..." oninput="labBuscarPaciente(this.value)" autocomplete="off">
+                  <div id="labPacienteSugg" style="position:relative"></div>
+                  <div id="labPacienteSelected" style="display:none;margin-top:.4rem;padding:.4rem .75rem;background:#f9fafb;border-radius:8px;font-size:.8rem;font-weight:600;display:flex;align-items:center;justify-content:space-between"></div>
+                </div>
+                <div>
+                  <div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Médico solicitante</div>
+                  <select class="lab-select" id="labMedicoSelect">
+                    <option value="">Seleccionar médico...</option>
+                  </select>
+                </div>
+              </div>
+
+              <input class="lab-search" id="labExamSearch" placeholder="🔍 Buscar examen..." oninput="labFiltrarExams(this.value)" style="margin-bottom:.65rem">
+
+              <div class="lab-exam-filter" id="labCatFilters"></div>
+              <div class="lab-exams-grid" id="labExamsGrid">
+                <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem;grid-column:1/-1">Cargando catálogo...</div>
+              </div>
+            </div>
+
+            <!-- Right: order summary panel -->
+            <div class="lab-panel">
+              <div class="lab-panel-title">Resumen de orden</div>
+              <div id="labPanelItems">
+                <div class="lab-panel-empty">Seleccioná exámenes para comenzar</div>
+              </div>
+              <div class="lab-totals" id="labTotals" style="display:none">
+                <div class="lab-total-row patient">
+                  <span class="label">Cobrar al paciente</span>
+                  <span class="value" id="ltTotal">$0.00</span>
+                </div>
+                <div class="lab-total-row lab-cost">
+                  <span class="label">Pagar laboratorio</span>
+                  <span class="value" id="ltLab">$0.00</span>
+                </div>
+                <div class="lab-total-row dres-cost">
+                  <span class="label">Comisión médico</span>
+                  <span class="value" id="ltDres">$0.00</span>
+                </div>
+                <div class="lab-total-row dc-gain" style="border-top:1px solid var(--border);margin-top:.3rem;padding-top:.6rem">
+                  <span class="label">Tu ganancia</span>
+                  <span class="value" id="ltDC">$0.00</span>
+                </div>
+              </div>
+              <textarea id="labNota" class="lab-search" placeholder="Nota (opcional)..." rows="2" style="margin-top:.75rem;resize:none"></textarea>
+              <button class="lab-btn-generar" id="btnGenerarOrden" onclick="generarOrdenLab()" disabled>Generar Orden →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ÓRDENES ──────────────────────────────────────────── -->
+        <div id="labViewOrdenes" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Historial de órdenes</div>
+            <select id="labOrdenFiltro" class="lab-select" style="width:auto;font-size:.78rem" onchange="renderLabOrdenes()">
+              <option value="">Todas</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="realizado">Realizadas</option>
+              <option value="pagado">Pagadas</option>
+            </select>
+          </div>
+          <div id="labOrdenesList">
+            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin órdenes aún</div>
+          </div>
+        </div>
+
+        <!-- ── LIQUIDACIONES ────────────────────────────────────── -->
+        <div id="labViewLiq" style="display:none">
+          <div class="lab-liq-section">
+            <div class="lab-liq-header">
+              <div>
+                <div class="lab-liq-title">🔶 Deuda al Laboratorio</div>
+                <div class="lab-liq-history" id="labLiqLabHistory">Sin pagos registrados</div>
+              </div>
+              <div>
+                <div class="lab-liq-amount lab-cost" id="labLiqLabTotal">$0.00</div>
+                <div style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap">
+                  <button class="lab-action-btn primary" onclick="registrarPagoLab('laboratorio', null, 'parcial')">Pago parcial</button>
+                  <button class="lab-action-btn" style="color:#e65100;border-color:#e65100" onclick="registrarPagoLab('laboratorio', null, 'total')">Liquidar todo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="labLiqMedicos"></div>
+        </div>
+
+        <!-- ── CATÁLOGO ─────────────────────────────────────────── -->
+        <div id="labViewCatalogo" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div style="font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Catálogo de exámenes</div>
+            <div style="display:flex;gap:.5rem">
+              <button class="lab-action-btn primary" onclick="openLabImport()">📥 Importar CSV</button>
+              <button class="lab-action-btn" onclick="openLabAddExam()">+ Agregar</button>
+            </div>
+          </div>
+          <div id="labCatalogoList">
+            <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin exámenes en catálogo</div>
+          </div>
+        </div>
+
+        <!-- ── MODAL IMPORTAR CSV ───────────────────────────────── -->
+        <div id="labImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+          <div style="background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:540px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+              <div style="font-size:.9rem;font-weight:800">Importar exámenes desde CSV</div>
+              <button onclick="closeLabImport()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--muted)">✕</button>
+            </div>
+            <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">Columnas esperadas: <code>descripcion, categoria, valor_lab, precio_final, ganancia_dres, ganancia_dc</code></p>
+            <textarea class="lab-import-area" id="labCSVArea" placeholder="Pega aquí el contenido CSV..."></textarea>
+            <div style="display:flex;gap:.5rem;margin-top:.75rem;justify-content:flex-end">
+              <button class="lab-action-btn" onclick="closeLabImport()">Cancelar</button>
+              <button class="lab-action-btn primary" onclick="importLabCSV()">Importar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── MODAL AGREGAR EXAMEN ─────────────────────────────── -->
+        <div id="labAddModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+          <div style="background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+              <div style="font-size:.9rem;font-weight:800">Nuevo examen</div>
+              <button onclick="closeLabAddExam()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--muted)">✕</button>
+            </div>
+            <div style="display:grid;gap:.65rem">
+              <input class="lab-search" id="addExamDesc" placeholder="Descripción del examen *">
+              <input class="lab-search" id="addExamCat" placeholder="Categoría" value="Laboratorio">
+              <div class="lab-form-row" style="margin-bottom:0">
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:.3rem">Valor Lab $</div><input class="lab-search" id="addExamLab" type="number" step="0.01" placeholder="0.00" oninput="calcAddExam()"></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:.3rem">Precio Final $</div><input class="lab-search" id="addExamFinal" type="number" step="0.01" placeholder="0.00" oninput="calcAddExam()"></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:.3rem">Comisión Médico $</div><input class="lab-search" id="addExamDres" type="number" step="0.01" placeholder="0.00" oninput="calcAddExam()"></div>
+                <div><div style="font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:.3rem">Ganancia DC $</div><input class="lab-search" id="addExamDC" type="number" step="0.01" placeholder="0.00" style="color:#2e7d32;font-weight:700" readonly></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:.5rem;margin-top:1rem;justify-content:flex-end">
+              <button class="lab-action-btn" onclick="closeLabAddExam()">Cancelar</button>
+              <button class="lab-action-btn primary" onclick="saveLabExam()">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- tabLaboratorio -->
+
 
 <script>
 const SB_URL     = 'https://qxoomcqaafogczrvsyhg.supabase.co'
@@ -1675,11 +1916,14 @@ async function commitImport() {
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
-  el('tabFrontend').style.display  = tab === 'frontend' ? '' : 'none'
-  el('tabBackend').style.display   = tab === 'backend'  ? '' : 'none'
-  el('tabBtnFrontend').classList.toggle('active', tab === 'frontend')
-  el('tabBtnBackend').classList.toggle('active',  tab === 'backend')
-  if (tab === 'backend') { loadNewTurnos(); loadLeads() }
+  el('tabFrontend').style.display     = tab === 'frontend'    ? '' : 'none'
+  el('tabBackend').style.display      = tab === 'backend'     ? '' : 'none'
+  el('tabLaboratorio').style.display  = tab === 'laboratorio' ? '' : 'none'
+  el('tabBtnFrontend').classList.toggle('active',    tab === 'frontend')
+  el('tabBtnBackend').classList.toggle('active',     tab === 'backend')
+  el('tabBtnLab').classList.toggle('active',         tab === 'laboratorio')
+  if (tab === 'backend')     { loadNewTurnos(); loadLeads() }
+  if (tab === 'laboratorio') { initLab() }
 }
 
 // ── BACKEND: LEADS ────────────────────────────────────────────────────────────
@@ -2691,6 +2935,496 @@ switchTab = function(tab) {
 
 // Auto-unlock al final — todas las variables ya están declaradas
 if (sessionStorage.getItem('dc_admin_auth') === '1') unlockAdmin()
+
+// ════════════════════════════════════════════════════════════════════════════
+// LABORATORIO
+// ════════════════════════════════════════════════════════════════════════════
+let _labExams      = []
+let _labExamsAll   = []
+let _labSelected   = {}   // { examId: exam }
+let _labOrders     = []
+let _labMedicos    = []
+let _labPatientId  = null
+let _labPatientName= ''
+let _labInited     = false
+
+function fmt(n){ return '$' + (Number(n)||0).toFixed(2) }
+
+function switchLabView(view) {
+  ['nueva','ordenes','liquidaciones','catalogo'].forEach(v => {
+    el('labView' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = v === view ? '' : 'none'
+    el('labBtn' + v.charAt(0).toUpperCase() + v.slice(1)).classList.toggle('active', v === view)
+  })
+  if (view === 'ordenes')       renderLabOrdenes()
+  if (view === 'liquidaciones') renderLabLiquidaciones()
+  if (view === 'catalogo')      renderLabCatalogo()
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+async function initLab() {
+  if (!_center) return
+  await Promise.all([loadLabExams(), loadLabOrders(), loadLabMedicos()])
+  _labInited = true
+  renderLabExamsGrid()
+  renderLabCatFilters()
+}
+
+async function loadLabExams() {
+  const { data } = await sbGet('lab_exams', `center_id=eq.${_center.id}&activo=eq.true&order=descripcion`)
+  _labExamsAll = data || []
+  _labExams    = [..._labExamsAll]
+}
+
+async function loadLabOrders() {
+  const { data } = await sbGet('lab_orders', `center_id=eq.${_center.id}&order=created_at.desc&limit=100`)
+  _labOrders = data || []
+}
+
+async function loadLabMedicos() {
+  const { data } = await sbGet('center_doctors',
+    `center_id=eq.${_center.id}&select=medico_id,medicos(id,nombre,apellido,titulo)`)
+  _labMedicos = (data || []).map(d => d.medicos).filter(Boolean)
+  const sel = el('labMedicoSelect')
+  if (sel) {
+    sel.innerHTML = '<option value="">Seleccionar médico...</option>' +
+      _labMedicos.map(m => `<option value="${m.id}">${m.titulo||'Dr.'} ${m.nombre} ${m.apellido}</option>`).join('')
+  }
+}
+
+// ── Exam grid ─────────────────────────────────────────────────────────────
+function renderLabCatFilters() {
+  const cats = [...new Set(_labExamsAll.map(e => e.categoria).filter(Boolean))]
+  const el_ = el('labCatFilters')
+  if (!el_) return
+  el_.innerHTML = '<button class="lab-filter-btn active" onclick="labFiltrarCat('',this)">Todos</button>' +
+    cats.map(c => `<button class="lab-filter-btn" onclick="labFiltrarCat('${c}',this)">${c}</button>`).join('')
+}
+
+function labFiltrarCat(cat, btn) {
+  document.querySelectorAll('.lab-filter-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  _labExams = cat ? _labExamsAll.filter(e => e.categoria === cat) : [..._labExamsAll]
+  renderLabExamsGrid()
+}
+
+function labFiltrarExams(q) {
+  const lq = q.toLowerCase()
+  _labExams = lq ? _labExamsAll.filter(e => e.descripcion.toLowerCase().includes(lq)) : [..._labExamsAll]
+  renderLabExamsGrid()
+}
+
+function renderLabExamsGrid() {
+  const grid = el('labExamsGrid')
+  if (!grid) return
+  if (!_labExams.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);grid-column:1/-1">Sin exámenes en el catálogo. Importá desde CSV en ⚙️ Catálogo.</div>'
+    return
+  }
+  grid.innerHTML = _labExams.map(exam => {
+    const sel = !!_labSelected[exam.id]
+    return `<div class="lab-exam-card${sel?' selected':''}" onclick="toggleLabExam('${exam.id}')">
+      <div class="lab-exam-name">${exam.descripcion}</div>
+      <div class="lab-exam-price">${fmt(exam.precio_final)}</div>
+      <div class="lab-exam-chips">
+        <span class="lab-chip lab">Lab ${fmt(exam.valor_lab)}</span>
+        <span class="lab-chip dres">Dres ${fmt(exam.ganancia_dres)}</span>
+        <span class="lab-chip dc">DC ${fmt(exam.ganancia_dc)}</span>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function toggleLabExam(examId) {
+  if (_labSelected[examId]) { delete _labSelected[examId] }
+  else {
+    const exam = _labExamsAll.find(e => e.id === examId)
+    if (exam) _labSelected[examId] = exam
+  }
+  renderLabExamsGrid()
+  updateLabSummary()
+}
+
+function updateLabSummary() {
+  const items = Object.values(_labSelected)
+  const panelItems = el('labPanelItems')
+  const totals     = el('labTotals')
+  const btnGenerar = el('btnGenerarOrden')
+
+  if (!items.length) {
+    panelItems.innerHTML = '<div class="lab-panel-empty">Seleccioná exámenes para comenzar</div>'
+    if (totals) totals.style.display = 'none'
+    if (btnGenerar) btnGenerar.disabled = true
+    return
+  }
+
+  panelItems.innerHTML = items.map(e => `
+    <div class="lab-panel-item">
+      <span class="lab-panel-item-name">${e.descripcion}</span>
+      <span class="lab-panel-item-price">${fmt(e.precio_final)}</span>
+      <button class="lab-panel-item-remove" onclick="toggleLabExam('${e.id}')">✕</button>
+    </div>`).join('')
+
+  const totPaciente = items.reduce((s,e) => s + Number(e.precio_final), 0)
+  const totLab      = items.reduce((s,e) => s + Number(e.valor_lab), 0)
+  const totDres     = items.reduce((s,e) => s + Number(e.ganancia_dres), 0)
+  const totDC       = items.reduce((s,e) => s + Number(e.ganancia_dc), 0)
+
+  el('ltTotal').textContent = fmt(totPaciente)
+  el('ltLab').textContent   = fmt(totLab)
+  el('ltDres').textContent  = fmt(totDres)
+  el('ltDC').textContent    = fmt(totDC)
+
+  if (totals) totals.style.display = ''
+  if (btnGenerar) btnGenerar.disabled = !_labPatientId
+}
+
+// ── Patient search ────────────────────────────────────────────────────────
+function labBuscarPaciente(q) {
+  const sugg = el('labPacienteSugg')
+  if (!sugg) return
+  if (!q || q.length < 2) { sugg.innerHTML = ''; return }
+  const hits = _allLeads.filter(p =>
+    (p.nombre||'').toLowerCase().includes(q.toLowerCase()) ||
+    (p.email||'').toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 6)
+  if (!hits.length) { sugg.innerHTML = ''; return }
+  sugg.innerHTML = `<div style="position:absolute;top:4px;left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:99;overflow:hidden">
+    ${hits.map(p => `<div onclick="labSeleccionarPaciente('${p.id}','${(p.nombre||'').replace(/'/g,"\'")}','${p.email||''}')"
+      style="padding:.6rem .85rem;font-size:.82rem;cursor:pointer;border-bottom:1px solid var(--border)"
+      onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+      <strong>${p.nombre||''}</strong><span style="color:var(--muted);font-size:.75rem"> · ${p.email||p.telefono||''}</span>
+    </div>`).join('')}
+  </div>`
+}
+
+function labSeleccionarPaciente(id, nombre, email) {
+  _labPatientId   = id
+  _labPatientName = nombre
+  const inp  = el('labPacienteSearch')
+  const sugg = el('labPacienteSugg')
+  if (inp)  inp.value = nombre
+  if (sugg) sugg.innerHTML = ''
+  updateLabSummary()
+}
+
+// ── Generar orden ─────────────────────────────────────────────────────────
+async function generarOrdenLab() {
+  if (!_labPatientId || !Object.keys(_labSelected).length) return
+  const btn = el('btnGenerarOrden')
+  btn.disabled = true; btn.textContent = 'Generando...'
+
+  const items   = Object.values(_labSelected)
+  const medicoId = el('labMedicoSelect')?.value || null
+  const nota    = el('labNota')?.value?.trim() || null
+
+  const totals = {
+    total_precio_final:  items.reduce((s,e)=>s+Number(e.precio_final),0),
+    total_valor_lab:     items.reduce((s,e)=>s+Number(e.valor_lab),0),
+    total_ganancia_dres: items.reduce((s,e)=>s+Number(e.ganancia_dres),0),
+    total_ganancia_dc:   items.reduce((s,e)=>s+Number(e.ganancia_dc),0),
+  }
+
+  // Create order
+  const {data: orderArr, error} = await sbPost('lab_orders', {
+    center_id:  _center.id,
+    patient_id: _labPatientId,
+    medico_id:  medicoId || null,
+    notas:      nota,
+    ...totals,
+  })
+  if (error || !orderArr?.[0]) {
+    toast('Error al crear orden: '+(error?.message||''), 'err')
+    btn.disabled = false; btn.textContent = 'Generar Orden →'
+    return
+  }
+  const order = orderArr[0]
+
+  // Create order items
+  await Promise.all(items.map(e => sbPost('lab_order_items', {
+    order_id:     order.id,
+    exam_id:      e.id,
+    descripcion:  e.descripcion,
+    valor_lab:    e.valor_lab,
+    precio_final: e.precio_final,
+    ganancia_dres: e.ganancia_dres,
+    ganancia_dc:  e.ganancia_dc,
+  })))
+
+  // Send confirmation email to patient
+  const patient = _allLeads.find(p => p.id === _labPatientId)
+  if (patient?.email) {
+    const medico = _labMedicos.find(m => m.id === medicoId)
+    const examList = items.map(e => `${e.descripcion} — ${fmt(e.precio_final)}`).join('
+')
+    fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+      body: JSON.stringify({
+        type:          'lab_order_confirm',
+        to_email:      patient.email,
+        patient_name:  patient.nombre || '',
+        center_name:   _center.nombre,
+        center_phone:  _center.whatsapp || _center.telefono || '',
+        doctor_name:   medico ? `${medico.titulo||'Dr.'} ${medico.nombre} ${medico.apellido}` : '',
+        exam_list:     examList,
+        total:         fmt(totals.total_precio_final),
+        order_id:      order.id.slice(0,8).toUpperCase(),
+      })
+    }).catch(()=>{})
+  }
+
+  toast('Orden generada ✓ — email enviado al paciente', 'ok')
+  _labSelected = {}
+  _labPatientId = null
+  _labPatientName = ''
+  if (el('labPacienteSearch')) el('labPacienteSearch').value = ''
+  if (el('labNota'))           el('labNota').value = ''
+  if (el('labMedicoSelect'))   el('labMedicoSelect').value = ''
+  updateLabSummary()
+  await loadLabOrders()
+  btn.disabled = false; btn.textContent = 'Generar Orden →'
+}
+
+// ── Render órdenes ────────────────────────────────────────────────────────
+async function renderLabOrdenes() {
+  await loadLabOrders()
+  const filtro = el('labOrdenFiltro')?.value || ''
+  const list   = el('labOrdenesList')
+  let orders   = filtro ? _labOrders.filter(o => o.estado === filtro) : _labOrders
+
+  if (!orders.length) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin órdenes aún</div>'
+    return
+  }
+
+  // Fetch patients and doctors for display
+  list.innerHTML = await Promise.all(orders.map(async o => {
+    const pat = _allLeads.find(p => p.id === o.patient_id)
+    const med = _labMedicos.find(m => m.id === o.medico_id)
+    const fecha = o.fecha ? new Date(o.fecha+'T12:00:00').toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}) : '—'
+    const badgeCls = o.estado === 'pagado' ? 'pagado' : o.estado === 'realizado' ? 'realizado' : 'pendiente'
+    const badgeLbl = o.estado === 'pagado' ? 'Pagado' : o.estado === 'realizado' ? 'Realizado' : 'Pendiente'
+
+    // Get items
+    const {data: items} = await sbGet('lab_order_items', `order_id=eq.${o.id}`)
+    const itemsHTML = (items||[]).map(i =>
+      `<div style="display:flex;justify-content:space-between;font-size:.78rem;padding:.3rem 0;border-bottom:1px solid #f3f4f6">
+        <span>${i.descripcion}</span>
+        <span style="display:flex;gap:.75rem;flex-shrink:0">
+          <span style="color:#e65100">Lab ${fmt(i.valor_lab)}</span>
+          <span style="color:#3949ab">Dres ${fmt(i.ganancia_dres)}</span>
+          <span style="color:#2e7d32">DC ${fmt(i.ganancia_dc)}</span>
+          <strong>${fmt(i.precio_final)}</strong>
+        </span>
+      </div>`).join('')
+
+    return `<div class="lab-order-card">
+      <div class="lab-order-header" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div>
+          <div class="lab-order-patient">${pat?.nombre||'Paciente'}</div>
+          <div class="lab-order-meta">${fecha}${med?' · '+(med.titulo||'Dr.')+' '+med.nombre+' '+med.apellido:''}</div>
+        </div>
+        <span class="lab-badge ${badgeCls}">${badgeLbl}</span>
+        <div class="lab-order-total">${fmt(o.total_precio_final)}</div>
+      </div>
+      <div class="lab-order-detail">
+        ${itemsHTML}
+        <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:.5rem;font-size:.8rem;font-weight:700">
+          <span style="color:#e65100">Lab: ${fmt(o.total_valor_lab)}</span>
+          <span style="color:#3949ab">Médico: ${fmt(o.total_ganancia_dres)}</span>
+          <span style="color:#2e7d32">DC: ${fmt(o.total_ganancia_dc)}</span>
+        </div>
+        <div class="lab-order-actions">
+          ${o.estado === 'pendiente' ? `<button class="lab-action-btn primary" onclick="cambiarEstadoOrden('${o.id}','realizado')">✓ Marcar realizado</button>` : ''}
+          ${o.estado === 'realizado' ? `<button class="lab-action-btn primary" onclick="cambiarEstadoOrden('${o.id}','pagado')">💰 Marcar pagado</button>` : ''}
+          ${o.estado === 'pagado' ? `<span style="color:#065f46;font-size:.78rem;font-weight:700">✓ Pagado</span>` : ''}
+        </div>
+      </div>
+    </div>`
+  })).then(arr => arr.join(''))
+}
+
+async function cambiarEstadoOrden(orderId, estado) {
+  await sbPatch('lab_orders', `id=eq.${orderId}`, { estado })
+  toast(`Orden marcada como ${estado} ✓`, 'ok')
+  renderLabOrdenes()
+}
+
+// ── Liquidaciones ─────────────────────────────────────────────────────────
+async function renderLabLiquidaciones() {
+  await loadLabOrders()
+
+  // Lab debt: sum of valor_lab for non-pagado orders
+  const pendingOrders = _labOrders.filter(o => !o.lab_pagado)
+  const totalLab = pendingOrders.reduce((s,o)=>s+Number(o.total_valor_lab),0)
+  el('labLiqLabTotal').textContent = fmt(totalLab)
+
+  // Liquidaciones history
+  const {data: liqHist} = await sbGet('lab_liquidaciones', `center_id=eq.${_center.id}&tipo=eq.laboratorio&order=created_at.desc&limit=5`)
+  el('labLiqLabHistory').textContent = liqHist?.length
+    ? 'Últimos pagos: ' + liqHist.map(l => `${fmt(l.monto)} (${l.fecha})`).join(' · ')
+    : 'Sin pagos registrados'
+
+  // Medicos debt
+  const medsDiv = el('labLiqMedicos')
+  const medsWithDebt = _labMedicos.map(m => {
+    const orders = _labOrders.filter(o => o.medico_id === m.id && !o.medico_pagado)
+    const total  = orders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
+    return { m, total, count: orders.length }
+  }).filter(x => x.total > 0)
+
+  medsDiv.innerHTML = medsWithDebt.length ? medsWithDebt.map(({m,total,count}) => `
+    <div class="lab-liq-section">
+      <div class="lab-liq-header">
+        <div>
+          <div class="lab-liq-title">🔵 ${m.titulo||'Dr.'} ${m.nombre} ${m.apellido}</div>
+          <div class="lab-liq-history">${count} orden${count!==1?'es':''} pendiente${count!==1?'s':''}</div>
+        </div>
+        <div>
+          <div class="lab-liq-amount dres-cost">${fmt(total)}</div>
+          <div style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap">
+            <button class="lab-action-btn primary" onclick="registrarPagoLab('medico','${m.id}','parcial')">Pago parcial</button>
+            <button class="lab-action-btn" style="color:#3949ab;border-color:#3949ab" onclick="registrarPagoLab('medico','${m.id}','total')">Liquidar todo</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('') : '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.85rem">Sin comisiones pendientes para médicos</div>'
+}
+
+async function registrarPagoLab(tipo, medicoId, modo) {
+  const totalEl = tipo === 'laboratorio' ? el('labLiqLabTotal') : null
+  const totalStr = totalEl ? totalEl.textContent.replace('$','') : '0'
+  let monto = modo === 'total' ? totalStr : prompt('Monto a pagar ($):')
+  if (!monto) return
+  monto = parseFloat(monto)
+  if (isNaN(monto) || monto <= 0) return
+
+  await sbPost('lab_liquidaciones', {
+    center_id: _center.id,
+    tipo,
+    medico_id: medicoId || null,
+    monto,
+    fecha: new Date().toISOString().split('T')[0],
+    notas: modo === 'total' ? 'Liquidación total' : 'Pago parcial',
+  })
+
+  // Mark orders as paid
+  if (modo === 'total') {
+    const field = tipo === 'laboratorio' ? 'lab_pagado' : 'medico_pagado'
+    const toMark = _labOrders.filter(o => !o[field] && (tipo==='laboratorio' || o.medico_id===medicoId))
+    await Promise.all(toMark.map(o => sbPatch('lab_orders', `id=eq.${o.id}`, {[field]: true})))
+  }
+
+  toast(`Pago de ${fmt(monto)} registrado ✓`, 'ok')
+  renderLabLiquidaciones()
+}
+
+// ── Catálogo ──────────────────────────────────────────────────────────────
+async function renderLabCatalogo() {
+  await loadLabExams()
+  const list = el('labCatalogoList')
+  if (!_labExamsAll.length) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin exámenes. Importá desde CSV o agrega manualmente.</div>'
+    return
+  }
+  list.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:.8rem">
+    <thead><tr style="border-bottom:2px solid var(--border)">
+      <th style="text-align:left;padding:.5rem;font-weight:700;color:var(--muted)">Examen</th>
+      <th style="text-align:right;padding:.5rem;font-weight:700;color:var(--muted)">Público</th>
+      <th style="text-align:right;padding:.5rem;font-weight:700;color:#e65100">Lab</th>
+      <th style="text-align:right;padding:.5rem;font-weight:700;color:#3949ab">Dres</th>
+      <th style="text-align:right;padding:.5rem;font-weight:700;color:#2e7d32">DC</th>
+      <th style="padding:.5rem"></th>
+    </tr></thead>
+    <tbody>${_labExamsAll.map(e=>`
+      <tr style="border-bottom:1px solid #f3f4f6">
+        <td style="padding:.5rem;font-weight:600">${e.descripcion}</td>
+        <td style="text-align:right;padding:.5rem;font-weight:700">${fmt(e.precio_final)}</td>
+        <td style="text-align:right;padding:.5rem;color:#e65100">${fmt(e.valor_lab)}</td>
+        <td style="text-align:right;padding:.5rem;color:#3949ab">${fmt(e.ganancia_dres)}</td>
+        <td style="text-align:right;padding:.5rem;color:#2e7d32">${fmt(e.ganancia_dc)}</td>
+        <td style="text-align:right;padding:.5rem">
+          <button onclick="deleteLabExam('${e.id}')" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:.75rem">✕</button>
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`
+}
+
+async function deleteLabExam(id) {
+  if (!confirm('¿Eliminar este examen?')) return
+  await sbPatch('lab_exams', `id=eq.${id}`, { activo: false })
+  toast('Examen eliminado', 'ok')
+  renderLabCatalogo()
+  loadLabExams()
+}
+
+// ── CSV Import ────────────────────────────────────────────────────────────
+function openLabImport()  { const m=el('labImportModal'); if(m){m.style.display='flex'} }
+function closeLabImport() { const m=el('labImportModal'); if(m){m.style.display='none'; el('labCSVArea').value=''} }
+
+async function importLabCSV() {
+  const raw = el('labCSVArea')?.value?.trim()
+  if (!raw) return
+  const rows = raw.split('
+').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,'')))
+  const header = rows[0].map(h => h.toLowerCase().replace(/\s+/g,'_'))
+  const data   = rows.slice(1).filter(r => r.length >= 4 && r[0])
+
+  let inserted = 0
+  for (const row of data) {
+    const obj = {}
+    header.forEach((h,i) => obj[h] = row[i] || '')
+    const exam = {
+      center_id:     _center.id,
+      descripcion:   obj.descripcion || obj['descripci_n'] || row[0],
+      categoria:     obj.categoria || 'Laboratorio',
+      valor_lab:     parseFloat(obj.valor_lab || obj.valor_del_labo || row[2]) || 0,
+      precio_final:  parseFloat(obj.precio_final || row[3]) || 0,
+      ganancia_dres: parseFloat(obj.ganancia_dres || row[4]) || 0,
+      ganancia_dc:   parseFloat(obj.ganancia_dc || obj.final_doctor_center || row[5]) || 0,
+    }
+    const { error } = await sbPost('lab_exams', exam)
+    if (!error) inserted++
+  }
+
+  toast(`${inserted} exámenes importados ✓`, 'ok')
+  closeLabImport()
+  renderLabCatalogo()
+  loadLabExams().then(renderLabExamsGrid)
+}
+
+// ── Add exam manually ─────────────────────────────────────────────────────
+function openLabAddExam()  { const m=el('labAddModal'); if(m)m.style.display='flex' }
+function closeLabAddExam() { const m=el('labAddModal'); if(m)m.style.display='none' }
+
+function calcAddExam() {
+  const fin  = parseFloat(el('addExamFinal')?.value) || 0
+  const lab  = parseFloat(el('addExamLab')?.value)   || 0
+  const dres = parseFloat(el('addExamDres')?.value)  || 0
+  const dcEl = el('addExamDC')
+  if (dcEl) dcEl.value = (fin - lab - dres).toFixed(2)
+}
+
+async function saveLabExam() {
+  const desc = el('addExamDesc')?.value?.trim()
+  if (!desc) { toast('Descripción requerida', 'err'); return }
+  const exam = {
+    center_id:     _center.id,
+    descripcion:   desc,
+    categoria:     el('addExamCat')?.value?.trim() || 'Laboratorio',
+    valor_lab:     parseFloat(el('addExamLab')?.value)   || 0,
+    precio_final:  parseFloat(el('addExamFinal')?.value) || 0,
+    ganancia_dres: parseFloat(el('addExamDres')?.value)  || 0,
+    ganancia_dc:   parseFloat(el('addExamDC')?.value)    || 0,
+  }
+  const { error } = await sbPost('lab_exams', exam)
+  if (error) { toast('Error: '+error.message, 'err'); return }
+  toast('Examen agregado ✓', 'ok')
+  closeLabAddExam()
+  renderLabCatalogo()
+  loadLabExams().then(renderLabExamsGrid)
+}
 </script>
 </body>
 </html>
