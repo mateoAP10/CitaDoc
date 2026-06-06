@@ -1070,13 +1070,34 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       <!-- ═══════════════════════════════════════════════════════════ -->
       <div id="tabLaboratorio" style="display:none">
 
-        <!-- Sub-tab nav -->
-        <div class="lab-sub-tabs">
-          <button class="lab-sub-tab active" id="labBtnNueva"  onclick="switchLabView('nueva')">🧪 Nueva Orden</button>
-          <button class="lab-sub-tab"        id="labBtnOrdenes" onclick="switchLabView('ordenes')">📋 Órdenes</button>
-          <button class="lab-sub-tab"        id="labBtnLiq"     onclick="switchLabView('liquidaciones')">💰 Liquidaciones</button>
-          <button class="lab-sub-tab"        id="labBtnCatalogo" onclick="switchLabView('catalogo')" style="margin-left:auto">⚙️ Catálogo</button>
-        </div>
+        <div class="section-card">
+
+          <!-- Header -->
+          <div class="section-header" style="margin-bottom:1rem">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-4m-4-5 3 3-3 3"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Laboratorio</div>
+              <div class="section-sub">Órdenes, comisiones y liquidaciones</div>
+            </div>
+          </div>
+
+          <!-- Sub-tab nav -->
+          <div class="lab-sub-tabs">
+            <button class="lab-sub-tab active" id="labBtnNueva"     onclick="switchLabView('nueva')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M12 5v14M5 12h14"/></svg>Nueva Orden
+            </button>
+            <button class="lab-sub-tab" id="labBtnOrdenes"    onclick="switchLabView('ordenes')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>Órdenes
+            </button>
+            <button class="lab-sub-tab" id="labBtnLiquidaciones" onclick="switchLabView('liquidaciones')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Liquidaciones
+            </button>
+            <button class="lab-sub-tab" id="labBtnCatalogo"    onclick="switchLabView('catalogo')" style="margin-left:auto">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07M19.07 4.93 12 12"/></svg>Catálogo
+            </button>
+          </div>
 
         <!-- ── NUEVA ORDEN ─────────────────────────────────────── -->
         <div id="labViewNueva">
@@ -1228,6 +1249,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           </div>
         </div>
 
+        </div><!-- /section-card -->
       </div><!-- tabLaboratorio -->
 
 
@@ -2952,8 +2974,11 @@ function fmt(n){ return '$' + (Number(n)||0).toFixed(2) }
 
 function switchLabView(view) {
   ['nueva','ordenes','liquidaciones','catalogo'].forEach(v => {
-    el('labView' + v.charAt(0).toUpperCase() + v.slice(1)).style.display = v === view ? '' : 'none'
-    el('labBtn' + v.charAt(0).toUpperCase() + v.slice(1)).classList.toggle('active', v === view)
+    const viewEl = el('labView' + v.charAt(0).toUpperCase() + v.slice(1))
+    if (viewEl) viewEl.style.display = v === view ? '' : 'none'
+    const btnId = v === 'liquidaciones' ? 'labBtnLiquidaciones' : 'labBtn' + v.charAt(0).toUpperCase() + v.slice(1)
+    const btnEl = el(btnId)
+    if (btnEl) btnEl.classList.toggle('active', v === view)
   })
   if (view === 'ordenes')       renderLabOrdenes()
   if (view === 'liquidaciones') renderLabLiquidaciones()
