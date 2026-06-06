@@ -1449,30 +1449,65 @@ function tplCenterPostVisita(d: Record<string,unknown>): string {
 
 function tplLabOrderConfirm(d: Record<string,unknown>): string {
   const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  const examLines = String(d.exam_list||'').split('\n').filter(Boolean)
   const body = `
-<tr><td style="padding:28px 32px 8px;text-align:center">
+<tr><td style="padding:28px 32px 20px;text-align:center">
   <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600">Hola, ${safe(d.patient_name)} 👋</p>
   <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Tu orden de laboratorio<br>está <strong style="color:#0b7c6e">confirmada.</strong></p>
 </td></tr>
-<tr><td style="padding:16px 32px 0">
+<tr><td style="padding:0 32px 24px">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px">
-    <tr><td style="padding:16px 20px">
-      <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Orden #${safe(d.order_id||'')}</p>
-      ${d.doctor_name ? `<p style="margin:0 0 10px;font-size:13px;color:#374151">Solicitado por <strong>${safe(d.doctor_name)}</strong></p>` : ''}
-      <p style="margin:0 0 8px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Exámenes</p>
-      ${examLines.map(l => `<p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#0f172a">${safe(l)}</p>`).join('')}
-      <p style="margin:12px 0 0;font-size:16px;font-weight:800;color:#0b7c6e;border-top:1px solid #e2e8f0;padding-top:10px">Total: ${safe(d.total||'')}</p>
+    <tr><td style="padding:18px 20px">
+      ${d.fecha_estudio ? `<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Fecha del estudio</p>
+      <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#0f172a">${safe(d.fecha_estudio)}${d.hora_estudio ? ' · <strong>'+safe(d.hora_estudio)+'</strong>' : ''}</p>` : ''}
+      ${d.doctor_name ? `<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Médico solicitante</p>
+      <p style="margin:0 0 12px;font-size:14px;font-weight:600;color:#0f172a">${safe(d.doctor_name)}</p>` : ''}
+      <p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Total</p>
+      <p style="margin:0;font-size:22px;font-weight:800;color:#0b7c6e">${safe(d.total||'')}</p>
     </td></tr>
   </table>
 </td></tr>
-${d.center_phone ? `<tr><td style="padding:16px 32px 0;text-align:center">
-  <p style="margin:0;font-size:13px;color:#374151">¿Consultas? Escribinos al <strong>${safe(d.center_phone)}</strong></p>
+${d.center_phone ? `<tr><td style="padding:0 32px 20px;text-align:center">
+  <p style="margin:0;font-size:13px;color:#374151">¿Consultas? <strong>${safe(d.center_phone)}</strong></p>
 </td></tr>` : ''}
-<tr><td style="padding:20px 32px 28px;text-align:center">
-  <p style="margin:0;color:#94a3b8;font-size:11px">Te esperamos. ${safe(d.center_name||'')}</p>
+<tr><td style="padding:0 32px 28px;text-align:center">
+  <p style="margin:0;color:#94a3b8;font-size:11px">Te esperamos · ${safe(d.center_name||'')}</p>
 </td></tr>`
-  return centerBase(String(d.center_name||''), '🔬 Orden de laboratorio confirmada', 'linear-gradient(135deg,#0f172a,#0b7c6e)', '#6ee7b7', 'rgba(110,231,183,.12)', '🔬 Laboratorio', body)
+  return centerBase(String(d.center_name||''), 'Orden de laboratorio confirmada', 'linear-gradient(135deg,#052a27,#0a3d35)', '#6ee7b7', 'rgba(110,231,183,.12)', '🔬 Laboratorio', body)
+}
+
+function tplLabOrderRealizado(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const body = `
+<tr><td style="padding:28px 32px 20px;text-align:center">
+  <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Gracias por realizar<br>tus estudios con nosotros.</p>
+</td></tr>
+<tr><td style="padding:0 32px 24px;text-align:center">
+  <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.7">Esperamos que todo haya salido perfecto.<br>Si tenés alguna consulta sobre tus resultados<br>no dudes en contactarnos.</p>
+  ${d.center_phone ? `<p style="margin:0;font-size:14px;font-weight:700;color:#0f172a">${safe(d.center_phone)}</p>` : ''}
+</td></tr>
+<tr><td style="padding:0 32px 28px;text-align:center">
+  <p style="margin:0;color:#94a3b8;font-size:11px">${safe(d.center_name||'')} · CitaDoc</p>
+</td></tr>`
+  return centerBase(String(d.center_name||''), 'Estudios realizados', 'linear-gradient(135deg,#052a27,#0a3d35)', '#6ee7b7', 'rgba(110,231,183,.12)', '✓ Completado', body)
+}
+
+function tplLabOrderCancelado(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const bookingUrl = d.booking_url || ''
+  const body = `
+<tr><td style="padding:28px 32px 20px;text-align:center">
+  <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Tu orden de laboratorio<br>fue cancelada.</p>
+</td></tr>
+<tr><td style="padding:0 32px 24px;text-align:center">
+  <p style="margin:0 0 20px;color:#374151;font-size:14px;line-height:1.7">Entendemos que los planes cambian.<br>Podés reagendar cuando quieras.</p>
+  ${bookingUrl ? `<a href="${safe(bookingUrl)}" style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-size:14px;font-weight:700">Reagendar →</a>` : ''}
+</td></tr>
+<tr><td style="padding:0 32px 28px;text-align:center">
+  <p style="margin:0;color:#94a3b8;font-size:11px">${safe(d.center_name||'')} · CitaDoc</p>
+</td></tr>`
+  return centerBase(String(d.center_name||''), 'Orden cancelada', 'linear-gradient(135deg,#0f172a,#1e293b)', '#e2e8f0', 'rgba(226,232,240,.1)', '📅 Cancelado', body)
 }
 
 function tplCenterCoupon(d: Record<string,unknown>): string {
@@ -1802,6 +1837,18 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'lab_order_confirm': {
         const subject = `Orden de laboratorio confirmada — ${data.center_name||'tu centro médico'}`
         await sendEmail(to_email, subject, tplLabOrderConfirm(data as Record<string,unknown>))
+        break
+      }
+
+      case 'lab_order_realizado': {
+        const subject = `Gracias por tus estudios — ${data.center_name||'tu centro médico'}`
+        await sendEmail(to_email, subject, tplLabOrderRealizado(data as Record<string,unknown>))
+        break
+      }
+
+      case 'lab_order_cancelado': {
+        const subject = `Tu orden fue cancelada — ${data.center_name||'tu centro médico'}`
+        await sendEmail(to_email, subject, tplLabOrderCancelado(data as Record<string,unknown>))
         break
       }
 
