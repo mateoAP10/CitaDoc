@@ -2988,6 +2988,8 @@ function switchLabView(view) {
 // ── Init ──────────────────────────────────────────────────────────────────
 async function initLab() {
   if (!_center) return
+  // Asegurar que los pacientes estén cargados
+  if (!_allLeads.length) await loadLeads()
   await Promise.all([loadLabExams(), loadLabOrders(), loadLabMedicos()])
   _labInited = true
   renderLabExamsGrid()
