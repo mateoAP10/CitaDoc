@@ -345,13 +345,66 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .lab-action-btn:hover{border-color:var(--red);color:var(--red)}
 .lab-action-btn.primary{background:var(--red);border-color:var(--red);color:#fff}
 .lab-action-btn.primary:hover{background:var(--red-dark)}
-.lab-liq-section{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
-.lab-liq-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.lab-liq-title{font-size:.85rem;font-weight:800;color:var(--ink)}
-.lab-liq-amount{font-size:1.4rem;font-weight:800}
-.lab-liq-amount.lab-cost{color:#e65100}
-.lab-liq-amount.dres-cost{color:#3949ab}
-.lab-liq-history{font-size:.75rem;color:var(--muted);margin-top:.5rem}
+/* ── LIQUIDACIONES CINE ───────────────────────── */
+.liq-hero{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:16px;padding:1.5rem 1.5rem 1.25rem;margin-bottom:1.25rem;position:relative;overflow:hidden}
+.liq-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none}
+.liq-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.liq-hero-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:.3rem}
+.liq-hero-total{font-size:2.6rem;font-weight:900;letter-spacing:-.03em;line-height:1;color:#fff}
+.liq-hero-sub{font-size:.72rem;color:#64748b;margin-top:.4rem}
+.liq-hero-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem;padding-top:.875rem;border-top:1px solid rgba(255,255,255,.07)}
+.liq-hero-history{flex:1;font-size:.7rem;color:#475569;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.liq-htag{background:rgba(255,255,255,.07);color:#94a3b8;border-radius:6px;padding:.12rem .4rem;font-size:.68rem;font-weight:600;white-space:nowrap}
+.liq-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:.875rem;transition:box-shadow .2s}
+.liq-card:hover{box-shadow:0 4px 24px rgba(0,0,0,.07)}
+.liq-card-head{padding:1rem 1.25rem;display:flex;align-items:center;gap:.875rem}
+.liq-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0;letter-spacing:-.01em}
+.liq-card-info{flex:1;min-width:0}
+.liq-card-name{font-size:.88rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.liq-card-meta{font-size:.7rem;color:var(--muted);margin-top:.15rem}
+.liq-card-amount{text-align:right;flex-shrink:0}
+.liq-amount-val{font-size:1.35rem;font-weight:900;letter-spacing:-.02em;color:#3949ab}
+.liq-amount-val.zero{color:var(--muted)}
+.liq-amount-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-top:.1rem}
+.liq-card-actions{padding:.65rem 1.25rem;background:#fafafa;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center}
+.liq-btn{border:none;border-radius:8px;font-size:.73rem;font-weight:700;padding:.42rem .85rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.liq-btn-parcial{background:#f1f5f9;color:#475569}
+.liq-btn-parcial:hover{background:#e2e8f0}
+.liq-btn-total{background:#3949ab;color:#fff}
+.liq-btn-total:hover{background:#303f9f}
+.liq-btn-lab-parcial{background:#fff3e0;color:#e65100}
+.liq-btn-lab-parcial:hover{background:#ffe0b2}
+.liq-btn-lab-total{background:#e65100;color:#fff}
+.liq-btn-lab-total:hover{background:#bf360c}
+.liq-paid-badge{font-size:.72rem;font-weight:700;color:#065f46;display:inline-flex;align-items:center;gap:.25rem}
+.liq-items-wrap{padding:.75rem 1.25rem;border-top:1px solid var(--border)}
+.liq-items-label{font-size:.58rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:.55rem}
+.liq-item-row{display:flex;justify-content:space-between;align-items:center;padding:.28rem 0}
+.liq-item-row+.liq-item-row{border-top:1px solid #f3f4f6}
+.liq-item-name{font-size:.76rem;font-weight:600;color:var(--ink)}
+.liq-item-right{display:flex;gap:.65rem;align-items:center;flex-shrink:0}
+.liq-item-date{font-size:.66rem;color:var(--muted)}
+.liq-item-price{font-size:.78rem;font-weight:700;color:#3949ab}
+/* Payment slide-up modal */
+.liq-modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);z-index:9000;display:none;align-items:flex-end;justify-content:center;padding:0 0 env(safe-area-inset-bottom)}
+.liq-modal-bg.open{display:flex}
+.liq-modal{background:#fff;border-radius:22px 22px 0 0;padding:2rem 1.5rem 2.5rem;width:100%;max-width:480px;animation:liqSlideUp .28s cubic-bezier(.34,1.4,.64,1)}
+@keyframes liqSlideUp{from{transform:translateY(110%);opacity:0}to{transform:translateY(0);opacity:1}}
+.liq-modal-drag{width:40px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 1.5rem}
+.liq-modal-title{font-size:1.15rem;font-weight:800;color:var(--ink);margin-bottom:.2rem}
+.liq-modal-sub{font-size:.8rem;color:var(--muted);margin-bottom:1.5rem}
+.liq-modal-input-wrap{position:relative}
+.liq-modal-currency{position:absolute;left:1rem;top:50%;transform:translateY(-50%);font-size:1.3rem;font-weight:900;color:var(--muted)}
+.liq-modal-input{width:100%;border:2px solid var(--border);border-radius:12px;padding:.85rem 1rem .85rem 2.25rem;font-size:1.5rem;font-weight:900;color:var(--ink);box-sizing:border-box;outline:none;transition:border .15s;font-family:'DM Sans',sans-serif}
+.liq-modal-input:focus{border-color:#3949ab}
+.liq-modal-input.lab{} .liq-modal-input.lab:focus{border-color:#e65100}
+.liq-modal-actions{display:flex;gap:.75rem;margin-top:1.25rem}
+.liq-modal-cancel{flex:1;background:#f1f5f9;color:#475569;border:none;border-radius:12px;padding:.8rem;font-weight:700;font-size:.9rem;cursor:pointer;font-family:'DM Sans',sans-serif}
+.liq-modal-confirm{flex:2;background:#3949ab;color:#fff;border:none;border-radius:12px;padding:.8rem;font-weight:800;font-size:.9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.liq-modal-confirm:hover{background:#303f9f}
+.liq-modal-confirm.lab-color{background:#e65100}.liq-modal-confirm.lab-color:hover{background:#bf360c}
+/* legacy compat */
+.lab-liq-section{display:none}.lab-liq-header{display:none}.lab-liq-title{display:none}.lab-liq-amount{display:none}.lab-liq-history{display:none}
 .lab-import-area{width:100%;min-height:120px;border:1.5px solid var(--border);border-radius:9px;padding:.75rem;font-family:'DM Sans',sans-serif;font-size:.8rem;resize:vertical;outline:none}
 .lab-import-area:focus{border-color:var(--red)}
 </style>
@@ -1182,23 +1235,47 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 
         <!-- ── LIQUIDACIONES ────────────────────────────────────── -->
         <div id="labViewLiq" style="display:none">
-          <div class="lab-liq-section">
-            <div class="lab-liq-header">
+
+          <!-- Hero: Deuda al Laboratorio -->
+          <div class="liq-hero">
+            <div class="liq-hero-top">
               <div>
-                <div class="lab-liq-title">🔶 Deuda al Laboratorio</div>
-                <div class="lab-liq-history" id="labLiqLabHistory">Sin pagos registrados</div>
+                <div class="liq-hero-label">Deuda al Laboratorio</div>
+                <div class="liq-hero-total" id="labLiqLabTotal">$0.00</div>
+                <div class="liq-hero-sub" id="labLiqLabCount">Cargando…</div>
               </div>
-              <div>
-                <div class="lab-liq-amount lab-cost" id="labLiqLabTotal">$0.00</div>
-                <div style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap">
-                  <button class="lab-action-btn primary" onclick="registrarPagoLab('laboratorio', null, 'parcial')">Pago parcial</button>
-                  <button class="lab-action-btn" style="color:#e65100;border-color:#e65100" onclick="registrarPagoLab('laboratorio', null, 'total')">Liquidar todo</button>
-                </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.5rem">
+                <button class="liq-btn liq-btn-lab-parcial" onclick="openLiqModal('laboratorio',null,'parcial')">Pago parcial</button>
+                <button class="liq-btn liq-btn-lab-total" onclick="openLiqModal('laboratorio',null,'total')">Liquidar todo</button>
+              </div>
+            </div>
+            <div class="liq-hero-actions">
+              <div class="liq-hero-history" id="labLiqLabHistory">
+                <span style="color:#475569">Sin pagos registrados</span>
               </div>
             </div>
           </div>
 
+          <!-- Médicos -->
+          <div style="font-size:.62rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.09em;margin-bottom:.75rem">Comisiones por médico</div>
           <div id="labLiqMedicos"></div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div class="liq-modal-bg" id="liqModalBg" onclick="closeLiqModalBg(event)">
+          <div class="liq-modal">
+            <div class="liq-modal-drag"></div>
+            <div class="liq-modal-title" id="liqModalTitle">Registrar pago</div>
+            <div class="liq-modal-sub" id="liqModalSub"></div>
+            <div class="liq-modal-input-wrap">
+              <span class="liq-modal-currency">$</span>
+              <input class="liq-modal-input" id="liqModalInput" type="number" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+            </div>
+            <div class="liq-modal-actions">
+              <button class="liq-modal-cancel" onclick="closeLiqModal()">Cancelar</button>
+              <button class="liq-modal-confirm" id="liqModalConfirm" onclick="confirmLiqPago()">Registrar pago</button>
+            </div>
+          </div>
         </div>
 
         <!-- ── CATÁLOGO ─────────────────────────────────────────── -->
@@ -3159,9 +3236,11 @@ function labBuscarPaciente(q) {
   </div>`
 }
 
+let _labPatientEmail = ''
 function labSeleccionarPaciente(id, nombre, email) {
-  _labPatientId   = id
-  _labPatientName = nombre
+  _labPatientId    = id
+  _labPatientName  = nombre
+  _labPatientEmail = email || ''
   const inp  = el('labPacienteSearch')
   const sugg = el('labPacienteSugg')
   const sel  = el('labPacienteSelected')
@@ -3178,6 +3257,7 @@ function labSeleccionarPaciente(id, nombre, email) {
 function labClearPaciente() {
   _labPatientId = null
   _labPatientName = ''
+  _labPatientEmail = ''
   const inp = el('labPacienteSearch')
   const sel = el('labPacienteSelected')
   if (inp) { inp.style.display = ''; inp.value = ''; inp.focus() }
@@ -3205,7 +3285,7 @@ async function generarOrdenLab() {
   }
 
   // Create order
-  const {data: orderArr, error} = await sbPost('lab_orders', {
+  const {data: order, error} = await sbPost('lab_orders', {
     center_id:     _center.id,
     patient_id:    _labPatientId,
     medico_id:     medicoId || null,
@@ -3214,12 +3294,11 @@ async function generarOrdenLab() {
     hora_estudio:  horaEstudio || null,
     ...totals,
   })
-  if (error || !orderArr?.[0]) {
+  if (error || !order?.id) {
     toast('Error al crear orden: '+(error?.message||''), 'err')
     btn.disabled = false; btn.textContent = 'Generar Orden →'
     return
   }
-  const order = orderArr[0]
 
   // Create order items
   await Promise.all(items.map(e => sbPost('lab_order_items', {
@@ -3232,18 +3311,21 @@ async function generarOrdenLab() {
     ganancia_dc:  e.ganancia_dc,
   })))
 
-  // Send confirmation email to patient
-  const patient = _allLeads.find(p => p.id === _labPatientId)
-  if (patient?.email) {
+  // Send confirmation email to patient — fallback to DB if email missing in memory
+  let _emailToSend = _labPatientEmail
+  if (!_emailToSend) {
+    const { data: pd } = await sbGet('center_patients', `id=eq.${_labPatientId}&select=email`)
+    _emailToSend = pd?.[0]?.email || ''
+  }
+  if (_emailToSend) {
     const medico = _labMedicos.find(m => m.id === medicoId)
-    const examList = items.map(e => e.descripcion + ' — ' + fmt(e.precio_final)).join('\n')
     fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
       body: JSON.stringify({
         type:           'lab_order_confirm',
-        to_email:       patient.email,
-        patient_name:   patient.nombre || '',
+        to_email:       _emailToSend,
+        patient_name:   _labPatientName || '',
         center_name:    _center.nombre,
         center_phone:   _center.whatsapp || _center.telefono || '',
         doctor_name:    medico ? (medico.titulo||'Dr.')+' '+medico.nombre+' '+medico.apellido : '',
@@ -3260,6 +3342,7 @@ async function generarOrdenLab() {
   _labSelected = {}
   _labPatientId = null
   _labPatientName = ''
+  _labPatientEmail = ''
   if (el('labPacienteSearch')) el('labPacienteSearch').value = ''
   if (el('labNota'))           el('labNota').value = ''
   if (el('labMedicoSelect'))   el('labMedicoSelect').value = ''
@@ -3343,7 +3426,8 @@ async function renderLabOrdenes() {
 
 async function marcarLabRealizado(orderId, patientId) {
   const now = new Date().toISOString()
-  const alreadySent = _labOrders.find(o=>o.id===orderId)?.email_realizado_at
+  const order = _labOrders.find(o=>o.id===orderId)
+  const alreadySent = order?.email_realizado_at
   await sbPatch('lab_orders', `id=eq.${orderId}`, {
     estado: 'realizado',
     email_realizado_at: alreadySent || now
@@ -3351,6 +3435,8 @@ async function marcarLabRealizado(orderId, patientId) {
   if (!alreadySent && patientId) {
     const patient = _allLeads.find(p => p.id === patientId)
     if (patient?.email) {
+      const {data: items} = await sbGet('lab_order_items', `order_id=eq.${orderId}`)
+      const examList = items?.map(i=>`${i.descripcion}|${fmt(i.precio_final)}`).join('||') || ''
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
         headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
@@ -3360,11 +3446,13 @@ async function marcarLabRealizado(orderId, patientId) {
           patient_name: patient.nombre||'',
           center_name:  _center.nombre,
           center_phone: _center.whatsapp||_center.telefono||'',
+          exam_list:    examList,
+          total:        order ? fmt(Number(order.total_valor_lab)||0) : '',
         })
       }).catch(()=>{})
     }
   }
-  toast('Marcado como realizado ✓ — email de agradecimiento enviado', 'ok')
+  toast('Marcado como realizado ✓ — email enviado al paciente', 'ok')
   await loadLabOrders()
   renderLabOrdenes()
 }
@@ -3400,37 +3488,46 @@ async function cancelarLabOrden(orderId, patientId) {
 }
 
 // ── Liquidaciones ─────────────────────────────────────────────────────────
+// ── AVATAR COLOR ─────────────────────────────────────────────────────────────
+const _avatarPalette = [
+  ['#e0e7ff','#3949ab'],['#fce7f3','#be185d'],['#d1fae5','#065f46'],
+  ['#fef3c7','#92400e'],['#ffe4e6','#be123c'],['#f0fdf4','#166534'],
+]
+function avatarColor(str) {
+  let h = 0; for (let i=0;i<str.length;i++) h=(h*31+str.charCodeAt(i))&0xffff
+  return _avatarPalette[h % _avatarPalette.length]
+}
+
 async function renderLabLiquidaciones() {
   await loadLabOrders()
-
-  // Solo órdenes realizadas (estudios hechos)
   const realizadas = _labOrders.filter(o => o.estado === 'realizado')
 
-  // ── LAB EXTERNO ───────────────────────────────────────────────────────────
-  const labPendientes = realizadas.filter(o => !o.lab_pagado)
-  const totalLab = labPendientes.reduce((s,o)=>s+Number(o.total_valor_lab),0)
+  // ── LAB EXTERNO ──────────────────────────────────────────────────────────
+  const labPend = realizadas.filter(o => !o.lab_pagado)
+  const totalLab = labPend.reduce((s,o)=>s+Number(o.total_valor_lab),0)
   el('labLiqLabTotal').textContent = fmt(totalLab)
+  el('labLiqLabCount').textContent = labPend.length
+    ? `${labPend.length} orden${labPend.length!==1?'es':''} pendiente${labPend.length!==1?'s':''}`
+    : 'Sin deuda pendiente'
 
   const {data: liqHist} = await sbGet('lab_liquidaciones',
     `center_id=eq.${_center.id}&tipo=eq.laboratorio&order=created_at.desc&limit=5`)
   el('labLiqLabHistory').innerHTML = liqHist?.length
-    ? liqHist.map(l=>`<span style="display:inline-block;background:#f1f5f9;border-radius:6px;padding:.1rem .4rem;font-size:.7rem;margin:.1rem">${fmt(l.monto)} · ${l.fecha}${l.notas?' · '+l.notas:''}</span>`).join('')
-    : 'Sin pagos registrados'
+    ? liqHist.map(l=>`<span class="liq-htag">${fmt(l.monto)} · ${l.fecha}</span>`).join('')
+    : '<span style="color:#475569">Sin pagos registrados</span>'
 
   // ── MÉDICOS ───────────────────────────────────────────────────────────────
   const medsDiv = el('labLiqMedicos')
   if (!_labMedicos.length) {
-    medsDiv.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.85rem">Sin médicos vinculados al centro</div>'
+    medsDiv.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin médicos vinculados al centro</div>'
     return
   }
 
   const medsData = await Promise.all(_labMedicos.map(async m => {
     const pendOrders = realizadas.filter(o => o.medico_id === m.id && !o.medico_pagado)
     const paidOrders = realizadas.filter(o => o.medico_id === m.id && o.medico_pagado)
-    const totalPend  = pendOrders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
-    const totalPaid  = paidOrders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
-
-    // Get items for pending orders
+    const totalPend = pendOrders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
+    const totalPaid = paidOrders.reduce((s,o)=>s+Number(o.total_ganancia_dres),0)
     const allItems = []
     for (const o of pendOrders) {
       const {data: items} = await sbGet('lab_order_items', `order_id=eq.${o.id}`)
@@ -3439,57 +3536,94 @@ async function renderLabLiquidaciones() {
     return { m, pendOrders, totalPend, totalPaid, allItems }
   }))
 
-  // Filter only medics with activity
   const active = medsData.filter(x => x.pendOrders.length > 0 || x.totalPaid > 0)
-
   if (!active.length) {
-    medsDiv.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.85rem">Sin comisiones pendientes</div>'
+    medsDiv.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin comisiones pendientes</div>'
     return
   }
 
-  medsDiv.innerHTML = active.map(({m, pendOrders, totalPend, totalPaid, allItems}) => `
-    <div class="lab-liq-section">
-      <div class="lab-liq-header">
-        <div style="flex:1">
-          <div class="lab-liq-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3949ab" stroke-width="2" style="vertical-align:middle;margin-right:4px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            ${m.titulo||'Dr.'} ${m.nombre} ${m.apellido}
-          </div>
-          <div class="lab-liq-history">
+  medsDiv.innerHTML = active.map(({m, pendOrders, totalPend, totalPaid, allItems}) => {
+    const initials = ((m.nombre||'')[0]||(m.apellido||'')[0]||'?').toUpperCase() + ((m.apellido||'')[0]||'').toUpperCase()
+    const [bg, fg] = avatarColor(m.nombre+m.apellido)
+    const hasPending = totalPend > 0
+    return `
+    <div class="liq-card">
+      <div class="liq-card-head">
+        <div class="liq-avatar" style="background:${bg};color:${fg}">${initials}</div>
+        <div class="liq-card-info">
+          <div class="liq-card-name">${m.titulo||'Dr.'} ${m.nombre} ${m.apellido}</div>
+          <div class="liq-card-meta">
             ${pendOrders.length} estudio${pendOrders.length!==1?'s':''} pendiente${pendOrders.length!==1?'s':''}
-            ${totalPaid>0 ? ' · Pagado históricamente: '+fmt(totalPaid) : ''}
+            ${totalPaid>0 ? ' · Hist. '+fmt(totalPaid) : ''}
           </div>
         </div>
-        <div style="text-align:right">
-          <div class="lab-liq-amount dres-cost">${fmt(totalPend)}</div>
-          <div style="font-size:.65rem;color:var(--muted);margin-bottom:.4rem">pendiente</div>
-          ${totalPend > 0 ? `<div style="display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end">
-            <button class="lab-action-btn primary" onclick="registrarPagoLab('medico','${m.id}','parcial')" style="font-size:.72rem;padding:.35rem .75rem">Pago parcial</button>
-            <button class="lab-action-btn" style="color:#3949ab;border-color:#c7d2fe;font-size:.72rem;padding:.35rem .75rem" onclick="registrarPagoLab('medico','${m.id}','total')">Liquidar todo</button>
-          </div>` : '<span style="font-size:.72rem;color:#065f46;font-weight:700">✓ Al día</span>'}
+        <div class="liq-card-amount">
+          <div class="liq-amount-val${hasPending?'':' zero'}">${fmt(totalPend)}</div>
+          <div class="liq-amount-label">pendiente</div>
         </div>
       </div>
-      ${allItems.length ? `<div style="margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border)">
-        <div style="font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Estudios pendientes de pago</div>
-        ${allItems.map(i=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:.3rem 0;border-bottom:1px solid #f3f4f6;font-size:.78rem">
-            <span style="font-weight:600;color:var(--ink)">${i.descripcion}</span>
-            <span style="display:flex;gap:.65rem;align-items:center;flex-shrink:0">
-              ${i.fecha?`<span style="color:var(--muted);font-size:.7rem">${i.fecha}</span>`:''}
-              <span style="color:#3949ab;font-weight:700">${fmt(i.ganancia_dres)}</span>
-            </span>
-          </div>`).join('')}
+      ${allItems.length ? `<div class="liq-items-wrap">
+        <div class="liq-items-label">Estudios pendientes de cobro</div>
+        ${allItems.map(i=>`<div class="liq-item-row">
+          <span class="liq-item-name">${i.descripcion}</span>
+          <span class="liq-item-right">
+            ${i.fecha?`<span class="liq-item-date">${i.fecha}</span>`:''}
+            <span class="liq-item-price">${fmt(i.ganancia_dres)}</span>
+          </span>
+        </div>`).join('')}
       </div>` : ''}
-    </div>`).join('')
+      <div class="liq-card-actions">
+        ${hasPending ? `
+          <button class="liq-btn liq-btn-parcial" onclick="openLiqModal('medico','${m.id}','parcial')">Pago parcial</button>
+          <button class="liq-btn liq-btn-total" onclick="openLiqModal('medico','${m.id}','total')">Liquidar todo</button>
+        ` : `<span class="liq-paid-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Al día
+        </span>`}
+      </div>
+    </div>`
+  }).join('')
 }
 
-async function registrarPagoLab(tipo, medicoId, modo) {
-  const totalEl = tipo === 'laboratorio' ? el('labLiqLabTotal') : null
-  const totalStr = totalEl ? totalEl.textContent.replace('$','') : '0'
-  let monto = modo === 'total' ? totalStr : prompt('Monto a pagar ($):')
-  if (!monto) return
-  monto = parseFloat(monto)
-  if (isNaN(monto) || monto <= 0) return
+// ── PAYMENT MODAL ─────────────────────────────────────────────────────────────
+let _liqModalCtx = {}
+
+function openLiqModal(tipo, medicoId, modo) {
+  _liqModalCtx = { tipo, medicoId, modo }
+  const isLab = tipo === 'laboratorio'
+  const isTotal = modo === 'total'
+
+  // Resolve pre-filled amount for "total" mode
+  let prefill = ''
+  if (isTotal) {
+    if (isLab) {
+      prefill = el('labLiqLabTotal').textContent.replace(/[^0-9.]/g,'')
+    } else {
+      // sum from rendered amount (stored in card)
+      const card = document.querySelector(`[data-medico-id="${medicoId}"]`)
+      prefill = card ? card.dataset.total : ''
+    }
+  }
+
+  el('liqModalTitle').textContent = isLab ? 'Pago al Laboratorio' : 'Pago a médico'
+  el('liqModalSub').textContent = isTotal ? 'Liquidación total — podés ajustar el monto si es necesario.' : 'Ingresá el monto del pago parcial.'
+  const input = el('liqModalInput')
+  input.value = prefill || ''
+  input.className = 'liq-modal-input' + (isLab ? ' lab' : '')
+  const confirmBtn = el('liqModalConfirm')
+  confirmBtn.className = 'liq-modal-confirm' + (isLab ? ' lab-color' : '')
+
+  el('liqModalBg').classList.add('open')
+  setTimeout(()=>input.focus(), 80)
+}
+
+function closeLiqModal() { el('liqModalBg').classList.remove('open') }
+function closeLiqModalBg(e) { if (e.target === el('liqModalBg')) closeLiqModal() }
+
+async function confirmLiqPago() {
+  const monto = parseFloat(el('liqModalInput').value)
+  if (isNaN(monto) || monto <= 0) { el('liqModalInput').focus(); return }
+  const { tipo, medicoId, modo } = _liqModalCtx
+  closeLiqModal()
 
   await sbPost('lab_liquidaciones', {
     center_id: _center.id,
@@ -3500,10 +3634,9 @@ async function registrarPagoLab(tipo, medicoId, modo) {
     notas: modo === 'total' ? 'Liquidación total' : 'Pago parcial',
   })
 
-  // Mark orders as paid
   if (modo === 'total') {
     const field = tipo === 'laboratorio' ? 'lab_pagado' : 'medico_pagado'
-    const toMark = _labOrders.filter(o => !o[field] && (tipo==='laboratorio' || o.medico_id===medicoId))
+    const toMark = _labOrders.filter(o => o.estado==='realizado' && !o[field] && (tipo==='laboratorio' || o.medico_id===medicoId))
     await Promise.all(toMark.map(o => sbPatch('lab_orders', `id=eq.${o.id}`, {[field]: true})))
   }
 
