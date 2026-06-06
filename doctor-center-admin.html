@@ -3411,7 +3411,7 @@ async function renderLabOrdenes() {
           <span style="color:#2e7d32">DC: ${fmt(o.total_ganancia_dc)}</span>
         </div>
         ${!isCancelado && !isRealizado ? `<div class="lab-order-actions">
-          <button class="lab-action-btn primary" onclick="marcarLabRealizado('${o.id}','${o.patient_id||''}')">
+          <button class="lab-action-btn primary" onclick="marcarLabRealizado('${o.id}')">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Marcar realizado
           </button>
           <button class="lab-action-btn" style="color:#dc2626;border-color:#fca5a5" onclick="cancelarLabOrden('${o.id}','${o.patient_id||''}')">
@@ -3427,35 +3427,9 @@ async function renderLabOrdenes() {
   })).then(arr => arr.join(''))
 }
 
-async function marcarLabRealizado(orderId, patientId) {
-  const now = new Date().toISOString()
-  const order = _labOrders.find(o=>o.id===orderId)
-  const alreadySent = order?.email_realizado_at
-  await sbPatch('lab_orders', `id=eq.${orderId}`, {
-    estado: 'realizado',
-    email_realizado_at: alreadySent || now
-  })
-  if (!alreadySent && patientId) {
-    const patient = _allLeads.find(p => p.id === patientId)
-    if (patient?.email) {
-      const {data: items} = await sbGet('lab_order_items', `order_id=eq.${orderId}`)
-      const examList = items?.map(i=>`${i.descripcion}|${fmt(i.precio_final)}`).join('||') || ''
-      fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
-        body: JSON.stringify({
-          type:         'lab_order_realizado',
-          to_email:     patient.email,
-          patient_name: patient.nombre||'',
-          center_name:  _center.nombre,
-          center_phone: _center.whatsapp||_center.telefono||'',
-          exam_list:    examList,
-          total:        order ? fmt(Number(order.total_valor_lab)||0) : '',
-        })
-      }).catch(()=>{})
-    }
-  }
-  toast('Marcado como realizado ✓ — email enviado al paciente', 'ok')
+async function marcarLabRealizado(orderId) {
+  await sbPatch('lab_orders', `id=eq.${orderId}`, { estado: 'realizado' })
+  toast('Marcado como realizado ✓', 'ok')
   await loadLabOrders()
   renderLabOrdenes()
 }
