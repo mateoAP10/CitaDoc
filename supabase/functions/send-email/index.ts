@@ -1486,38 +1486,37 @@ ${d.center_phone ? `<tr><td style="padding:0 32px 16px;text-align:center">
 }
 
 function tplLabOrderRealizado(d: Record<string,unknown>): string {
-  const safe  = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  const exams = String(d.exam_list||'').split('||').filter(Boolean)
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
   const body = `
 <tr><td style="padding:28px 32px 20px;text-align:center">
   <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600">Hola, ${safe(d.patient_name)} 👋</p>
-  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Tus estudios fueron<br><strong>completados.</strong></p>
+  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Gracias por realizarte<br><strong>tus estudios.</strong></p>
 </td></tr>
-${exams.length ? `<tr><td style="padding:0 32px 20px">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:14px;overflow:hidden;border:1.5px solid #e5e7eb">
-    <tr><td style="padding:14px 18px 10px">
-      <p style="margin:0 0 10px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Estudios realizados</p>
-      ${exams.map(e => `<div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid #f1f5f9;font-size:13px">
-        <span style="font-weight:600;color:#0f172a">${safe(e.split('|')[0]||e)}</span>
-        <span style="font-weight:700;color:#065f46">${safe(e.split('|')[1]||'')}</span>
-      </div>`).join('')}
-    </td></tr>
-    ${d.total ? `<tr><td style="padding:12px 18px;background:#f0fdf4;border-top:2px solid #d1fae5">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:11px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.5px">Total</span>
-        <span style="font-size:20px;font-weight:800;color:#0b7c6e">${safe(d.total)}</span>
-      </div>
-    </td></tr>` : ''}
-  </table>
-</td></tr>` : ''}
-<tr><td style="padding:0 32px 20px;text-align:center">
-  <p style="margin:0 0 12px;color:#374151;font-size:14px;line-height:1.7">Si tenés alguna consulta sobre tus resultados,<br>no dudes en contactarnos.</p>
+<tr><td style="padding:0 32px 24px;text-align:center">
+  <p style="margin:0 0 12px;color:#374151;font-size:14px;line-height:1.7">Fue un placer atenderte en <strong>${safe(d.center_name)}</strong>.<br>Cualquier consulta, estamos disponibles.</p>
   ${d.center_phone ? `<p style="margin:0;font-size:14px;font-weight:700;color:#0f172a">${safe(d.center_phone)}</p>` : ''}
 </td></tr>
 <tr><td style="padding:0 32px 28px;text-align:center">
   <p style="margin:0;color:#94a3b8;font-size:11px">${safe(d.center_name||'')} · CitaDoc</p>
 </td></tr>`
-  return centerBase(String(d.center_name||''), 'Estudios realizados', 'linear-gradient(135deg,#052a27,#0a3d35)', '#6ee7b7', 'rgba(110,231,183,.12)', '✓ Completado', body)
+  return centerBase(String(d.center_name||''), 'Gracias por tus estudios', 'linear-gradient(135deg,#052a27,#0a3d35)', '#6ee7b7', 'rgba(110,231,183,.12)', '✓ Completado', body)
+}
+
+function tplLabResult(d: Record<string,unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const body = `
+<tr><td style="padding:28px 32px 20px;text-align:center">
+  <p style="margin:0 0 6px;color:#64748b;font-size:12px;font-weight:600">Hola, ${safe(d.patient_name)} 👋</p>
+  <p style="margin:0;color:#0f172a;font-size:20px;font-weight:700;line-height:1.4">Tus resultados de<br><strong>laboratorio están listos.</strong></p>
+</td></tr>
+<tr><td style="padding:0 32px 24px;text-align:center">
+  <p style="margin:0 0 12px;color:#374151;font-size:14px;line-height:1.7">Encontrás tus resultados adjuntos<br>en este correo de parte de <strong>${safe(d.center_name)}</strong>.</p>
+  ${d.center_phone ? `<p style="margin:0;font-size:14px;font-weight:700;color:#0f172a">${safe(d.center_phone)}</p>` : ''}
+</td></tr>
+<tr><td style="padding:0 32px 28px;text-align:center">
+  <p style="margin:0;color:#94a3b8;font-size:11px">${safe(d.center_name||'')} · CitaDoc</p>
+</td></tr>`
+  return centerBase(String(d.center_name||''), 'Resultados de laboratorio', 'linear-gradient(135deg,#052a27,#083d2f)', '#6ee7b7', 'rgba(110,231,183,.15)', '🔬 Resultados', body)
 }
 
 function tplLabOrderCancelado(d: Record<string,unknown>): string {
@@ -1877,6 +1876,13 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
       case 'lab_order_cancelado': {
         const subject = `Tu orden fue cancelada — ${data.center_name||'tu centro médico'}`
         await sendEmail(to_email, subject, tplLabOrderCancelado(data as Record<string,unknown>))
+        break
+      }
+
+      case 'lab_result': {
+        const subject = `Tus resultados de laboratorio — ${data.center_name||'tu centro médico'}`
+        const atts = (data.attachments as {filename:string,content:string}[]|undefined) || []
+        await sendEmail(to_email, subject, tplLabResult(data as Record<string,unknown>), atts.length ? atts : undefined)
         break
       }
 

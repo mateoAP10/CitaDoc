@@ -397,6 +397,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .liq-modal-confirm.lab-color{background:#e65100}.liq-modal-confirm.lab-color:hover{background:#bf360c}
 /* legacy compat */
 .lab-liq-section{display:none}.lab-liq-header{display:none}.lab-liq-title{display:none}.lab-liq-amount{display:none}.lab-liq-history{display:none}
+/* ── RESULTADOS TAB ─────────────────────────────────── */
+.lab-res-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.lab-res-info{flex:1;min-width:0}
+.lab-res-title{font-size:.85rem;font-weight:700;color:var(--ink)}
+.lab-res-meta{font-size:.72rem;color:var(--muted);margin-top:.15rem}
+.lab-res-actions{display:flex;align-items:center;gap:.6rem;flex-shrink:0;flex-wrap:wrap}
+.lab-res-file{display:inline-flex;align-items:center;gap:.35rem;background:#f1f5f9;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .75rem;font-size:.75rem;font-weight:700;color:#475569;cursor:pointer;transition:all .15s;white-space:nowrap}
+.lab-res-file:hover{background:#e2e8f0;border-color:#94a3b8}
+.lab-res-file.loaded{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+.lab-res-send{background:var(--red);color:#fff;border:none;border-radius:8px;padding:.4rem .85rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;white-space:nowrap}
+.lab-res-send:disabled{background:#d1d5db;cursor:not-allowed}
+.lab-res-send.sent{background:#065f46}
 /* ── HISTORIAL MENSUAL ──────────────────────────────── */
 .liq-hist-wrap{border-top:1px solid var(--border)}
 .liq-month-toggle{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.25rem;cursor:pointer;user-select:none;transition:background .12s}
@@ -1169,6 +1181,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
             <button class="lab-sub-tab" id="labBtnLiquidaciones" onclick="switchLabView('liquidaciones')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Liquidaciones
             </button>
+            <button class="lab-sub-tab" id="labBtnResultados" onclick="switchLabView('resultados')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Resultados
+            </button>
             <button class="lab-sub-tab" id="labBtnCatalogo"    onclick="switchLabView('catalogo')" style="margin-left:auto">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07M19.07 4.93 12 12"/></svg>Catálogo
             </button>
@@ -1281,6 +1296,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
           <!-- Médicos -->
           <div style="font-size:.62rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.09em;margin-bottom:.75rem">Comisiones por médico</div>
           <div id="labLiqMedicos"></div>
+        </div>
+
+        <!-- ── RESULTADOS ──────────────────────────────────────── -->
+        <div id="labViewResultados" style="display:none">
+          <div style="position:relative;margin-bottom:1.25rem">
+            <input type="text" id="labResInput" placeholder="Buscar paciente con estudios realizados…"
+              oninput="labBuscarResP(this.value)" autocomplete="off"
+              style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:.65rem .9rem;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box">
+            <div id="labResSugg" style="position:relative"></div>
+          </div>
+          <div id="labResOrders"></div>
         </div>
 
         <!-- Payment Modal -->
@@ -3101,7 +3127,7 @@ let _labInited     = false
 function fmt(n){ return '$' + (Number(n)||0).toFixed(2) }
 
 function switchLabView(view) {
-  ['nueva','ordenes','liquidaciones','catalogo'].forEach(v => {
+  ['nueva','ordenes','liquidaciones','resultados','catalogo'].forEach(v => {
     const viewEl = el('labView' + v.charAt(0).toUpperCase() + v.slice(1))
     if (viewEl) viewEl.style.display = v === view ? '' : 'none'
     const btnId = v === 'liquidaciones' ? 'labBtnLiquidaciones' : 'labBtn' + v.charAt(0).toUpperCase() + v.slice(1)
@@ -3110,6 +3136,7 @@ function switchLabView(view) {
   })
   if (view === 'ordenes')       renderLabOrdenes()
   if (view === 'liquidaciones') renderLabLiquidaciones()
+  if (view === 'resultados')    renderLabResultados()
   if (view === 'catalogo')      renderLabCatalogo()
 }
 
@@ -3451,6 +3478,14 @@ async function renderLabOrdenes() {
 
 async function marcarLabRealizado(orderId) {
   await sbPatch('lab_orders', `id=eq.${orderId}`, { estado: 'realizado' })
+  const order = _labOrders.find(o=>o.id===orderId)
+  if (order?.patient_id) {
+    const patient = _allLeads.find(p=>p.id===order.patient_id)
+    if (patient?.email) fetch(`${_SUPABASE_URL}/functions/v1/send-email`,{
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+      body: JSON.stringify({ type:'lab_order_realizado', to_email:patient.email, patient_name:patient.nombre||'', center_name:_center.nombre, center_phone:_center.whatsapp||_center.telefono||'' })
+    }).catch(()=>{})
+  }
   toast('Marcado como realizado ✓', 'ok')
   await loadLabOrders()
   renderLabOrdenes()
@@ -3555,7 +3590,7 @@ async function renderLabLiquidaciones() {
     const nPend = orders.filter(o=>!o.lab_pagado).length
     const badgeCls = nPend===0?'paid':nPend===orders.length?'pend':'mix'
     const badgeTxt = nPend===0?'✓ Pagado':`${nPend} pendiente${nPend>1?'s':''}`
-    const uid=`lab-${key}`, open=idx===0
+    const uid=`lab-${key}`, open=false
     const ordersHtml = orders.map(o=>{
       const fecha = o.fecha_estudio||o.created_at.slice(0,10)
       const patient = _allLeads.find(p=>p.id===o.patient_id)
@@ -3620,7 +3655,7 @@ async function renderLabLiquidaciones() {
       const nPend=orders.filter(o=>!o.medico_pagado).length
       const badgeCls=nPend===0?'paid':nPend===orders.length?'pend':'mix'
       const badgeTxt=nPend===0?'✓ Pagado':`${nPend} pendiente${nPend>1?'s':''}`
-      const uid=`med-${m.id}-${key}`, open=idx===0
+      const uid=`med-${m.id}-${key}`, open=false
       const ordersHtml=orders.map(o=>{
         const fecha=o.fecha_estudio||o.created_at.slice(0,10)
         const patient=_allLeads.find(p=>p.id===o.patient_id)
@@ -3737,6 +3772,97 @@ async function confirmLiqPago() {
 
   toast(`Pago de ${fmt(monto)} registrado ✓`, 'ok')
   renderLabLiquidaciones()
+}
+
+// ── Resultados ────────────────────────────────────────────────────────────
+let _labResPatId = null
+
+function renderLabResultados() {
+  el('labResInput').value = ''
+  el('labResSugg').innerHTML = ''
+  el('labResOrders').innerHTML = ''
+  _labResPatId = null
+}
+
+function labBuscarResP(q) {
+  const sugg = el('labResSugg')
+  if (!q || q.length < 2) { sugg.innerHTML = ''; return }
+  const conResultados = new Set(_labOrders.filter(o=>o.estado==='realizado').map(o=>o.patient_id))
+  const hits = _allLeads.filter(p => conResultados.has(p.id) &&
+    ((p.nombre||'').toLowerCase().includes(q.toLowerCase()) ||
+     (p.email||'').toLowerCase().includes(q.toLowerCase()))
+  ).slice(0,6)
+  if (!hits.length) { sugg.innerHTML = ''; return }
+  sugg.innerHTML = `<div style="position:absolute;top:4px;left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:99;overflow:hidden">
+    ${hits.map(p=>`<div onclick="labSelResP('${p.id}','${(p.nombre||'').replace(/'/g,"\\'")}')
+" style="padding:.6rem .85rem;font-size:.82rem;cursor:pointer;border-bottom:1px solid var(--border)"
+      onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+      <strong>${esc(p.nombre||'')}</strong><span style="color:var(--muted);font-size:.75rem"> · ${esc(p.email||p.telefono||'')}</span>
+    </div>`).join('')}
+  </div>`
+}
+
+function labSelResP(id, nombre) {
+  _labResPatId = id
+  el('labResInput').value = nombre
+  el('labResSugg').innerHTML = ''
+  const orders = _labOrders.filter(o=>o.patient_id===id && o.estado==='realizado')
+    .sort((a,b)=>b.created_at.localeCompare(a.created_at))
+  const div = el('labResOrders')
+  if (!orders.length) { div.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.85rem">Sin estudios realizados</div>'; return }
+  div.innerHTML = orders.map(o=>{
+    const fecha = o.fecha_estudio||o.created_at.slice(0,10)
+    const medico = _labMedicos.find(m=>m.id===o.medico_id)
+    const medicoTxt = medico ? `${medico.titulo||'Dr.'} ${medico.nombre} ${medico.apellido}` : ''
+    return `<div class="lab-res-card">
+      <div class="lab-res-info">
+        <div class="lab-res-title">${fecha}</div>
+        <div class="lab-res-meta">${medicoTxt}${o.total_precio_final?` · $${Number(o.total_precio_final).toFixed(2)}`:''}</div>
+      </div>
+      <div class="lab-res-actions">
+        <label class="lab-res-file" id="lbl-${o.id}" for="resf-${o.id}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          <span id="lbl-txt-${o.id}">Cargar PDF</span>
+          <input type="file" id="resf-${o.id}" accept="application/pdf" style="display:none" onchange="labResFile('${o.id}',this)">
+        </label>
+        <button class="lab-res-send" id="res-btn-${o.id}" onclick="enviarResultado('${o.id}','${id}')" disabled>Enviar</button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function labResFile(orderId, input) {
+  const file = input.files[0]; if(!file) return
+  const lbl = el('lbl-'+orderId), txt = el('lbl-txt-'+orderId), btn = el('res-btn-'+orderId)
+  if(lbl) lbl.className='lab-res-file loaded'
+  if(txt) txt.textContent = file.name.length>22 ? file.name.slice(0,20)+'…' : file.name
+  if(btn) btn.disabled = false
+}
+
+async function enviarResultado(orderId, patientId) {
+  const input = el('resf-'+orderId), btn = el('res-btn-'+orderId)
+  const file = input?.files?.[0]; if(!file) return
+  const patient = _allLeads.find(p=>p.id===patientId)
+  if (!patient?.email) { toast('El paciente no tiene email registrado','err'); return }
+  btn.disabled=true; btn.textContent='Enviando…'
+  const reader = new FileReader()
+  reader.onload = async e => {
+    const b64 = e.target.result.split(',')[1]
+    try {
+      const resp = await fetch(`${_SUPABASE_URL}/functions/v1/send-email`,{
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+        body: JSON.stringify({
+          type:'lab_result', to_email:patient.email,
+          patient_name:patient.nombre||'', center_name:_center.nombre,
+          center_phone:_center.whatsapp||_center.telefono||'',
+          attachments:[{filename:file.name, content:b64}]
+        })
+      })
+      if(resp.ok){ btn.textContent='✓ Enviado'; btn.className='lab-res-send sent'; toast('Resultado enviado ✓','ok') }
+      else { throw new Error(await resp.text()) }
+    } catch(err){ console.error('[lab result]',err); toast('Error al enviar','err'); btn.disabled=false; btn.textContent='Enviar' }
+  }
+  reader.readAsDataURL(file)
 }
 
 // ── Catálogo ──────────────────────────────────────────────────────────────
