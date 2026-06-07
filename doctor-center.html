@@ -2976,10 +2976,12 @@ async function loadDocMedico() {
     // Usar anon (sin JWT) — center_doctors es de lectura pública
     const links = await dbGet('center_doctors', 'center_id=eq.'+_center.id+'&medico_id=eq.'+medico.id+'&select=medico_id&limit=1')
     if (!links.length) {
-      sb.auth.signOut()  // async, no await — no bloquear
-      showDocLogin()     // resetear botón y vista inmediatamente
+      closeDocPanel()
       el('docErr').textContent = 'No tenés acceso a este centro'
       el('docErr').style.display = 'block'
+      el('docLoginView').style.display = 'block'
+      el('btnDocLogin').disabled = false
+      el('btnDocLogin').textContent = 'Ingresar al panel'
       return
     }
   }
