@@ -2908,15 +2908,21 @@ async function docLogin() {
   if (!email || !pass) return
   const btn = el('btnDocLogin')
   btn.disabled = true
-  btn.textContent = 'Entrando...'
+  btn.textContent = 'Entrando…'
   el('docErr').style.display = 'none'
 
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
   if (error) {
+    el('docErr').textContent = 'Usuario o contraseña incorrectos'
     el('docErr').style.display = 'block'
     btn.disabled = false
     btn.textContent = 'Ingresar al panel'
+    return
   }
+  // Éxito — no esperar onAuthStateChange, cargar directo
+  _authToken = data.session?.access_token || null
+  _docUser   = data.user
+  await loadDocMedico()
 }
 
 async function docSignOut() {
