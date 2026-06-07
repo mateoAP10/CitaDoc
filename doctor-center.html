@@ -2830,18 +2830,20 @@ function mobTab(tab) {
 }
 
 // ── DOCTOR PANEL AUTH ─────────────────────────────────────────────────────────
-let _docUser = null
-let _docMedico = null
+let _docUser    = null
+let _docMedico  = null
+let _docLoading = false  // guard: evita doble llamada
 
 sb.auth.onAuthStateChange(async (event, session) => {
   _authToken = session?.access_token || null
   if (session?.user) {
     _docUser = session.user
-    await loadDocMedico()
+    // Solo cargar si docLogin no lo está haciendo ya
+    if (!_docLoading && !_docMedico) await loadDocMedico()
   } else {
-    _docUser = null
+    _docUser   = null
     _docMedico = null
-    showDocLogin()
+    if (el('docPanel')?.classList.contains('open')) showDocLogin()
   }
 })
 
@@ -2911,18 +2913,20 @@ async function docLogin() {
   btn.textContent = 'Entrando…'
   el('docErr').style.display = 'none'
 
+  _docLoading = true
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
   if (error) {
+    _docLoading = false
     el('docErr').textContent = 'Usuario o contraseña incorrectos'
     el('docErr').style.display = 'block'
     btn.disabled = false
     btn.textContent = 'Ingresar al panel'
     return
   }
-  // Éxito — no esperar onAuthStateChange, cargar directo
   _authToken = data.session?.access_token || null
   _docUser   = data.user
   await loadDocMedico()
+  _docLoading = false
 }
 
 async function docSignOut() {
@@ -2968,10 +2972,11 @@ async function loadDocMedico() {
   if (_center) {
     const links = await dbGet('center_doctors', 'center_id=eq.'+_center.id+'&medico_id=eq.'+medico.id+'&select=medico_id&limit=1', _authToken)
     if (!links.length) {
+      await sb.auth.signOut()
+      closeDocPanel()
       el('docErr').textContent = 'No tenés acceso a este centro'
       el('docErr').style.display = 'block'
       el('docLoginView').style.display = 'block'
-      el('docAgendaView').style.display = 'none'
       return
     }
   }
