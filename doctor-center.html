@@ -2843,7 +2843,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
   } else {
     _docUser   = null
     _docMedico = null
-    if (el('docPanel')?.classList.contains('open')) showDocLogin()
+    showDocLogin()
   }
 })
 
@@ -2927,6 +2927,9 @@ async function docLogin() {
   _docUser   = data.user
   await loadDocMedico()
   _docLoading = false
+  // Seguro: si algo falló silenciosamente y el botón quedó trabado, lo reseteamos
+  const b = el('btnDocLogin')
+  if (b && b.disabled) { b.disabled = false; b.textContent = 'Ingresar al panel' }
 }
 
 async function docSignOut() {
@@ -2970,13 +2973,13 @@ async function loadDocMedico() {
   if (!medico) { showDocLogin(); return }
 
   if (_center) {
-    const links = await dbGet('center_doctors', 'center_id=eq.'+_center.id+'&medico_id=eq.'+medico.id+'&select=medico_id&limit=1', _authToken)
+    // Usar anon (sin JWT) — center_doctors es de lectura pública
+    const links = await dbGet('center_doctors', 'center_id=eq.'+_center.id+'&medico_id=eq.'+medico.id+'&select=medico_id&limit=1')
     if (!links.length) {
-      await sb.auth.signOut()
-      closeDocPanel()
+      sb.auth.signOut()  // async, no await — no bloquear
+      showDocLogin()     // resetear botón y vista inmediatamente
       el('docErr').textContent = 'No tenés acceso a este centro'
       el('docErr').style.display = 'block'
-      el('docLoginView').style.display = 'block'
       return
     }
   }
