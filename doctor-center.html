@@ -2987,34 +2987,42 @@ function showDocLogin() {
 }
 
 function showDocDash() {
-  const titulo   = _docMedico.titulo  || 'Dr.'
-  const nombre   = _docMedico.nombre  || ''
-  const apellido = _docMedico.apellido|| ''
-  const fullName = titulo + ' ' + nombre + ' ' + apellido
-  const initials = ((nombre[0]||'') + (apellido[0]||'')).toUpperCase() || '?'
-  const hour     = new Date().getHours()
-  const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
+  // Garantizar que el panel esté abierto
+  el('docPanel').classList.add('open')
+  document.body.style.overflow = 'hidden'
 
-  el('docHeroTitle').textContent = greeting + ', ' + titulo + ' ' + nombre
-  el('docAvatar').textContent    = initials
-  el('docHeroDate').textContent  = new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})
-  el('docTopbarDoc').style.display = 'flex'
-  el('docTopAvatar').textContent   = initials
-  el('docTopName').textContent     = fullName
+  try {
+    const titulo   = _docMedico.titulo  || 'Dr.'
+    const nombre   = _docMedico.nombre  || ''
+    const apellido = _docMedico.apellido|| ''
+    const fullName = titulo + ' ' + nombre + ' ' + apellido
+    const initials = ((nombre[0]||'') + (apellido[0]||'')).toUpperCase() || '?'
+    const hour     = new Date().getHours()
+    const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
 
-  // Center logo in topbar
-  if (_center?.logo_url) {
-    const logoEl = el('docTopbarLogo')
-    logoEl.src = _center.logo_url
-    logoEl.style.display = 'block'
-    logoEl.style.height = (_center.logo_size || 28) + 'px'
-    el('docTopbarBrandFallback').style.display = 'none'
-    if (_center.nombre) {
-      el('docTopbarSep').style.display = 'block'
-      el('docTopbarCenterName').textContent = _center.nombre
-      el('docTopbarCenterName').style.display = 'block'
+    el('docHeroTitle').textContent   = greeting + ', ' + titulo + ' ' + nombre
+    el('docAvatar').textContent      = initials
+    el('docHeroDate').textContent    = new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})
+    el('docTopbarDoc').style.display = 'flex'
+    el('docTopAvatar').textContent   = initials
+    el('docTopName').textContent     = fullName
+
+    if (_center?.logo_url) {
+      const logoEl = el('docTopbarLogo')
+      if (logoEl) {
+        logoEl.src = _center.logo_url
+        logoEl.style.display = 'block'
+        logoEl.style.height = (_center.logo_size || 28) + 'px'
+        const fb = el('docTopbarBrandFallback')
+        if (fb) fb.style.display = 'none'
+        if (_center.nombre) {
+          const sep = el('docTopbarSep'), cname = el('docTopbarCenterName')
+          if (sep) sep.style.display = 'block'
+          if (cname) { cname.textContent = _center.nombre; cname.style.display = 'block' }
+        }
+      }
     }
-  }
+  } catch(e) { console.error('[showDocDash]', e) }
 
   switchDocView('agenda')
 }
