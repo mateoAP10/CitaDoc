@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" data-template="sombra">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title id="pageTitle">Cargando…</title>
+<meta name="description" id="pageDesc" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   VARIABLES — DARK (default)
+═══════════════════════════════════════════════════ */
+:root{
+  --accent:#00d4aa;
+  --accent-rgb:0,212,170;
+  --bg:#08080f;
+  --bg-alt:#0d0d18;
+  --bg-card:rgba(255,255,255,.045);
+  --bg-card-h:rgba(255,255,255,.08);
+  --text-h:#fff;
+  --text-b:rgba(255,255,255,.72);
+  --text-m:rgba(255,255,255,.42);
+  --border:rgba(255,255,255,.08);
+  --nav-bg:rgba(8,8,15,.82);
+  --glass:rgba(255,255,255,.06);
+  --glass-b:rgba(255,255,255,.13);
+  --overlay-hero:linear-gradient(90deg,rgba(8,8,15,.88) 40%,rgba(8,8,15,0) 100%);
+  --overlay-aurora:linear-gradient(0deg,rgba(8,8,15,.96) 0%,rgba(8,8,15,.55) 55%,rgba(8,8,15,.1) 100%);
+  --shadow-card:0 8px 40px rgba(0,0,0,.5);
+  --transition:all .4s cubic-bezier(.16,1,.3,1);
+}
+[data-theme="light"]{
+  --bg:#f5f4f0;
+  --bg-alt:#ffffff;
+  --bg-card:rgba(0,0,0,.04);
+  --bg-card-h:rgba(0,0,0,.07);
+  --text-h:#0a0a12;
+  --text-b:rgba(10,10,18,.72);
+  --text-m:rgba(10,10,18,.42);
+  --border:rgba(0,0,0,.09);
+  --nav-bg:rgba(245,244,240,.88);
+  --glass:rgba(0,0,0,.04);
+  --glass-b:rgba(0,0,0,.1);
+  --overlay-hero:linear-gradient(90deg,rgba(245,244,240,.92) 42%,rgba(245,244,240,0) 100%);
+  --overlay-aurora:linear-gradient(0deg,rgba(245,244,240,.96) 0%,rgba(245,244,240,.55) 55%,rgba(245,244,240,.05) 100%);
+  --shadow-card:0 8px 40px rgba(0,0,0,.1);
+}
+
+/* ═══════════════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text-b);
+  transition:background .4s,color .4s;
+  overflow-x:hidden;
+  min-height:100svh;
+}
+img{display:block;max-width:100%}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* ═══════════════════════════════════════════════════
+   GATE
+═══════════════════════════════════════════════════ */
+#w2Gate{
+  position:fixed;inset:0;background:var(--bg);z-index:999;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:1rem;transition:opacity .6s;
+}
+#w2Gate.hide{opacity:0;pointer-events:none}
+.w2-gate-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--accent);
+  animation:gatePulse 1.2s ease-in-out infinite;
+}
+@keyframes gatePulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+/* ═══════════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════════ */
+.w2-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 5vw;height:68px;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:var(--transition);
+}
+.w2-nav-logo{display:flex;align-items:center;gap:.75rem}
+.w2-nav-logo img{object-fit:contain;height:40px;transition:height .3s}
+.w2-nav-logo-fallback{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--text-h);letter-spacing:-.01em}
+.w2-nav-right{display:flex;align-items:center;gap:.75rem}
+.w2-nav-cta{
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:var(--accent);color:#fff;border-radius:100px;
+  padding:.5rem 1.25rem;font-size:.82rem;font-weight:700;
+  transition:opacity .2s,transform .2s;white-space:nowrap;
+}
+.w2-nav-cta:hover{opacity:.88;transform:translateY(-1px)}
+.w2-theme-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--glass);border:1px solid var(--glass-b);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-m);transition:var(--transition);
+}
+.w2-theme-btn:hover{background:var(--bg-card-h);color:var(--text-h)}
+.w2-theme-btn svg{width:16px;height:16px}
+
+/* ═══════════════════════════════════════════════════
+   HERO SHARED
+═══════════════════════════════════════════════════ */
+.w2-hero{
+  position:relative;min-height:100svh;overflow:hidden;
+  display:flex;align-items:center;
+  padding-top:68px;
+}
+.w2-hero-photo{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center top;
+  animation:kenBurns 22s ease-in-out infinite alternate;
+}
+@keyframes kenBurns{
+  from{transform:scale(1) translate(0,0)}
+  to{transform:scale(1.07) translate(-1.5%,-1%)}
+}
+.w2-hero-content{position:relative;z-index:2;width:100%;padding:0 5vw}
+.w2-hero-question{
+  font-size:.85rem;font-style:italic;color:var(--text-m);
+  margin-bottom:.85rem;letter-spacing:.01em;
+}
+.w2-hero-headline{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.6rem,6vw,5rem);
+  font-weight:900;line-height:1.05;letter-spacing:-.02em;
+  color:var(--text-h);margin-bottom:.75rem;
+}
+.w2-hero-tagline{
+  font-size:clamp(1rem,2.5vw,1.35rem);
+  font-weight:700;letter-spacing:.04em;
+  color:var(--accent);margin-bottom:2rem;
+}
+.w2-doctor-badge{
+  display:inline-flex;align-items:center;gap:.875rem;
+  background:var(--glass);backdrop-filter:blur(12px);
+  border:1px solid var(--glass-b);border-radius:14px;
+  padding:.875rem 1.25rem;margin-bottom:2rem;max-width:420px;
+}
+.w2-doctor-avatar{
+  width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;
+  border:2px solid var(--accent);
+}
+.w2-doctor-name{font-size:.9rem;font-weight:700;color:var(--text-h);line-height:1.2}
+.w2-doctor-spec{font-size:.72rem;color:var(--text-m);margin-top:.2rem}
+.w2-hero-btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--accent);color:#fff;
+  border-radius:100px;padding:.8rem 2rem;
+  font-size:.9rem;font-weight:700;
+  transition:transform .2s,box-shadow .2s;
+}
+.w2-hero-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(var(--accent-rgb),.4)}
+.w2-hero-btn svg{width:16px;height:16px}
+
+/* ─── TEMPLATE 1: SOMBRA ─── */
+[data-template="sombra"] .w2-hero::after{
+  content:'';position:absolute;inset:0;
+  background:var(--overlay-hero);z-index:1;
+}
+[data-template="sombra"] .w2-hero-content{max-width:580px}
+[data-template="sombra"] .w2-hero-photo{object-position:right center}
+
+/* ─── TEMPLATE 2: MERIDIAN (split) ─── */
+[data-template="meridian"] .w2-hero{display:grid;grid-template-columns:1fr 1fr;padding:0}
+[data-template="meridian"] .w2-hero-photo-wrap{
+  position:relative;overflow:hidden;
+  grid-column:2;grid-row:1;
+}
+[data-template="meridian"] .w2-hero-photo{position:relative;height:100%;width:100%;inset:auto}
+[data-template="meridian"] .w2-hero-photo-wrap::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,var(--bg) 0%,transparent 30%);
+  z-index:1;
+}
+[data-template="meridian"] .w2-hero-content{
+  grid-column:1;grid-row:1;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:6rem 3vw 4rem 5vw;max-width:100%;
+}
+[data-template="meridian"] .w2-hero-photo{animation:none}
+
+/* ─── TEMPLATE 3: AURORA (full bleed) ─── */
+[data-template="aurora"] .w2-hero::after{
+  content:'';position:absolute;inset:0;
+  background:var(--overlay-aurora);z-index:1;
+}
+[data-template="aurora"] .w2-hero-content{
+  align-self:flex-end;padding-bottom:clamp(3rem,8vw,6rem);
+  max-width:680px;
+}
+[data-template="aurora"] .w2-hero-headline{
+  font-size:clamp(3rem,7vw,6rem);
+}
+
+/* Mobile hero */
+@media(max-width:768px){
+  [data-template="meridian"] .w2-hero{grid-template-columns:1fr;min-height:100svh}
+  [data-template="meridian"] .w2-hero-photo-wrap{grid-column:1;grid-row:1;height:55svh}
+  [data-template="meridian"] .w2-hero-photo-wrap::after{
+    background:linear-gradient(0deg,var(--bg) 0%,transparent 40%);
+  }
+  [data-template="meridian"] .w2-hero-content{
+    grid-column:1;grid-row:2;
+    padding:2rem 5vw 3rem;justify-content:flex-start;
+  }
+  [data-template="meridian"] .w2-hero-photo{position:absolute}
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION COMMON
+═══════════════════════════════════════════════════ */
+.w2-section{padding:clamp(4rem,8vw,7rem) 5vw}
+.w2-section-alt{background:var(--bg-alt)}
+.w2-container{max-width:1100px;margin:0 auto}
+.w2-section-label{
+  font-size:.65rem;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem;
+}
+.w2-section-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,4vw,3rem);font-weight:700;
+  color:var(--text-h);line-height:1.15;letter-spacing:-.02em;
+  margin-bottom:.75rem;
+}
+.w2-section-sub{
+  font-size:1rem;color:var(--text-m);max-width:540px;line-height:1.65;
+}
+
+/* ═══════════════════════════════════════════════════
+   SERVICES
+═══════════════════════════════════════════════════ */
+.w2-services{padding:clamp(4rem,8vw,7rem) 5vw}
+.w2-services-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));
+  gap:1rem;margin-top:2.5rem;
+}
+.w2-svc-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:16px;padding:1.5rem;
+  display:flex;align-items:flex-start;gap:1rem;
+  cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .3s;
+  position:relative;overflow:hidden;
+}
+.w2-svc-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 0% 0%,var(--card-glow,rgba(0,212,170,.12)) 0%,transparent 65%);
+  opacity:0;transition:opacity .3s;
+}
+.w2-svc-card:hover{transform:translateY(-5px);border-color:var(--card-accent,var(--accent))}
+.w2-svc-card:hover::before{opacity:1}
+.w2-svc-card:hover .w2-svc-icon{transform:scale(1.1)}
+.w2-svc-icon{
+  width:48px;height:48px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.w2-svc-icon svg{width:24px;height:24px}
+.w2-svc-body{}
+.w2-svc-name{font-size:.95rem;font-weight:700;color:var(--text-h);margin-bottom:.3rem}
+.w2-svc-desc{font-size:.78rem;color:var(--text-m);line-height:1.55}
+.w2-svc-arrow{
+  position:absolute;right:1.25rem;bottom:1.25rem;
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-m);transition:var(--transition);
+}
+.w2-svc-card:hover .w2-svc-arrow{background:var(--accent);border-color:var(--accent);color:#fff;transform:rotate(45deg)}
+.w2-no-sure{
+  margin-top:1.5rem;text-align:center;
+  font-size:.82rem;color:var(--text-m);
+}
+.w2-no-sure a{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.6rem 1.5rem;border:1px solid var(--border);
+  border-radius:100px;color:var(--text-m);
+  transition:var(--transition);
+}
+.w2-no-sure a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ═══════════════════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════════════════ */
+.w2-about-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:4vw;
+  align-items:center;margin-top:3rem;
+}
+.w2-about-photo-wrap{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/5}
+.w2-about-photo{width:100%;height:100%;object-fit:cover}
+.w2-about-photo-wrap::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 60%,rgba(var(--accent-rgb),.15) 100%);
+}
+.w2-about-credentials{
+  display:flex;flex-direction:column;gap:.6rem;margin-top:2rem;
+}
+.w2-about-cred{
+  display:flex;align-items:center;gap:.6rem;
+  font-size:.8rem;color:var(--text-m);
+}
+.w2-about-cred svg{width:15px;height:15px;color:var(--accent);flex-shrink:0}
+@media(max-width:768px){
+  .w2-about-grid{grid-template-columns:1fr}
+  .w2-about-photo-wrap{aspect-ratio:3/2}
+}
+
+/* ═══════════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════════ */
+.w2-stats-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;
+  margin-top:2.5rem;
+}
+.w2-stat{
+  text-align:center;padding:2rem 1rem;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:16px;
+}
+.w2-stat-number{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.5rem,5vw,4rem);font-weight:900;
+  color:var(--accent);line-height:1;
+}
+.w2-stat-label{font-size:.78rem;color:var(--text-m);margin-top:.5rem;font-weight:500}
+@media(max-width:600px){.w2-stats-grid{grid-template-columns:1fr}}
+
+/* ═══════════════════════════════════════════════════
+   TESTIMONIALS
+═══════════════════════════════════════════════════ */
+.w2-testimonials-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));
+  gap:1rem;margin-top:2.5rem;
+}
+.w2-testi-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:16px;padding:1.5rem;
+}
+.w2-testi-stars{display:flex;gap:.2rem;margin-bottom:1rem}
+.w2-testi-star{color:var(--accent);font-size:.9rem}
+.w2-testi-text{font-size:.85rem;color:var(--text-b);line-height:1.65;margin-bottom:1.25rem;font-style:italic}
+.w2-testi-author{display:flex;align-items:center;gap:.65rem}
+.w2-testi-avatar{
+  width:36px;height:36px;border-radius:50%;object-fit:cover;
+  background:var(--glass);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;color:var(--accent);
+}
+.w2-testi-name{font-size:.8rem;font-weight:700;color:var(--text-h)}
+
+/* ═══════════════════════════════════════════════════
+   CTA SECTION
+═══════════════════════════════════════════════════ */
+.w2-cta-section{
+  padding:clamp(4rem,8vw,7rem) 5vw;
+  background:var(--bg-alt);text-align:center;
+}
+.w2-cta-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,4vw,3.2rem);font-weight:700;
+  color:var(--text-h);margin-bottom:1.25rem;letter-spacing:-.02em;
+}
+.w2-cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem}
+.w2-btn-wa{
+  display:inline-flex;align-items:center;gap:.6rem;
+  background:#25d366;color:#fff;border-radius:100px;
+  padding:.875rem 2rem;font-size:.9rem;font-weight:700;
+  transition:transform .2s,box-shadow .2s;
+}
+.w2-btn-wa:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(37,211,102,.4)}
+.w2-btn-wa svg{width:20px;height:20px}
+.w2-btn-book{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--bg-card);border:1px solid var(--border);color:var(--text-h);
+  border-radius:100px;padding:.875rem 2rem;font-size:.9rem;font-weight:600;
+  transition:var(--transition);
+}
+.w2-btn-book:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ═══════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════ */
+.w2-footer{
+  padding:2.5rem 5vw;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+}
+.w2-footer-socials{display:flex;gap:.6rem}
+.w2-social-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg-card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-m);transition:var(--transition);
+}
+.w2-social-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(1.1)}
+.w2-social-btn svg{width:16px;height:16px}
+.w2-footer-powered{font-size:.7rem;color:var(--text-m);display:flex;align-items:center;gap:.35rem}
+.w2-footer-powered span{color:var(--accent);font-weight:700}
+
+/* ═══════════════════════════════════════════════════
+   FLOATING
+═══════════════════════════════════════════════════ */
+.w2-floating{
+  position:fixed;right:1.25rem;bottom:calc(1.25rem + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;gap:.6rem;z-index:90;
+}
+.w2-float-btn{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.35);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+  animation:floatPulse 3s ease-in-out infinite;
+}
+.w2-float-btn:hover{transform:scale(1.12);animation:none}
+.w2-float-wa{background:#25d366;color:#fff}
+.w2-float-ig{background:radial-gradient(circle at 30% 110%,#fd5 0%,#f63 30%,#833ab4 70%);color:#fff}
+.w2-float-btn svg{width:24px;height:24px}
+@keyframes floatPulse{
+  0%,100%{box-shadow:0 4px 20px rgba(0,0,0,.3)}
+  50%{box-shadow:0 4px 30px rgba(var(--accent-rgb),.35)}
+}
+
+/* ═══════════════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════════════ */
+.reveal{
+  opacity:0;transform:translateY(36px);
+  transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);
+}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+.reveal-delay-4{transition-delay:.4s}
+.reveal-delay-5{transition-delay:.5s}
+
+/* ═══════════════════════════════════════════════════
+   HERO STAGGER ANIMATION
+═══════════════════════════════════════════════════ */
+.w2-hero-question{animation:heroIn .9s .2s both cubic-bezier(.16,1,.3,1)}
+.w2-hero-headline{animation:heroIn .9s .45s both cubic-bezier(.16,1,.3,1)}
+.w2-hero-tagline{animation:heroIn .9s .65s both cubic-bezier(.16,1,.3,1)}
+.w2-doctor-badge{animation:heroIn .9s .85s both cubic-bezier(.16,1,.3,1)}
+.w2-hero-cta-wrap{animation:heroIn .9s 1.05s both cubic-bezier(.16,1,.3,1)}
+@keyframes heroIn{
+  from{opacity:0;transform:translateY(28px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ═══════════════════════════════════════════════════
+   SCROLL PROGRESS
+═══════════════════════════════════════════════════ */
+.w2-progress{
+  position:fixed;top:0;left:0;height:2px;
+  background:var(--accent);z-index:101;
+  width:0%;transition:width .1s linear;
+}
+
+/* ═══════════════════════════════════════════════════
+   NOT FOUND
+═══════════════════════════════════════════════════ */
+.w2-404{
+  min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:2rem;
+}
+.w2-404-code{font-size:6rem;font-weight:900;color:var(--accent);opacity:.2;font-family:'Playfair Display',serif}
+.w2-404-title{font-size:1.5rem;font-weight:700;color:var(--text-h);margin-top:-.5rem}
+.w2-404-sub{font-size:.9rem;color:var(--text-m);margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<!-- SCROLL PROGRESS -->
+<div class="w2-progress" id="w2Progress"></div>
+
+<!-- GATE -->
+<div id="w2Gate">
+  <div class="w2-gate-dot"></div>
+</div>
+
+<!-- NAV -->
+<nav class="w2-nav" id="w2Nav">
+  <div class="w2-nav-logo" id="w2NavLogo">
+    <span class="w2-nav-logo-fallback" id="w2NavName"></span>
+  </div>
+  <div class="w2-nav-right">
+    <button class="w2-theme-btn" id="w2ThemeBtn" onclick="toggleTheme()" aria-label="Cambiar tema">
+      <svg id="w2ThemeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+    <a class="w2-nav-cta" id="w2NavCta" href="#servicios">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6l6 6-6 6"/></svg>
+      Agendar
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="w2-hero" id="w2Hero">
+  <!-- Template 2: MERIDIAN needs photo wrapper -->
+  <div class="w2-hero-photo-wrap" id="w2HeroPhotoWrap" style="display:none">
+    <img class="w2-hero-photo" id="w2HeroPhoto2" src="" alt="Médico">
+  </div>
+  <img class="w2-hero-photo" id="w2HeroPhoto" src="" alt="Médico">
+  <div class="w2-hero-content" id="w2HeroContent">
+    <p class="w2-hero-question" id="w2HeroQuestion"></p>
+    <h1 class="w2-hero-headline" id="w2HeroHeadline"></h1>
+    <p class="w2-hero-tagline" id="w2HeroTagline"></p>
+    <div class="w2-doctor-badge" id="w2DoctorBadge">
+      <img class="w2-doctor-avatar" id="w2DoctorAvatar" src="" alt="" style="display:none">
+      <div>
+        <div class="w2-doctor-name" id="w2DoctorName"></div>
+        <div class="w2-doctor-spec" id="w2DoctorSpec"></div>
+      </div>
+    </div>
+    <div class="w2-hero-cta-wrap">
+      <a class="w2-hero-btn" id="w2HeroBtn" href="#">
+        Solicitar consulta
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="w2-services" id="w2ServicesSection" style="display:none">
+  <div class="w2-container">
+    <div class="w2-section-label reveal">Nuestros servicios</div>
+    <div class="w2-services-grid reveal reveal-delay-1" id="w2ServicesGrid"></div>
+    <div class="w2-no-sure reveal reveal-delay-2" id="w2NoSure" style="display:none">
+      <a href="#" id="w2NoSureBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        No estoy seguro → Orientación
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="w2-section w2-section-alt" id="w2AboutSection" style="display:none">
+  <div class="w2-container">
+    <div class="w2-about-grid">
+      <div class="w2-about-photo-wrap reveal" id="w2AboutPhotoWrap" style="display:none">
+        <img class="w2-about-photo" id="w2AboutPhoto" src="" alt="">
+      </div>
+      <div id="w2AboutContent">
+        <div class="w2-section-label reveal">Sobre mí</div>
+        <h2 class="w2-section-title reveal reveal-delay-1" id="w2AboutTitle"></h2>
+        <p class="w2-section-sub reveal reveal-delay-2" id="w2AboutText"></p>
+        <div class="w2-about-credentials reveal reveal-delay-3" id="w2Credentials"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="w2-section" id="w2StatsSection" style="display:none">
+  <div class="w2-container">
+    <div class="w2-stats-grid" id="w2StatsGrid"></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="w2-section w2-section-alt" id="w2TestimonialsSection" style="display:none">
+  <div class="w2-container">
+    <div class="w2-section-label reveal">Lo que dicen mis pacientes</div>
+    <div class="w2-testimonials-grid reveal reveal-delay-1" id="w2TestimonialsGrid"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="w2-cta-section" id="w2CtaSection">
+  <div class="w2-container">
+    <div class="w2-section-label reveal">Comenzar</div>
+    <h2 class="w2-cta-title reveal reveal-delay-1" id="w2CtaTitle">Tu salud comienza con una consulta</h2>
+    <div class="w2-cta-btns reveal reveal-delay-2">
+      <a class="w2-btn-wa" id="w2CtaWa" href="#" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.61L0 24l6.562-1.378A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-4.992-1.368l-.357-.211-3.702.777.782-3.617-.232-.372A9.818 9.818 0 1112 21.818z"/></svg>
+        Consultar por WhatsApp
+      </a>
+      <a class="w2-btn-book" id="w2CtaBook" href="#servicios">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Ver servicios
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="w2-footer" id="w2Footer">
+  <div class="w2-footer-socials" id="w2FooterSocials"></div>
+  <div class="w2-footer-powered">Hecho con <span>CitaDoc</span></div>
+</footer>
+
+<!-- FLOATING BUTTONS -->
+<div class="w2-floating" id="w2Floating">
+  <a class="w2-float-btn w2-float-ig" id="w2FloatIg" href="#" target="_blank" style="display:none">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+  </a>
+  <a class="w2-float-btn w2-float-wa" id="w2FloatWa" href="#" target="_blank" style="display:none">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.61L0 24l6.562-1.378A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-4.992-1.368l-.357-.211-3.702.777.782-3.617-.232-.372A9.818 9.818 0 1112 21.818z"/></svg>
+  </a>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════
+const SB_URL  = 'https://qxoomcqaafogczrvsyhg.supabase.co'
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
+const H = { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON, Accept: 'application/json' }
+
+async function sbGet(table, query) {
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/' + table + '?' + query, { headers: H })
+    return r.ok ? await r.json() : []
+  } catch { return [] }
+}
+
+// ═══════════════════════════════════════════════════
+// ICONS
+// ═══════════════════════════════════════════════════
+const ICONS = {
+  stethoscope: '<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><circle cx="12" cy="19" r="2"/><path d="M10 19H6.5a3.5 3.5 0 0 1 0-7H8"/>',
+  heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  activity: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  brain: '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>',
+  eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  syringe: '<path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>',
+  tooth: '<path d="M12 5.5c-1.5-2-3.5-3-5.5-2.5-3 .8-4 4-3.5 6.5.4 2 1 3.5 2 4.5 1 1 2 2.5 3 5 .5 1.5 1.5 1.5 2 0 .5-2 1-3.5 2-5 1-1 1.6-2.5 2-4.5.5-2.5-.5-5.7-2-4.5z"/><path d="M12 5.5c1.5-2 3.5-3 5.5-2.5 3 .8 4 4 3.5 6.5-.4 2-1 3.5-2 4.5-1 1-2 2.5-3 5-.5 1.5-1.5 1.5-2 0"/>',
+  bone: '<path d="M17 10c.7-.7 1.69-.7 2.5-.7a2.5 2.5 0 1 1 0 5c-.81 0-1.8 0-2.5.7s-.7 1.69-.7 2.5a2.5 2.5 0 1 1-5 0c0-.81 0-1.8-.7-2.5S8.81 14 8 14a2.5 2.5 0 1 1 0-5c.81 0 1.8 0 2.5-.7s.7-1.69.7-2.5a2.5 2.5 0 1 1 5 0c0 .81 0 1.8.7 2.5z"/>',
+  leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  run: '<circle cx="13" cy="6" r="2"/><path d="M4 16.5 10 10l3 3 1.5-2.5L18 14"/><path d="m4 20 3-3.5"/><path d="m14 20 5-5.5"/>',
+  video: '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>',
+  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  drop: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>',
+  scissors: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>',
+  sun: '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
+  pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/>',
+  microscope: '<path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+}
+
+function icon(key, size=24) {
+  const paths = ICONS[key] || ICONS.plus
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`
+}
+
+// ═══════════════════════════════════════════════════
+// SLUG DETECTION
+// ═══════════════════════════════════════════════════
+function detectSlug() {
+  const h = window.location.hostname
+  if (h.endsWith('.citadoc.lat') && !h.startsWith('www') && !h.startsWith('doctor-center')) {
+    return h.split('.')[0]
+  }
+  const parts = window.location.pathname.replace(/\/+$/,'').split('/')
+  return parts[1] || parts[0] || null
+}
+
+// ═══════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t)
+  localStorage.setItem('w2-theme', t)
+  const icon = document.getElementById('w2ThemeIcon')
+  if (!icon) return
+  if (t === 'dark') {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+  } else {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+  }
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme')
+  applyTheme(cur === 'dark' ? 'light' : 'dark')
+}
+
+// ═══════════════════════════════════════════════════
+// ACCENT COLOR
+// ═══════════════════════════════════════════════════
+function applyAccent(hex) {
+  if (!hex) return
+  document.documentElement.style.setProperty('--accent', hex)
+  const r = parseInt(hex.slice(1,3),16)
+  const g = parseInt(hex.slice(3,5),16)
+  const b = parseInt(hex.slice(5,7),16)
+  document.documentElement.style.setProperty('--accent-rgb', `${r},${g},${b}`)
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function el(id) { return document.getElementById(id) }
+function setText(id, v) { const e = el(id); if (e && v) e.textContent = v }
+function show(id) { const e = el(id); if (e) e.style.display = '' }
+function hide(id) { const e = el(id); if (e) e.style.display = 'none' }
+
+function renderSite(w, services, testimonials) {
+  // Theme
+  const savedTheme = localStorage.getItem('w2-theme')
+  const theme = savedTheme || w.theme || 'dark'
+  applyTheme(theme)
+  applyAccent(w.primary_color)
+
+  // Template
+  document.documentElement.setAttribute('data-template', w.template_id || 'sombra')
+
+  // Meta
+  const title = w.meta_title || w.doctor_name || 'Dr.'
+  document.getElementById('pageTitle').textContent = title
+  document.getElementById('pageDesc').setAttribute('content', w.meta_description || '')
+
+  // Nav logo
+  if (w.logo_url) {
+    const logoImg = document.createElement('img')
+    logoImg.src = w.logo_url
+    logoImg.style.height = (w.logo_size || 40) + 'px'
+    logoImg.style.objectFit = 'contain'
+    logoImg.alt = w.doctor_name || ''
+    el('w2NavLogo').innerHTML = ''
+    el('w2NavLogo').appendChild(logoImg)
+  } else {
+    setText('w2NavName', w.doctor_name || '')
+  }
+
+  // Nav CTA
+  const ctaEl = el('w2NavCta')
+  if (ctaEl) {
+    if (w.booking_url) ctaEl.href = w.booking_url
+    else if (w.whatsapp) ctaEl.href = `https://wa.me/${w.whatsapp.replace(/\D/g,'')}`
+    else ctaEl.href = '#servicios'
+  }
+
+  // Hero photo
+  const photoSrc = w.doctor_photo_url || ''
+  const isMeridian = (w.template_id || 'sombra') === 'meridian'
+
+  if (isMeridian) {
+    show('w2HeroPhotoWrap')
+    const p2 = el('w2HeroPhoto2')
+    if (p2) p2.src = photoSrc
+    hide('w2HeroPhoto')
+  } else {
+    const p = el('w2HeroPhoto')
+    if (p) p.src = photoSrc
+    hide('w2HeroPhotoWrap')
+  }
+
+  // Hero text
+  setText('w2HeroQuestion', w.hero_question || '')
+  el('w2HeroHeadline').innerHTML = (w.hero_headline || w.doctor_name || '').replace(/\n/g,'<br>')
+  setText('w2HeroTagline', w.hero_tagline || '')
+
+  // Doctor badge
+  setText('w2DoctorName', w.doctor_name || '')
+  setText('w2DoctorSpec', w.doctor_specialty || '')
+  if (w.doctor_photo_url) {
+    const av = el('w2DoctorAvatar')
+    if (av) { av.src = w.doctor_photo_url; av.style.display = 'block' }
+  }
+
+  // Hero btn
+  const hBtn = el('w2HeroBtn')
+  if (hBtn) {
+    if (w.booking_url) hBtn.href = w.booking_url
+    else if (w.whatsapp) hBtn.href = `https://wa.me/${w.whatsapp.replace(/\D/g,'')}`
+  }
+
+  // Services
+  if (services.length) {
+    show('w2ServicesSection')
+    el('w2ServicesGrid').innerHTML = services.map((s, i) => {
+      const bgAlpha = 0.12
+      const color = s.color || 'var(--accent)'
+      const isHex = color.startsWith('#')
+      const bg = isHex ? hexToRgba(color, bgAlpha) : 'rgba(var(--accent-rgb),.12)'
+      const glow = isHex ? hexToRgba(color, 0.15) : 'rgba(var(--accent-rgb),.15)'
+      return `<div class="w2-svc-card reveal reveal-delay-${Math.min(i+1,5)}"
+        style="--card-accent:${color};--card-glow:${glow}"
+        onclick="${w.whatsapp ? `window.open('https://wa.me/${w.whatsapp.replace(/\D/g,'')}?text=Hola, me interesa el servicio de ${encodeURIComponent(s.name)}','_blank')` : ''}">
+        <div class="w2-svc-icon" style="background:${bg};color:${color}">
+          ${icon(s.icon_key || 'plus')}
+        </div>
+        <div class="w2-svc-body">
+          <div class="w2-svc-name">${s.name}</div>
+          ${s.description ? `<div class="w2-svc-desc">${s.description}</div>` : ''}
+        </div>
+        <div class="w2-svc-arrow">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>`
+    }).join('')
+    if (w.whatsapp) {
+      show('w2NoSure')
+      const nsBtn = el('w2NoSureBtn')
+      if (nsBtn) nsBtn.href = `https://wa.me/${w.whatsapp.replace(/\D/g,'')}`
+    }
+  }
+
+  // About
+  if (w.show_about && (w.about_title || w.about_text)) {
+    show('w2AboutSection')
+    if (w.about_photo_url) {
+      show('w2AboutPhotoWrap')
+      const ap = el('w2AboutPhoto')
+      if (ap) ap.src = w.about_photo_url
+    } else {
+      // single column layout
+      const grid = el('w2AboutSection').querySelector('.w2-about-grid')
+      if (grid) grid.style.gridTemplateColumns = '1fr'
+    }
+    setText('w2AboutTitle', w.about_title || '')
+    setText('w2AboutText', w.about_text || '')
+    if (w.doctor_credentials) {
+      el('w2Credentials').innerHTML = w.doctor_credentials.split('\n').filter(Boolean).map(c =>
+        `<div class="w2-about-cred">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--accent)"><polyline points="20 6 9 17 4 12"/></svg>
+          ${c}
+        </div>`
+      ).join('')
+    }
+  }
+
+  // Stats
+  if (w.show_stats && (w.stat1_number || w.stat2_number || w.stat3_number)) {
+    show('w2StatsSection')
+    const stats = [
+      [w.stat1_number, w.stat1_label],
+      [w.stat2_number, w.stat2_label],
+      [w.stat3_number, w.stat3_label],
+    ].filter(s => s[0])
+    el('w2StatsGrid').innerHTML = stats.map(([n,l],i) =>
+      `<div class="w2-stat reveal reveal-delay-${i+1}">
+        <div class="w2-stat-number counter" data-target="${n}">${n}</div>
+        <div class="w2-stat-label">${l||''}</div>
+      </div>`
+    ).join('')
+  }
+
+  // Testimonials
+  if (w.show_testimonials && testimonials.length) {
+    show('w2TestimonialsSection')
+    el('w2TestimonialsGrid').innerHTML = testimonials.map((t,i) =>
+      `<div class="w2-testi-card reveal reveal-delay-${Math.min(i+1,3)}">
+        <div class="w2-testi-stars">${'★'.repeat(t.rating||5)}</div>
+        <p class="w2-testi-text">"${t.text}"</p>
+        <div class="w2-testi-author">
+          <div class="w2-testi-avatar">${t.patient_name[0]||'?'}</div>
+          <div class="w2-testi-name">${t.patient_name}</div>
+        </div>
+      </div>`
+    ).join('')
+  }
+
+  // CTA
+  setText('w2CtaTitle', w.about_title ? `¿Listo para empezar con ${w.doctor_name?.split(' ')[0] || 'nosotros'}?` : 'Tu salud comienza con una consulta')
+  if (w.whatsapp) {
+    const wa = `https://wa.me/${w.whatsapp.replace(/\D/g,'')}`
+    const ctaWa = el('w2CtaWa'); if (ctaWa) ctaWa.href = wa
+    show('w2FloatWa'); const fw = el('w2FloatWa'); if (fw) fw.href = wa
+  }
+  if (w.instagram) {
+    show('w2FloatIg')
+    const fi = el('w2FloatIg')
+    if (fi) fi.href = w.instagram.startsWith('http') ? w.instagram : `https://instagram.com/${w.instagram.replace('@','')}`
+  }
+
+  // Footer socials
+  const socials = []
+  if (w.instagram) socials.push({ href: w.instagram.startsWith('http') ? w.instagram : `https://instagram.com/${w.instagram.replace('@','')}`, svg: '<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>' })
+  if (w.facebook) socials.push({ href: w.facebook, svg: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>' })
+  if (w.tiktok) socials.push({ href: w.tiktok, svg: '<path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>' })
+  if (w.whatsapp) socials.push({ href: `https://wa.me/${w.whatsapp.replace(/\D/g,'')}`, svg: '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.507 3.934 1.395 5.61L0 24l6.562-1.378A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-4.992-1.368l-.357-.211-3.702.777.782-3.617-.232-.372A9.818 9.818 0 1112 21.818z"/>' })
+  el('w2FooterSocials').innerHTML = socials.map(s =>
+    `<a class="w2-social-btn" href="${s.href}" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${s.svg}</svg>
+    </a>`
+  ).join('')
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16)
+  const g = parseInt(hex.slice(3,5),16)
+  const b = parseInt(hex.slice(5,7),16)
+  return `rgba(${r},${g},${b},${a})`
+}
+
+// ═══════════════════════════════════════════════════
+// SCROLL REVEAL — IntersectionObserver
+// ═══════════════════════════════════════════════════
+function initReveal() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target) }
+    })
+  }, { threshold: 0.1 })
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
+}
+
+// ═══════════════════════════════════════════════════
+// COUNTER ANIMATION
+// ═══════════════════════════════════════════════════
+function animateCounters() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return
+      const el = e.target
+      const target = parseFloat(el.dataset.target)
+      const isFloat = el.dataset.target.includes('.')
+      let start = 0, duration = 1800, step = duration / 60
+      const inc = target / (duration / step)
+      const timer = setInterval(() => {
+        start += inc
+        if (start >= target) { start = target; clearInterval(timer) }
+        el.textContent = isFloat ? start.toFixed(1) : Math.floor(start).toLocaleString()
+      }, step)
+      obs.unobserve(el)
+    })
+  }, { threshold: 0.5 })
+  document.querySelectorAll('.counter').forEach(el => obs.observe(el))
+}
+
+// ═══════════════════════════════════════════════════
+// SCROLL PROGRESS
+// ═══════════════════════════════════════════════════
+function initProgress() {
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100
+    const p = document.getElementById('w2Progress')
+    if (p) p.style.width = Math.min(pct, 100) + '%'
+  }, { passive: true })
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+async function init() {
+  const slug = detectSlug()
+  if (!slug) { showNotFound(); return }
+
+  // Load center
+  const centers = await sbGet('centers', `slug=eq.${encodeURIComponent(slug)}&select=id,nombre,slug&limit=1`)
+  if (!centers.length) { showNotFound(); return }
+  const center = centers[0]
+
+  // Load website config
+  const [websites, services, testimonials] = await Promise.all([
+    sbGet('center_website', `center_id=eq.${center.id}&limit=1`),
+    sbGet('center_website_services', `center_id=eq.${center.id}&active=eq.true&order=order_index`),
+    sbGet('center_website_testimonials', `center_id=eq.${center.id}&active=eq.true&order=order_index`),
+  ])
+
+  const website = websites[0]
+
+  if (!website || !website.published) {
+    // Show simple coming soon
+    showComingSoon(center)
+    return
+  }
+
+  renderSite(website, services, testimonials)
+
+  // Hide gate
+  const gate = document.getElementById('w2Gate')
+  if (gate) { gate.classList.add('hide'); setTimeout(() => gate.remove(), 700) }
+
+  // Init interactions
+  setTimeout(() => {
+    initReveal()
+    animateCounters()
+    initProgress()
+  }, 100)
+}
+
+function showNotFound() {
+  document.body.innerHTML = `<div class="w2-404">
+    <div class="w2-404-code">404</div>
+    <div class="w2-404-title">Página no encontrada</div>
+    <div class="w2-404-sub">Este médico todavía no tiene su sitio publicado en CitaDoc.</div>
+  </div>`
+}
+
+function showComingSoon(center) {
+  const gate = document.getElementById('w2Gate')
+  if (gate) gate.remove()
+  document.body.innerHTML = `<div class="w2-404" style="gap:.75rem">
+    <div style="font-size:2rem;margin-bottom:.5rem">🏥</div>
+    <div class="w2-404-title">${center.nombre}</div>
+    <div class="w2-404-sub">Sitio en construcción. Próximamente disponible.</div>
+  </div>`
+}
+
+init()
+</script>
+</body>
+</html>
