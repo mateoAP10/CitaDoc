@@ -758,7 +758,7 @@ button,a{cursor:pointer;font-family:var(--body);text-decoration:none;color:inher
   <!-- FORMATION -->
   <section class="form-wrap" id="secForm">
     <div class="sec-eyebrow rev"><span class="sec-eyebrow-line"></span>Formación</div>
-    <div class="sec-title rev d1">Trayectoria <b>de excelencia.</b></div>
+    <div class="sec-title rev d1" style="margin-bottom:24px">Trayectoria <b>de excelencia.</b></div>
     <div class="timeline" id="cTimeline"></div>
   </section>
 
@@ -886,7 +886,7 @@ button,a{cursor:pointer;font-family:var(--body);text-decoration:none;color:inher
 var SB_URL='https://qxoomcqaafogczrvsyhg.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
 var _sb=supabase.createClient(SB_URL,SB_KEY);
-var _bookUrl=null,_waUrl=null;
+var _bookUrl=null,_waUrl=null,_medicoData=null,_locsData=[];
 function el(id){return document.getElementById(id)}
 function set(id,v){var e=el(id);if(e)e.textContent=v}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -1004,7 +1004,7 @@ function render(m,locs){
 
   // modal agendar
   set('mAgTitle','Agendar con '+first);
-  var bo=el('mBookOpt');if(bo)bo.href=_bookUrl;
+  var bo=el('mBookOpt');if(bo){bo.href='#';bo.onclick=function(e){e.preventDefault();closeModal('modalAgendar');if(window.AgendarCinema)AgendarCinema.open(_medicoData,_locsData);};}
 
   // quick row
   if(m.telefono){_callUrl='tel:'+m.telefono;var qc=el('qCall');if(qc)qc.style.display='flex';}
@@ -1107,10 +1107,15 @@ async function init(){
   var s=getSlug();if(!s){show404();return;}
   var r=await _sb.from('medicos').select('*').eq('slug',s).eq('activo',true).maybeSingle();
   if(r.error||!r.data){show404();return;}
-  var lr=await _sb.from('doctor_locations').select('nombre,direccion,ciudad,maps_url').eq('medico_id',r.data.id).order('created_at');
+  if(!new URLSearchParams(location.search).get('_admin'))
+    _sb.from('website_page_views').insert({medico_id:r.data.id,slug:s,source:(document.referrer.includes('google')?'google':document.referrer.includes('instagram')?'instagram':document.referrer.includes('facebook')?'facebook':document.referrer?'referral':'direct'),user_agent:navigator.userAgent.slice(0,200)});
+  var lr=await _sb.from('doctor_locations').select('id,nombre,direccion,ciudad,maps_url').eq('medico_id',r.data.id).order('created_at');
+  _medicoData=r.data;_locsData=lr.data||[];
   render(r.data,lr.data||[]);
 }
 init();
 </script>
+<script src="/js/shared.js"></script>
+<script src="/js/agendar-cinema.js"></script>
 </body>
 </html>

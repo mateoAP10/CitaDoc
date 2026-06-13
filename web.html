@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>body{margin:0;background:#080808;display:flex;align-items:center;justify-content:center;min-height:100svh}</style>
+</head><body>
+<script>
+var SB_URL='https://qxoomcqaafogczrvsyhg.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
+var _sb=supabase.createClient(SB_URL,SB_KEY);
+
+function getSlug(){
+  var p=new URLSearchParams(location.search).get('slug');
+  if(p)return p;
+  var m=location.pathname.match(/^\/([^\/]+)/);
+  return m?m[1]:null;
+}
+
+(async function(){
+  var s=getSlug();
+  if(!s){location.replace('/');return;}
+  var r=await _sb.from('medicos').select('slug,web_config,activo').eq('slug',s).maybeSingle();
+  if(r.error||!r.data||!r.data.activo){
+    document.body.innerHTML='<div style="color:rgba(255,255,255,.25);font-family:system-ui;font-size:.85rem">Este médico aún no tiene su sitio en CitaDoc.</div>';
+    return;
+  }
+  var tpl=(r.data.web_config&&r.data.web_config.template)||'cinema-v2';
+  // Validar que sea un template cinema conocido
+  var valid=['cinema-v1','cinema-v2','cinema-v3','cinema-v4','cinema-v5'];
+  if(!valid.includes(tpl))tpl='cinema-v2';
+  location.replace('/experimental/'+tpl+'.html?slug='+encodeURIComponent(s));
+})();
+</script>
+</body></html>

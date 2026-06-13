@@ -31,7 +31,15 @@
           "value": "(?!www\\.)((?!citadoc\\.lat$)(?!doctor-center\\.citadoc\\.lat$).+)\\.citadoc\\.lat"
         }
       ],
-      "destination": "/citadoc-web.html"
+      "destination": "/citadoc-web2.html"
+    },
+    {
+      "source": "/:slug/admin",
+      "destination": "/experimental/web-admin-v1.html?slug=:slug"
+    },
+    {
+      "source": "/:slug",
+      "destination": "/web.html?slug=:slug"
     }
   ],
   "headers": [

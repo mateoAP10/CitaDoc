@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title id="pgTitle">CitaDoc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+/* ═══════════════════════════════════════
+   TOKENS — Carbon Ice
+═══════════════════════════════════════ */
+:root{
+  --bg:#060809;
+  --sheet:rgba(8,11,14,.88);
+  --sheet-border:rgba(0,212,255,.12);
+  --card:rgba(255,255,255,.035);
+  --card-h:rgba(0,212,255,.06);
+  --ink:#F0F4F8;
+  --ink2:rgba(240,244,248,.6);
+  --mu:rgba(240,244,248,.3);
+  --bo:rgba(255,255,255,.07);
+  --acc:#00D4FF;
+  --acc-dim:rgba(0,212,255,.15);
+  --acc-rgb:0,212,255;
+  --plat:#8899AA;
+  --sans:'Inter',sans-serif;
+  --mono:'DM Mono',monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ═══════════════════════════════════════
+   RESET
+═══════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:var(--sans);color:var(--ink)}
+button,a{cursor:pointer;font-family:var(--sans);text-decoration:none;color:inherit;border:none;background:none}
+
+/* ═══════════════════════════════════════
+   PHOTO BG — siempre visible
+═══════════════════════════════════════ */
+.photo-bg{
+  position:fixed;inset:0;z-index:0;
+  background:#060809;
+}
+.photo-bg img{
+  width:100%;height:100%;object-fit:cover;
+  object-position:center top;
+  filter:brightness(.6) contrast(1.1) saturate(.75);
+  animation:kb 22s ease-in-out infinite alternate;
+  transform-origin:50% 20%;
+}
+@keyframes kb{
+  0%{transform:scale(1) translate(0,0)}
+  100%{transform:scale(1.06) translate(-1%,1%)}
+}
+/* vignette */
+.photo-vignette{
+  position:fixed;inset:0;z-index:1;
+  background:
+    radial-gradient(ellipse at center,transparent 30%,rgba(6,8,9,.7) 100%),
+    linear-gradient(180deg,rgba(6,8,9,.4) 0%,transparent 35%,rgba(6,8,9,.3) 65%,rgba(6,8,9,.95) 100%);
+}
+
+/* ═══════════════════════════════════════
+   NAV — sempre sobre la foto
+═══════════════════════════════════════ */
+.c-nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  padding:calc(env(safe-area-inset-top,0px)+36px) 42px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  transition:opacity .35s var(--ease);
+}
+.c-nav.hidden{opacity:0;pointer-events:none}
+.nav-id{opacity:0;animation:fup .6s var(--ease) .1s forwards}
+.nav-id{margin-left:10px}.nav-mono{font-family:var(--sans);font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-.04em;text-shadow:0 2px 20px rgba(0,0,0,.8)}
+.nav-logo{height:28px;max-width:100px;object-fit:contain}
+.nav-right{display:flex;gap:8px;opacity:0;animation:fup .6s var(--ease) .2s forwards}
+.nav-btn{
+  height:32px;padding:0 .9rem;border-radius:50px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.07);backdrop-filter:blur(12px);
+  color:#fff;font-size:.68rem;font-weight:600;letter-spacing:.03em;
+  transition:background .2s;
+}
+.nav-btn:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.4)}
+.nav-icon{
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;
+  transition:background .2s,border-color .2s;
+}
+.nav-icon:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.4)}
+
+/* ═══════════════════════════════════════
+   HERO OVERLAY — info sobre la foto
+═══════════════════════════════════════ */
+.hero-overlay{
+  position:fixed;top:0;left:0;right:0;z-index:10;
+  height:44svh;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 0 18px 0;
+  pointer-events:none;
+}
+.hero-block{
+  margin-left:28px;padding-left:16px;
+  border-left:1.5px solid rgba(0,212,255,.5);
+  margin-bottom:0;
+  opacity:0;animation:fup .7s var(--ease) .5s forwards;
+}
+.hero-badge{
+  font-size:.44rem;font-weight:700;letter-spacing:.22em;
+  color:var(--acc);text-transform:uppercase;
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.hero-badge-pulse{
+  width:5px;height:5px;border-radius:50%;background:var(--acc);
+  animation:blink 1.8s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-name{
+  font-size:clamp(1.9rem,8.5vw,2.6rem);
+  font-weight:900;line-height:.95;letter-spacing:-.05em;
+  color:#fff;margin-bottom:8px;
+}
+.hero-name .acc{color:var(--acc)}
+.hero-tag{
+  font-size:.72rem;color:rgba(255,255,255,.45);
+  font-weight:400;letter-spacing:.01em;
+}
+
+/* ═══════════════════════════════════════
+   BOTTOM SHEET — fijo, scroll interno
+═══════════════════════════════════════ */
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:20;
+  height:58svh;
+  background:var(--sheet);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-top:1px solid var(--sheet-border);
+  border-radius:24px 24px 0 0;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 -8px 60px rgba(0,0,0,.6);
+}
+/* top bar del sheet */
+.sheet-top{
+  flex-shrink:0;
+  padding:12px 24px 0;
+  border-bottom:1px solid var(--bo);
+}
+.sheet-handle{
+  width:36px;height:3px;border-radius:2px;
+  background:rgba(255,255,255,.15);margin:0 auto 12px;
+}
+.sheet-id{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:12px;
+}
+.sheet-name{
+  font-size:.9rem;font-weight:800;color:var(--ink);letter-spacing:-.03em;
+}
+.sheet-esp{
+  font-size:.48rem;font-weight:600;color:var(--mu);
+  text-transform:uppercase;letter-spacing:.16em;margin-top:2px;
+}
+.sheet-precio{
+  display:none;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:.78rem;color:var(--acc);
+}
+
+/* TABS */
+.sheet-tabs{
+  display:flex;gap:0;overflow-x:auto;scrollbar-width:none;
+  padding:0 4px;
+}
+.sheet-tabs::-webkit-scrollbar{display:none}
+.stab{
+  flex:0 0 auto;padding:.65rem 14px;
+  font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--mu);border-bottom:2px solid transparent;
+  transition:color .18s,border-color .18s;white-space:nowrap;
+}
+.stab.active{color:var(--acc);border-color:var(--acc)}
+
+/* scrollable content */
+.sheet-body{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:0;
+}
+.sheet-body::-webkit-scrollbar{display:none}
+
+/* panel */
+.spanel{display:none;padding:20px 24px 100px}
+.spanel.active{display:block}
+
+/* ═══════════════════════════════════════
+   QUICK ROW
+═══════════════════════════════════════ */
+.quick-row{
+  display:flex;gap:8px;margin-bottom:20px;
+}
+.q-btn{
+  flex:1;height:40px;border-radius:10px;
+  border:1px solid var(--bo);background:var(--card);
+  color:var(--mu);font-size:.62rem;font-weight:600;letter-spacing:.04em;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .2s,border-color .2s,color .2s,transform .2s var(--spring);
+}
+.q-btn:hover{background:var(--acc-dim);border-color:rgba(var(--acc-rgb),.4);color:var(--acc);transform:translateY(-1px)}
+.q-btn svg{transition:stroke .2s}
+.q-btn:hover svg{stroke:var(--acc)}
+
+/* ═══════════════════════════════════════
+   SERVICES — líneas precisas
+═══════════════════════════════════════ */
+.svc-row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 0;
+  border-bottom:1px solid var(--bo);
+  transition:background .0s;
+  position:relative;
+  overflow:hidden;
+}
+.svc-row::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+  background:linear-gradient(90deg,var(--acc-dim),transparent);
+  transition:width .35s var(--ease);
+}
+.svc-row:hover::before{width:100%}
+.svc-row:last-child{border-bottom:none}
+.svc-num{
+  font-family:var(--mono);font-size:.62rem;color:var(--mu);
+  width:20px;flex-shrink:0;letter-spacing:.05em;
+}
+.svc-icon-sm{
+  width:32px;height:32px;border-radius:9px;
+  background:var(--card);border:1px solid var(--bo);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .25s,border-color .25s,transform .3s var(--spring);
+}
+.svc-icon-sm svg{width:14px;height:14px;color:var(--plat);transition:color .25s}
+.svc-row:hover .svc-icon-sm{background:var(--acc-dim);border-color:rgba(var(--acc-rgb),.4);transform:scale(1.1)}
+.svc-row:hover .svc-icon-sm svg{color:var(--acc)}
+.svc-info{flex:1;min-width:0}
+.svc-name{font-size:.88rem;font-weight:700;color:var(--ink);letter-spacing:-.01em;transition:color .25s}
+.svc-desc{font-size:.68rem;color:var(--mu);margin-top:1px;transition:color .25s}
+.svc-row:hover .svc-name{color:var(--acc)}
+.svc-row:hover .svc-desc{color:var(--ink2)}
+.svc-arr{font-size:.85rem;color:var(--mu);transition:transform .25s,color .25s;flex-shrink:0}
+.svc-row:hover .svc-arr{transform:translateX(4px);color:var(--acc)}
+
+/* ═══════════════════════════════════════
+   STATS — instrumentos de avión
+═══════════════════════════════════════ */
+.stats-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-gauge{
+  background:var(--card);border:1px solid var(--bo);
+  border-radius:14px;padding:16px 10px;text-align:center;
+  transition:background .25s,border-color .3s,transform .3s var(--spring);
+  position:relative;overflow:hidden;
+}
+.stat-gauge::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--acc);transform:scaleX(0);transform-origin:left;
+  transition:transform .5s var(--ease);
+}
+.stat-gauge:hover{background:var(--card-h);border-color:rgba(var(--acc-rgb),.3);transform:translateY(-3px)}
+.stat-gauge:hover::after{transform:scaleX(1)}
+.stat-val{
+  font-family:var(--mono);font-size:1.75rem;font-weight:500;
+  color:var(--acc);letter-spacing:-.04em;line-height:1;margin-bottom:5px;
+}
+.stat-key{font-size:.52rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.12em}
+
+/* ═══════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════ */
+.about-photo{
+  width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:16px;
+  margin-bottom:18px;
+  filter:brightness(.9) contrast(1.05) saturate(.8);
+  transition:filter .4s;
+}
+.about-photo:hover{filter:brightness(1) contrast(1.05) saturate(.9)}
+.about-line{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--bo);
+}
+.about-line:last-of-type{border-bottom:none;margin-bottom:18px}
+.about-dot{
+  width:5px;height:5px;border-radius:50%;background:var(--acc);
+  flex-shrink:0;margin-top:.4rem;
+}
+.about-txt{font-size:13.5px;color:var(--ink2);line-height:1.7}
+
+/* ═══════════════════════════════════════
+   FORMATION — timeline precision
+═══════════════════════════════════════ */
+.form-item{
+  display:flex;gap:14px;
+  padding:13px 0;border-bottom:1px solid var(--bo);
+  transition:background .2s;
+}
+.form-item:last-child{border-bottom:none}
+.form-idx{
+  font-family:var(--mono);font-size:.6rem;color:var(--mu);
+  width:24px;flex-shrink:0;padding-top:.22rem;letter-spacing:.05em;
+}
+.form-txt{font-size:13px;color:var(--ink2);line-height:1.65;transition:color .2s}
+.form-item:hover .form-txt{color:var(--ink)}
+
+/* ═══════════════════════════════════════
+   GALLERY
+═══════════════════════════════════════ */
+.gal-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.gal-img{
+  width:100%;object-fit:cover;border-radius:12px;display:block;
+  filter:brightness(.85) saturate(.7) contrast(1.1);
+  transition:filter .4s var(--ease),transform .4s var(--ease);
+}
+.gal-img:hover{filter:brightness(1) saturate(1) contrast(1.05);transform:scale(1.02)}
+.gal-img.main{grid-column:1/-1;aspect-ratio:16/9;border-radius:14px}
+.gal-img.sq{aspect-ratio:1}
+
+/* ═══════════════════════════════════════
+   LOCATION
+═══════════════════════════════════════ */
+.loc-row{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:14px 0;border-bottom:1px solid var(--bo);
+  transition:color .2s;
+}
+.loc-row:last-child{border-bottom:none}
+.loc-icon{
+  width:32px;height:32px;border-radius:9px;background:var(--card);
+  border:1px solid var(--bo);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .25s,border-color .25s;
+}
+.loc-icon svg{width:14px;height:14px;color:var(--plat);transition:color .2s}
+.loc-row:hover .loc-icon{background:var(--acc-dim);border-color:rgba(var(--acc-rgb),.4)}
+.loc-row:hover .loc-icon svg{color:var(--acc)}
+.loc-name{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:3px;transition:color .2s}
+.loc-addr{font-size:.74rem;color:var(--mu);line-height:1.5}
+.loc-map{font-size:.68rem;font-weight:700;color:var(--acc);display:inline-block;margin-top:.3rem;transition:letter-spacing .2s}
+.loc-map:hover{letter-spacing:.04em}
+
+/* ═══════════════════════════════════════
+   BOTTOM NAV (dentro del sheet)
+═══════════════════════════════════════ */
+.sheet-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:30;
+  background:rgba(6,8,9,.92);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--bo);
+  padding:10px 20px calc(env(safe-area-inset-bottom,0px)+10px);
+  display:flex;gap:8px;
+}
+.bn-ghost{
+  flex:1;height:44px;border-radius:12px;
+  border:1px solid var(--bo);background:transparent;color:var(--mu);
+  font-size:.7rem;font-weight:600;letter-spacing:.02em;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .2s,border-color .2s,color .2s,transform .2s var(--spring);
+}
+.bn-ghost:hover{background:var(--acc-dim);border-color:rgba(var(--acc-rgb),.4);color:var(--acc);transform:translateY(-1px)}
+.bn-cta{
+  flex:1.5;height:44px;border-radius:12px;
+  background:var(--acc);color:#000;
+  font-family:var(--sans);font-size:.74rem;font-weight:800;letter-spacing:.04em;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  box-shadow:0 4px 20px rgba(var(--acc-rgb),.35);
+  transition:transform .2s var(--spring),box-shadow .2s,filter .2s;
+}
+.bn-cta:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(var(--acc-rgb),.5);filter:brightness(1.1)}
+
+/* ═══════════════════════════════════════
+   FLOATS
+═══════════════════════════════════════ */
+.floats{
+  position:fixed;right:16px;bottom:calc(78px + env(safe-area-inset-bottom,0px));
+  z-index:25;display:none;flex-direction:column;gap:8px;
+}
+.float-btn{
+  width:44px;height:44px;border-radius:50%;border:none;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  transition:transform .25s var(--spring);position:relative;
+}
+.float-btn::after{content:'';position:absolute;inset:0;border-radius:50%;animation:pulse 2.8s ease-in-out infinite}
+.float-btn:hover{transform:scale(1.1)}
+.float-wa{background:#25D366}.float-wa::after{box-shadow:0 0 0 0 rgba(37,211,102,.4)}
+.float-ig{background:linear-gradient(135deg,#f09433,#dc2743,#bc1888)}.float-ig::after{box-shadow:0 0 0 0 rgba(220,39,67,.35)}
+@keyframes pulse{0%,100%{opacity:.6;box-shadow:0 0 0 0 currentColor}50%{opacity:0;box-shadow:0 0 0 10px transparent}}
+
+/* ═══════════════════════════════════════
+   MODALS
+═══════════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-sheet{width:100%;max-width:480px;background:#0D1117;border-radius:24px 24px 0 0;border-top:1px solid var(--sheet-border);padding:0 0 calc(env(safe-area-inset-bottom,0px)+20px);animation:sheetUp .38s var(--ease) forwards;position:relative}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:3px;border-radius:2px;background:var(--bo);margin:14px auto 22px}
+.modal-title{font-size:1.1rem;font-weight:800;color:var(--ink);letter-spacing:-.03em;padding:0 22px;margin-bottom:4px}
+.modal-sub{font-size:.72rem;color:var(--mu);padding:0 22px;margin-bottom:16px;line-height:1.5}
+.modal-body{padding:0 22px}
+.modal-opt{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:14px;background:var(--card);border:1px solid var(--bo);margin-bottom:8px;transition:background .2s,border-color .2s,transform .25s var(--spring)}
+.modal-opt:hover{background:var(--acc-dim);border-color:rgba(var(--acc-rgb),.3);transform:translateY(-2px)}
+.modal-opt-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem}
+.modal-opt-title{font-size:.86rem;font-weight:700;color:var(--ink);margin-bottom:1px}
+.modal-opt-sub{font-size:.68rem;color:var(--mu)}
+.modal-close{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid var(--bo);background:transparent;color:var(--mu);font-size:.72rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.modal-close:hover{background:var(--acc-dim);color:var(--acc)}
+
+/* SIDEBAR */
+.sb-overlay{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s}
+.sb-overlay.open{display:block;opacity:1}
+.sidebar{position:fixed;top:0;right:0;bottom:0;z-index:120;width:210px;background:#0D1117;border-left:1px solid var(--sheet-border);padding:calc(env(safe-area-inset-top,0px)+18px) 0 20px;transform:translateX(100%);transition:transform .38s var(--ease);display:flex;flex-direction:column}
+.sidebar.open{transform:translateX(0)}
+.sb-head{display:flex;align-items:center;justify-content:space-between;padding:0 16px 16px;border-bottom:1px solid var(--bo);margin-bottom:8px}
+.sb-label{font-size:.58rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.16em}
+.sb-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--bo);background:transparent;display:flex;align-items:center;justify-content:center;font-size:.68rem;color:var(--mu);transition:background .2s,color .2s}
+.sb-close:hover{background:var(--acc-dim);color:var(--acc)}
+.sb-nav{display:flex;flex-direction:column;padding:0 8px;gap:1px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:.82rem;font-weight:500;color:var(--ink2);background:transparent;text-align:left;transition:background .15s,color .15s}
+.sb-item:hover,.sb-item.active{background:var(--acc-dim);color:var(--acc)}
+.sb-item svg{flex-shrink:0;color:var(--mu);transition:color .15s}
+.sb-item:hover svg,.sb-item.active svg{color:var(--acc)}
+
+/* REVEAL */
+.rev{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.rev.on{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.06s}.d2{transition-delay:.12s}.d3{transition-delay:.18s}.d4{transition-delay:.24s}.d5{transition-delay:.30s}
+
+/* SECTION LABEL */
+.slabel{font-size:.5rem;font-weight:700;letter-spacing:.2em;color:var(--acc);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.slabel::before{content:'';display:block;width:14px;height:1px;background:var(--acc)}
+
+@keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- PHOTO BG -->
+<div class="photo-bg"><img id="cPhoto" src="" alt=""></div>
+<div class="photo-vignette"></div>
+
+<!-- NAV -->
+<nav class="c-nav" id="cNav">
+  <div class="nav-id" id="cBrand"><span class="nav-mono" id="cMono">MA</span></div>
+  <div class="nav-right">
+    <button class="nav-icon" onclick="openSidebar()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO INFO — sobre la foto -->
+<div class="hero-overlay">
+  <div class="hero-block">
+    <div class="hero-badge"><span class="hero-badge-pulse"></span><span id="hBadge">ESPECIALIDAD · CIUDAD</span></div>
+    <div class="hero-name" id="hName">Dr. <span class="acc">Nombre</span><br>Apellido</div>
+    <div class="hero-tag" id="hTag">Especialista · Excelencia clínica</div>
+  </div>
+</div>
+
+<!-- FLOATS -->
+<div class="floats" id="cFloats">
+  <a class="float-btn float-ig" id="fIg" href="#" target="_blank" style="display:none">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+  </a>
+  <a class="float-btn float-wa" id="fWa" href="#" target="_blank" style="display:none">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+  </a>
+</div>
+
+<!-- BOTTOM SHEET -->
+<div class="sheet">
+  <div class="sheet-top">
+    <div class="sheet-handle"></div>
+    <div class="sheet-id">
+      <div>
+        <div class="sheet-name" id="sName">Dr. Médico</div>
+        <div class="sheet-esp" id="sEsp">ESPECIALIDAD</div>
+      </div>
+      <div class="sheet-precio" id="sPrecio"><span id="sPrecioVal">—</span></div>
+    </div>
+    <div class="sheet-tabs">
+      <button class="stab active" data-p="pSvc" onclick="switchTab(this)">Servicios</button>
+      <button class="stab" data-p="pSobre" onclick="switchTab(this)">Sobre mí</button>
+      <button class="stab" data-p="pStats" onclick="switchTab(this)">Resultados</button>
+      <button class="stab" data-p="pForm" onclick="switchTab(this)">Formación</button>
+      <button class="stab" data-p="pGal" onclick="switchTab(this)">Galería</button>
+      <button class="stab" data-p="pLoc" onclick="switchTab(this)">Sede</button>
+    </div>
+  </div>
+  <div class="sheet-body">
+
+    <!-- SERVICIOS -->
+    <div id="pSvc" class="spanel active">
+      <div class="quick-row" id="cQuickRow">
+        <button class="q-btn" id="qCall" style="display:none" onclick="doCall()"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 13a19.79 19.79 0 01-3.07-8.67A2 2 0 012 2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>Llamar</button>
+        <button class="q-btn" id="qWa" style="display:none" onclick="doWa()"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>WhatsApp</button>
+        <button class="q-btn" onclick="openModal('modalSedes')"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Sede</button>
+      </div>
+      <div id="cSvcList"></div>
+    </div>
+
+    <!-- SOBRE MÍ -->
+    <div id="pSobre" class="spanel">
+      <img class="about-photo rev" id="cAboutPhoto" src="" alt="" style="display:none">
+      <div id="cAboutLines"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="bn-cta" style="border-radius:12px;height:44px;font-size:.74rem" onclick="openModal('modalAgendar')">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Agendar consulta
+        </button>
+        <a class="bn-ghost" id="cWaBtn" href="#" style="display:none;border-radius:12px;height:44px;font-size:.74rem" target="_blank">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div id="pStats" class="spanel">
+      <div class="stats-panel" id="cStatsGrid"></div>
+      <div style="padding:16px 0;border-top:1px solid var(--bo)">
+        <button class="bn-cta" style="width:100%;border-radius:12px;height:44px;font-size:.74rem" onclick="openModal('modalAgendar')">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Agendar ahora
+        </button>
+      </div>
+    </div>
+
+    <!-- FORMACIÓN -->
+    <div id="pForm" class="spanel">
+      <div id="cFormList"></div>
+    </div>
+
+    <!-- GALERÍA -->
+    <div id="pGal" class="spanel">
+      <div class="gal-grid" id="cGallery"></div>
+    </div>
+
+    <!-- SEDE -->
+    <div id="pLoc" class="spanel">
+      <div id="cLocs"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="sheet-nav">
+  <button class="bn-ghost" onclick="openModal('modalSedes')">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Sede
+  </button>
+  <button class="bn-cta" onclick="openModal('modalAgendar')">
+    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Agendar
+  </button>
+  <button class="bn-ghost" id="bnWa" onclick="doWa()" style="display:none">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.554 4.118 1.528 5.843L.057 23.617l5.906-1.55A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+    WhatsApp
+  </button>
+</nav>
+
+<!-- MODAL AGENDAR -->
+<div class="modal-overlay" id="modalAgendar" onclick="if(event.target===this)closeModal('modalAgendar')">
+  <div class="modal-sheet">
+    <button class="modal-close" onclick="closeModal('modalAgendar')">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mAgTitle">Agendar</div>
+    <div class="modal-sub">¿Cómo prefieres agendar?</div>
+    <div class="modal-body">
+      <a class="modal-opt" id="mWaOpt" href="#" target="_blank" style="display:none">
+        <div class="modal-opt-icon" style="background:rgba(37,211,102,.1)">💬</div>
+        <div><div class="modal-opt-title">WhatsApp</div><div class="modal-opt-sub">Escríbeme directo</div></div>
+      </a>
+      <a class="modal-opt" id="mBookOpt" href="#" target="_blank">
+        <div class="modal-opt-icon" style="background:rgba(0,212,255,.1)">📅</div>
+        <div><div class="modal-opt-title">Agenda digital</div><div class="modal-opt-sub">Elige fecha y hora</div></div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SEDES -->
+<div class="modal-overlay" id="modalSedes" onclick="if(event.target===this)closeModal('modalSedes')">
+  <div class="modal-sheet">
+    <button class="modal-close" onclick="closeModal('modalSedes')">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title">Sedes</div>
+    <div class="modal-sub">Consultorios donde atiendo</div>
+    <div class="modal-body" id="mSedesBody"></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sb-head"><span class="sb-label">Menú</span><button class="sb-close" onclick="closeSidebar()">✕</button></div>
+  <div class="sb-nav">
+    <button class="sb-item active" onclick="sbSwitch('pSvc',this)"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>Servicios</button>
+    <button class="sb-item" onclick="sbSwitch('pSobre',this)"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Sobre mí</button>
+    <button class="sb-item" onclick="sbSwitch('pStats',this)"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Resultados</button>
+    <button class="sb-item" onclick="sbSwitch('pForm',this)"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Formación</button>
+    <button class="sb-item" onclick="sbSwitch('pGal',this)"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Galería</button>
+    <button class="sb-item" onclick="sbSwitch('pLoc',this)"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Sede</button>
+  </div>
+</div>
+
+<script>
+var SB_URL='https://qxoomcqaafogczrvsyhg.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
+var _sb=supabase.createClient(SB_URL,SB_KEY);
+var _bookUrl=null,_waUrl=null,_callUrl=null,_medicoData=null,_locsData=[];
+function el(id){return document.getElementById(id)}
+function set(id,v){var e=el(id);if(e)e.textContent=v}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function getSlug(){var s=new URLSearchParams(location.search).get('slug');if(s)return s;var m=location.hostname.match(/^([^.]+)\.citadoc\.lat$/);return m?m[1]:null}
+
+/* tabs */
+function switchTab(btn){
+  document.querySelectorAll('.stab').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('.spanel').forEach(function(p){p.classList.remove('active')});
+  btn.classList.add('active');
+  var p=el(btn.dataset.p);if(p){p.classList.add('active');initReveal();}
+}
+
+/* modals */
+function openModal(id){var m=el(id);if(m)m.classList.add('open')}
+function closeModal(id){var m=el(id);if(m)m.classList.remove('open')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal('modalAgendar');closeModal('modalSedes');closeSidebar()}});
+
+/* sidebar */
+function openSidebar(){el('sidebar').classList.add('open');el('sbOverlay').classList.add('open')}
+function closeSidebar(){el('sidebar').classList.remove('open');el('sbOverlay').classList.remove('open')}
+function sbSwitch(pid,btn){
+  document.querySelectorAll('.stab').forEach(function(b){if(b.dataset.p===pid)b.classList.add('active');else b.classList.remove('active')});
+  document.querySelectorAll('.spanel').forEach(function(p){p.classList.toggle('active',p.id===pid)});
+  document.querySelectorAll('.sb-item').forEach(function(b){b.classList.remove('active')});
+  if(btn)btn.classList.add('active');
+  initReveal();setTimeout(closeSidebar,280);
+}
+
+function doWa(){if(_waUrl)window.open(_waUrl,'_blank')}
+function doCall(){if(_callUrl)window.open(_callUrl,'_blank')}
+
+/* reveal */
+var _ro=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('on')})},{threshold:0.06,root:document.querySelector('.sheet-body')});
+function initReveal(){document.querySelectorAll('.rev').forEach(function(e){_ro.observe(e)})}
+
+function countUp(el,target){
+  var isF=String(target).includes('.');var v=0,steps=60,inc=target/steps;
+  var t=setInterval(function(){v+=inc;if(v>=target){v=target;clearInterval(t)}el.textContent=isF?v.toFixed(1):Math.floor(v).toLocaleString()},22);
+}
+
+var ICONS=[
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 104.5 2h-.3v5a6 6 0 006 6v0a6 6 0 006-6V2h-.3a.3.3 0 10-.3.3"/><path d="M8 15v1a6 6 0 006 6v0a6 6 0 006-6v-4"/><circle cx="20" cy="10" r="2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h8M3 22h18M14 22a7 7 0 100-14M9 14l-2-2M15 9l-3-3M9 14 6 17"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+];
+
+function render(m,locs){
+  var wc=m.web_config||{};
+  var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
+  var esp=(m.especialidades||[])[0]||'';
+  var ciudad=m.ciudad||'';
+  var photo=wc.doctor_photo_url||m.foto_url||'';
+  var logo=wc.logo_url||null;
+  var acc=wc.primary_color||m.primary_color||'#00D4FF';
+  var waOn=m.whatsapp_activo&&m.whatsapp;
+  _waUrl=waOn?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.'):'';
+  var ig=m.instagram||wc.instagram||null;
+  var diffs=wc.differentiators||[];
+  _bookUrl=wc.booking_url||('https://citadoc.lat/agendar?slug='+esc(m.slug));
+
+  document.title=nombre+' — CitaDoc';
+  var rgb=acc.replace('#','').match(/.{2}/g).map(function(x){return parseInt(x,16)});
+  document.documentElement.style.setProperty('--acc',acc);
+  document.documentElement.style.setProperty('--acc-rgb',rgb.join(','));
+  document.documentElement.style.setProperty('--acc-dim','rgba('+rgb.join(',')+', .12)');
+  document.documentElement.style.setProperty('--sheet-border','rgba('+rgb.join(',')+', .15)');
+
+  if(logo){el('cBrand').innerHTML='<img class="nav-logo" src="'+esc(logo)+'" alt="'+esc(nombre)+'">';}
+  else{set('cMono',((m.nombre||'')[0]||'').toUpperCase()+((m.apellido||'')[0]||'').toUpperCase());}
+
+  var img=el('cPhoto');if(img&&photo)img.src=photo;
+
+  // hero
+  set('hBadge',(esp+(ciudad?' · '+ciudad:'')).toUpperCase());
+  el('hName').innerHTML=(m.titulo||'Dr.')+' '+esc(m.nombre)+'<br><span class="acc">'+esc(m.apellido)+'</span>';
+  set('hTag',wc.subheadline||('Especialista en '+esp+' · '+ciudad));
+
+  // sheet id
+  set('sName',nombre);set('sEsp',(esp+(ciudad?' · '+ciudad:'')).toUpperCase());
+  if(m.precio){el('sPrecio').style.display='flex';set('sPrecioVal','$'+m.precio);}
+
+  // WA
+  if(waOn&&_waUrl){
+    [el('mWaOpt'),el('cWaBtn'),el('fWa'),el('qWa'),el('bnWa')].forEach(function(e){if(e){e.style.display='';if(e.tagName==='A')e.href=_waUrl;}});
+    el('cFloats').style.display='flex';
+  }
+  if(ig){var fi=el('fIg');if(fi){fi.href='https://instagram.com/'+ig.replace('@','');fi.style.display='flex';el('cFloats').style.display='flex';}}
+  if(m.telefono){_callUrl='tel:'+m.telefono;var qc=el('qCall');if(qc)qc.style.display='flex';}
+
+  set('mAgTitle','Agendar con '+(m.titulo||'Dr.')+' '+m.nombre);
+  var bo=el('mBookOpt');if(bo){bo.href='#';bo.onclick=function(e){e.preventDefault();closeModal('modalAgendar');if(window.AgendarCinema)AgendarCinema.open(_medicoData,_locsData);};}
+
+  // services
+  var srvs=wc.services||[];
+  var defaults=[{t:'Consulta especializada',desc:'Evaluación clínica y diagnóstico preciso'},{t:'Diagnóstico de precisión',desc:'Estudios avanzados de vanguardia'},{t:'Plan de tratamiento',desc:'Protocolo personalizado'},{t:'Seguimiento continuo',desc:'Acompañamiento integral'},{t:'Procedimientos avanzados',desc:'Técnicas mínimamente invasivas'}];
+  el('cSvcList').innerHTML=(srvs.length?srvs:defaults).slice(0,6).map(function(s,i){
+    var n=esc(s.t||s.titulo||s.name||String(s));
+    var d=esc(s.desc||s.description||'');
+    return'<div class="svc-row">'
+      +'<span class="svc-num">0'+(i+1)+'</span>'
+      +'<div class="svc-icon-sm">'+ICONS[i%ICONS.length]+'</div>'
+      +'<div class="svc-info"><div class="svc-name">'+n+'</div>'+(d?'<div class="svc-desc">'+d+'</div>':'')+'</div>'
+      +'<span class="svc-arr">›</span>'
+      +'</div>';
+  }).join('');
+
+  // about
+  if(photo){var ap=el('cAboutPhoto');if(ap){ap.src=photo;ap.style.display='block';}}
+  var bio=wc.about_text||wc.doctor_story||m.bio||('Especialista en '+esp+(ciudad?' en '+ciudad:'')+'. Con años de experiencia y formación internacional, mi compromiso es brindarte la más alta calidad en atención médica.');
+  var sentences=bio.split(/\.\s+/).filter(Boolean);
+  el('cAboutLines').innerHTML=sentences.slice(0,4).map(function(s){
+    return'<div class="about-line rev"><span class="about-dot"></span><span class="about-txt">'+esc(s.trim().replace(/\.$/,''))+'.</span></div>';
+  }).join('');
+
+  // stats
+  var stats=wc.stats||[];
+  if(stats.length){
+    el('cStatsGrid').innerHTML=stats.slice(0,3).map(function(s,i){
+      return'<div class="stat-gauge" data-t="'+esc(String(s.n||s.num||0))+'">'
+        +'<div class="stat-val" id="sv'+i+'">'+esc(String(s.n||s.num||0))+'</div>'
+        +'<div class="stat-key">'+esc(s.l||s.label||'')+'</div>'
+        +'</div>';
+    }).join('');
+    var so=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;var n=e.target.querySelector('.stat-val'),t=parseFloat(e.target.dataset.t)||0;if(n&&t)countUp(n,t);so.unobserve(e.target)})},{threshold:0.5,root:document.querySelector('.sheet-body')});
+    document.querySelectorAll('.stat-gauge').forEach(function(c){so.observe(c)});
+  } else {
+    el('cStatsGrid').innerHTML='<div style="grid-column:1/-1;font-size:.8rem;color:var(--mu);padding:.5rem 0">Sin estadísticas configuradas aún.</div>';
+  }
+
+  // formation
+  var fd=diffs.length?diffs:['Especialización con sólida formación clínica','Atención basada en evidencia internacional','Actualización continua en técnicas avanzadas'];
+  el('cFormList').innerHTML=fd.slice(0,6).map(function(d,i){
+    return'<div class="form-item rev d'+Math.min(i,4)+'">'
+      +'<span class="form-idx">0'+(i+1)+'</span>'
+      +'<span class="form-txt">'+esc(d)+'</span>'
+      +'</div>';
+  }).join('');
+
+  // gallery
+  if(photo){
+    el('cGallery').innerHTML=
+      '<img class="gal-img main rev" src="'+esc(photo)+'" alt="">'
+      +'<img class="gal-img sq rev d1" src="'+esc(photo)+'" alt="" style="filter:brightness(.7) saturate(.5) contrast(1.2)">'
+      +'<img class="gal-img sq rev d2" src="'+esc(photo)+'" alt="" style="filter:brightness(.8) saturate(.6) contrast(1.15) hue-rotate(180deg)">';
+  }
+
+  // locs
+  if(locs&&locs.length){
+    el('cLocs').innerHTML=locs.map(function(l,i){
+      return'<div class="loc-row rev d'+Math.min(i,3)+'">'
+        +'<div class="loc-icon"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>'
+        +'<div><div class="loc-name">'+esc(l.nombre||'Consultorio')+'</div>'
+        +'<div class="loc-addr">'+esc((l.direccion||'')+(l.ciudad?', '+l.ciudad:''))+'</div>'
+        +(l.maps_url?'<a class="loc-map" href="'+esc(l.maps_url)+'" target="_blank" rel="noopener">Ver en mapa →</a>':'')
+        +'</div></div>';
+    }).join('');
+    el('mSedesBody').innerHTML=locs.map(function(l){
+      return'<a class="modal-opt" '+(l.maps_url?'href="'+esc(l.maps_url)+'" target="_blank"':'href="#"')+'>'
+        +'<div class="modal-opt-icon" style="background:rgba(0,212,255,.1)">📍</div>'
+        +'<div><div class="modal-opt-title">'+esc(l.nombre||'Consultorio')+'</div><div class="modal-opt-sub">'+esc((l.direccion||'')+(l.ciudad?', '+l.ciudad:''))+'</div></div>'
+        +'</a>';
+    }).join('');
+  }
+
+  setTimeout(initReveal,200);
+}
+
+function show404(){document.body.style.overflow='auto';document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100svh;gap:.75rem;background:#060809;color:#fff;font-family:\'Inter\',sans-serif"><div style="font-size:3rem;font-weight:900;opacity:.12;letter-spacing:-.08em">404</div><div style="font-size:.85rem;opacity:.4">Este médico aún no tiene su sitio en CitaDoc.</div></div>'}
+
+async function init(){
+  var s=getSlug();if(!s){show404();return;}
+  var r=await _sb.from('medicos').select('*').eq('slug',s).eq('activo',true).maybeSingle();
+  if(r.error||!r.data){show404();return;}
+  if(!new URLSearchParams(location.search).get('_admin'))
+    _sb.from('website_page_views').insert({medico_id:r.data.id,slug:s,source:(document.referrer.includes('google')?'google':document.referrer.includes('instagram')?'instagram':document.referrer.includes('facebook')?'facebook':document.referrer?'referral':'direct'),user_agent:navigator.userAgent.slice(0,200)});
+  var lr=await _sb.from('doctor_locations').select('id,nombre,direccion,ciudad,maps_url').eq('medico_id',r.data.id).order('created_at');
+  _medicoData=r.data;_locsData=lr.data||[];
+  render(r.data,lr.data||[]);
+}
+init();
+</script>
+<script src="/js/shared.js"></script>
+<script src="/js/agendar-cinema.js"></script>
+</body>
+</html>
