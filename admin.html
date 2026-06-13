@@ -1309,7 +1309,7 @@ async function cmCrear(){
     var payload={
       nombre:nombre,apellido:apellido,
       especialidades:[esp],ciudad:ciudad||null,
-      whatsapp:wa||null,email:email||null,
+      whatsapp:wa||null,whatsapp_activo:!!wa,email:email||null,
       foto_url:fotoUrl,slug:slug,activo:true,
       web_config:webConfig,
     };

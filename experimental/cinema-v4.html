@@ -681,7 +681,7 @@ function render(m,locs){
   var photo=wc.doctor_photo_url||m.foto_url||'';
   var logo=wc.logo_url||null;
   var acc=wc.primary_color||m.primary_color||'#00D4FF';
-  var waOn=m.whatsapp_activo&&m.whatsapp;
+  var waOn=m.whatsapp&&(m.whatsapp_activo!==false);
   _waUrl=waOn?'https://wa.me/'+m.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+nombre+', quiero agendar.'):'';
   var ig=m.instagram||wc.instagram||null;
   var diffs=wc.differentiators||[];
