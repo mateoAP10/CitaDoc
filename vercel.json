@@ -24,14 +24,14 @@
       "destination": "/doctor-center.html"
     },
     {
+      "source": "/admin",
+      "has": [{ "type": "host", "value": "(?!www\\.)((?!citadoc\\.lat$)(?!doctor-center\\.citadoc\\.lat$).+)\\.citadoc\\.lat" }],
+      "destination": "/experimental/web-admin-v1.html"
+    },
+    {
       "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "(?!www\\.)((?!citadoc\\.lat$)(?!doctor-center\\.citadoc\\.lat$).+)\\.citadoc\\.lat"
-        }
-      ],
-      "destination": "/citadoc-web2.html"
+      "has": [{ "type": "host", "value": "(?!www\\.)((?!citadoc\\.lat$)(?!doctor-center\\.citadoc\\.lat$).+)\\.citadoc\\.lat" }],
+      "destination": "/web.html"
     },
     {
       "source": "/:slug/admin",

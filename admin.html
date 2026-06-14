@@ -1318,8 +1318,8 @@ async function cmCrear(){
     if(ins.error)throw new Error('Error creando médico: '+ins.error.message);
 
     _cmSlugFinal=slug;
-    var pubUrl='https://citadoc.lat/'+slug;
-    var admUrl='https://citadoc.lat/'+slug+'/admin';
+    var pubUrl='https://'+slug+'.citadoc.lat';
+    var admUrl='https://'+slug+'.citadoc.lat/admin';
     document.getElementById('cm-url-pub').textContent=pubUrl;
     document.getElementById('cm-url-adm').textContent=admUrl;
 

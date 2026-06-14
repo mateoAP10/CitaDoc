@@ -585,7 +585,7 @@ button,input,textarea{font-family:inherit;color:inherit}
 var SB_URL='https://qxoomcqaafogczrvsyhg.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs';
 var _sb=supabase.createClient(SB_URL,SB_KEY);
-var SLUG='dr-mateo-pons';
+var SLUG=(function(){var p=new URLSearchParams(location.search).get('slug');if(p)return p;var h=location.hostname.match(/^([^.]+)\.citadoc\.lat$/);return h?h[1]:'dr-mateo-pons';})();
 var TEMPLATES=[
   {id:'cinema-v1',name:'Cinema v1'},
   {id:'cinema-v2',name:'Cinema v2'},
@@ -663,7 +663,7 @@ function toast(msg){
   clearTimeout(t._tm);t._tm=setTimeout(function(){t.classList.remove('show')},1800);
 }
 function copyLink(which){
-  var url=which==='web'?'https://citadoc.lat/'+SLUG:location.href;
+  var url=which==='web'?'https://'+SLUG+'.citadoc.lat':('https://'+SLUG+'.citadoc.lat/admin');
   navigator.clipboard&&navigator.clipboard.writeText(url);
   toast(which==='web'?'Link de tu sitio copiado ✓':'Link del admin copiado ✓');
 }

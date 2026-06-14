@@ -10,6 +10,8 @@ var _sb=supabase.createClient(SB_URL,SB_KEY);
 function getSlug(){
   var p=new URLSearchParams(location.search).get('slug');
   if(p)return p;
+  var h=location.hostname.match(/^([^.]+)\.citadoc\.lat$/);
+  if(h)return h[1];
   var m=location.pathname.match(/^\/([^\/]+)/);
   return m?m[1]:null;
 }
