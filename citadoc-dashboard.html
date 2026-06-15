@@ -796,4 +796,166 @@ async function fpGuardar(){
   if(cargarPacientes)cargarPacientes();
 }
 </script>
+
+<script>
+/* ── Cinema site UI extension ── */
+(function(){
+  var CINEMA_LABELS = {
+    'cinema-v1':'Surgical Gold','cinema-v2':'Midnight Blue',
+    'cinema-v3':'Warm Earth','cinema-v4':'Cyber Teal','cinema-v5':'Forest Green'
+  };
+  var CINEMA_ACCENTS = {
+    'cinema-v1':'#C9A96E','cinema-v2':'#4A90E2',
+    'cinema-v3':'#C17B4E','cinema-v4':'#00D4FF','cinema-v5':'#1DB97A'
+  };
+
+  function renderCinemaPanel(medico) {
+    var wc = medico.web_config || {};
+    var tpl = wc.template || '';
+    var slug = medico.slug || '';
+    var webStatus = medico.web_status || 'preview';
+    var isActive = webStatus === 'active';
+    var pubUrl = 'https://' + slug + '.citadoc.lat';
+    var admUrl = 'https://' + slug + '.citadoc.lat/admin';
+    var acc = CINEMA_ACCENTS[tpl] || '#a78bfa';
+
+    // Update status bar elements
+    var badge = document.getElementById('webStatusBadge');
+    var urlText = document.getElementById('webUrlText');
+    var urlOpen = document.getElementById('webUrlOpen');
+    if (badge) {
+      badge.textContent = isActive ? 'ACTIVO' : 'VISTA PREVIA';
+      badge.style.cssText = isActive
+        ? 'font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.28rem .75rem;border-radius:20px;background:rgba(74,222,128,.1);color:#16a34a;border:1px solid rgba(74,222,128,.25)'
+        : 'font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:.28rem .75rem;border-radius:20px;background:rgba(251,191,36,.08);color:#d97706;border:1px solid rgba(251,191,36,.3)';
+    }
+    if (urlText) urlText.textContent = slug + '.citadoc.lat';
+    if (urlOpen) { urlOpen.href = pubUrl; urlOpen.textContent = '↗ Ver sitio'; }
+
+    // Inject cinema control block
+    var wrap = document.getElementById('_cinemaSiteWrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = '_cinemaSiteWrap';
+      var bar = document.getElementById('webStatusBar');
+      if (bar) bar.insertAdjacentElement('afterend', wrap);
+    }
+    wrap.innerHTML =
+      '<div style="background:linear-gradient(135deg,#07090f,#0d1120);border-radius:18px;padding:1.4rem 1.5rem;border:1px solid rgba(167,139,250,.14);margin-bottom:1.5rem">' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">' +
+          '<div>' +
+            '<div style="font-size:.58rem;font-weight:700;color:' + acc + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Mi sitio web · ' + (CINEMA_LABELS[tpl]||tpl) + '</div>' +
+            '<div style="font-family:monospace;font-size:.88rem;color:#e2e8f0;font-weight:600">' + slug + '.citadoc.lat</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:.45rem;flex-wrap:wrap">' +
+            '<a href="' + pubUrl + '" target="_blank" style="padding:.45rem .9rem;background:rgba(255,255,255,.06);color:#e2e8f0;border:1px solid rgba(255,255,255,.11);border-radius:9px;font-size:.78rem;font-weight:600;text-decoration:none">↗ Ver sitio</a>' +
+            '<a href="' + admUrl + '" target="_blank" style="padding:.45rem .9rem;background:rgba(167,139,250,.12);color:#c4b5fd;border:1px solid rgba(167,139,250,.25);border-radius:9px;font-size:.78rem;font-weight:600;text-decoration:none">✎ Editar mi sitio</a>' +
+          '</div>' +
+        '</div>' +
+        (isActive
+          ? '<div style="padding:.6rem 1rem;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.14);border-radius:9px;font-size:.73rem;color:rgba(74,222,128,.85)">● Tu sitio está activo y recibiendo visitas.</div>'
+          : '<div style="padding:.6rem 1rem;background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.16);border-radius:9px;font-size:.73rem;color:rgba(251,191,36,.8)">⏳ Vista previa · Tu sitio está generado pero pendiente de activación. Contacta a CitaDoc para publicarlo.</div>') +
+      '</div>';
+
+    // Hide generic wizard (already has a site)
+    ['ws-steps-grid','ws-preview-wrap'].forEach(function(cls) {
+      var el = document.querySelector('.' + cls);
+      if (el) el.style.display = 'none';
+    });
+    var heroTitle = document.querySelector('.ws-hero-title');
+    if (heroTitle) { var hp = heroTitle.parentElement; if (hp) hp.style.display = 'none'; }
+  }
+
+  function renderTemplatePicker(medico) {
+    var slug = medico.slug || '';
+    var wrap = document.getElementById('_cinemaSiteWrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = '_cinemaSiteWrap';
+      var bar = document.getElementById('webStatusBar');
+      if (bar) bar.insertAdjacentElement('afterend', wrap);
+    }
+    var cards = Object.keys(CINEMA_LABELS).map(function(tpl) {
+      var acc = CINEMA_ACCENTS[tpl];
+      var label = CINEMA_LABELS[tpl];
+      return '<div onclick="window._cinemaPick(\'' + tpl + '\')" style="cursor:pointer;padding:1rem;border-radius:12px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);transition:border-color .15s" ' +
+        'onmouseenter="this.style.borderColor=\'' + acc + '55\'" onmouseleave="this.style.borderColor=\'rgba(255,255,255,.08)\'">' +
+        '<div style="width:32px;height:6px;border-radius:3px;background:' + acc + ';margin-bottom:.65rem"></div>' +
+        '<div style="font-size:.8rem;font-weight:700;color:#e2e8f0;margin-bottom:.2rem">' + label + '</div>' +
+        '<div style="font-size:.68rem;color:rgba(255,255,255,.35)">' + tpl + '</div>' +
+        '</div>';
+    }).join('');
+
+    wrap.innerHTML =
+      '<div style="background:linear-gradient(135deg,#07090f,#0d1120);border-radius:18px;padding:1.5rem;border:1px solid rgba(167,139,250,.14);margin-bottom:1.5rem">' +
+        '<div style="font-size:.6rem;font-weight:700;color:rgba(167,139,250,.8);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Elige tu template</div>' +
+        '<div style="font-family:Fraunces,serif;font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:.35rem">Tu sitio web profesional, listo en segundos</div>' +
+        '<div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:1.2rem">Elige un estilo. CitaDoc genera tu sitio automáticamente con la info de tu perfil.</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.65rem;margin-bottom:1.2rem" id="_cinemaCards">' + cards + '</div>' +
+        '<div id="_cinemaBtnWrap" style="display:none">' +
+          '<button id="_cinemaCreateBtn" onclick="window._cinemaConfirm()" style="padding:.7rem 1.5rem;background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(124,58,237,.28));color:#e9d5ff;border:1px solid rgba(167,139,250,.3);border-radius:11px;font-family:\'DM Sans\',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer">Crear mi sitio con este template →</button>' +
+        '</div>' +
+        '<div id="_cinemaMsg" style="font-size:.73rem;color:rgba(255,255,255,.35);margin-top:.75rem"></div>' +
+      '</div>';
+  }
+
+  var _selectedTpl = null;
+
+  window._cinemaPick = function(tpl) {
+    _selectedTpl = tpl;
+    document.querySelectorAll('#_cinemaCards > div').forEach(function(c) {
+      c.style.borderColor = 'rgba(255,255,255,.08)';
+      c.style.background = 'rgba(255,255,255,.02)';
+    });
+    var idx = Object.keys(CINEMA_LABELS).indexOf(tpl);
+    var card = document.querySelectorAll('#_cinemaCards > div')[idx];
+    if (card) {
+      card.style.borderColor = CINEMA_ACCENTS[tpl];
+      card.style.background = 'rgba(167,139,250,.06)';
+    }
+    var btnWrap = document.getElementById('_cinemaBtnWrap');
+    if (btnWrap) btnWrap.style.display = 'block';
+    var btn = document.getElementById('_cinemaCreateBtn');
+    if (btn) btn.textContent = 'Crear mi sitio con ' + CINEMA_LABELS[tpl] + ' →';
+  };
+
+  window._cinemaConfirm = async function() {
+    if (!_selectedTpl) return;
+    var medico = window.M;
+    if (!medico || !medico.id) return;
+    var btn = document.getElementById('_cinemaCreateBtn');
+    var msg = document.getElementById('_cinemaMsg');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creando tu sitio...'; }
+    var newWc = Object.assign({}, medico.web_config || {}, { template: _selectedTpl });
+    var sb = window._sb || _sb;
+    var { error } = await sb.from('medicos')
+      .update({ web_config: newWc, web_status: 'preview' })
+      .eq('id', medico.id);
+    if (error) {
+      if (msg) msg.textContent = 'Error: ' + error.message;
+      if (btn) { btn.disabled = false; btn.textContent = 'Reintentar'; }
+      return;
+    }
+    window.M = Object.assign({}, medico, { web_config: newWc, web_status: 'preview' });
+    if (msg) msg.textContent = '';
+    if (typeof mostrarToast === 'function') mostrarToast('¡Sitio creado! Abriendo tu panel de edición...');
+    setTimeout(function() {
+      window.open('https://' + (medico.slug||'') + '.citadoc.lat/admin', '_blank');
+      renderCinemaPanel(window.M);
+    }, 800);
+  };
+
+  window.cargarMiSitio = function(medico) {
+    if (!medico) return;
+    var wc = medico.web_config || {};
+    var tpl = wc.template || '';
+    var hasCinema = Object.keys(CINEMA_LABELS).includes(tpl);
+    if (hasCinema && medico.slug) {
+      renderCinemaPanel(medico);
+    } else {
+      renderTemplatePicker(medico);
+    }
+  };
+})();
+</script>
 </body></html>

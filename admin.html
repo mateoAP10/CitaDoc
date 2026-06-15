@@ -595,9 +595,11 @@ async function cargarWebMedicos() {
   if (_webMedicosLoaded) return;
   _webMedicosLoaded = true;
   try {
-    const r = await fetch(ADMIN_VERIFY_URL + '?resource=medicos', { headers: { 'x-admin-token': ADMIN_VERIFY_TOKEN } });
-    const d = await r.json();
-    _allMedicos = d.data || [];
+    var { data, error } = await sb.from('medicos')
+      .select('id,nombre,apellido,slug,especialidades,ciudad,plan,activo,web_config,web_status,foto_url,whatsapp,email')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    _allMedicos = data || [];
     renderMedicosWeb(_allMedicos);
     document.getElementById('wm-cnt-medicos').textContent = _allMedicos.length;
   } catch (e) {
@@ -630,6 +632,8 @@ function renderMedicosWeb(list) {
     var plan   = m.plan || 'gratuito';
     var slug   = m.slug || '';
     var activo = !!m.activo;
+    var webStatus = m.web_status || 'preview';
+    var hasWeb = !!(m.web_config && m.web_config.template);
 
     // Plan pills
     var planes = [
@@ -667,10 +671,24 @@ function renderMedicosWeb(list) {
       '</div>' +
       '<div style="display:flex;align-items:center;gap:.35rem;flex-shrink:0;flex-wrap:wrap">' +
         pillsHtml + toggleHtml +
-        (slug ? '<a href="https://citadoc.lat/' + esc(slug) + '" target="_blank" style="padding:.25rem .5rem;border-radius:6px;font-size:.65rem;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.09);text-decoration:none">↗</a>' : '') +
+        (hasWeb
+          ? (webStatus === 'active'
+              ? '<span style="padding:.22rem .55rem;border-radius:6px;font-size:.62rem;font-weight:700;background:rgba(74,222,128,.1);border:1.5px solid rgba(74,222,128,.3);color:#4ade80">● ACTIVO</span>'
+              : '<span style="padding:.22rem .55rem;border-radius:6px;font-size:.62rem;font-weight:700;background:rgba(251,191,36,.1);border:1.5px solid rgba(251,191,36,.25);color:#fbbf24">⏳ PREVIEW</span>'
+                + '<button onclick="activarWebSitio(\'' + m.id + '\')" style="padding:.22rem .55rem;border-radius:6px;font-size:.62rem;font-weight:700;cursor:pointer;border:1.5px solid rgba(74,222,128,.4);background:rgba(74,222,128,.08);color:#4ade80">Activar</button>')
+          : '') +
+        (slug ? '<a href="https://' + esc(slug) + '.citadoc.lat" target="_blank" style="padding:.25rem .5rem;border-radius:6px;font-size:.65rem;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.09);text-decoration:none">↗</a>' : '') +
       '</div>' +
     '</div>';
   }).join('');
+}
+
+async function activarWebSitio(id) {
+  var { error } = await sb.from('medicos').update({ web_status: 'active' }).eq('id', id);
+  if (error) { adminToast('Error activando sitio', false); return; }
+  _allMedicos = _allMedicos.map(function(x) { return x.id === id ? Object.assign({}, x, { web_status: 'active' }) : x; });
+  renderMedicosWeb(_allMedicos);
+  adminToast('Sitio activado ✓');
 }
 
 async function cambiarPlanDirecto(medicoId, plan) {

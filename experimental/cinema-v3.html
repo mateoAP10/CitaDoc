@@ -766,6 +766,7 @@ var ICONS=[
 
 function render(m,locs){
   var wc=m.web_config||{};
+  if(m.web_status!=='active'){var _pb=document.createElement('div');_pb.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9998;background:rgba(10,10,10,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:9px 16px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.55);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08)';_pb.innerHTML='Vista previa &nbsp;&middot;&nbsp; Sitio pendiente de activación en CitaDoc';document.body.prepend(_pb);}
   var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;
   var esp=(m.especialidades||[])[0]||'';
   var ciudad=m.ciudad||'';
