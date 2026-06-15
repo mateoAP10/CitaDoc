@@ -395,6 +395,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .liq-modal-confirm{flex:2;background:#3949ab;color:#fff;border:none;border-radius:12px;padding:.8rem;font-weight:800;font-size:.9rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
 .liq-modal-confirm:hover{background:#303f9f}
 .liq-modal-confirm.lab-color{background:#e65100}.liq-modal-confirm.lab-color:hover{background:#bf360c}
+/* ── SITIO WEB 2.0 EDITOR ─────────────────────────── */
+@media(max-width:900px){.sw2-grid{grid-template-columns:1fr!important}}
+.sw2-tpl-card{border:2px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s}
+.sw2-tpl-card:hover{border-color:var(--red)}
+.sw2-tpl-card.active{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,41,54,.15)}
+.sw2-tpl-preview{height:60px;position:relative;overflow:hidden;border-radius:6px 6px 0 0}
+.sw2-tpl-label{font-size:.7rem;font-weight:700;text-align:center;padding:.4rem;color:var(--ink);background:#fff}
+.sw2-theme-btn{border:1.5px solid var(--border);border-radius:8px;padding:.42rem .6rem;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.sw2-theme-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sw2-svc-item{background:#f9fafb;border:1.5px solid var(--border);border-radius:10px;padding:.75rem;display:grid;grid-template-columns:auto 1fr auto auto auto;gap:.5rem;align-items:center}
+.sw2-svc-input{border:1.5px solid var(--border);border-radius:7px;padding:.4rem .6rem;font-size:.78rem;font-family:'DM Sans',sans-serif;width:100%}
+.sw2-icon-select{border:1.5px solid var(--border);border-radius:7px;padding:.4rem .5rem;font-size:.75rem;font-family:'DM Sans',sans-serif;background:#fff;cursor:pointer}
 /* legacy compat */
 .lab-liq-section{display:none}.lab-liq-header{display:none}.lab-liq-title{display:none}.lab-liq-amount{display:none}.lab-liq-history{display:none}
 /* ── RESULTADOS TAB ─────────────────────────────────── */
@@ -491,6 +503,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       </button>
       <button class="admin-tab" id="tabBtnLab" onclick="switchTab('laboratorio')">
         🔬 Laboratorio <span style="font-size:.7rem;color:var(--muted);font-weight:500">· Exámenes</span>
+      </button>
+      <button class="admin-tab" id="tabBtnSitio" onclick="switchTab('sitio')" style="margin-left:auto">
+        ✦ Sitio Web <span style="font-size:.7rem;color:var(--muted);font-weight:500">· 2.0</span>
       </button>
     </div>
 
@@ -1406,6 +1421,290 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         </div><!-- /section-card -->
       </div><!-- tabLaboratorio -->
 
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- TAB SITIO WEB 2.0                                          -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div id="tabSitio" style="display:none">
+
+        <!-- Header -->
+        <div class="section-card" style="margin-bottom:1rem">
+          <div class="section-header">
+            <div class="section-icon" style="background:linear-gradient(135deg,#0f172a,#1e293b)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="section-title">Sitio Web 2.0</div>
+              <div class="section-sub">Editor premium — todo lo que editás aquí se refleja en tu sitio público en tiempo real</div>
+            </div>
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
+              <a id="sw2PreviewBtn" href="#" target="_blank" class="lab-action-btn" style="font-size:.8rem">👁 Ver sitio</a>
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <span style="font-size:.75rem;color:var(--muted);font-weight:600">Publicado</span>
+                <div class="svc-toggle-wrap" onclick="sw2TogglePublish()" style="cursor:pointer">
+                  <div id="sw2PublishToggle" class="svc-toggle off" style="width:40px;height:22px;border-radius:11px;background:#d1d5db;position:relative;transition:.2s">
+                    <div style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)" id="sw2PublishKnob"></div>
+                  </div>
+                </div>
+              </div>
+              <button class="lab-action-btn primary" onclick="sw2Save()" id="sw2SaveBtn">Guardar cambios</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem" class="sw2-grid">
+
+          <!-- COL 1 -->
+          <div style="display:flex;flex-direction:column;gap:1rem">
+
+            <!-- TEMPLATE & TEMA -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div><div class="section-title" style="font-size:.95rem">Template & Tema</div></div>
+              </div>
+              <!-- Templates -->
+              <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Layout</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.25rem">
+                <div class="sw2-tpl-card" data-tpl="sombra" onclick="sw2SelectTpl(this)">
+                  <div class="sw2-tpl-preview" style="background:#0a0a0f">
+                    <div style="position:absolute;right:0;top:0;width:60%;height:100%;background:linear-gradient(90deg,#0a0a0f 0%,rgba(0,212,170,.3) 100%)"></div>
+                    <div style="position:absolute;bottom:20%;left:10%;width:45%;height:4px;background:#fff;border-radius:2px;opacity:.8"></div>
+                    <div style="position:absolute;bottom:12%;left:10%;width:30%;height:3px;background:#00d4aa;border-radius:2px"></div>
+                  </div>
+                  <div class="sw2-tpl-label">Sombra</div>
+                </div>
+                <div class="sw2-tpl-card" data-tpl="meridian" onclick="sw2SelectTpl(this)">
+                  <div class="sw2-tpl-preview" style="background:#f5f4f0;display:flex">
+                    <div style="flex:1;background:#f5f4f0;display:flex;align-items:center;justify-content:center;padding:8px">
+                      <div style="width:100%"><div style="height:4px;background:#0a0a12;border-radius:2px;margin-bottom:4px"></div><div style="height:3px;background:#00d4aa;border-radius:2px;width:70%"></div></div>
+                    </div>
+                    <div style="flex:1;background:#cbd5e1;border-radius:0 6px 6px 0"></div>
+                  </div>
+                  <div class="sw2-tpl-label">Meridian</div>
+                </div>
+                <div class="sw2-tpl-card" data-tpl="aurora" onclick="sw2SelectTpl(this)">
+                  <div class="sw2-tpl-preview" style="background:linear-gradient(180deg,rgba(10,10,15,.3) 0%,#0a0a0f 100%)">
+                    <div style="position:absolute;inset:0;background:url('') center/cover;opacity:.4"></div>
+                    <div style="position:absolute;bottom:15%;left:10%;right:10%">
+                      <div style="height:5px;background:#fff;border-radius:2px;margin-bottom:5px;width:80%"></div>
+                      <div style="height:3px;background:#00d4aa;border-radius:2px;width:50%"></div>
+                    </div>
+                  </div>
+                  <div class="sw2-tpl-label">Aurora</div>
+                </div>
+              </div>
+              <!-- Theme & Color -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+                <div>
+                  <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Tema</div>
+                  <div style="display:flex;gap:.5rem">
+                    <button class="sw2-theme-btn active" id="sw2ThemeDark" onclick="sw2SetTheme('dark')" style="flex:1">🌙 Oscuro</button>
+                    <button class="sw2-theme-btn" id="sw2ThemeLight" onclick="sw2SetTheme('light')" style="flex:1">☀️ Claro</button>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Color acento</div>
+                  <div style="display:flex;align-items:center;gap:.5rem">
+                    <input type="color" id="sw2Color" value="#00d4aa" style="width:40px;height:36px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px">
+                    <input type="text" id="sw2ColorHex" value="#00d4aa" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.8rem;font-family:monospace" oninput="sw2SyncColor(this.value)">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LOGO & IDENTIDAD -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div><div class="section-title" style="font-size:.95rem">Logo & Identidad</div></div>
+              </div>
+              <div style="display:flex;gap:.75rem;align-items:flex-start;flex-wrap:wrap">
+                <div style="flex:1;min-width:140px">
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.4rem">Logo</label>
+                  <div id="sw2LogoPreview" style="width:80px;height:50px;border:1.5px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:.5rem;overflow:hidden" onclick="el('sw2LogoFile').click()">
+                    <span style="font-size:.65rem;color:var(--muted)">+ subir</span>
+                  </div>
+                  <input type="file" id="sw2LogoFile" accept="image/*" style="display:none" onchange="sw2UploadImg(this,'logo')">
+                  <input type="hidden" id="sw2LogoUrl">
+                </div>
+                <div style="flex:2;min-width:160px">
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.4rem">Tamaño del logo (px)</label>
+                  <input type="range" id="sw2LogoSize" min="24" max="80" value="40" style="width:100%;margin-bottom:.3rem" oninput="el('sw2LogoSizeVal').textContent=this.value+'px'">
+                  <span id="sw2LogoSizeVal" style="font-size:.72rem;color:var(--muted)">40px</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- HERO -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div><div class="section-title" style="font-size:.95rem">Hero — Portada</div></div>
+              </div>
+              <!-- Foto médico -->
+              <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.4rem">Foto del médico <span style="color:#dc2626">*</span></label>
+              <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:1rem">
+                <div id="sw2HeroPhotoPreview" style="width:64px;height:80px;border:1.5px dashed var(--border);border-radius:10px;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0" onclick="el('sw2HeroFile').click()">
+                  <span style="font-size:.6rem;color:var(--muted);text-align:center">+ foto</span>
+                </div>
+                <div style="flex:1;font-size:.75rem;color:var(--muted);line-height:1.5">La foto del médico es el elemento más importante. Usa una imagen vertical, profesional, fondo neutro.</div>
+              </div>
+              <input type="file" id="sw2HeroFile" accept="image/*" style="display:none" onchange="sw2UploadImg(this,'hero_photo')">
+              <input type="hidden" id="sw2HeroPhotoUrl">
+              <!-- Texts -->
+              <div style="display:flex;flex-direction:column;gap:.75rem">
+                <div>
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Pregunta inicial <span style="font-style:italic;font-weight:400">(pequeña, itálica)</span></label>
+                  <input type="text" id="sw2HeroQ" placeholder="¿Buscas atención médica de calidad?" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div>
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Headline principal <span style="font-style:italic;font-weight:400">(grande, bold)</span></label>
+                  <textarea id="sw2HeroH" rows="2" placeholder="Tu salud en manos expertas." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;font-family:'DM Sans',sans-serif;resize:vertical"></textarea>
+                </div>
+                <div>
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Tagline <span style="font-style:italic;font-weight:400">(color acento)</span></label>
+                  <input type="text" id="sw2HeroT" placeholder="Medible. Personal. Privado." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;font-family:'DM Sans',sans-serif">
+                </div>
+              </div>
+            </div>
+
+            <!-- MÉDICO -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div><div class="section-title" style="font-size:.95rem">Datos del médico</div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:.65rem">
+                <div>
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Nombre completo</label>
+                  <input type="text" id="sw2DocName" placeholder="Dr. Juan Pérez" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div>
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Especialidad</label>
+                  <input type="text" id="sw2DocSpec" placeholder="Médico en Ortopedia y Cirugía" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div>
+                  <label style="font-size:.72rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Credenciales <span style="font-style:italic;font-weight:400">(una por línea)</span></label>
+                  <textarea id="sw2DocCreds" rows="3" placeholder="Especialista certificado&#10;10+ años de experiencia&#10;Fellowship en Harvard" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;font-family:'DM Sans',sans-serif;resize:vertical"></textarea>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- COL 2 -->
+          <div style="display:flex;flex-direction:column;gap:1rem">
+
+            <!-- SERVICIOS -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div style="flex:1"><div class="section-title" style="font-size:.95rem">Servicios</div><div class="section-sub" style="font-size:.72rem">Máx. 6 servicios — cada uno con color e ícono único</div></div>
+                <button class="lab-action-btn primary" onclick="sw2AddService()" style="font-size:.75rem">+ Agregar</button>
+              </div>
+              <div id="sw2ServicesList" style="display:flex;flex-direction:column;gap:.6rem"></div>
+            </div>
+
+            <!-- SOBRE MÍ -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div style="flex:1"><div class="section-title" style="font-size:.95rem">Sobre mí</div></div>
+                <label style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer">
+                  <input type="checkbox" id="sw2ShowAbout" checked onchange="sw2ToggleSection('about',this.checked)"> Mostrar
+                </label>
+              </div>
+              <div id="sw2AboutFields">
+                <div style="display:flex;gap:.75rem;margin-bottom:.75rem">
+                  <div id="sw2AboutPhotoPreview" style="width:56px;height:70px;border:1.5px dashed var(--border);border-radius:8px;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0" onclick="el('sw2AboutFile').click()">
+                    <span style="font-size:.6rem;color:var(--muted)">+ foto</span>
+                  </div>
+                  <div style="flex:1">
+                    <input type="text" id="sw2AboutTitle" placeholder="Sobre mí" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif;margin-bottom:.5rem">
+                    <textarea id="sw2AboutText" rows="3" placeholder="Tu historia, tu enfoque médico..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif;resize:vertical"></textarea>
+                  </div>
+                </div>
+                <input type="file" id="sw2AboutFile" accept="image/*" style="display:none" onchange="sw2UploadImg(this,'about_photo')">
+                <input type="hidden" id="sw2AboutPhotoUrl">
+              </div>
+            </div>
+
+            <!-- STATS -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div style="flex:1"><div class="section-title" style="font-size:.95rem">Estadísticas</div></div>
+                <label style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer">
+                  <input type="checkbox" id="sw2ShowStats" onchange="sw2ToggleSection('stats',this.checked)"> Mostrar
+                </label>
+              </div>
+              <div id="sw2StatsFields" style="display:none">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem">
+                  <div><input type="text" id="sw2S1N" placeholder="1000+" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .6rem;font-size:.8rem;font-family:'DM Sans',sans-serif;margin-bottom:.35rem"><input type="text" id="sw2S1L" placeholder="Pacientes" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.75rem;font-family:'DM Sans',sans-serif"></div>
+                  <div><input type="text" id="sw2S2N" placeholder="10" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .6rem;font-size:.8rem;font-family:'DM Sans',sans-serif;margin-bottom:.35rem"><input type="text" id="sw2S2L" placeholder="Años exp." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.75rem;font-family:'DM Sans',sans-serif"></div>
+                  <div><input type="text" id="sw2S3N" placeholder="98%" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .6rem;font-size:.8rem;font-family:'DM Sans',sans-serif;margin-bottom:.35rem"><input type="text" id="sw2S3L" placeholder="Satisfacción" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.75rem;font-family:'DM Sans',sans-serif"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CONTACTO -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div><div class="section-title" style="font-size:.95rem">Contacto & Redes</div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+                <div>
+                  <label style="font-size:.7rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">WhatsApp</label>
+                  <input type="text" id="sw2WA" placeholder="593912345678" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Instagram</label>
+                  <input type="text" id="sw2IG" placeholder="@usuario" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Facebook</label>
+                  <input type="text" id="sw2FB" placeholder="https://facebook.com/..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">TikTok</label>
+                  <input type="text" id="sw2TT" placeholder="@usuario" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div style="grid-column:1/-1">
+                  <label style="font-size:.7rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">URL de agendamiento (opcional)</label>
+                  <input type="text" id="sw2BookUrl" placeholder="https://..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif">
+                </div>
+              </div>
+            </div>
+
+            <!-- SEO -->
+            <div class="section-card">
+              <div class="section-header" style="margin-bottom:1rem">
+                <div><div class="section-title" style="font-size:.95rem">SEO</div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:.6rem">
+                <div>
+                  <label style="font-size:.7rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Título de página</label>
+                  <input type="text" id="sw2MetaTitle" placeholder="Dr. Juan Pérez — Especialista en..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif">
+                </div>
+                <div>
+                  <label style="font-size:.7rem;font-weight:700;color:var(--muted);display:block;margin-bottom:.3rem">Descripción</label>
+                  <textarea id="sw2MetaDesc" rows="2" placeholder="Médico especialista en..." style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.45rem .65rem;font-size:.8rem;font-family:'DM Sans',sans-serif;resize:vertical"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- LINKS DEL SITIO -->
+            <div class="section-card" style="background:linear-gradient(135deg,#0f172a,#1e293b)">
+              <div style="font-size:.65rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem">Tus 2 links</div>
+              <div style="display:flex;flex-direction:column;gap:.6rem">
+                <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.75rem 1rem">
+                  <div style="font-size:.65rem;font-weight:700;color:#64748b;margin-bottom:.25rem">🌐 Sitio público</div>
+                  <a id="sw2LinkPublic" href="#" target="_blank" style="font-size:.78rem;font-weight:700;color:#00d4aa;word-break:break-all"></a>
+                </div>
+                <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.75rem 1rem">
+                  <div style="font-size:.65rem;font-weight:700;color:#64748b;margin-bottom:.25rem">⚙️ Admin del sitio</div>
+                  <a id="sw2LinkAdmin" href="#" target="_blank" style="font-size:.78rem;font-weight:700;color:#94a3b8;word-break:break-all"></a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div><!-- sw2-grid -->
+      </div><!-- tabSitio -->
+
 
 <script>
 const SB_URL     = 'https://qxoomcqaafogczrvsyhg.supabase.co'
@@ -2095,11 +2394,14 @@ function switchTab(tab) {
   el('tabFrontend').style.display     = tab === 'frontend'    ? '' : 'none'
   el('tabBackend').style.display      = tab === 'backend'     ? '' : 'none'
   el('tabLaboratorio').style.display  = tab === 'laboratorio' ? '' : 'none'
+  el('tabSitio').style.display        = tab === 'sitio'       ? '' : 'none'
   el('tabBtnFrontend').classList.toggle('active',    tab === 'frontend')
   el('tabBtnBackend').classList.toggle('active',     tab === 'backend')
   el('tabBtnLab').classList.toggle('active',         tab === 'laboratorio')
+  el('tabBtnSitio').classList.toggle('active',       tab === 'sitio')
   if (tab === 'backend')     { loadNewTurnos(); loadLeads() }
   if (tab === 'laboratorio') { initLab() }
+  if (tab === 'sitio')       { sw2Init() }
 }
 
 // ── BACKEND: LEADS ────────────────────────────────────────────────────────────
@@ -4043,6 +4345,296 @@ async function saveLabExam() {
   closeLabAddExam()
   renderLabCatalogo()
   loadLabExams().then(renderLabExamsGrid)
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SITIO WEB 2.0 — EDITOR
+// ════════════════════════════════════════════════════════════════════════════
+let _sw2Data     = null
+let _sw2Services = []
+let _sw2Inited   = false
+
+const SW2_ICONS = ['stethoscope','heart','activity','brain','eye','syringe','tooth','bone','leaf','run','video','star','drop','scissors','sun','pill','microscope','plus']
+
+async function sw2Init() {
+  if (_sw2Inited) return
+  _sw2Inited = true
+  if (!_center) return
+
+  // Links del sitio
+  const slug = _center.slug || ''
+  const publicUrl  = `https://${slug}.citadoc.lat`
+  const adminUrl   = `https://doctor-center.citadoc.lat/${slug}/admin`
+  const previewBtn = el('sw2PreviewBtn')
+  if (previewBtn) previewBtn.href = publicUrl
+  const lp = el('sw2LinkPublic'),  la = el('sw2LinkAdmin')
+  if (lp) { lp.textContent = publicUrl;  lp.href = publicUrl }
+  if (la) { la.textContent = adminUrl;   la.href = adminUrl }
+
+  // Load website data
+  const [websites, services] = await Promise.all([
+    sbGet('center_website', `center_id=eq.${_center.id}&limit=1`),
+    sbGet('center_website_services', `center_id=eq.${_center.id}&order=order_index`)
+  ])
+
+  _sw2Data     = websites[0] || {}
+  _sw2Services = services || []
+
+  sw2FillForm()
+  sw2RenderServices()
+}
+
+function sw2FillForm() {
+  const d = _sw2Data
+  if (!d) return
+
+  // Template
+  document.querySelectorAll('.sw2-tpl-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.tpl === (d.template_id || 'sombra'))
+  })
+
+  // Theme
+  sw2SetTheme(d.theme || 'dark', false)
+
+  // Color
+  const color = d.primary_color || '#00d4aa'
+  const ci = el('sw2Color'), ch = el('sw2ColorHex')
+  if (ci) ci.value = color
+  if (ch) ch.value = color
+
+  // Logo
+  if (d.logo_url) {
+    const lp = el('sw2LogoPreview')
+    if (lp) lp.innerHTML = `<img src="${d.logo_url}" style="width:100%;height:100%;object-fit:contain">`
+    const lu = el('sw2LogoUrl'); if (lu) lu.value = d.logo_url
+  }
+  const ls = el('sw2LogoSize'), lv = el('sw2LogoSizeVal')
+  if (ls) { ls.value = d.logo_size || 40 }
+  if (lv) lv.textContent = (d.logo_size || 40) + 'px'
+
+  // Hero
+  if (d.doctor_photo_url) {
+    const pp = el('sw2HeroPhotoPreview')
+    if (pp) pp.innerHTML = `<img src="${d.doctor_photo_url}" style="width:100%;height:100%;object-fit:cover">`
+    const pu = el('sw2HeroPhotoUrl'); if (pu) pu.value = d.doctor_photo_url
+  }
+  sw2Set('sw2HeroQ',    d.hero_question || '')
+  sw2Set('sw2HeroH',    d.hero_headline || '')
+  sw2Set('sw2HeroT',    d.hero_tagline  || '')
+
+  // Doctor
+  sw2Set('sw2DocName',  d.doctor_name        || '')
+  sw2Set('sw2DocSpec',  d.doctor_specialty   || '')
+  sw2Set('sw2DocCreds', d.doctor_credentials || '')
+
+  // About
+  const sa = el('sw2ShowAbout'); if (sa) sa.checked = d.show_about !== false
+  sw2ToggleSection('about', d.show_about !== false)
+  if (d.about_photo_url) {
+    const ap = el('sw2AboutPhotoPreview')
+    if (ap) ap.innerHTML = `<img src="${d.about_photo_url}" style="width:100%;height:100%;object-fit:cover">`
+    const au = el('sw2AboutPhotoUrl'); if (au) au.value = d.about_photo_url
+  }
+  sw2Set('sw2AboutTitle', d.about_title || '')
+  sw2Set('sw2AboutText',  d.about_text  || '')
+
+  // Stats
+  const ss = el('sw2ShowStats'); if (ss) ss.checked = !!d.show_stats
+  sw2ToggleSection('stats', !!d.show_stats)
+  sw2Set('sw2S1N', d.stat1_number || ''); sw2Set('sw2S1L', d.stat1_label || '')
+  sw2Set('sw2S2N', d.stat2_number || ''); sw2Set('sw2S2L', d.stat2_label || '')
+  sw2Set('sw2S3N', d.stat3_number || ''); sw2Set('sw2S3L', d.stat3_label || '')
+
+  // Contact
+  sw2Set('sw2WA',      d.whatsapp     || '')
+  sw2Set('sw2IG',      d.instagram    || '')
+  sw2Set('sw2FB',      d.facebook     || '')
+  sw2Set('sw2TT',      d.tiktok       || '')
+  sw2Set('sw2BookUrl', d.booking_url  || '')
+
+  // SEO
+  sw2Set('sw2MetaTitle', d.meta_title       || '')
+  sw2Set('sw2MetaDesc',  d.meta_description || '')
+
+  // Publish toggle
+  sw2UpdatePublishUI(!!d.published)
+}
+
+function sw2Set(id, val) {
+  const e = el(id); if (e) e.value = val
+}
+
+function sw2SetTheme(t, save=true) {
+  const bd = el('sw2ThemeDark'), bl = el('sw2ThemeLight')
+  if (bd) bd.classList.toggle('active', t === 'dark')
+  if (bl) bl.classList.toggle('active', t === 'light')
+  if (save && _sw2Data) _sw2Data._pendingTheme = t
+}
+
+function sw2SelectTpl(card) {
+  document.querySelectorAll('.sw2-tpl-card').forEach(c => c.classList.remove('active'))
+  card.classList.add('active')
+}
+
+function sw2SyncColor(hex) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return
+  const ci = el('sw2Color'); if (ci) ci.value = hex
+}
+
+function sw2ToggleSection(section, show) {
+  const fields = el(`sw2${section.charAt(0).toUpperCase()+section.slice(1)}Fields`)
+  if (fields) fields.style.display = show ? '' : 'none'
+}
+
+function sw2UpdatePublishUI(published) {
+  const toggle = el('sw2PublishToggle'), knob = el('sw2PublishKnob')
+  if (!toggle || !knob) return
+  toggle.style.background = published ? '#16a34a' : '#d1d5db'
+  knob.style.left = published ? 'calc(100% - 19px)' : '3px'
+}
+
+function sw2TogglePublish() {
+  if (!_sw2Data) return
+  const cur = !!_sw2Data.published
+  _sw2Data.published = !cur
+  sw2UpdatePublishUI(!cur)
+}
+
+// ── SERVICES ─────────────────────────────────────────
+function sw2RenderServices() {
+  const list = el('sw2ServicesList')
+  if (!list) return
+  list.innerHTML = _sw2Services.map((s, i) => `
+    <div class="sw2-svc-item" data-idx="${i}">
+      <input type="color" value="${s.color||'#00d4aa'}" style="width:34px;height:34px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;flex-shrink:0"
+        onchange="_sw2Services[${i}].color=this.value">
+      <div style="display:flex;flex-direction:column;gap:.3rem;min-width:0">
+        <input class="sw2-svc-input" value="${esc(s.name||'')}" placeholder="Nombre del servicio"
+          oninput="_sw2Services[${i}].name=this.value">
+        <input class="sw2-svc-input" value="${esc(s.description||'')}" placeholder="Descripción breve"
+          oninput="_sw2Services[${i}].description=this.value" style="font-size:.72rem">
+      </div>
+      <select class="sw2-icon-select" onchange="_sw2Services[${i}].icon_key=this.value">
+        ${SW2_ICONS.map(ic => `<option value="${ic}" ${ic===s.icon_key?'selected':''}>${ic}</option>`).join('')}
+      </select>
+      <button onclick="sw2MoveService(${i},-1)" style="padding:.3rem;color:var(--muted);font-size:.9rem" title="Subir">↑</button>
+      <button onclick="sw2RemoveService(${i})" style="padding:.3rem;color:#dc2626;font-size:.9rem" title="Eliminar">✕</button>
+    </div>`).join('')
+}
+
+function sw2AddService() {
+  if (_sw2Services.length >= 6) { toast('Máximo 6 servicios','err'); return }
+  _sw2Services.push({ name:'Nuevo servicio', description:'', icon_key:'plus', color:'#00d4aa', order_index:_sw2Services.length, active:true })
+  sw2RenderServices()
+}
+
+function sw2RemoveService(idx) {
+  _sw2Services.splice(idx, 1)
+  sw2RenderServices()
+}
+
+function sw2MoveService(idx, dir) {
+  const newIdx = idx + dir
+  if (newIdx < 0 || newIdx >= _sw2Services.length) return
+  ;[_sw2Services[idx], _sw2Services[newIdx]] = [_sw2Services[newIdx], _sw2Services[idx]]
+  sw2RenderServices()
+}
+
+// ── IMAGE UPLOAD ──────────────────────────────────────
+async function sw2UploadImg(input, field) {
+  const file = input.files[0]; if (!file) return
+  const path = `website/${_center.id}/${field}-${Date.now()}.${file.name.split('.').pop()}`
+  const { error } = await stgUpload('center-assets', path, file)
+  if (error) { toast('Error al subir imagen', 'err'); return }
+  const url = `${SB_URL}/storage/v1/object/public/center-assets/${path}`
+
+  if (field === 'logo') {
+    el('sw2LogoPreview').innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain">`
+    el('sw2LogoUrl').value = url
+  } else if (field === 'hero_photo') {
+    el('sw2HeroPhotoPreview').innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover">`
+    el('sw2HeroPhotoUrl').value = url
+  } else if (field === 'about_photo') {
+    el('sw2AboutPhotoPreview').innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover">`
+    el('sw2AboutPhotoUrl').value = url
+  }
+  toast('Imagen subida ✓','ok')
+}
+
+// ── SAVE ──────────────────────────────────────────────
+async function sw2Save() {
+  if (!_center) return
+  const btn = el('sw2SaveBtn')
+  btn.disabled = true; btn.textContent = 'Guardando…'
+
+  const tplActive = document.querySelector('.sw2-tpl-card.active')
+  const theme = el('sw2ThemeLight')?.classList.contains('active') ? 'light' : 'dark'
+
+  const payload = {
+    center_id:          _center.id,
+    template_id:        tplActive?.dataset.tpl || 'sombra',
+    theme,
+    primary_color:      el('sw2ColorHex')?.value || '#00d4aa',
+    logo_url:           el('sw2LogoUrl')?.value || null,
+    logo_size:          parseInt(el('sw2LogoSize')?.value || '40'),
+    doctor_photo_url:   el('sw2HeroPhotoUrl')?.value || null,
+    hero_question:      el('sw2HeroQ')?.value || null,
+    hero_headline:      el('sw2HeroH')?.value || null,
+    hero_tagline:       el('sw2HeroT')?.value || null,
+    doctor_name:        el('sw2DocName')?.value || null,
+    doctor_specialty:   el('sw2DocSpec')?.value || null,
+    doctor_credentials: el('sw2DocCreds')?.value || null,
+    show_about:         el('sw2ShowAbout')?.checked ?? true,
+    about_photo_url:    el('sw2AboutPhotoUrl')?.value || null,
+    about_title:        el('sw2AboutTitle')?.value || null,
+    about_text:         el('sw2AboutText')?.value || null,
+    show_stats:         el('sw2ShowStats')?.checked ?? false,
+    stat1_number:       el('sw2S1N')?.value || null, stat1_label: el('sw2S1L')?.value || null,
+    stat2_number:       el('sw2S2N')?.value || null, stat2_label: el('sw2S2L')?.value || null,
+    stat3_number:       el('sw2S3N')?.value || null, stat3_label: el('sw2S3L')?.value || null,
+    show_testimonials:  true,
+    whatsapp:           el('sw2WA')?.value || null,
+    instagram:          el('sw2IG')?.value || null,
+    facebook:           el('sw2FB')?.value || null,
+    tiktok:             el('sw2TT')?.value || null,
+    booking_url:        el('sw2BookUrl')?.value || null,
+    meta_title:         el('sw2MetaTitle')?.value || null,
+    meta_description:   el('sw2MetaDesc')?.value || null,
+    published:          _sw2Data?.published ?? false,
+    updated_at:         new Date().toISOString(),
+  }
+
+  // Upsert center_website
+  await sbPatch('center_website', `center_id=eq.${_center.id}`, payload)
+    .then(async r => {
+      if (r.error) {
+        // Try insert if patch returned no rows
+        await sbPost('center_website', payload)
+      }
+    })
+
+  // Upsert services
+  // Delete old, insert new
+  await fetch(`${SB_URL}/rest/v1/center_website_services?center_id=eq.${_center.id}`, {
+    method: 'DELETE',
+    headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON }
+  })
+  for (let i = 0; i < _sw2Services.length; i++) {
+    const s = _sw2Services[i]
+    await sbPost('center_website_services', {
+      center_id:   _center.id,
+      name:        s.name,
+      description: s.description || null,
+      icon_key:    s.icon_key || 'plus',
+      color:       s.color || '#00d4aa',
+      order_index: i,
+      active:      true,
+    })
+  }
+
+  toast('Sitio guardado ✓','ok')
+  btn.disabled = false; btn.textContent = 'Guardar cambios'
+  _sw2Data = { ..._sw2Data, ...payload }
 }
 </script>
 </body>
