@@ -693,9 +693,9 @@ async function fichaCargarDatos(id){
   var d=r.data;
   var _t=function(id,val){var el=document.getElementById(id);if(el)el.textContent=val||"";};
   _t("fv_nombre",d.nombre||"");
-  _t("fv_email",d.email?"✉ "+d.email:"");
-  _t("fv_cedula",d.cedula?"ID: "+d.cedula:"");
-  _t("fv_tel",d.telefono?"📱 "+d.telefono:"");
+  _t("fv_email",d.email?d.email:"");
+  _t("fv_cedula",d.cedula?"Identificación: "+d.cedula:"");
+  _t("fv_tel",d.telefono?d.telefono:"");
   _t("fv_nac",d.fecha_nacimiento?"🎂 "+d.fecha_nacimiento:"");
   _t("fv_gen",d.genero?({M:"Masculino",F:"Femenino",O:"Otro"}[d.genero]||""):"");
   var _v=function(id,val){var el=document.getElementById(id);if(el)el.value=val||"";};
