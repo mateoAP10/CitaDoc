@@ -980,99 +980,218 @@ function resumenBase() {
   };
 }
 
-function construirResumenPDFHtml(d) {
+/* ── Línea gráfica CitaDoc 20.0: iconografía lineal + trazo médico sutil ── */
+function _riIcon(shapes, size) {
+  return '<svg width="'+(size||14)+'" height="'+(size||14)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+shapes+'</svg>';
+}
+var RI = {
+  motivo:      '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="8.01"/><line x1="12" y1="11" x2="12" y2="16"/>',
+  hallazgo:    '<rect x="5" y="3" width="14" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>',
+  evolucion:   '<polyline points="4,17 9,10 13,13 20,5"/>',
+  alarma:      '<polygon points="12,3 20,7 20,13 12,21 4,13 4,7"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12" y2="16.01"/>',
+  estudios:    '<circle cx="10" cy="10" r="6"/><line x1="15" y1="15" x2="20" y2="20"/>',
+  diagnostico: '<path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"/><path d="M6 21v-1a6 6 0 0 1 6-6v0a6 6 0 0 1 6 6v1"/><line x1="12" y1="11" x2="12" y2="21"/><line x1="9" y1="17" x2="15" y2="17"/>',
+  plan:        '<polyline points="9,12 11,14 16,9"/><rect x="3" y="3" width="18" height="18" rx="3"/>',
+  indicaciones:'<line x1="4" y1="12" x2="20" y2="12"/><polyline points="14,6 20,12 14,18"/>'
+};
+
+// Trazo médico sutil (pulso/ECG) — elemento de identidad, uso mínimo y discreto
+function pulseLine(width, color, opacity) {
+  width = width || 200;
+  color = color || '#0b7c6e';
+  opacity = opacity == null ? .3 : opacity;
+  var a = (width*.34).toFixed(1), b = (width*.38).toFixed(1), cc = (width*.42).toFixed(1), dd = (width*.46).toFixed(1);
+  return '<svg width="'+width+'" height="12" viewBox="0 0 '+width+' 12" style="display:block;opacity:'+opacity+'">'
+    + '<polyline points="0,6 '+a+',6 '+b+',1 '+cc+',11 '+dd+',6 '+width+',6" fill="none" stroke="'+color+'" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '</svg>';
+}
+
+// Sparkline minimalista — usada únicamente cuando hay >=2 puntos reales
+function sparkline(points) {
+  var w = 160, h = 42, pad = 5;
+  var vals = points.map(function(x){ return x.v; });
+  var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+  if (min === max) { min -= 1; max += 1; }
+  var stepX = (w - pad*2) / Math.max(points.length - 1, 1);
+  var coords = points.map(function(pt, i){
+    var x = pad + i*stepX;
+    var y = pad + (h - pad*2) * (1 - (pt.v - min) / (max - min));
+    return [x, y];
+  });
+  var path = coords.map(function(cd, i){ return (i===0?'M':'L') + cd[0].toFixed(1) + ',' + cd[1].toFixed(1); }).join(' ');
+  var dots = coords.map(function(cd, i){
+    var last = i === coords.length - 1;
+    return '<circle cx="'+cd[0].toFixed(1)+'" cy="'+cd[1].toFixed(1)+'" r="'+(last?2.4:1.5)+'" fill="'+(last?'#0b7c6e':'#bfe3dd')+'"/>';
+  }).join('');
+  return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'
+    + '<path d="'+path+'" fill="none" stroke="#0b7c6e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
+    + dots
+    + '</svg>';
+}
+
+// Historial real de vitales del paciente (para la sección Evolución). Solo lectura, cero invención.
+async function obtenerHistorialVitales(pacienteId) {
+  if (!pacienteId) return [];
+  try {
+    var r = await _sb.from('consultas')
+      .select('presion_arterial,frecuencia_cardiaca,temperatura,peso,created_at')
+      .eq('paciente_id', pacienteId)
+      .order('created_at', { ascending: true });
+    return r.data || [];
+  } catch (e) { console.warn('[resumen] historial vitales error', e); return []; }
+}
+
+function construirResumenPDFHtml(d, historial) {
+  historial = historial || [];
   var c = d.c, p = d.p;
   var patCed = p.cedula ? 'C.I. ' + p.cedula : '';
   var fechaNac = p.fecha_nacimiento ? new Date(p.fecha_nacimiento).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) : '';
   var fechaLarga = new Date().toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  var vitals = [
-    {l:'Presión arterial',v:c.presion_arterial,u:'mmHg'},
-    {l:'Frec. cardíaca',v:c.frecuencia_cardiaca,u:'lpm'},
-    {l:'Temperatura',v:c.temperatura,u:'°C'},
-    {l:'Peso',v:c.peso,u:'kg'}
-  ].filter(function(x){return x.v;});
 
-  function sec(label, body) {
-    if (!body || !body.trim()) return '';
-    return '<div class="sec"><div class="sec-label">' + label + '</div><div class="sec-body">' + body.replace(/\n/g,'<br>') + '</div></div>';
+  function seccion(icon, titulo, contenidoHtml) {
+    if (!contenidoHtml || !contenidoHtml.trim()) return '';
+    return '<div class="rc-sec">'
+      + '<div class="rc-sec-h"><span class="rc-sec-ico">'+icon+'</span><span class="rc-sec-t">'+titulo+'</span></div>'
+      + '<div class="rc-sec-b">'+contenidoHtml+'</div>'
+      + '</div>';
   }
-  function listItems(arr, keyFn) {
-    return arr.map(function(x,i){return '<div class="list-item"><span class="list-num">'+(i+1)+'.</span>'+keyFn(x)+'</div>';}).join('');
+  function parrafo(texto) {
+    if (!texto || !texto.trim()) return '';
+    return '<p class="rc-p">'+texto.replace(/\n/g,'<br>')+'</p>';
   }
+  function lista(arr, fn) {
+    if (!arr || !arr.length) return '';
+    return '<div class="rc-list">'+arr.map(function(x,i){ return '<div class="rc-list-i"><span class="rc-list-n">'+(i+1)+'</span><span>'+fn(x)+'</span></div>'; }).join('')+'</div>';
+  }
+
+  /* Hallazgos: vitales de ESTA consulta como indicadores en línea + texto clínico */
+  var vitalesActuales = [
+    {l:'Presión', v:c.presion_arterial, u:''},
+    {l:'Frec. cardíaca', v:c.frecuencia_cardiaca, u:'lpm'},
+    {l:'Temperatura', v:c.temperatura, u:'°C'},
+    {l:'Peso', v:c.peso, u:'kg'}
+  ].filter(function(x){ return x.v; });
+
+  var hallazgosBody = ''
+    + (vitalesActuales.length ? '<div class="rc-vitales">'+vitalesActuales.map(function(x){
+        return '<div class="rc-vital"><div class="rc-vital-v">'+x.v+(x.u?' <span class="rc-vital-u">'+x.u+'</span>':'')+'</div><div class="rc-vital-l">'+x.l+'</div></div>';
+      }).join('')+'</div>' : '')
+    + parrafo(c.enfermedad_actual)
+    + parrafo(c.examen_fisico);
+
+  /* Evolución: solo si existen >=2 puntos reales por métrica. Nunca se inventa. */
+  function serie(campo, parseFn) {
+    var pts = [];
+    historial.forEach(function(h){
+      var raw = h[campo];
+      if (raw === null || raw === undefined || raw === '') return;
+      var v = parseFn(raw);
+      if (v === null || isNaN(v)) return;
+      pts.push({ v: v });
+    });
+    return pts;
+  }
+  var seriePeso = serie('peso', function(v){ return parseFloat(v); });
+  var serieFC   = serie('frecuencia_cardiaca', function(v){ return parseFloat(v); });
+  var serieTemp = serie('temperatura', function(v){ return parseFloat(v); });
+  var seriePAS  = serie('presion_arterial', function(v){ var m = String(v).match(/(\d+)/); return m ? parseFloat(m[1]) : null; });
+
+  function evolItem(label, unit, pts) {
+    if (pts.length < 2) return '';
+    var last = pts[pts.length-1];
+    return '<div class="rc-evol-i">'
+      + '<div><div class="rc-evol-v">'+last.v+(unit?' <span class="rc-vital-u">'+unit+'</span>':'')+'</div><div class="rc-vital-l">'+label+'</div></div>'
+      + sparkline(pts)
+      + '</div>';
+  }
+  var evolBody = evolItem('Peso', 'kg', seriePeso) + evolItem('Presión (sistólica)', 'mmHg', seriePAS) + evolItem('Frec. cardíaca', 'lpm', serieFC) + evolItem('Temperatura', '°C', serieTemp);
+
+  var diagBody = d.diags.length
+    ? d.diags.map(function(x){ return '<div class="rc-diag">'+(x.cie10?'<span class="rc-diag-c">'+x.cie10+'</span>':'')+'<span>'+x.label+'</span></div>'; }).join('')
+    : parrafo(c.diagnostico);
+
+  // Estudios y resultados = lo YA obtenido (texto libre del examen). Plan = lo que se ordena a futuro.
+  // Nunca son la misma cosa: no se pisan entre sí.
+  var estudiosBody = parrafo(c.estudios) + parrafo(c.imagenes);
+
+  var planBody = parrafo(c.plan)
+    + (d.meds.length ? lista(d.meds, function(x){ return x.drug+(x.detail?' · '+x.detail:'')+(x.frequency?' · cada '+x.frequency:'')+(x.duration?' · por '+x.duration:''); }) : '')
+    + (d.labs.length ? '<div class="rc-sub-t">Laboratorio solicitado</div>'+lista(d.labs, function(x){return x.name;}) : '')
+    + (d.imgs.length ? '<div class="rc-sub-t">Imagen solicitada</div>'+lista(d.imgs, function(x){return x.name;}) : '');
 
   return '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
-    + 'div{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#1a1a1a}'
-    + '.hdr{background:linear-gradient(135deg,#062e2b 0%,#0b7c6e 100%);color:#fff;padding:2.2rem 3rem 2rem}'
-    + '.hdr-brand{font-size:.65rem;opacity:.55;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.9rem}'
-    + '.hdr-title{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.2rem}'
-    + '.hdr-date{font-size:.82rem;opacity:.65}'
-    + '.meta{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid #e2f4f1}'
-    + '.meta-col{padding:1.3rem 3rem}'
-    + '.meta-col:first-child{border-right:1px solid #e2f4f1;background:#f4fefc}'
-    + '.meta-col:last-child{background:#f9fffe}'
-    + '.meta-tag{font-size:.6rem;font-weight:700;color:#0b7c6e;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.35rem}'
-    + '.meta-name{font-size:.98rem;font-weight:700;color:#111}'
-    + '.meta-sub{font-size:.75rem;color:#6b7280;margin-top:.18rem;line-height:1.5}'
-    + '.body{padding:1.8rem 3rem}'
-    + '.vitals{display:grid;grid-template-columns:repeat('+Math.max(vitals.length,2)+',1fr);gap:.6rem;margin-bottom:1.4rem}'
-    + '.vital{padding:.7rem .9rem;background:#f4fefc;border:1px solid #d1fae5;border-radius:10px}'
-    + '.vital-l{font-size:.58rem;font-weight:700;color:#0b7c6e;text-transform:uppercase;letter-spacing:.09em}'
-    + '.vital-v{font-size:1.05rem;font-weight:800;color:#111;margin-top:.2rem}'
-    + '.vital-u{font-size:.65rem;color:#6b7280}'
-    + '.sec{margin-bottom:1.1rem}'
-    + '.sec-label{font-size:.6rem;font-weight:700;color:#0b7c6e;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.45rem;display:flex;align-items:center;gap:.5rem}'
-    + '.sec-label::after{content:"";flex:1;height:1px;background:#e2f4f1}'
-    + '.sec-body{font-size:.88rem;color:#374151;line-height:1.75;padding:.8rem 1rem;background:#f9fffe;border-radius:10px;border:1px solid #e8f8f5}'
-    + '.diag-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:#f0fdf4;border-radius:8px;border:1px solid #d1fae5;margin-bottom:.4rem}'
-    + '.diag-code{font-size:.68rem;font-weight:700;color:#065f46;background:#fff;padding:.12rem .45rem;border-radius:4px;font-family:monospace;flex-shrink:0}'
-    + '.diag-lbl{font-size:.86rem;color:#111}'
-    + '.list-item{display:flex;align-items:baseline;gap:.5rem;padding:.5rem .8rem;border-bottom:1px solid #f1f5f9;font-size:.86rem;color:#374151}'
-    + '.list-num{font-size:.68rem;font-weight:700;color:#0b7c6e;min-width:1.3rem}'
-    + '.list-wrap{background:#f9fffe;border:1px solid #e8f8f5;border-radius:10px;overflow:hidden}'
-    + '.sign-wrap{margin-top:2.5rem;padding-top:1.2rem;display:flex;justify-content:flex-end}'
-    + '.sign-box{width:220px;text-align:center}'
-    + '.sign-line{border-top:1.5px solid #111;padding-top:.5rem}'
-    + '.sign-name{font-size:.9rem;font-weight:700}'
-    + '.sign-detail{font-size:.72rem;color:#6b7280;margin-top:.15rem;line-height:1.5}'
-    + '.ftr{background:#f4fefc;border-top:1px solid #e2f4f1;padding:.85rem 3rem;font-size:.65rem;color:#9ca3af;display:flex;justify-content:space-between;align-items:center;margin-top:2rem}'
+    + '.rc{font-family:"DM Sans",Arial,sans-serif;color:#1a1a1a;background:#fff}'
+    + '.rc-brand{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.5rem}'
+    + '.rc-brand b{font-family:Fraunces,serif;font-size:1.05rem;font-weight:700}'
+    + '.rc-brand .g{color:#0b7c6e}'
+    + '.rc-brand .k{color:#0f1a18}'
+    + '.rc-brand small{font-size:.58rem;color:#a0b0ae;letter-spacing:.14em;text-transform:uppercase}'
+    + '.rc-title{font-family:Fraunces,serif;font-size:1.9rem;font-weight:600;letter-spacing:-.02em;color:#0f1a18;margin:1.5rem 0 .15rem}'
+    + '.rc-sub{font-size:.8rem;color:#6b7c79;margin-bottom:1.7rem}'
+    + '.rc-id{display:flex;flex-wrap:wrap;margin-bottom:1.6rem}'
+    + '.rc-id-b{padding:0 1.5rem;border-left:1px solid #e5e7eb}'
+    + '.rc-id-b:first-child{padding-left:0;border-left:none}'
+    + '.rc-id-tag{font-size:.58rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem}'
+    + '.rc-id-n{font-size:.86rem;font-weight:700;color:#0f1a18}'
+    + '.rc-id-s{font-size:.72rem;color:#6b7c79;margin-top:.15rem;line-height:1.5}'
+    + '.rc-sec{padding:1.15rem 0;border-top:1px solid #eef1f0}'
+    + '.rc-sec-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;color:#0b7c6e}'
+    + '.rc-sec-ico{display:flex;flex-shrink:0}'
+    + '.rc-sec-t{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#0b7c6e}'
+    + '.rc-p{font-size:.86rem;line-height:1.75;color:#374151;margin-bottom:.5rem}'
+    + '.rc-p:last-child{margin-bottom:0}'
+    + '.rc-vitales{display:flex;flex-wrap:wrap;margin-bottom:.85rem}'
+    + '.rc-vital{padding:0 1.2rem;border-left:1px solid #eef1f0}'
+    + '.rc-vital:first-child{padding-left:0;border-left:none}'
+    + '.rc-vital-v{font-family:Fraunces,serif;font-size:1rem;font-weight:600;color:#0f1a18}'
+    + '.rc-vital-u{font-size:.6rem;font-weight:400;color:#a0b0ae}'
+    + '.rc-vital-l{font-size:.58rem;color:#a0b0ae;text-transform:uppercase;letter-spacing:.06em;margin-top:.15rem}'
+    + '.rc-evol{opacity:.92}'
+    + '.rc-evol-i{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.4rem 0;border-top:1px solid #f4f6f5}'
+    + '.rc-evol-i:first-child{border-top:none;padding-top:0}'
+    + '.rc-evol-v{font-family:"DM Sans",sans-serif;font-size:.78rem;font-weight:600;color:#374151}'
+    + '.rc-alarma{display:flex;align-items:center;gap:.7rem;padding:.8rem 1rem;background:#fafafa;border:1px solid #ececec;border-radius:10px;color:#9ca3af}'
+    + '.rc-alarma-t{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a8a8a}'
+    + '.rc-alarma-s{font-size:.78rem;margin-top:.15rem;color:#9ca3af}'
+    + '.rc-diag{display:flex;align-items:center;gap:.55rem;padding:.4rem 0;font-size:.86rem;color:#0f1a18}'
+    + '.rc-diag-c{font-family:monospace;font-size:.64rem;font-weight:700;color:#0b7c6e;background:#e0f5f2;padding:.1rem .4rem;border-radius:4px}'
+    + '.rc-list-i{display:flex;gap:.55rem;padding:.4rem 0;font-size:.86rem;color:#374151;border-top:1px solid #f4f6f5}'
+    + '.rc-list-i:first-child{border-top:none;padding-top:0}'
+    + '.rc-list-n{font-size:.66rem;font-weight:700;color:#0b7c6e;min-width:1.1rem}'
+    + '.rc-sub-t{font-size:.6rem;font-weight:700;color:#a0b0ae;text-transform:uppercase;letter-spacing:.08em;margin:.6rem 0 .2rem}'
+    + '.rc-sub-t:first-child{margin-top:0}'
+    + '.rc-sec--secundaria{padding-top:.8rem;padding-bottom:.8rem}'
+    + '.rc-sec--secundaria .rc-sec-t{color:#a0b0ae;font-size:.6rem}'
+    + '.rc-sec--secundaria .rc-sec-ico{color:#a0b0ae}'
+    + '.rc-sec--secundaria .rc-evol-i svg{width:130px;height:34px}'
+    + '.rc-ftr{margin-top:2.2rem;padding-top:1rem;border-top:1px solid #eef1f0;display:flex;justify-content:space-between;align-items:center;font-size:.62rem;color:#a0b0ae}'
     + '</style>'
 
-    + '<div class="hdr"><div class="hdr-brand">CitaDoc · Resumen de Consulta</div>'
-    + '<div class="hdr-title">Resumen Clínico</div>'
-    + '<div class="hdr-date">' + fechaLarga + '</div></div>'
+    + '<div class="rc" style="padding:3rem 3.4rem">'
 
-    + '<div class="meta">'
-    + '<div class="meta-col"><div class="meta-tag">Médico tratante</div>'
-    + '<div class="meta-name">' + d.doctorName + '</div>'
-    + '<div class="meta-sub">' + d.especialidad + (d.reg?'&nbsp;·&nbsp;'+d.reg:'') + (d.cedDoc?'<br>'+d.cedDoc:'') + '</div></div>'
-    + '<div class="meta-col"><div class="meta-tag">Paciente</div>'
-    + '<div class="meta-name">' + d.patName + '</div>'
-    + '<div class="meta-sub">' + (patCed?patCed:'') + (fechaNac?'&nbsp;·&nbsp;Nac. '+fechaNac:'') + (p.telefono?'<br>'+p.telefono:'') + '</div></div>'
+    + '<div class="rc-brand"><b><span class="g">Cita</span><span class="k">Doc</span></b><small>Historia Clínica Digital</small></div>'
+    + pulseLine(220, '#0b7c6e', .32)
+
+    + '<div class="rc-title">Resumen Clínico</div>'
+    + '<div class="rc-sub">' + fechaLarga + '</div>'
+
+    + '<div class="rc-id">'
+    + '<div class="rc-id-b"><div class="rc-id-tag">Paciente</div><div class="rc-id-n">'+d.patName+'</div><div class="rc-id-s">'+[patCed, fechaNac?('Nac. '+fechaNac):''].filter(Boolean).join(' · ')+'</div></div>'
+    + '<div class="rc-id-b"><div class="rc-id-tag">Médico tratante</div><div class="rc-id-n">'+d.doctorName+'</div><div class="rc-id-s">'+[d.especialidad, d.reg].filter(Boolean).join(' · ')+'</div></div>'
     + '</div>'
 
-    + '<div class="body">'
+    + seccion(_riIcon(RI.motivo), 'Motivo de consulta', parrafo(c.motivo))
+    + seccion(_riIcon(RI.hallazgo), 'Hallazgos', hallazgosBody)
+    + (evolBody ? '<div class="rc-sec rc-sec--secundaria"><div class="rc-sec-h"><span class="rc-sec-ico">'+_riIcon(RI.evolucion)+'</span><span class="rc-sec-t">Evolución de referencia</span></div><div class="rc-sec-b"><div class="rc-evol">'+evolBody+'</div></div></div>' : '')
+    + seccion(_riIcon(RI.alarma), 'Signos de alarma', '<div class="rc-alarma">'+_riIcon(RI.alarma,18)+'<div><div class="rc-alarma-t">No documentado</div><div class="rc-alarma-s">Esta consulta no registró signos de alarma estructurados.</div></div></div>')
+    + seccion(_riIcon(RI.estudios), 'Estudios y resultados', estudiosBody)
+    + seccion(_riIcon(RI.diagnostico), 'Diagnóstico', diagBody)
+    + seccion(_riIcon(RI.plan), 'Plan y tratamiento', planBody)
+    + seccion(_riIcon(RI.indicaciones), 'Indicaciones', parrafo(c.indicaciones) + parrafo(c.notas))
 
-    + (vitals.length ? '<div class="vitals">' + vitals.map(function(x){return '<div class="vital"><div class="vital-l">'+x.l+'</div><div class="vital-v">'+x.v+' <span class="vital-u">'+x.u+'</span></div></div>';}).join('') + '</div>' : '')
-
-    + sec('Motivo de consulta', c.motivo)
-    + sec('Enfermedad actual', c.enfermedad_actual)
-    + sec('Examen físico', c.examen_fisico)
-
-    + (d.diags.length ? '<div class="sec"><div class="sec-label">Diagnóstico</div>' + d.diags.map(function(x){return '<div class="diag-item">'+(x.cie10?'<span class="diag-code">'+x.cie10+'</span>':'')+'<span class="diag-lbl">'+x.label+'</span></div>';}).join('') + '</div>' : sec('Diagnóstico', c.diagnostico))
-
-    + (d.meds.length ? '<div class="sec"><div class="sec-label">Medicamentos</div><div class="list-wrap">'+listItems(d.meds,function(x){return x.drug+(x.detail?' · '+x.detail:'')+(x.frequency?' · cada '+x.frequency:'')+(x.duration?' · por '+x.duration:'');})+'</div></div>' : sec('Plan de tratamiento', c.plan))
-
-    + (d.labs.length ? '<div class="sec"><div class="sec-label">Laboratorios</div><div class="list-wrap">'+listItems(d.labs,function(x){return x.name;})+'</div></div>' : sec('Estudios de laboratorio', c.estudios))
-    + (d.imgs.length ? '<div class="sec"><div class="sec-label">Estudios de imagen</div><div class="list-wrap">'+listItems(d.imgs,function(x){return x.name;})+'</div></div>' : sec('Estudios de imagen', c.imagenes))
-
-    + sec('Indicaciones', c.indicaciones)
-    + sec('Notas', c.notas)
-
-    + '<div class="sign-wrap"><div class="sign-box"><div class="sign-line"><div class="sign-name">'+d.doctorName+'</div><div class="sign-detail">'+d.especialidad+(d.reg?'<br>'+d.reg:'')+(d.cedDoc?'<br>'+d.cedDoc:'')+'</div></div></div></div>'
-    + '</div>'
-
-    + '<div class="ftr"><span>CitaDoc Health Network · citadoc.lat</span><span>Generado el ' + d.fecha + '</span></div>';
+    + '<div class="rc-ftr"><span>CitaDoc Health Network · citadoc.lat</span><span>Firmado por '+d.doctorName+'</span></div>'
+    + '</div>';
 }
 
 async function generarResumenPDF() {
@@ -1082,7 +1201,8 @@ async function generarResumenPDF() {
     preview.document.write('<!DOCTYPE html><html><head><title>Generando resumen…</title></head><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif;background:#f7f4ef;color:#0b7c6e;font-weight:600;letter-spacing:.02em">Generando resumen…</body></html>');
   }
   mostrarToast('Generando PDF...');
-  var url = await renderHTMLaPDF(construirResumenPDFHtml(d), 'resumen');
+  var historial = await obtenerHistorialVitales(d.p.id);
+  var url = await renderHTMLaPDF(construirResumenPDFHtml(d, historial), 'resumen');
   if (!url) {
     mostrarToast('Error al generar el PDF','error');
     if (preview) preview.close();
@@ -1116,7 +1236,8 @@ async function enviarResumenCompleto() {
   if (btn) { btn.textContent='Enviando...'; btn.disabled=true; }
   mostrarToast('Generando PDF y enviando...');
 
-  var pdfUrl = await renderHTMLaPDF(construirResumenPDFHtml(d), 'resumen');
+  var historial = await obtenerHistorialVitales(p.id);
+  var pdfUrl = await renderHTMLaPDF(construirResumenPDFHtml(d, historial), 'resumen');
 
   var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:620px;margin:0 auto">'
     +'<div style="background:linear-gradient(135deg,#062e2b,#0b7c6e);padding:28px 32px;border-radius:16px 16px 0 0;color:#fff">'
