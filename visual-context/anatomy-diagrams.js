@@ -6,9 +6,16 @@
  * hombro/tobillo/columna es agregar una entrada aquí — nada más del sistema
  * cambia.
  *
- * Estilo deliberado: line-art editorial, no anatomía hiperrealista. Todo en
- * estilos inline (no custom properties CSS) porque este SVG se inserta en
- * un div offscreen para html2canvas — mismo patrón que usa Fase 1.
+ * v2 (CitaDoc 20.0): anatomía real y reconocible — fémur con cóndilos y
+ * muesca intercondílea, rótula nidada, meniscos como estructuras propias en
+ * la interlínea articular, tibia y fíbula con proporción real. Reemplaza la
+ * v1 (rectángulos/óvalos geométricos), que no era reconocible como rodilla.
+ *
+ * Estilo deliberado: line-art editorial premium, no anatomía hiperrealista,
+ * fondo prácticamente blanco. El teal es SOLO acento sobre la estructura
+ * relevante, nunca relleno dominante del dibujo. Todo en estilos inline (no
+ * custom properties CSS) porque este SVG se inserta en un div offscreen
+ * para html2canvas — mismo patrón que usa Fase 1.
  */
 
 const INK = '#2c3a38';
@@ -24,46 +31,64 @@ const MUTED2 = '#a0b0ae';
  * no por disciplina del que escribe el SVG.
  */
 const CERTAINTY_TREATMENT = {
-  confirmado: { fill: TEAL, fillOpacity: 0.28, stroke: TEAL, strokeWidth: 2, dasharray: null, blur: false },
-  sospecha: { fill: 'none', fillOpacity: 0, stroke: TEAL_MID, strokeWidth: 1.7, dasharray: '3 2.6', blur: false },
-  hallazgo_clinico: { fill: TEAL_MID, fillOpacity: 0.22, stroke: 'none', strokeWidth: 0, dasharray: null, blur: true },
-  // descartado / no_determinado / null: no hay tratamiento — no se resalta nada.
+  confirmado: { style: 'solido' },
+  sospecha: { style: 'punteado' },
+  hallazgo_clinico: { style: 'halo' },
+  // descartado / no_determinado / null: sin tratamiento — no se resalta nada.
   default: null
 };
 
-function ellipseZone(cx, cy, rx, ry, treatment) {
+// Forma del menisco: un pétalo/almendra, no una elipse genérica. La misma
+// forma se usa para medial y lateral, solo cambia la posición (espejada).
+const MENISCUS_MEDIAL_PATH = 'M 68,178 Q 92,168 96,179 Q 92,190 68,178 Z';
+const MENISCUS_LATERAL_PATH = 'M 148,178 Q 124,168 120,179 Q 124,190 148,178 Z';
+
+/**
+ * @param {string} pathData - path del menisco (medial o lateral)
+ * @param {object|null} treatment - CERTAINTY_TREATMENT[certeza] o null
+ * @param {string} filterId - id único del filtro de blur (por si hay >1 SVG en la misma página)
+ */
+function meniscusZone(pathData, treatment, filterId) {
   if (!treatment) {
-    // Sin tratamiento (descartado / no_determinado): se dibuja como el resto
-    // de la anatomía, sin ningún énfasis. Nunca se oculta la estructura,
-    // solo se le quita el destaque.
-    return `<ellipse cx="${cx}" cy="${cy}" rx="${rx - 1}" ry="${ry - 1}" fill="none" stroke="${INK}" stroke-width="2" opacity=".55"/>`;
+    // Sin tratamiento: se dibuja igual que el resto de la anatomía, sin
+    // ningún énfasis. Nunca se oculta la estructura, solo se le quita el
+    // destaque — así el paciente igual ve "ahí está el menisco".
+    return `<path d="${pathData}" fill="none" stroke="${INK}" stroke-width="2" opacity=".55"/>`;
   }
-  const filter = treatment.blur ? ' filter="url(#kneeHaloBlur)"' : '';
-  const dash = treatment.dasharray ? ` stroke-dasharray="${treatment.dasharray}"` : '';
-  return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${treatment.fill}" fill-opacity="${treatment.fillOpacity}" stroke="${treatment.stroke}" stroke-width="${treatment.strokeWidth}"${dash}${filter}/>`;
+  if (treatment.style === 'solido') {
+    return `<path d="${pathData}" fill="${TEAL}" fill-opacity=".3" stroke="${TEAL}" stroke-width="2.2"/>`;
+  }
+  if (treatment.style === 'punteado') {
+    return `<path d="${pathData}" fill="none" stroke="${TEAL_MID}" stroke-width="2.2" stroke-dasharray="3 2.6"/>`;
+  }
+  // halo (hallazgo_clinico): resplandor suave detrás + el contorno normal
+  // encima, para que la forma se siga leyendo con claridad bajo el halo.
+  return `<path d="${pathData}" fill="${TEAL_MID}" fill-opacity=".35" stroke="none" filter="url(#${filterId})"/>`
+    + `<path d="${pathData}" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".5"/>`;
 }
 
 /**
  * @param {string|null} zoneCode - 'medial' | 'lateral' | null
  * @param {string|null} certainty - nivel de certeza (ver certainty.js de clinical-context)
- * @returns {string} SVG de la rodilla, viewBox 0 0 160 210
+ * @returns {string} SVG de la rodilla, viewBox 0 0 220 300
  */
 function buildKneeDiagram(zoneCode, certainty) {
   const treatment = certainty ? (CERTAINTY_TREATMENT[certainty] || null) : null;
   const medialTreatment = zoneCode === 'medial' ? treatment : null;
   const lateralTreatment = zoneCode === 'lateral' ? treatment : null;
+  const filterId = 'kneeHaloBlur-' + Math.random().toString(36).slice(2, 8);
 
-  return `<svg width="190" height="210" viewBox="0 0 160 210" role="img" aria-label="Rodilla, zona ${zoneCode || 'no especificada'}">
-  <defs><filter id="kneeHaloBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter></defs>
-  <rect x="52" y="10" width="56" height="72" rx="20" fill="none" stroke="${INK}" stroke-width="2" opacity=".42"/>
-  <circle cx="80" cy="98" r="10" fill="none" stroke="${INK}" stroke-width="2" opacity=".42"/>
-  <rect x="60" y="112" width="26" height="78" rx="11" fill="none" stroke="${INK}" stroke-width="2" opacity=".42"/>
-  <rect x="90" y="118" width="13" height="68" rx="6" fill="none" stroke="${INK}" stroke-width="2" opacity=".42"/>
-  <line x1="44" y1="100" x2="116" y2="100" stroke="${INK}" stroke-width="1.3" opacity=".3"/>
-  ${ellipseZone(62, 100, 17, 7, medialTreatment)}
-  ${ellipseZone(98, 100, 15, 5.5, lateralTreatment)}
-  <text x="62" y="205" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="7.5" font-weight="700" letter-spacing=".3" fill="${MUTED2}">MEDIAL</text>
-  <text x="98" y="205" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="7.5" font-weight="700" letter-spacing=".3" fill="${MUTED2}">LATERAL</text>
+  return `<svg width="220" height="300" viewBox="0 0 220 300" role="img" aria-label="Rodilla derecha, zona ${zoneCode || 'no especificada'}">
+  <defs><filter id="${filterId}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2"/></filter></defs>
+  <path d="M 96,8 C 84,8 80,28 82,52 C 84,76 88,88 78,102 C 66,118 55,128 55,145 C 55,160 66,169 80,167 C 92,165 100,158 106,148 L 110,148 C 116,158 124,165 136,167 C 150,169 161,160 161,145 C 161,128 150,118 138,102 C 128,88 132,76 134,52 C 136,28 132,8 120,8 Z" fill="#fff" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 108,116 C 120,116 128,125 127,138 C 126,150 118,161 108,163 C 98,161 90,150 89,138 C 88,125 96,116 108,116 Z" fill="#fff" stroke="${INK}" stroke-width="2.2"/>
+  <path d="M 66,183 Q 108,192 150,183" fill="none" stroke="${INK}" stroke-width="1.4" opacity=".3"/>
+  ${meniscusZone(MENISCUS_MEDIAL_PATH, medialTreatment, filterId)}
+  ${meniscusZone(MENISCUS_LATERAL_PATH, lateralTreatment, filterId)}
+  <path d="M 76,190 C 68,200 65,220 68,246 C 70,268 74,286 80,298 L 106,298 C 103,272 100,244 101,220 C 102,208 103,197 100,190 Z" fill="#fff" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M 138,200 C 133,214 130,234 132,256 C 133,272 136,286 140,297 L 155,297 C 153,274 151,248 149,226 C 148,214 146,204 141,198 Z" fill="#fff" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+  <text x="82" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">MEDIAL</text>
+  <text x="134" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">LATERAL</text>
 </svg>`;
 }
 

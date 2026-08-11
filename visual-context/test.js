@@ -35,7 +35,8 @@ assert(visual.region.code === 'knee' && visual.region.side === 'right', 'región
 assert(visual.zonaResaltada === 'medial', 'zona resaltada = medial');
 assert(visual.certaintyState === 'sospecha', 'certeza = sospecha');
 assert(visual.diagramaSvg.includes('stroke-dasharray="3 2.6"'), 'el SVG de la rodilla usa el tratamiento PUNTEADO para sospecha (no relleno sólido)');
-assert(!visual.diagramaSvg.includes(`fill="${'#0b7c6e'}" fill-opacity="0.28"`), 'el SVG NO usa el tratamiento de "confirmado" — sospecha nunca se ve como diagnóstico confirmado');
+assert(!visual.diagramaSvg.includes('fill="#0b7c6e" fill-opacity=".3"'), 'el SVG NO usa el tratamiento de "confirmado" — sospecha nunca se ve como diagnóstico confirmado');
+assert(visual.diagramaSvg.includes('MEDIAL') && visual.diagramaSvg.includes('LATERAL'), 'el diagrama sigue etiquetando medial/lateral explícitamente en texto');
 assert(visual.narrativeChain.some((n) => n.key === 'region'), 'cadena narrativa incluye región');
 assert(visual.narrativeChain.some((n) => n.key === 'impresion' && n.label === 'Sospecha'), 'nodo de impresión etiquetado "Sospecha", no "Diagnóstico"');
 assert(!visual.narrativeChain.some((n) => n.key === 'mecanismo'), 'cadena NO incluye "mecanismo" — no es un campo real de ClinicalContext');

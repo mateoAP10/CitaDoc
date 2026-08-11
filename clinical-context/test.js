@@ -6,7 +6,6 @@
  */
 
 const { resolveClinicalContext } = require('./resolver');
-const { buildVisualContext } = require('../visual-context/build');
 
 function printCase(title, context) {
   console.log('\n=== ' + title + ' ===');
@@ -48,9 +47,9 @@ assert(casoCarlos.pendingStudies.some((s) => s.type === 'imagen' && /resonancia/
 assert(casoCarlos.provenance.method === 'free_text_heuristic', 'provenance marca origen como heurística de texto libre');
 assert(casoCarlos.provenance.inspectedFields.some((f) => f.field === 'diagnosesEstructurados' && f.kind === 'structured_label'), 'provenance distingue el campo semi-estructurado (soap_jsonb)');
 
-const visualCarlos = buildVisualContext(casoCarlos);
-printCase('Caso 1 — VisualContext (stub)', visualCarlos);
-assert(visualCarlos._stub === true && visualCarlos.mostrarAnatomia === false, 'visual-context sigue siendo stub, no dibuja nada todavía');
+// VisualContext ya no se prueba aquí — clinical-context solo prueba
+// resolveClinicalContext(). La cobertura de buildVisualContext() vive en
+// visual-context/test.js, donde corresponde.
 
 // ── Caso 2 (negativo): sin ninguna región anatómica mencionada ────────────
 const casoSinRegion = resolveClinicalContext({
