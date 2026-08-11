@@ -43,6 +43,13 @@ assert(!visual.narrativeChain.some((n) => n.key === 'mecanismo'), 'cadena NO inc
 assert(!visual.narrativeChain.some((n) => n.key === 'plan'), 'cadena NO incluye "plan" — no es un campo real de ClinicalContext');
 assert(visual.callouts.some((c) => c.key === 'impresion' && c.tag === 'Sospecha, no confirmado'), 'callout de impresión trae el tag "Sospecha, no confirmado"');
 
+var hallazgosCallout = visual.callouts.filter(function(c){ return c.key === 'hallazgos'; })[0];
+assert(!!hallazgosCallout && Array.isArray(hallazgosCallout.items), 'el callout de hallazgos trae "items" para renderizar como bullets');
+assert(hallazgosCallout.items.some(function(it){ return it.nombre === 'McMurray' && it.estado === 'Positivo'; }), 'bullet McMurray: Positivo');
+assert(hallazgosCallout.items.some(function(it){ return it.nombre === 'Lachman' && it.estado === 'Negativo'; }), 'bullet Lachman: Negativo (documentado, aunque no eleve sospecha)');
+assert(hallazgosCallout.items.some(function(it){ return it.nombre === 'Derrame' && it.estado === 'Presente'; }), 'bullet Derrame: Presente');
+assert(!hallazgosCallout.items.some(function(it){ return it.estado === 'Ausente'; }), 'nunca se muestra "Ausente" — solo lo documentado, nunca una negación inferida');
+
 // ── Negativo: caso sin región resuelta → sin anatomía, sin invención ──────
 const casoSinRegion = resolveClinicalContext({ motivo: 'Control de rutina, paciente asintomático.' });
 const visualSinRegion = buildVisualContext(casoSinRegion);

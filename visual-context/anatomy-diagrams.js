@@ -83,17 +83,39 @@ function buildKneeDiagram(zoneCode, certainty) {
   const treatment = certainty ? (CERTAINTY_TREATMENT[certainty] || null) : null;
   const medialTreatment = zoneCode === 'medial' ? treatment : null;
   const lateralTreatment = zoneCode === 'lateral' ? treatment : null;
-  const filterId = 'kneeHaloBlur-' + Math.random().toString(36).slice(2, 8);
+  const uid = Math.random().toString(36).slice(2, 8);
+  const filterId = 'kneeHaloBlur-' + uid;
+  const boneGradId = 'boneGrad-' + uid;
+  const patellaGradId = 'patellaGrad-' + uid;
+  const shadowId = 'boneShadow-' + uid;
 
+  // Sombreado sutil de hueso: gris cálido muy claro, nunca color — es
+  // dimensionalidad, no fotorrealismo. El teal sigue siendo el único acento.
   return `<svg width="220" height="300" viewBox="0 0 220 300" role="img" aria-label="Rodilla derecha, zona ${zoneCode || 'no especificada'}">
-  <defs><filter id="${filterId}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2"/></filter></defs>
-  <path d="M 96,8 C 84,8 80,28 82,52 C 84,76 88,88 78,102 C 66,118 55,128 55,145 C 55,160 66,169 80,167 C 92,165 100,158 106,148 L 110,148 C 116,158 124,165 136,167 C 150,169 161,160 161,145 C 161,128 150,118 138,102 C 128,88 132,76 134,52 C 136,28 132,8 120,8 Z" fill="#fff" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-  <path d="M 108,116 C 120,116 128,125 127,138 C 126,150 118,161 108,163 C 98,161 90,150 89,138 C 88,125 96,116 108,116 Z" fill="#fff" stroke="${INK}" stroke-width="2.2"/>
+  <defs>
+    <filter id="${filterId}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2"/></filter>
+    <linearGradient id="${boneGradId}" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#f6f6f4"/>
+      <stop offset="100%" stop-color="#eae9e5"/>
+    </linearGradient>
+    <radialGradient id="${patellaGradId}" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e7e6e2"/>
+    </radialGradient>
+    <filter id="${shadowId}" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#0f1a18" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <g filter="url(#${shadowId})">
+  <path d="M 96,8 C 84,8 80,28 82,52 C 84,76 88,88 78,102 C 66,118 55,128 55,145 C 55,160 66,169 80,167 C 92,165 100,158 106,148 L 110,148 C 116,158 124,165 136,167 C 150,169 161,160 161,145 C 161,128 150,118 138,102 C 128,88 132,76 134,52 C 136,28 132,8 120,8 Z" fill="url(#${boneGradId})" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M 108,116 C 120,116 128,125 127,138 C 126,150 118,161 108,163 C 98,161 90,150 89,138 C 88,125 96,116 108,116 Z" fill="url(#${patellaGradId})" stroke="${INK}" stroke-width="2"/>
   <path d="M 66,183 Q 108,192 150,183" fill="none" stroke="${INK}" stroke-width="1.4" opacity=".3"/>
   ${meniscusZone(MENISCUS_MEDIAL_PATH, medialTreatment, filterId)}
   ${meniscusZone(MENISCUS_LATERAL_PATH, lateralTreatment, filterId)}
-  <path d="M 76,190 C 68,200 65,220 68,246 C 70,268 74,286 80,298 L 106,298 C 103,272 100,244 101,220 C 102,208 103,197 100,190 Z" fill="#fff" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
-  <path d="M 138,200 C 133,214 130,234 132,256 C 133,272 136,286 140,297 L 155,297 C 153,274 151,248 149,226 C 148,214 146,204 141,198 Z" fill="#fff" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M 76,190 C 68,200 65,220 68,246 C 70,268 74,286 80,298 L 106,298 C 103,272 100,244 101,220 C 102,208 103,197 100,190 Z" fill="url(#${boneGradId})" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M 138,200 C 133,214 130,234 132,256 C 133,272 136,286 140,297 L 155,297 C 153,274 151,248 149,226 C 148,214 146,204 141,198 Z" fill="url(#${boneGradId})" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+  </g>
   <text x="82" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">MEDIAL</text>
   <text x="134" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">LATERAL</text>
 </svg>`;

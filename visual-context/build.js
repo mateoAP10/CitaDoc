@@ -58,6 +58,22 @@ function findingShortLabel(finding) {
   return FINDING_LABELS[finding.code] || finding.code;
 }
 
+/**
+ * Nombre + estado de un hallazgo, para renderizar como bullet ("McMurray:
+ * Positivo"). "Presente" significa únicamente "esto se documentó en el
+ * examen" — nunca se infiere ni se muestra un estado para algo que no fue
+ * evaluado. No hay "Ausente" en este nivel: ausencia de dato no es lo
+ * mismo que hallazgo negativo confirmado.
+ */
+function findingStateLabel(finding) {
+  var nombre = finding.label || FINDING_LABELS[finding.code] || finding.code;
+  var estado = 'Presente';
+  if (finding.tag === 'test_especial') {
+    estado = finding.polarity === 'positivo' ? 'Positivo' : finding.polarity === 'negativo' ? 'Negativo' : 'No determinado';
+  }
+  return { nombre: nombre, estado: estado };
+}
+
 function buildNarrativeChain(clinicalContext) {
   const chain = [];
   const { region, zone, findings, impression, pendingStudies } = clinicalContext;
@@ -95,12 +111,17 @@ function buildCallouts(clinicalContext) {
   const callouts = [];
   const { findings, impression, pendingStudies } = clinicalContext;
 
-  const relevantFindings = findings.filter((f) => f.relevant);
-  if (relevantFindings.length) {
+  // Bullets con TODOS los hallazgos documentados en el examen (no solo los
+  // que elevan una estructura a sospecha) — un Lachman negativo también es
+  // un dato real que el médico registró y vale mostrarlo, con su estado tal
+  // cual se documentó. "items" es la lista bullet; "text" queda como
+  // resumen en línea por si algún consumidor todavía lo usa.
+  if (findings.length) {
     callouts.push({
       key: 'hallazgos',
       label: 'Qué encontramos',
-      text: relevantFindings.map(findingShortLabel).join(' · ')
+      items: findings.map(findingStateLabel),
+      text: findings.map(findingShortLabel).join(' · ')
     });
   }
 

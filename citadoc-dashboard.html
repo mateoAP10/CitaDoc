@@ -1152,10 +1152,15 @@ function construirResumenPDFHtml(d, historial) {
     }
     var pillClass = vc.certaintyState === 'confirmado' ? ' solido' : '';
     var ladoTxt = vc.region.side === 'right' ? ' derecha' : (vc.region.side === 'left' ? ' izquierda' : '');
+    // Mismo estilo neutro para todos los estados (Positivo/Negativo/Presente):
+    // la certeza clínica se comunica con palabras, no con semáforos de color.
+    var izqBullets = izq && izq.items ? '<ul class="rc-anat-bullets">'+izq.items.map(function(it){
+      return '<li>'+it.nombre+': <span class="estado">'+it.estado+'</span></li>';
+    }).join('')+'</ul>' : (izq ? izq.text : '');
     return '<div class="rc-sec rc-anat">'
       + '<div class="rc-anat-top"><span class="rc-anat-tag">'+vc.region.label+ladoTxt+'</span></div>'
       + '<div class="rc-anat-body">'
-      + (izq ? '<div class="rc-anat-callout left"><div class="k">'+izq.label+'</div><div class="v">'+izq.text+'</div></div>' : '<div></div>')
+      + (izq ? '<div class="rc-anat-callout left"><div class="k">'+izq.label+'</div><div class="v">'+izqBullets+'</div></div>' : '<div></div>')
       + '<div class="rc-anat-diagwrap">'+leadersHtml+vc.diagramaSvg.replace('<svg ', '<svg class="rc-knee" ')+'</div>'
       + (der ? '<div class="rc-anat-callout right"><div class="k">'+der.label+'</div><div class="v">'+der.text+(der.tag ? '<br><span class="rc-anat-tagpill'+pillClass+'">'+der.tag+'</span>' : '')+'</div></div>' : '<div></div>')
       + '</div>'
@@ -1218,6 +1223,10 @@ function construirResumenPDFHtml(d, historial) {
     + '.rc-anat-callout .v{color:#2c3a38}'
     + '.rc-anat-callout.left{text-align:right}'
     + '.rc-anat-callout.right{text-align:left}'
+    + '.rc-anat-bullets{list-style:none;margin:0;padding:0}'
+    + '.rc-anat-bullets li{margin-bottom:.2rem}'
+    + '.rc-anat-bullets li:last-child{margin-bottom:0}'
+    + '.rc-anat-bullets .estado{font-weight:700;color:#085f54}'
     + '.rc-anat-tagpill{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1.3px dashed #0e9d8c;color:#085f54;padding:.12rem .5rem;border-radius:12px;margin-top:.3rem}'
     + '.rc-anat-tagpill.solido{border-style:solid;background:#0b7c6e;color:#fff;border-color:#0b7c6e}'
     + '.rc-anat-diagwrap{position:relative;justify-self:center;width:100%;max-width:190px}'
