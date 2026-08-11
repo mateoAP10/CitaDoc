@@ -1237,7 +1237,11 @@ function construirResumenPDFHtml(d, historial) {
     var izq = callouts.filter(function(x){ return x.key === 'hallazgos'; })[0];
     var der = callouts.filter(function(x){ return x.key === 'impresion'; })[0];
     var estudio = callouts.filter(function(x){ return x.key === 'estudio'; })[0];
-    var zonaPuntos = { medial: [82,179], lateral: [134,179] };
+    // El diagrama espeja medial/lateral cuando el lado es derecho (ver
+    // anatomy-diagrams.js) — el punto de origen de la línea guía tiene que
+    // seguir esa misma regla, o apuntaría al lado equivocado.
+    var mirrorDer = vc.region.side === 'right';
+    var zonaPuntos = mirrorDer ? { medial: [134,179], lateral: [82,179] } : { medial: [82,179], lateral: [134,179] };
     var origen = vc.zonaResaltada ? zonaPuntos[vc.zonaResaltada] : null;
     var leadersHtml = '';
     if (origen) {

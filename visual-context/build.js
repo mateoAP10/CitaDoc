@@ -180,7 +180,7 @@ function buildVisualContext(clinicalContext) {
   return {
     mostrarAnatomia: true,
     region: clinicalContext.region,
-    diagramaSvg: diagramEntry.buildDiagram(zoneCode, certainty),
+    diagramaSvg: diagramEntry.buildDiagram(zoneCode, certainty, clinicalContext.region.side),
     locatorSvg: diagramEntry.buildLocator(clinicalContext.region.side),
     zonaResaltada: zoneCode,
     certaintyState: certainty,

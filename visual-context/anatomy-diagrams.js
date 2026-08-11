@@ -79,10 +79,19 @@ function meniscusZone(pathData, treatment, filterId) {
  * @param {string|null} certainty - nivel de certeza (ver certainty.js de clinical-context)
  * @returns {string} SVG de la rodilla, viewBox 0 0 220 300
  */
-function buildKneeDiagram(zoneCode, certainty) {
+function buildKneeDiagram(zoneCode, certainty, side) {
   const treatment = certainty ? (CERTAINTY_TREATMENT[certainty] || null) : null;
   const medialTreatment = zoneCode === 'medial' ? treatment : null;
   const lateralTreatment = zoneCode === 'lateral' ? treatment : null;
+  // El dibujo base está trazado como rodilla IZQUIERDA (medial a la izquierda
+  // de la imagen). Para una rodilla derecha se espeja horizontalmente el
+  // grupo completo (huesos + meniscos) — así medial/lateral quedan del lado
+  // anatómicamente correcto sin redibujar nada. Las etiquetas de texto se
+  // posicionan aparte, ya en el lado correcto, para que no salgan invertidas.
+  const mirror = side === 'right';
+  const groupTransform = mirror ? ' transform="translate(220,0) scale(-1,1)"' : '';
+  const medialLabelX = mirror ? 134 : 82;
+  const lateralLabelX = mirror ? 82 : 134;
   const uid = Math.random().toString(36).slice(2, 8);
   const filterId = 'kneeHaloBlur-' + uid;
   const boneGradId = 'boneGrad-' + uid;
@@ -107,7 +116,7 @@ function buildKneeDiagram(zoneCode, certainty) {
       <feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#0f1a18" flood-opacity=".16"/>
     </filter>
   </defs>
-  <g filter="url(#${shadowId})">
+  <g filter="url(#${shadowId})"${groupTransform}>
   <path d="M 96,8 C 84,8 80,28 82,52 C 84,76 88,88 78,102 C 66,118 55,128 55,145 C 55,160 66,169 80,167 C 92,165 100,158 106,148 L 110,148 C 116,158 124,165 136,167 C 150,169 161,160 161,145 C 161,128 150,118 138,102 C 128,88 132,76 134,52 C 136,28 132,8 120,8 Z" fill="url(#${boneGradId})" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
   <path d="M 108,116 C 120,116 128,125 127,138 C 126,150 118,161 108,163 C 98,161 90,150 89,138 C 88,125 96,116 108,116 Z" fill="url(#${patellaGradId})" stroke="${INK}" stroke-width="2"/>
   <path d="M 66,183 Q 108,192 150,183" fill="none" stroke="${INK}" stroke-width="1.4" opacity=".3"/>
@@ -116,8 +125,8 @@ function buildKneeDiagram(zoneCode, certainty) {
   <path d="M 76,190 C 68,200 65,220 68,246 C 70,268 74,286 80,298 L 106,298 C 103,272 100,244 101,220 C 102,208 103,197 100,190 Z" fill="url(#${boneGradId})" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
   <path d="M 138,200 C 133,214 130,234 132,256 C 133,272 136,286 140,297 L 155,297 C 153,274 151,248 149,226 C 148,214 146,204 141,198 Z" fill="url(#${boneGradId})" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
   </g>
-  <text x="82" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">MEDIAL</text>
-  <text x="134" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">LATERAL</text>
+  <text x="${medialLabelX}" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">MEDIAL</text>
+  <text x="${lateralLabelX}" y="215" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" font-weight="700" letter-spacing=".3" fill="${MUTED2}">LATERAL</text>
 </svg>`;
 }
 
