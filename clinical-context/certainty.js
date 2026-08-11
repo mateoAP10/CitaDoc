@@ -5,9 +5,17 @@
  * lenguaje usado por el médico. Regla no negociable: ante ambigüedad, se
  * elige SIEMPRE el nivel más conservador. "confirmado" nunca es el default,
  * solo se asigna con marcador explícito en el texto.
+ *
+ * Módulo universal — ver el comentario al inicio de taxonomy.js.
  */
+(function (global, factory) {
+  var taxonomy = (typeof module === 'object' && module.exports) ? require('./taxonomy') : global.CitaDocClinical.taxonomy;
+  var mod = factory(taxonomy);
+  if (typeof module === 'object' && module.exports) { module.exports = mod; }
+  else { global.CitaDocClinical.certainty = mod; }
+})(typeof window !== 'undefined' ? window : this, function (taxonomyMod) {
 
-const { normalizeText } = require('./taxonomy');
+var normalizeText = taxonomyMod.normalizeText;
 
 const CERTAINTY_LEVELS = {
   CONFIRMADO: 'confirmado',
@@ -55,4 +63,5 @@ function determineCertainty(text, hasAnyDiagnosisText) {
   return CERTAINTY_LEVELS.HALLAZGO_CLINICO;
 }
 
-module.exports = { CERTAINTY_LEVELS, CERTAINTY_MARKERS, determineCertainty };
+return { CERTAINTY_LEVELS, CERTAINTY_MARKERS, determineCertainty };
+});

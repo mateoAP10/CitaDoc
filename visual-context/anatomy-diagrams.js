@@ -16,7 +16,14 @@
  * relevante, nunca relleno dominante del dibujo. Todo en estilos inline (no
  * custom properties CSS) porque este SVG se inserta en un div offscreen
  * para html2canvas — mismo patrón que usa Fase 1.
+ *
+ * Módulo universal — ver el comentario al inicio de clinical-context/taxonomy.js.
  */
+(function (global, factory) {
+  var mod = factory();
+  if (typeof module === 'object' && module.exports) { module.exports = mod; }
+  else { global.CitaDocVisual = global.CitaDocVisual || {}; global.CitaDocVisual.anatomyDiagrams = mod; }
+})(typeof window !== 'undefined' ? window : this, function () {
 
 const INK = '#2c3a38';
 const TEAL = '#0b7c6e';
@@ -116,4 +123,5 @@ const ANATOMY_DIAGRAMS = {
   knee: { buildDiagram: buildKneeDiagram, buildLocator: buildSideLocator, label: 'Rodilla' }
 };
 
-module.exports = { ANATOMY_DIAGRAMS, CERTAINTY_TREATMENT, buildKneeDiagram, buildSideLocator };
+return { ANATOMY_DIAGRAMS, CERTAINTY_TREATMENT, buildKneeDiagram, buildSideLocator };
+});

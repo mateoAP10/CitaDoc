@@ -18,9 +18,17 @@
  *  - "Plan" tampoco es parte de ClinicalContext (vive en la consulta, no en
  *    el resolvedor clínico). La sección Plan de Fase 1 sigue existiendo tal
  *    cual — este módulo no la duplica ni la reemplaza.
+ *
+ * Módulo universal — ver el comentario al inicio de clinical-context/taxonomy.js.
  */
+(function (global, factory) {
+  var anatomyDiagramsMod = (typeof module === 'object' && module.exports) ? require('./anatomy-diagrams') : global.CitaDocVisual.anatomyDiagrams;
+  var mod = factory(anatomyDiagramsMod);
+  if (typeof module === 'object' && module.exports) { module.exports = mod; }
+  else { global.CitaDocVisual.build = mod; }
+})(typeof window !== 'undefined' ? window : this, function (anatomyDiagramsMod) {
 
-const { ANATOMY_DIAGRAMS } = require('./anatomy-diagrams');
+var ANATOMY_DIAGRAMS = anatomyDiagramsMod.ANATOMY_DIAGRAMS;
 
 // Presentación de códigos de hallazgo genérico a una palabra corta. Esto NO
 // reinterpreta significado clínico — solo le pone una etiqueta legible a un
@@ -161,4 +169,5 @@ function buildVisualContext(clinicalContext) {
   };
 }
 
-module.exports = { buildVisualContext };
+return { buildVisualContext };
+});

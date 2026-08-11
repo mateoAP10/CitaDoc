@@ -12,10 +12,26 @@
  * Regla de oro: si el matching es ambiguo o no hay evidencia suficiente,
  * el resultado es null / conservador. Nunca se inventa ni se "redondea
  * hacia arriba" en certeza.
+ *
+ * Módulo universal — ver el comentario al inicio de taxonomy.js.
  */
+(function (global, factory) {
+  var taxonomyMod, certaintyMod;
+  if (typeof module === 'object' && module.exports) {
+    taxonomyMod = require('./taxonomy');
+    certaintyMod = require('./certainty');
+  } else {
+    taxonomyMod = global.CitaDocClinical.taxonomy;
+    certaintyMod = global.CitaDocClinical.certainty;
+  }
+  var mod = factory(taxonomyMod, certaintyMod);
+  if (typeof module === 'object' && module.exports) { module.exports = mod; }
+  else { global.CitaDocClinical.resolver = mod; }
+})(typeof window !== 'undefined' ? window : this, function (taxonomyMod, certaintyMod) {
 
-const { ANATOMY_TAXONOMY, normalizeText } = require('./taxonomy');
-const { determineCertainty } = require('./certainty');
+var ANATOMY_TAXONOMY = taxonomyMod.ANATOMY_TAXONOMY;
+var normalizeText = taxonomyMod.normalizeText;
+var determineCertainty = certaintyMod.determineCertainty;
 
 /** ¿El synonym aparece como palabra/frase completa dentro del texto? */
 function containsSynonym(normalizedText, synonym) {
@@ -215,4 +231,5 @@ function resolveClinicalContext(input) {
   return { region, zone, structures, findings, impression, pendingStudies, provenance };
 }
 
-module.exports = { resolveClinicalContext, containsSynonym, matchItems };
+return { resolveClinicalContext, containsSynonym, matchItems };
+});

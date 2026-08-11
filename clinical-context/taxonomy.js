@@ -12,7 +12,16 @@
  *  - structures: estructuras anatómicas relevantes, opcionalmente ancladas a una zone
  *  - specialTests: pruebas semiológicas típicas de esa región, con la estructura
  *    que exploran (fija o dependiente de la zone detectada)
+ *
+ * Módulo universal: funciona con require() en Node (tests, CLI) y como
+ * <script> plano en el navegador (citadoc-dashboard.html), sin bundler.
+ * La lógica de adentro es idéntica en los dos casos — esto es solo el sobre.
  */
+(function (global, factory) {
+  var mod = factory();
+  if (typeof module === 'object' && module.exports) { module.exports = mod; }
+  else { global.CitaDocClinical = global.CitaDocClinical || {}; global.CitaDocClinical.taxonomy = mod; }
+})(typeof window !== 'undefined' ? window : this, function () {
 
 const ANATOMY_TAXONOMY = {
   regions: [
@@ -121,4 +130,5 @@ function normalizeText(str) {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
-module.exports = { ANATOMY_TAXONOMY, normalizeText };
+return { ANATOMY_TAXONOMY, normalizeText };
+});
