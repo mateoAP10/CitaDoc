@@ -1064,6 +1064,43 @@ function construirResumenPDFHtml(d, historial) {
     return '<div class="rc-list">'+arr.map(function(x,i){ return '<div class="rc-list-i"><span class="rc-list-n">'+(i+1)+'</span><span>'+fn(x)+'</span></div>'; }).join('')+'</div>';
   }
 
+  // ClinicalContext se calcula temprano — CitaDoc 20.0 lo usa tanto para el
+  // bloque anatómico (si hay región resuelta) como para los hallazgos en
+  // bullets y el cierre orientado al paciente (aunque no haya anatomía).
+  // clinical-context/ y visual-context/ NO se modifican en esta iteración.
+  var clinicalContext = null;
+  var visualContext = { mostrarAnatomia: false };
+  try {
+    if (window.CitaDocClinical && window.CitaDocClinical.resolver && window.CitaDocVisual && window.CitaDocVisual.build) {
+      clinicalContext = window.CitaDocClinical.resolver.resolveClinicalContext({
+        motivo: c.motivo,
+        enfermedadActual: c.enfermedad_actual,
+        examenFisico: c.examen_fisico,
+        diagnostico: c.diagnostico,
+        diagnosesEstructurados: d.diags,
+        planImages: d.imgs,
+        planLabs: d.labs
+      });
+      visualContext = window.CitaDocVisual.build.buildVisualContext(clinicalContext);
+    }
+  } catch (e) { console.warn('[resumen] clinical/visual context error', e); }
+
+  // Hallazgos en bullets escaneables — reutiliza clinicalContext.findings,
+  // que YA distingue test especial (polaridad real) de hallazgo general.
+  // "Presente" = documentado en el examen. Nunca se muestra "Ausente" para
+  // algo que no fue evaluado.
+  var HALLAZGO_LABELS = {dolor:'Dolor',derrame:'Derrame',bloqueo:'Bloqueo',inestabilidad:'Inestabilidad',inflamacion:'Inflamación'};
+  function hallazgoNombre(f) { return f.label || HALLAZGO_LABELS[f.code] || f.code; }
+  function hallazgoEstado(f) {
+    if (f.tag === 'test_especial') return f.polarity === 'positivo' ? 'Positivo' : f.polarity === 'negativo' ? 'Negativo' : 'No determinado';
+    return 'Presente';
+  }
+  var hallazgosBullets = (clinicalContext && clinicalContext.findings && clinicalContext.findings.length)
+    ? '<ul class="rc-bullets">'+clinicalContext.findings.map(function(f){
+        return '<li>'+hallazgoNombre(f)+': <span class="estado">'+hallazgoEstado(f)+'</span></li>';
+      }).join('')+'</ul>'
+    : '';
+
   /* Hallazgos: vitales de ESTA consulta como indicadores en línea + texto clínico */
   var vitalesActuales = [
     {l:'Presión', v:c.presion_arterial, u:''},
@@ -1073,6 +1110,7 @@ function construirResumenPDFHtml(d, historial) {
   ].filter(function(x){ return x.v; });
 
   var hallazgosBody = ''
+    + hallazgosBullets
     + (vitalesActuales.length ? '<div class="rc-vitales">'+vitalesActuales.map(function(x){
         return '<div class="rc-vital"><div class="rc-vital-v">'+x.v+(x.u?' <span class="rc-vital-u">'+x.u+'</span>':'')+'</div><div class="rc-vital-l">'+x.l+'</div></div>';
       }).join('')+'</div>' : '')
@@ -1105,6 +1143,65 @@ function construirResumenPDFHtml(d, historial) {
       + '</div>';
   }
   var evolBody = evolItem('Peso', 'kg', seriePeso) + evolItem('Presión (sistólica)', 'mmHg', seriePAS) + evolItem('Frec. cardíaca', 'lpm', serieFC) + evolItem('Temperatura', '°C', serieTemp);
+
+  // Escala de dolor 0–10: solo si el motivo es de dolor Y hay al menos un
+  // valor "N/10" realmente escrito en el texto de esta consulta. Nunca se
+  // inventa una puntuación ni se interpola entre dos valores.
+  function extraerValoresDolor(texto) {
+    var vals = [], re = /(\d{1,2})\s*\/\s*10\b/g, m;
+    while ((m = re.exec(texto || '')) !== null) {
+      var n = parseInt(m[1], 10);
+      if (n >= 0 && n <= 10) vals.push(n);
+    }
+    return vals;
+  }
+  var motivoEsDolor = /dolor/i.test(c.motivo || '');
+  var valoresDolor = motivoEsDolor ? extraerValoresDolor([c.motivo, c.enfermedad_actual, c.examen_fisico].filter(Boolean).join(' ')) : [];
+  function escalaDolorSvg(valores) {
+    var w = 320, h = 54, y = 30, x0 = 16, x1 = 304;
+    function xFor(v){ return x0 + (v/10)*(x1-x0); }
+    var marcas = [5].map(function(v){
+      return '<line x1="'+xFor(v)+'" y1="'+(y-4)+'" x2="'+xFor(v)+'" y2="'+(y+4)+'" stroke="#a0b0ae" stroke-width="1.2"/>'
+        + '<text x="'+xFor(v)+'" y="'+(y+18)+'" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="9" fill="#a0b0ae">'+v+'</text>';
+    }).join('');
+    var flecha = valores.length >= 2 ? '<line x1="'+xFor(valores[0])+'" y1="'+y+'" x2="'+xFor(valores[valores.length-1])+'" y2="'+y+'" stroke="#0b7c6e" stroke-width="1.6"/>' : '';
+    var puntos = valores.map(function(v,i){
+      var last = i === valores.length - 1;
+      return '<circle cx="'+xFor(v)+'" cy="'+y+'" r="'+(last?6:4.5)+'" fill="'+(last?'#0b7c6e':'#bfe3dd')+'" stroke="#fff" stroke-width="1.5"/>'
+        + '<text x="'+xFor(v)+'" y="'+(y-11)+'" text-anchor="middle" font-family="DM Sans, sans-serif" font-weight="700" font-size="11" fill="'+(last?'#085f54':'#6b7c79')+'">'+v+'</text>';
+    }).join('');
+    return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'
+      + '<line x1="'+x0+'" y1="'+y+'" x2="'+x1+'" y2="'+y+'" stroke="#e5e7eb" stroke-width="4" stroke-linecap="round"/>'
+      + marcas + flecha + puntos
+      + '<text x="'+x0+'" y="'+(h-2)+'" font-family="DM Sans, sans-serif" font-size="8" fill="#a0b0ae">Sin dolor</text>'
+      + '<text x="'+x1+'" y="'+(h-2)+'" text-anchor="end" font-family="DM Sans, sans-serif" font-size="8" fill="#a0b0ae">Dolor máximo</text>'
+      + '</svg>';
+  }
+  var dolorBody = valoresDolor.length ? (
+    '<div class="rc-dolor">' + escalaDolorSvg(valoresDolor)
+    + '<div class="rc-dolor-txt">' + (valoresDolor.length >= 2
+        ? 'Reportado ' + valoresDolor[0] + '/10, actualmente ' + valoresDolor[valoresDolor.length-1] + '/10 — documentado en esta consulta.'
+        : 'Reportado ' + valoresDolor[0] + '/10 en esta consulta.') + '</div></div>'
+  ) : '';
+
+  // Próximo control: solo texto ya escrito por el médico. Si no hay mención
+  // explícita, se usa la frase de respaldo — nunca se inventa una fecha.
+  function extraerControl() {
+    var fuente = [c.plan, c.indicaciones].filter(Boolean).join(' ');
+    var m = /control[^.]*\./i.exec(fuente);
+    return m ? m[0].trim() : null;
+  }
+  var controlTxt = extraerControl();
+  var controlBody = parrafo(controlTxt || 'Control según indicación médica.');
+
+  // Evolución esperada: solo si hay duración real de tratamiento (campo
+  // estructurado duration de un medicamento) Y una mención real de control.
+  // Nunca predice números de dolor ni síntomas — solo sintetiza el marco de
+  // tiempo que el médico ya documentó.
+  var duracionMeds = (d.meds || []).filter(function(x){ return x.duration; }).map(function(x){ return x.drug + ' por ' + x.duration; });
+  var evolucionEsperadaBody = (duracionMeds.length && controlTxt)
+    ? parrafo('Manejo indicado: ' + duracionMeds.join(', ') + '. ' + controlTxt)
+    : '';
 
   var diagBody = d.diags.length
     ? d.diags.map(function(x){ return '<div class="rc-diag">'+(x.cie10?'<span class="rc-diag-c">'+x.cie10+'</span>':'')+'<span>'+x.label+'</span></div>'; }).join('')
@@ -1234,6 +1331,20 @@ function construirResumenPDFHtml(d, historial) {
     + '.rc-anat-leaders{position:absolute;inset:0;width:100%;height:100%}'
     + '.rc-anat-estudio{margin-top:1rem;padding-top:.9rem;border-top:1px solid #f4f6f5;font-size:.78rem}'
     + '.rc-anat-estudio .k{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#085f54;margin-bottom:.2rem}'
+    + '.rc-bullets{list-style:none;margin:0 0 .7rem;padding:0;font-size:.86rem;color:#374151}'
+    + '.rc-bullets li{margin-bottom:.3rem}'
+    + '.rc-bullets li:last-child{margin-bottom:0}'
+    + '.rc-bullets .estado{font-weight:700;color:#085f54}'
+    + '.rc-dolor{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}'
+    + '.rc-dolor-txt{font-size:.82rem;color:#374151;flex:1;min-width:180px}'
+    + '.rc-alarma-cuando{margin-top:.7rem;padding:.8rem 1rem;background:#f9fffe;border:1px solid #e2f4f1;border-radius:10px}'
+    + '.rc-alarma-cuando-t{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#0b7c6e}'
+    + '.rc-alarma-cuando-s{font-size:.8rem;color:#374151;margin-top:.25rem;line-height:1.6}'
+    + '.rc-cierre{background:#f9fffe;border:1px solid #e2f4f1;border-radius:12px;padding:1.1rem 1.2rem;margin-top:.3rem}'
+    + '.rc-cierre-i{margin-bottom:.7rem}'
+    + '.rc-cierre-i:last-child{margin-bottom:0}'
+    + '.rc-cierre-i .k{font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#085f54;margin-bottom:.2rem}'
+    + '.rc-cierre-i .v{font-size:.85rem;color:#0f1a18;line-height:1.6}'
     + '.rc-ftr{margin-top:2.2rem;padding-top:1rem;border-top:1px solid #eef1f0;display:flex;justify-content:space-between;align-items:center;font-size:.62rem;color:#a0b0ae}'
     + '</style>'
 
@@ -1252,12 +1363,24 @@ function construirResumenPDFHtml(d, historial) {
 
     + seccion(_riIcon(RI.motivo), 'Motivo de consulta', parrafo(c.motivo))
     + (visualContext.mostrarAnatomia ? construirBloqueAnatomico(visualContext) : seccion(_riIcon(RI.hallazgo), 'Hallazgos', hallazgosBody))
+    + seccion(_riIcon(RI.evolucion), 'Escala de dolor', dolorBody)
     + (evolBody ? '<div class="rc-sec rc-sec--secundaria"><div class="rc-sec-h"><span class="rc-sec-ico">'+_riIcon(RI.evolucion)+'</span><span class="rc-sec-t">Evolución de referencia</span></div><div class="rc-sec-b"><div class="rc-evol">'+evolBody+'</div></div></div>' : '')
-    + seccion(_riIcon(RI.alarma), 'Signos de alarma', '<div class="rc-alarma">'+_riIcon(RI.alarma,18)+'<div><div class="rc-alarma-t">No documentado</div><div class="rc-alarma-s">Esta consulta no registró signos de alarma estructurados.</div></div></div>')
+    + seccion(_riIcon(RI.alarma), 'Signos de alarma',
+        '<div class="rc-alarma">'+_riIcon(RI.alarma,18)+'<div><div class="rc-alarma-t">No documentado</div><div class="rc-alarma-s">Esta consulta no registró signos de alarma estructurados.</div></div></div>'
+        + '<div class="rc-alarma-cuando"><div class="rc-alarma-cuando-t">Cuándo consultar antes de lo previsto</div><div class="rc-alarma-cuando-s">Si notas fiebre, dolor que empeora significativamente, hinchazón importante, o cualquier síntoma que te preocupe, consulta antes de tu control programado.</div></div>')
     + seccion(_riIcon(RI.estudios), 'Estudios y resultados', estudiosBody)
     + seccion(_riIcon(RI.diagnostico), 'Diagnóstico', diagBody)
     + seccion(_riIcon(RI.plan), 'Plan y tratamiento', planBody)
+    + seccion(_riIcon(RI.evolucion), 'Evolución esperada', evolucionEsperadaBody)
+    + seccion(_riIcon(RI.indicaciones), 'Próximo control', controlBody)
     + seccion(_riIcon(RI.indicaciones), 'Indicaciones', parrafo(c.indicaciones) + parrafo(c.notas))
+
+    + '<div class="rc-sec rc-cierre">'
+    + '<div class="rc-sec-h"><span class="rc-sec-ico">'+_riIcon(RI.indicaciones)+'</span><span class="rc-sec-t">Para el paciente</span></div>'
+    + '<div class="rc-cierre-i"><div class="k">Qué encontramos / investigamos</div><div class="v">'+((clinicalContext && clinicalContext.impression && clinicalContext.impression.text) || c.diagnostico || 'Ver diagnóstico arriba.')+'</div></div>'
+    + '<div class="rc-cierre-i"><div class="k">Qué vamos a hacer</div><div class="v">'+((c.plan || '').split(/\n|(?<=\.)\s+/)[0] || 'Ver plan de tratamiento arriba.')+'</div></div>'
+    + '<div class="rc-cierre-i"><div class="k">Cuándo volver o consultar antes</div><div class="v">'+(controlTxt || 'Control según indicación médica.')+' Consulta antes si notas empeoramiento importante.</div></div>'
+    + '</div>'
 
     + '<div class="rc-ftr"><span>CitaDoc Health Network · citadoc.lat</span><span>Firmado por '+d.doctorName+'</span></div>'
     + '</div>';
