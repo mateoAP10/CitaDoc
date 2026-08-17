@@ -145,7 +145,7 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .expand-chevron{width:20px;height:20px;color:var(--muted2);transition:transform .3s;flex-shrink:0}
 .expand-trigger[aria-expanded="true"] .expand-chevron{transform:rotate(180deg)}
 .expand-body{overflow:hidden;max-height:0;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
-.expand-body.open{max-height:2000px}
+.expand-body.open{max-height:2000px;overflow:visible}
 .expand-content{padding:24px 0 32px}
 
 /* ── CALCULADORA ──────────────────────────────────────────────────────────── */
@@ -155,7 +155,7 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .calc-tab{padding:.38rem .9rem;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .calc-tab:hover{border-color:var(--ink);color:var(--ink)}
 .calc-tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-.calc-items{display:flex;flex-direction:column;gap:.35rem;max-height:268px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding-right:2px}
+.calc-items{display:flex;flex-direction:column;gap:.35rem;max-height:268px;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding-right:2px}
 .calc-items::-webkit-scrollbar{width:4px}
 .calc-items::-webkit-scrollbar-track{background:transparent}
 .calc-items::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
@@ -219,6 +219,8 @@ h1 em{color:#fff;font-style:normal;opacity:.85}
 .calc-sticky-bar{display:none;position:fixed;bottom:calc(58px + env(safe-area-inset-bottom,0px));left:0;right:0;z-index:201;background:var(--ink);padding:.85rem 1.25rem;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 -2px 16px rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.08)}
 .calc-sticky-total{display:flex;flex-direction:column}
 body.modal-open .calc-sticky-bar{display:none!important}
+body.keyboard-open .float-nav{display:none!important}
+body.keyboard-open #calcStickyBar{display:none!important}
 .calc-sticky-label{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
 .calc-sticky-amount{font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:-.02em;line-height:1.1}
 .calc-sticky-cta{background:var(--red);color:#fff;border:none;border-radius:10px;padding:.65rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s;flex-shrink:0}
@@ -4157,6 +4159,19 @@ document.addEventListener('click', function(e) {
       el(drp) && (el(drp).style.display='none')
   })
 }, true)
+
+// ── KEYBOARD — ocultar float-nav y sticky-bar cuando el teclado está abierto ──
+if (window.visualViewport) {
+  let _vvBaseH = window.visualViewport.height
+  window.visualViewport.addEventListener('resize', () => {
+    const kbOpen = window.visualViewport.height < _vvBaseH - 120
+    document.body.classList.toggle('keyboard-open', kbOpen)
+  }, { passive: true })
+  // recalibrar base si el usuario rota pantalla
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => { _vvBaseH = window.visualViewport.height }, 300)
+  })
+}
 
 // ── STICKY NAV ────────────────────────────────────────────────────────────────
 // Sticky nav + hide bottom bar on scroll down

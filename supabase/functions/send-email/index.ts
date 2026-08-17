@@ -450,6 +450,39 @@ function tplDocs(htmlBody: string): string {
 </body></html>`
 }
 
+function tplVoiceDoc(label: string, d: Record<string, unknown>): string {
+  const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:40px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+<tr><td style="padding-bottom:20px;text-align:center;">
+  <span style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">CITADOC</span>
+</td></tr>
+<tr><td style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="background:linear-gradient(135deg,#062e2b 0%,#0b7c6e 100%);padding:32px 32px 26px;text-align:center;">
+  <div style="font-size:34px;line-height:1;margin-bottom:10px;">📄</div>
+  <p style="margin:0 0 4px;color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Documento médico</p>
+  <h1 style="margin:0;color:#fff;font-size:19px;font-weight:700;">Te llegó ${safe(label)}</h1>
+</td></tr>
+<tr><td style="padding:26px 32px 8px;text-align:center;">
+  <p style="margin:0 0 4px;color:#0f172a;font-size:15px;">De <strong>${safe(d.doctor_name)}</strong></p>
+  <p style="margin:0;color:#6b7280;font-size:13px;">Para ${safe(d.patient_name)}</p>
+</td></tr>
+<tr><td style="padding:18px 32px 28px;text-align:center;">
+  <p style="margin:0 0 20px;color:#374151;font-size:13px;line-height:1.7;">Abre el PDF adjunto para verlo — está firmado y autorizado digitalmente por tu médico con su usuario y contraseña de CitaDoc.</p>
+  ${d.pdf_url ? `<a href="${d.pdf_url}" style="display:inline-block;padding:12px 26px;background:linear-gradient(135deg,#062e2b,#0b7c6e);color:#fff;text-decoration:none;border-radius:50px;font-size:13px;font-weight:700;">📄 Abrir PDF</a>` : ''}
+</td></tr>
+</table>
+</td></tr>
+<tr><td style="padding:20px 0 0;text-align:center;">
+  <p style="margin:0;color:#cbd5e1;font-size:11px;">CitaDoc · <a href="mailto:hola@citadoc.lat" style="color:#cbd5e1;text-decoration:none;">hola@citadoc.lat</a></p>
+</td></tr>
+</table></td></tr></table>
+</body></html>`
+}
+
 function tplVerificationNew(d: Record<string, string>): string {
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif;">
@@ -1657,6 +1690,33 @@ serve(async (req) => {
       case 'docs': {
         const subject = `Documentos de tu consulta — ${data.doctor_name || 'tu médico'}`
         await sendEmail(to_email, subject, tplDocs(data.html_body || ''))
+        break
+      }
+
+      // Un documento clínico = un PDF firmado = un email. Usado por el
+      // asistente de voz: cada acción (receta/laboratorio/imagenes) manda
+      // su propio correo con su propio adjunto, nunca contenido inline.
+      case 'voice_doc': {
+        const KIND_LABEL: Record<string, string> = {
+          receta:      'tu receta',
+          laboratorio: 'tu orden de laboratorio',
+          imagenes:    'tu orden de estudios de imagen',
+          resumen:     'el resumen de tu consulta'
+        }
+        // 'kinds' es la forma normal (uno o varios documentos en un solo
+        // PDF); 'kind' (singular) se mantiene por compatibilidad.
+        const kinds: string[] = Array.isArray(data.kinds) ? data.kinds as string[] : (data.kind ? [String(data.kind)] : [])
+        const labels = kinds.map(k => KIND_LABEL[k] || 'un documento')
+        const label = labels.length > 1
+          ? labels.slice(0, -1).join(', ') + ' y ' + labels[labels.length - 1]
+          : (labels[0] || 'un documento')
+        const subject = `Te llegó ${label} — ${data.doctor_name || 'tu médico'}`
+        const attachments: {filename: string, content: string}[] = []
+        if (data.pdf_url) {
+          const b64 = await pdfToBase64(data.pdf_url as string)
+          if (b64) attachments.push({ filename: `${kinds.join('-') || 'documento'}.pdf`, content: b64 })
+        }
+        await sendEmail(to_email, subject, tplVoiceDoc(label, data as Record<string, unknown>), attachments.length ? attachments : undefined)
         break
       }
 

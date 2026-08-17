@@ -3,6 +3,13 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // Rate limits per feature per minute
 const LIMITS: Record<string, { per_min: number; per_hour: number }> = {
   voice_extraction:   { per_min: 10, per_hour: 60 },
+  voice_assistant_intent: { per_min: 15, per_hour: 80 },
+  // El chat ya no es solo documentos -- es el motor central (Action
+  // Engine: pacientes/agenda/consultas/dashboard + documentos), así que
+  // recibe muchos más turnos por sesión de lo que se diseñó originalmente.
+  // 20/min se agotaba real en pruebas y el error quedaba genérico
+  // ("No pude procesar eso") sin decir que era rate limit.
+  voice_assistant_chat:   { per_min: 40, per_hour: 400 },
   summary_generation: { per_min: 3,  per_hour: 20 },
   growth_content:     { per_min: 3,  per_hour: 15 },
   default:            { per_min: 20, per_hour: 100 }
