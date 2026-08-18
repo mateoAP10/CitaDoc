@@ -1,0 +1,21 @@
+-- Auditoria global RLS/Storage, Hallazgo #1, bloque 1 (18 ago 2026):
+-- "Authenticated can update doctors" -- USING(true) WITH CHECK(true), rol
+-- authenticated -- permitia que CUALQUIER medico logueado modificara el
+-- perfil de CUALQUIER OTRO: plan, activo, verificacion_estado, slug,
+-- web_config, contacto, etc. Confirmado reproducible contra produccion
+-- (Doctor B reescribio la bio de Doctor A dos veces).
+--
+-- Las policies de ownership real ya existian y son correctas -- coexistian
+-- con la permisiva de arriba, que las anulaba via el OR de RLS (mismo
+-- patron exacto que pacientes/citas/documentos_clinicos). No se tocan:
+--   "medico actualiza su perfil" (auth.uid() = user_id)
+--   "medicos_update_own"         (auth.uid() = user_id)
+-- Tampoco se toca ninguna policy de SELECT/INSERT/DELETE -- eso es el
+-- siguiente bloque (medicos SELECT publico), aprobado por separado.
+--
+-- El unico consumidor legitimo cross-doctor (admin.html/web-builder-v2.js
+-- activando el sitio de OTRO medico desde el panel de operaciones) se
+-- movio a la Edge Function admin-update-medico (x-admin-token + service
+-- role, whitelist de campos), mismo patron que admin-verify/invite-doctor.
+
+drop policy if exists "Authenticated can update doctors" on public.medicos;

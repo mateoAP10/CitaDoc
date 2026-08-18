@@ -33,6 +33,22 @@
   function _el(id) { return document.getElementById(id); }
   function _sb()   { return _opts.sb; }
 
+  // En modo admin (_opts.isAdmin) _medicoId puede pertenecer a OTRO médico
+  // (el operador está activando el sitio de alguien más) -- la policy de
+  // ownership de medicos ya no lo permite por diseño. Pasa por la Edge
+  // Function con token admin, igual que admin.html usa para admin-verify.
+  // En modo dashboard (isAdmin:false) esto nunca se llama -- el .update()
+  // directo sigue cubierto por la ownership del propio médico logueado.
+  async function _adminUpdateMedico(id, patch) {
+    var url = (_opts.sb ? _opts.sb.supabaseUrl : 'https://qxoomcqaafogczrvsyhg.supabase.co') + '/functions/v1/admin-update-medico';
+    var r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': _opts.adminToken || '' },
+      body: JSON.stringify({ id: id, patch: patch })
+    }).then(function(res){ return res.json(); }).catch(function(){ return { ok:false }; });
+    return r;
+  }
+
   /* ── CSS ────────────────────────────────────────────────────────────────── */
   var _CSS = [
     '#wbe-modal{display:none;position:fixed;inset:0;z-index:9000;background:#f4f6f8;flex-direction:column;font-family:"DM Sans",system-ui,sans-serif}',
@@ -1166,14 +1182,16 @@
 
         // 2. Si ya tiene medico_id → solo sincronizar config
         if (_medicoId) {
-          await _sb().from('medicos').update({
+          var _patch1 = {
             web_status: 'active', plan: 'pro_web', plan_activo: true, activo: true,
             foto_url: _d.photo_url || (_d.web_config_jsonb||{}).doctor_photo_url || null,
             logo_url: _d.logo_url  || (_d.web_config_jsonb||{}).logo_url  || null,
             whatsapp: ((_d.web_config_jsonb||{}).whatsapp || '').replace(/\D/g,'') || null,
             whatsapp_activo: (_d.web_settings||{}).show_whatsapp !== false,
             web_config: Object.assign({}, _d.web_config_jsonb||{}, { web_status:'active', selected_layout:_d.dna||'surgical-authority' })
-          }).eq('id', _medicoId);
+          };
+          if (_opts.isAdmin) { await _adminUpdateMedico(_medicoId, _patch1); }
+          else { await _sb().from('medicos').update(_patch1).eq('id', _medicoId); }
           console.log('[Deploy] medico synced:', _medicoId);
 
         } else {
@@ -1196,12 +1214,14 @@
 
           if (_medicoId) {
             // Encontrado — sincronizar config
-            await _sb().from('medicos').update({
+            var _patch2 = {
               web_status: 'active', plan: 'pro_web', plan_activo: true, activo: true,
               foto_url: _d.photo_url || (_d.web_config_jsonb||{}).doctor_photo_url || null,
               logo_url: _d.logo_url  || (_d.web_config_jsonb||{}).logo_url  || null,
               web_config: Object.assign({}, _d.web_config_jsonb||{}, { web_status:'active', selected_layout:_d.dna||'surgical-authority' })
-            }).eq('id', _medicoId);
+            };
+            if (_opts.isAdmin) { await _adminUpdateMedico(_medicoId, _patch2); }
+            else { await _sb().from('medicos').update(_patch2).eq('id', _medicoId); }
           } else {
             // 5. NO existe → CREAR medico garantizado ──────────────────────────
             var _parts  = (_d.doctor_name||'').replace(/^(dra?\.?\s+)/i,'').trim().split(' ');

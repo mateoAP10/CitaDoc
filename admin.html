@@ -683,9 +683,26 @@ function renderMedicosWeb(list) {
   }).join('');
 }
 
+// admin-update-medico es la única operación cuyo token NO viaja embebido en
+// este archivo -- se pide una vez por sesión de página y se guarda solo en
+// memoria (nunca en el HTML servido). El resto de funciones admin de este
+// panel siguen con su token embebido de siempre -- eso es un problema
+// preexistente y más amplio, documentado aparte, no parte de este bloque.
+var _adminUpdateToken = null;
+function getAdminUpdateToken() {
+  if (!_adminUpdateToken) {
+    _adminUpdateToken = window.prompt('Token admin (operación: actualizar médico)') || '';
+  }
+  return _adminUpdateToken;
+}
+
 async function activarWebSitio(id) {
-  var { error } = await sb.from('medicos').update({ web_status: 'active' }).eq('id', id);
-  if (error) { adminToast('Error activando sitio', false); return; }
+  var r = await fetch(SB_URL + '/functions/v1/admin-update-medico', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminUpdateToken() },
+    body: JSON.stringify({ id: id, patch: { web_status: 'active' } })
+  }).then(function(r){ return r.json(); }).catch(function(){ return { ok:false }; });
+  if (!r.ok) { adminToast('Error activando sitio', false); return; }
   _allMedicos = _allMedicos.map(function(x) { return x.id === id ? Object.assign({}, x, { web_status: 'active' }) : x; });
   renderMedicosWeb(_allMedicos);
   adminToast('Sitio activado ✓');
@@ -1063,6 +1080,7 @@ function abrirModalEditWeb(slug) {
   _editSlug = slug;
   webBuilderOpen(slug, {
     isAdmin: true,
+    adminToken: getAdminUpdateToken(),
     sb: sb,
     onSave: function() { _refreshDemosList(); },
     onDeploy: function() { _refreshAfterDeploy(); }
