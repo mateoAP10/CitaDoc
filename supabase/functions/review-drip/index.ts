@@ -41,20 +41,53 @@ Deno.serve(async () => {
     const cutoffDate = new Date(now.getTime() - MAX_DAYS_BACK * 86400000)
       .toISOString().split('T')[0]
 
-    const { data: allCitas } = await sb
-      .from('citas')
-      .select('id, medico_id, paciente_email, paciente_nombre, fecha, hora')
-      .gte('fecha', cutoffDate)
-      .lte('fecha', today)
-      .neq('estado', 'cancelada')
-      .eq('review_sent', false)
-      .not('paciente_email', 'is', null)
+    // ── Claim atómico (18 ago 2026, auditoría de concurrencia) ────────────────
+    // El código anterior hacía SELECT -> enviar -> UPDATE: dos corridas
+    // concurrentes (cron solapado, reintento manual, doble disparo del
+    // gateway) podían leer la misma cita como elegible ANTES de que
+    // cualquiera de las dos la marcara, y las dos mandaban el email.
+    // Acá review_sent pasa a true en la MISMA sentencia UPDATE que la
+    // selecciona (PostgREST: update()+select() = un solo UPDATE...RETURNING
+    // atómico). Postgres serializa UPDATEs concurrentes sobre las mismas
+    // filas -- la segunda corrida, sea cual sea el orden de llegada, ve
+    // review_sent ya en true y esa fila simplemente no aparece en su propio
+    // resultado. Nunca dos corridas pueden reclamar la misma cita.
+    // Se separa en dos claims (días pasados / hoy) porque PostgREST no
+    // expresa limpiamente "fecha<hoy OR (fecha=hoy AND hora<=corte)" sin
+    // construir el OR a mano -- cada claim sigue siendo una sola sentencia
+    // atómica, mismo resultado que el filtro original.
+    const selectCols = 'id, medico_id, paciente_email, paciente_nombre, fecha, hora'
 
-    // Dentro de la ventana: días pasados (ya cubiertos por el cutoff de arriba)
-    // todas; citas de hoy solo si la hora ya pasó hace 2h+.
-    const citas = (allCitas || []).filter(c =>
-      c.fecha < today || (c.hora && c.hora.slice(0, 5) <= twoHoursAgoHHMM)
-    )
+    const { data: claimedPastDays } = await sb
+      .from('citas')
+      .update({ review_sent: true })
+      .eq('review_sent', false)
+      .neq('estado', 'cancelada')
+      .not('paciente_email', 'is', null)
+      .gte('fecha', cutoffDate)
+      .lt('fecha', today)
+      .select(selectCols)
+
+    const { data: claimedToday } = await sb
+      .from('citas')
+      .update({ review_sent: true })
+      .eq('review_sent', false)
+      .neq('estado', 'cancelada')
+      .not('paciente_email', 'is', null)
+      .eq('fecha', today)
+      .lte('hora', twoHoursAgoHHMM)
+      .select(selectCols)
+
+    const citas = [...(claimedPastDays || []), ...(claimedToday || [])]
+
+    // revert(): review_sent representa un ENVÍO REAL, nunca una exclusión.
+    // Si esta corrida reclamó la fila pero al final no manda el email (plan
+    // no pago, o el envío realmente falla), se libera para que una corrida
+    // futura pueda reclamarla de nuevo -- perder un reintento es aceptable,
+    // duplicar un envío no.
+    async function revert(citaId: string) {
+      await sb.from('citas').update({ review_sent: false }).eq('id', citaId)
+    }
 
     let sent = 0
     for (const cita of citas) {
@@ -64,19 +97,15 @@ Deno.serve(async () => {
         .eq('id', cita.medico_id)
         .single()
 
-      if (!m) continue
-      // review_sent representa un ENVÍO REAL, nunca una exclusión -- si el
-      // médico no es plan pago hoy, simplemente no se toca la fila. Si más
-      // adelante pasa a un plan pago, esta misma cita vuelve a ser candidata
-      // (siempre que siga dentro de la ventana de MAX_DAYS_BACK).
-      if (!['pro', 'destacado', 'pro_web'].includes(m.plan)) continue
+      if (!m) { await revert(cita.id); continue }
+      if (!['pro', 'destacado', 'pro_web'].includes(m.plan)) { await revert(cita.id); continue }
 
       // La página real vive en el frontend de CitaDoc (Vercel), no en el edge
       // function -- cita-review queda intacto solo para no romper los links ya
       // enviados en emails viejos. cita-review/index.ts NO se toca.
       const reviewUrl = `https://citadoc.lat/resena/${cita.id}?medico_id=${cita.medico_id}`
 
-      await fetch(SEND_EMAIL_URL, {
+      const emailRes = await fetch(SEND_EMAIL_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -90,9 +119,13 @@ Deno.serve(async () => {
           doctor_slug:     m.slug,
           review_url:      reviewUrl,
         }),
-      }).catch(() => {})
+      }).catch(() => null)
 
-      await sb.from('citas').update({ review_sent: true }).eq('id', cita.id)
+      // Antes esto no se revisaba -- un fallo real de red se marcaba igual
+      // como "enviado". Ahora un fallo real (network o status no-2xx) revierte
+      // el claim para que se reintente en la próxima corrida.
+      if (!emailRes || !emailRes.ok) { await revert(cita.id); continue }
+
       sent++
     }
 
