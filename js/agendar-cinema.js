@@ -213,7 +213,7 @@ function loadDisp(){
   if(!_medico||!window._sb) return;
   var today=new Date().toISOString().split('T')[0];
   var en60=new Date();en60.setDate(en60.getDate()+60);
-  window._sb.from('citas').select('fecha,hora')
+  window._sb.from('citas_disponibilidad').select('fecha,hora')
     .eq('medico_id',_medico.id).gte('fecha',today).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada')
     .then(function(res){
       cargarDisponibilidadPorSede(_medico,res.data||[],window._sb,_locSel||null)
@@ -276,7 +276,7 @@ function confirmar(data){
   var sb=window._sb;
   var nom=data.nom,tel=data.tel,email=data.email,motivo=data.motivo;
   buscarOCrearPaciente(sb,nom,email,tel).then(function(pacienteId){
-    sb.from('citas').select('id')
+    sb.from('citas_disponibilidad').select('id')
       .eq('medico_id',_medico.id).eq('fecha',_date).eq('hora',_slot)
       .in('estado',['confirmada','pendiente'])
       .then(function(check){
