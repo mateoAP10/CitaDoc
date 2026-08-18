@@ -4,7 +4,23 @@ const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const SEND_EMAIL_URL       = `${SUPABASE_URL}/functions/v1/send-email`
 
+// ── FREEZE (18 ago 2026) ────────────────────────────────────────────────────
+// El cron que disparaba esta función corría cada hora desde su creación con
+// un current_setting() que Supabase rechaza -- fallaba en silencio siempre.
+// Al corregir el cron se destapó el backlog completo de citas pendientes y
+// se enviaron 28 correos reales de una sola vez (9 a pacientes reales de un
+// médico real, con citas de hace ~2 meses). Congelado a propósito hasta
+// implementar idempotencia real + ventana de elegibilidad (solo citas
+// recientes) -- no reactivar sin eso. Ver incidents/2026-08-18-review-drip-backlog.md.
+const FROZEN = true
+
 Deno.serve(async () => {
+  if (FROZEN) {
+    return new Response(JSON.stringify({ ok: false, frozen: true, reason: 'review-drip congelado tras incidente de backlog -- ver incidents/2026-08-18-review-drip-backlog.md' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
   try {
     const sb  = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     const now = new Date()
@@ -14,15 +30,28 @@ Deno.serve(async () => {
     const twoHoursAgoHHMM = new Date(now.getTime() - 2 * 3600000)
       .toTimeString().slice(0, 5)
 
+    // Ventana de elegibilidad MÁXIMA (18 ago 2026, post-incidente): una cita
+    // que nunca recibió solicitud no puede convertirse en un email meses
+    // después solo porque el cron estuvo caído. Sin este límite inferior de
+    // fecha, cualquier backlog histórico con review_sent=false volvería a
+    // salir completo la primera vez que el cron corra tras un fallo largo --
+    // exactamente lo que pasó. 3 días es generoso para el ritmo horario
+    // normal del cron y corta de raíz cualquier reprocesamiento tardío.
+    const MAX_DAYS_BACK = 3
+    const cutoffDate = new Date(now.getTime() - MAX_DAYS_BACK * 86400000)
+      .toISOString().split('T')[0]
+
     const { data: allCitas } = await sb
       .from('citas')
       .select('id, medico_id, paciente_email, paciente_nombre, fecha, hora')
+      .gte('fecha', cutoffDate)
       .lte('fecha', today)
       .neq('estado', 'cancelada')
       .eq('review_sent', false)
       .not('paciente_email', 'is', null)
 
-    // Citas de días pasados: todas. Citas de hoy: solo si la hora ya pasó hace 2h+
+    // Dentro de la ventana: días pasados (ya cubiertos por el cutoff de arriba)
+    // todas; citas de hoy solo si la hora ya pasó hace 2h+.
     const citas = (allCitas || []).filter(c =>
       c.fecha < today || (c.hora && c.hora.slice(0, 5) <= twoHoursAgoHHMM)
     )
@@ -36,10 +65,11 @@ Deno.serve(async () => {
         .single()
 
       if (!m) continue
-      if (!['pro', 'destacado', 'pro_web'].includes(m.plan)) {
-        await sb.from('citas').update({ review_sent: true }).eq('id', cita.id)
-        continue
-      }
+      // review_sent representa un ENVÍO REAL, nunca una exclusión -- si el
+      // médico no es plan pago hoy, simplemente no se toca la fila. Si más
+      // adelante pasa a un plan pago, esta misma cita vuelve a ser candidata
+      // (siempre que siga dentro de la ventana de MAX_DAYS_BACK).
+      if (!['pro', 'destacado', 'pro_web'].includes(m.plan)) continue
 
       const reviewUrl = `${SUPABASE_URL}/functions/v1/cita-review?cita_id=${cita.id}&medico_id=${cita.medico_id}`
 
