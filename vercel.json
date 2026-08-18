@@ -5,6 +5,10 @@
       "destination": "/demo.html?slug=:slug"
     },
     {
+      "source": "/resena/:citaId",
+      "destination": "/resena.html?cita_id=:citaId"
+    },
+    {
       "source": "/generar",
       "destination": "/landing.html"
     },

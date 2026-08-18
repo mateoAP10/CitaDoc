@@ -71,7 +71,10 @@ Deno.serve(async () => {
       // (siempre que siga dentro de la ventana de MAX_DAYS_BACK).
       if (!['pro', 'destacado', 'pro_web'].includes(m.plan)) continue
 
-      const reviewUrl = `${SUPABASE_URL}/functions/v1/cita-review?cita_id=${cita.id}&medico_id=${cita.medico_id}`
+      // La página real vive en el frontend de CitaDoc (Vercel), no en el edge
+      // function -- cita-review queda intacto solo para no romper los links ya
+      // enviados en emails viejos. cita-review/index.ts NO se toca.
+      const reviewUrl = `https://citadoc.lat/resena/${cita.id}?medico_id=${cita.medico_id}`
 
       await fetch(SEND_EMAIL_URL, {
         method: 'POST',

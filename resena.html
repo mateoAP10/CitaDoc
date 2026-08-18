@@ -1,0 +1,171 @@
+<!doctype html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Califica tu consulta — CitaDoc</title><meta name="robots" content="noindex"><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><style>
+*,::after,::before{box-sizing:border-box;margin:0;padding:0}
+:root{--teal:#0b7c6e;--teal-mid:#0e9d8c;--teal-lite:#e0f5f2;--teal-dark:#085f54;--cream:#f7f4ef;--white:#fff;--ink:#0f1a18;--ink2:#2c3a38;--muted:#6b7c79;--muted2:#a0b0ae;--border:rgba(11,124,110,.13)}
+html,body{height:100%;min-height:100dvh}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);display:flex;align-items:center;justify-content:center;padding:2rem 1.2rem;padding-bottom:calc(2rem + env(safe-area-inset-bottom))}
+.logo{font-family:Fraunces,serif;font-size:1.3rem;font-weight:700;color:var(--teal);letter-spacing:-.5px;text-align:center;display:block;margin-bottom:1.6rem;text-decoration:none}
+.logo span{color:var(--teal-mid);font-style:italic}
+.card{background:var(--white);border-radius:26px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(15,26,24,.08);padding:2.4rem 1.8rem;max-width:440px;width:100%;text-align:center}
+.doc-avatar{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.35rem;margin:0 auto 1rem;box-shadow:0 8px 20px rgba(11,124,110,.28)}
+h1{font-family:Fraunces,serif;font-size:1.5rem;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin-bottom:.35rem;line-height:1.25}
+.sub{font-size:.88rem;color:var(--muted);line-height:1.6;margin-bottom:1.7rem}
+.stars-row{display:flex;justify-content:center;gap:.4rem;margin-bottom:.5rem}
+.star-btn{background:none;border:none;font-size:2.5rem;line-height:1;cursor:pointer;padding:.15rem;transition:transform .15s;filter:grayscale(1) opacity(.35)}
+.star-btn.active,.star-btn.hover{filter:none;transform:scale(1.12)}
+.star-label{font-size:.78rem;font-weight:600;color:var(--muted2);height:1.2rem;margin-bottom:1.4rem}
+textarea{width:100%;border:1.5px solid #e5e7eb;border-radius:14px;padding:.85rem 1rem;font-size:.88rem;font-family:'DM Sans',sans-serif;resize:vertical;min-height:88px;box-sizing:border-box;color:var(--ink);background:var(--cream);margin-bottom:1.3rem;outline:none;transition:border-color .15s}
+textarea:focus{border-color:var(--teal)}
+textarea::placeholder{color:var(--muted2)}
+.btn-submit{width:100%;padding:.95rem;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;border:none;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .2s,transform .15s}
+.btn-submit:active{transform:scale(.98)}
+.btn-submit:disabled{opacity:.55;cursor:default}
+.big-icon{font-size:3.2rem;margin-bottom:.9rem;line-height:1}
+.app-rate-row{display:flex;justify-content:center;gap:.55rem;margin:1.1rem 0 .3rem}
+.app-star-link{background:none;border:1.5px solid var(--border);border-radius:12px;padding:.5rem .65rem;font-size:1.4rem;cursor:pointer;transition:all .15s}
+.app-star-link:hover,.app-star-link.done{border-color:var(--teal);background:var(--teal-lite)}
+.skip-link{display:inline-block;margin-top:1rem;font-size:.82rem;color:var(--muted2);text-decoration:none;font-weight:600}
+.err-text{color:#991b1b}
+.spinner{width:28px;height:28px;border:3px solid var(--teal-lite);border-top-color:var(--teal);border-radius:50%;margin:0 auto 1rem;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+</style></head><body>
+
+<div style="width:100%;max-width:440px">
+<a href="https://citadoc.lat" class="logo">Cita<span>Doc</span></a>
+<div class="card">
+
+  <div id="viewLoading">
+    <div class="spinner"></div>
+    <p class="sub" style="margin-bottom:0">Cargando…</p>
+  </div>
+
+  <div id="viewError" class="hidden">
+    <div class="big-icon">⚠️</div>
+    <h1 class="err-text">Enlace inválido</h1>
+    <p class="sub">Este enlace no es válido o ya expiró.</p>
+  </div>
+
+  <div id="viewAlready" class="hidden">
+    <div class="big-icon">🎉</div>
+    <h1>¡Ya calificaste esta consulta!</h1>
+    <p class="sub">Gracias por tu tiempo — tu opinión ya quedó registrada.</p>
+  </div>
+
+  <div id="viewForm" class="hidden">
+    <div class="doc-avatar" id="docAvatar">—</div>
+    <h1 id="docTitle">¿Cómo fue tu consulta?</h1>
+    <p class="sub" id="docSub">Tu opinión ayuda a otros pacientes a elegir bien.</p>
+
+    <div class="stars-row" id="starsRow">
+      <button class="star-btn" data-n="1" type="button">⭐</button>
+      <button class="star-btn" data-n="2" type="button">⭐</button>
+      <button class="star-btn" data-n="3" type="button">⭐</button>
+      <button class="star-btn" data-n="4" type="button">⭐</button>
+      <button class="star-btn" data-n="5" type="button">⭐</button>
+    </div>
+    <div class="star-label" id="starLabel">Toca para calificar</div>
+
+    <textarea id="comentario" placeholder="Contanos brevemente tu experiencia (opcional)" maxlength="600"></textarea>
+
+    <button class="btn-submit" id="btnSubmit" disabled>Enviar reseña</button>
+  </div>
+
+  <div id="viewThanks" class="hidden">
+    <div class="big-icon">✅</div>
+    <h1>¡Gracias por tu reseña!</h1>
+    <p class="sub" id="thanksSub">Tu opinión ya quedó registrada.</p>
+    <div id="appRateBlock">
+      <p class="sub" style="margin-bottom:.6rem">Un dato más — ¿cómo calificarías la app de CitaDoc?</p>
+      <div class="app-rate-row" id="appRateRow">
+        <button class="app-star-link" data-n="1" type="button">😕</button>
+        <button class="app-star-link" data-n="2" type="button">😐</button>
+        <button class="app-star-link" data-n="3" type="button">🙂</button>
+        <button class="app-star-link" data-n="4" type="button">😊</button>
+        <button class="app-star-link" data-n="5" type="button">🤩</button>
+      </div>
+    </div>
+    <a href="https://citadoc.lat" class="skip-link">Ir a CitaDoc →</a>
+  </div>
+
+</div>
+</div>
+
+<script>
+var _sb = supabase.createClient("https://qxoomcqaafogczrvsyhg.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs");
+
+function _q(id){ return document.getElementById(id); }
+function showView(id){
+  ['viewLoading','viewError','viewAlready','viewForm','viewThanks'].forEach(function(v){ _q(v).classList.add('hidden'); });
+  _q(id).classList.remove('hidden');
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+var params = new URLSearchParams(location.search);
+var citaId = params.get('cita_id') || '';
+var medicoId = params.get('medico_id') || '';
+var rating = 0;
+var STAR_LABELS = ['','Mejorable','Regular','Buena','Muy buena','Excelente'];
+
+async function init(){
+  if(!citaId){ showView('viewError'); return; }
+
+  // ¿ya existe una reseña para esta cita? (idempotente -- resenas.cita_id es UNIQUE)
+  var existing = await _sb.from('resenas').select('id,rating_medico').eq('cita_id', citaId).maybeSingle();
+  if(existing.data && existing.data.rating_medico){ showView('viewAlready'); return; }
+
+  var docNombre = 'tu médico', docInitials = 'Dr';
+  if(medicoId){
+    var m = await _sb.from('medicos').select('nombre,apellido,titulo').eq('id', medicoId).maybeSingle();
+    if(m.data){
+      docNombre = (m.data.titulo || 'Dr.') + ' ' + m.data.nombre + ' ' + (m.data.apellido || '');
+      docInitials = ((m.data.nombre||'D')[0] || 'D').toUpperCase();
+    }
+  }
+  _q('docAvatar').textContent = docInitials;
+  _q('docSub').textContent = 'Tu consulta con ' + docNombre;
+
+  showView('viewForm');
+
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('#starsRow .star-btn'));
+  function paintStars(n){
+    buttons.forEach(function(b){ b.classList.toggle('active', parseInt(b.dataset.n,10) <= n); });
+    _q('starLabel').textContent = n ? STAR_LABELS[n] : 'Toca para calificar';
+    _q('btnSubmit').disabled = n === 0;
+  }
+  buttons.forEach(function(b){
+    b.addEventListener('click', function(){ rating = parseInt(b.dataset.n,10); paintStars(rating); });
+  });
+
+  _q('btnSubmit').addEventListener('click', async function(){
+    if(!rating) return;
+    var btn = _q('btnSubmit');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    var comentario = (_q('comentario').value || '').trim();
+    var payload = { cita_id: citaId, rating_medico: rating, comentario: comentario || null };
+    if(medicoId) payload.medico_id = medicoId;
+    var r = await _sb.from('resenas').upsert(payload, { onConflict: 'cita_id' });
+    if(r.error){
+      btn.disabled = false; btn.textContent = 'Enviar reseña';
+      _q('starLabel').textContent = 'No se pudo enviar — intenta de nuevo';
+      _q('starLabel').classList.add('err-text');
+      return;
+    }
+    showView('viewThanks');
+  });
+}
+
+// ── Rating rápido de la app (opcional, tras agradecer) ──
+document.addEventListener('click', async function(e){
+  var b = e.target.closest('.app-star-link');
+  if(!b) return;
+  var n = parseInt(b.dataset.n, 10);
+  document.querySelectorAll('.app-star-link').forEach(function(x){ x.classList.remove('done'); });
+  b.classList.add('done');
+  await _sb.from('resenas').update({ rating_app: n }).eq('cita_id', citaId);
+  _q('thanksSub').textContent = '¡Gracias por calificar todo! 🎉';
+  setTimeout(function(){ _q('appRateBlock').classList.add('hidden'); }, 900);
+});
+
+init();
+</script>
+</body></html>

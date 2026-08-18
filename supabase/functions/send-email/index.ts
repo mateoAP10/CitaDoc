@@ -885,15 +885,9 @@ function tplPostConsulta(d: Record<string, any>): string {
   const paciente     = d.paciente_nombre || ''
   const firstName    = paciente ? ', ' + paciente.split(' ')[0] : ''
 
-  const emojis = ['😕','😐','🙂','😊','🤩']
-  const labels = ['Mejorable','Regular','Buena','Muy buena','Excelente']
-  const starLinks = [1,2,3,4,5].map(n => `
-    <td style="text-align:center;padding:0 5px">
-      <a href="${reviewUrl}&r=${n}" style="display:block;text-decoration:none">
-        <div style="font-size:36px;line-height:1;margin-bottom:6px">${emojis[n-1]}</div>
-        <div style="color:#94a3b8;font-size:10px;font-weight:600;letter-spacing:.3px">${labels[n-1]}</div>
-      </a>
-    </td>`).join('')
+  // La calificación (estrellas + comentario) se hace en una página real del
+  // frontend de CitaDoc (citadoc.lat/resena/…), no con links por estrella --
+  // el email solo necesita UN botón que lleve ahí.
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Helvetica,sans-serif">
@@ -916,13 +910,11 @@ function tplPostConsulta(d: Record<string, any>): string {
 
 <tr><td style="padding:32px 40px 12px;text-align:center">
   <p style="margin:0 0 8px;color:#0f172a;font-size:16px;font-weight:600;line-height:1.5">Esperamos que te hayas sentido<br>en buenas manos.</p>
-  <p style="margin:0 0 28px;color:#64748b;font-size:14px;line-height:1.6">¿Cómo fue tu experiencia hoy?</p>
+  <p style="margin:0 0 24px;color:#64748b;font-size:14px;line-height:1.6">¿Cómo fue tu experiencia?</p>
 
-  <table cellpadding="0" cellspacing="0" style="margin:0 auto 20px">
-    <tr>${starLinks}</tr>
-  </table>
+  <a href="${reviewUrl}" style="display:inline-block;background:linear-gradient(135deg,#085f54,#0b7c6e);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;margin-bottom:20px">⭐ Calificar mi consulta</a>
 
-  <p style="margin:0;color:#cbd5e1;font-size:12px">Un toque — 2 segundos. Tu reseña ayuda a otros pacientes.</p>
+  <p style="margin:0;color:#cbd5e1;font-size:12px">Un toque — 30 segundos. Tu reseña ayuda a otros pacientes.</p>
 </td></tr>
 
 <tr><td style="padding:24px 40px 28px;text-align:center;border-top:1px solid #f1f5f9">
