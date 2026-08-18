@@ -1,5 +1,5 @@
 // ── Patient helpers (pre-existing) ────────────────────────────────────────
-function buscarOCrearPaciente(e,n,t,a){return new Promise((function(i){t?e.from("pacientes").select("id").eq("email",t).single().then((function(l){l.data?(e.from("pacientes").update({nombre:n,telefono:a||null}).eq("id",l.data.id),i(l.data.id)):crearPaciente(e,n,t,a).then(i)})):a?e.from("pacientes").select("id").eq("telefono",a).single().then((function(t){t.data?i(t.data.id):crearPaciente(e,n,null,a).then(i)})):crearPaciente(e,n,null,null).then(i)}))}function crearPaciente(e,n,t,a){return e.from("pacientes").insert({nombre:n,email:t||null,telefono:a||null}).select("id").single().then((function(e){return e.data?e.data.id:null}))}
+function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/booking-resolve-patient",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nombre:n,email:t||null,telefono:a||null})}).then((function(r){return r.json()})).then((function(j){return j.ok?j.patient_id:null})).catch((function(){return null}))}
 
 // ── Booking UI Module ──────────────────────────────────────────────────────
 (function () {
