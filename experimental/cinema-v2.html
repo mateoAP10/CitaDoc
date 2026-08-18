@@ -1113,9 +1113,11 @@ async function init(){
   var lr=await _sb.from('doctor_locations').select('id,nombre,direccion,ciudad,maps_url').eq('medico_id',r.data.id).order('created_at');
   _medicoData=r.data;_locsData=lr.data||[];
   render(r.data,lr.data||[]);
+  if(window.CitaDocReviews) CitaDocReviews.mount(_sb, r.data, {before:"cCtaSub"});
 }
 init();
 </script>
+<script src="/js/reviews-public.js"></script>
 <script src="/js/shared.js"></script>
 <script src="/js/agendar-cinema.js"></script>
 </body>
