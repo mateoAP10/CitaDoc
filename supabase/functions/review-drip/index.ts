@@ -4,15 +4,15 @@ const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const SEND_EMAIL_URL       = `${SUPABASE_URL}/functions/v1/send-email`
 
-// ── FREEZE (18 ago 2026) ────────────────────────────────────────────────────
-// El cron que disparaba esta función corría cada hora desde su creación con
-// un current_setting() que Supabase rechaza -- fallaba en silencio siempre.
-// Al corregir el cron se destapó el backlog completo de citas pendientes y
-// se enviaron 28 correos reales de una sola vez (9 a pacientes reales de un
-// médico real, con citas de hace ~2 meses). Congelado a propósito hasta
-// implementar idempotencia real + ventana de elegibilidad (solo citas
-// recientes) -- no reactivar sin eso. Ver incidents/2026-08-18-review-drip-backlog.md.
-const FROZEN = true
+// ── FREEZE levantado (18 ago 2026) ──────────────────────────────────────────
+// Congelado tras el incidente documentado en
+// incidents/2026-08-18-review-drip-backlog.md. Descongelado recién después de:
+// ventana de elegibilidad (2h-3 días, no más backlog histórico), review_sent
+// representa un envío real (nunca una exclusión), claim atómico (cierra la
+// carrera SELECT->enviar->UPDATE), y una prueba de producción controlada con
+// una sola cita real aislada, confirmando cero backlog real elegible antes de
+// descongelar. Ver el incident report para el detalle completo.
+const FROZEN = false
 
 Deno.serve(async () => {
   if (FROZEN) {
