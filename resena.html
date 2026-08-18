@@ -101,7 +101,12 @@ function showView(id){
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 var params = new URLSearchParams(location.search);
-var citaId = params.get('cita_id') || '';
+// Los rewrites de Vercel son solo del lado del servidor -- el navegador
+// sigue viendo /resena/{id} tal cual, nunca /resena.html?cita_id={id}.
+// location.search jamás trae cita_id en la URL bonita, solo lo que ya
+// estaba en el query original (medico_id). Hay que leerlo también del path.
+var pathMatch = location.pathname.match(/\/resena\/([^/?#]+)/);
+var citaId = params.get('cita_id') || (pathMatch ? decodeURIComponent(pathMatch[1]) : '');
 var medicoId = params.get('medico_id') || '';
 var rating = 0;
 var STAR_LABELS = ['','Mejorable','Regular','Buena','Muy buena','Excelente'];
