@@ -180,7 +180,7 @@ function el(id){return document.getElementById(id)}
 function set(id,v){var e=el(id);if(e)e.textContent=v}
 
 if(slug){
-  _sb.from('medicos').select('*').eq('slug',slug).eq('activo',true).single().then(function(r){
+  _sb.from('medicos_publico').select('*').eq('slug',slug).eq('activo',true).single().then(function(r){
     if(r.error||!r.data)return;
     var m=r.data, wc=m.web_config||{};
     var nombre=(m.titulo||'Dr.')+' '+m.nombre+' '+m.apellido;

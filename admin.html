@@ -1055,7 +1055,7 @@ async function enviarLinkPago(slug) {
   if (!demo) { adminToast('Demo no encontrado', false); return; }
   var email = '';
   if (demo.medico_id) {
-    var {data:med} = await sb.from('medicos').select('email,nombre').eq('id',demo.medico_id).maybeSingle();
+    var {data:med} = await sb.from('medicos_publico').select('email,nombre').eq('id',demo.medico_id).maybeSingle();
     if (med && med.email) email = med.email;
   }
   if (!email) {
@@ -1309,7 +1309,7 @@ async function cmCrear(){
 
   try{
     // 1. Verificar slug único
-    var existing=await sb.from('medicos').select('id').eq('slug',slug).maybeSingle();
+    var existing=await sb.from('medicos_publico').select('id').eq('slug',slug).maybeSingle();
     if(existing.data){
       slug=slug+'-'+Date.now().toString().slice(-4);
     }

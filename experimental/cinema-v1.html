@@ -1184,7 +1184,7 @@ function show404(){
 
 async function init(){
   var s=getSlug();if(!s){show404();return;}
-  var r=await _sb.from('medicos').select('*').eq('slug',s).eq('activo',true).maybeSingle();
+  var r=await _sb.from('medicos_publico').select('*').eq('slug',s).eq('activo',true).maybeSingle();
   if(r.error||!r.data){show404();return;}
   if(!new URLSearchParams(location.search).get('_admin'))
     _sb.from('website_page_views').insert({medico_id:r.data.id,slug:s,source:(document.referrer.includes('google')?'google':document.referrer.includes('instagram')?'instagram':document.referrer.includes('facebook')?'facebook':document.referrer?'referral':'direct'),user_agent:navigator.userAgent.slice(0,200)});

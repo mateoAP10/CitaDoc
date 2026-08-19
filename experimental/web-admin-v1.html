@@ -1029,7 +1029,7 @@ async function init(){
   if(uid)r=await _sb.from('medicos').select('*').eq('user_id',uid).maybeSingle();
   if(!r||!r.data){
     DEMO=true;
-    r=await _sb.from('medicos').select('*').eq('slug',SLUG).maybeSingle();
+    r=await _sb.from('medicos_publico').select('*').eq('slug',SLUG).maybeSingle();
     setSaveStatus('','Modo demo — los cambios no se guardan');
   }
   if(!r.data){toast('No se pudo cargar el perfil');setSaveStatus('err','Sin conexión');return}
