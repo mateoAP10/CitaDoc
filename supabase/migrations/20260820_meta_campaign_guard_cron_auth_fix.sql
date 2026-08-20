@@ -1,0 +1,27 @@
+-- P2.1 hotfix (20 ago 2026): meta-campaign-guard-72h es un pg_cron real
+-- (cada 3 dias, 08:00 UTC) descubierto en el sweep externo de 7citadoc7 --
+-- no vivia en ninguna migracion versionada. Mandaba el POST sin ningun
+-- header de auth; con el fix de P2.1 (requireAdmin() + verify_jwt=true en
+-- la funcion) quedo correctamente cerrado, pero tambien rompio a este
+-- consumidor legitimo.
+--
+-- Fix: el cron ahora manda Authorization: Bearer <service_role key,
+-- formato nuevo sb_secret_...>, y meta-campaign-guard/index.ts se
+-- redeploy con requireAdmin(req, { allowServiceRole: true }) -- mismo
+-- patron ya usado en actualizar-guias-clinicas. admin.html sigue
+-- autorizando via JWT real de admin_users, sin cambios.
+--
+-- No se registra el valor real del secret en esta migracion ni en
+-- ningun archivo del repo -- se aplico directamente contra produccion
+-- via cron.alter_job() y se documenta aca solo la forma, no el valor.
+--
+-- select cron.alter_job(
+--   12,
+--   command := $$
+--   SELECT net.http_post(
+--     url := 'https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/meta-campaign-guard',
+--     headers := jsonb_build_object('Content-Type','application/json','Authorization','Bearer <SUPABASE_SERVICE_ROLE_KEY actual>'),
+--     body := '{}'::jsonb
+--   );
+--   $$
+-- );

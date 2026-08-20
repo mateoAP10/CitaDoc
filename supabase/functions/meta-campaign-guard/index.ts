@@ -57,7 +57,11 @@ async function notifyAdmin(reason: string, campaignName: string, metrics: Record
 }
 
 Deno.serve(async (req) => {
-  const auth = await requireAdmin(req)
+  // Dos vías legítimas: admin.html (JWT real, verificarRendimiento()) y el
+  // cron real meta-campaign-guard-72h (pg_cron, cada 3 días, Bearer
+  // service_role) -- allowServiceRole solo cubre ese segundo caso, nunca
+  // aceptado desde HTML/JS.
+  const auth = await requireAdmin(req, { allowServiceRole: true })
   if (!auth.ok) {
     return new Response(JSON.stringify({ error: auth.error }), {
       status: auth.status,
