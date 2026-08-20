@@ -1806,6 +1806,18 @@ function stgPublicUrl(bucket, path) {
   return SB_URL + '/storage/v1/object/public/' + bucket + '/' + path
 }
 
+// P2.2-A -- center_patients/center_citas ya no aceptan acceso directo con
+// la anon key (RLS sin policies). Todo el CRUD pasa por admin-center-crud,
+// JWT admin_users real (mismo _ADMIN_JWT que ya usa stgUpload/stgDelete).
+async function callAdminCenter(action, params) {
+  const res = await fetch(SB_URL + '/functions/v1/admin-center-crud', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _ADMIN_JWT },
+    body: JSON.stringify(Object.assign({ action }, params || {})),
+  }).then(r => r.json()).catch(() => ({ ok: false }))
+  return res
+}
+
 // ── GATE ──────────────────────────────────────────────────────────────────────
 document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') checkKey() })
 
@@ -2458,14 +2470,13 @@ let _allLeads = []   // patients con citas agregadas
 async function loadLeads() {
   if (!_center) return
   // Cargar pacientes únicos del centro
-  const { data: patients } = await sbGet('center_patients',
-    `center_id=eq.${_center.id}&select=*&order=created_at.desc&limit=500`)
+  const _pr = await callAdminCenter('list_patients', { center_id: _center.id })
+  const patients = _pr.ok ? _pr.patients : null
   if (!patients) return
 
   // Cargar citas para agregar stats
-  const { data: citas } = await sbGet('center_citas',
-    `center_id=eq.${_center.id}&select=id,patient_id,fecha_pref,hora,atendido,estado,total_est,servicios,nota,patient_confirmed,email_confirm_at,email_reminder_at,email_noshow_at,email_postvista_at&order=fecha_pref.desc&limit=1000`)
-  const citasArr = citas || []
+  const _cr = await callAdminCenter('list_citas', { center_id: _center.id })
+  const citasArr = _cr.ok ? (_cr.citas || []) : []
 
   // Enriquecer cada paciente con stats de sus citas
   _allLeads = patients.map(p => {
@@ -2698,8 +2709,8 @@ async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
   // Marcar timestamp del email que corresponde
   if (cfg) patch[cfg.ts_field] = cita[cfg.ts_field] || null  // preservar si ya existía
 
-  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, patch)
-  if (error) { toast('Error: '+error.message, 'err'); btnClicked.disabled=false; return }
+  const _r1 = await callAdminCenter('update_cita', { id: citaId, patch })
+  if (!_r1.ok) { toast('Error: '+(_r1.error||'desconocido'), 'err'); btnClicked.disabled=false; return }
 
   cita.estado   = targetEstado
   cita.atendido = targetEstado === 'atendido'
@@ -2711,7 +2722,7 @@ async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
     if (!tsActual) {
       // Marcar timestamp ANTES de enviar para evitar duplicados si hay doble clic
       cita[cfg.ts_field] = now
-      await sbPatch('center_citas', 'id=eq.'+citaId, { [cfg.ts_field]: now })
+      await callAdminCenter('update_cita', { id: citaId, patch: { [cfg.ts_field]: now } })
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
@@ -2833,10 +2844,12 @@ function fupCloseDropdown() {
 async function loadNewTurnos() {
   if (!_center) return
   const today = new Date().toISOString().split('T')[0]
-  const { data: citas } = await sbGet('center_citas',
-    `center_id=eq.${_center.id}&atendido=eq.false&estado=neq.cancelado&fecha_pref=gte.${today}&select=id,patient_id,fecha_pref,hora,servicios,total_est,nota,created_at,estado,patient_confirmed,patient_confirmed_at&order=fecha_pref.asc&limit=50`)
-  const { data: patients } = await sbGet('center_patients',
-    `center_id=eq.${_center.id}&select=id,nombre,email,telefono,cedula,canal`)
+  const _crTurnos = await callAdminCenter('list_citas', { center_id: _center.id })
+  const citas = _crTurnos.ok
+    ? (_crTurnos.citas || []).filter(c => !c.atendido && c.estado !== 'cancelado' && (c.fecha_pref || '') >= today).sort((a,b) => (a.fecha_pref||'').localeCompare(b.fecha_pref||'')).slice(0, 50)
+    : []
+  const _prTurnos = await callAdminCenter('list_patients', { center_id: _center.id })
+  const patients = _prTurnos.ok ? _prTurnos.patients : null
 
   const pMap = {}
   ;(patients||[]).forEach(p => pMap[p.id] = p)
@@ -2894,16 +2907,17 @@ async function loadNewTurnos() {
 
 async function markAtendido(citaId, patientId, btn) {
   btn.disabled = true; btn.textContent = '...'
-  const {data: citaData} = await sbGet('center_citas', `id=eq.${citaId}&select=atendido,email_postvista_at`)
-  const citaActual = citaData?.[0]
+  const _cd = await callAdminCenter('get_cita', { id: citaId, select: 'atendido,email_postvista_at' })
+  const citaActual = _cd.ok ? _cd.cita : null
   const yaEnviado  = !!citaActual?.email_postvista_at
   const now        = new Date().toISOString()
 
-  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { atendido: true, estado: 'atendido', email_postvista_at: yaEnviado ? citaActual.email_postvista_at : now })
-  if (error) { toast('Error: '+error.message, 'err'); btn.disabled=false; btn.textContent='✓ Asistió'; return }
+  const _r2 = await callAdminCenter('update_cita', { id: citaId, patch: { atendido: true, estado: 'atendido', email_postvista_at: yaEnviado ? citaActual.email_postvista_at : now } })
+  if (!_r2.ok) { toast('Error: '+(_r2.error||'desconocido'), 'err'); btn.disabled=false; btn.textContent='✓ Asistió'; return }
 
   if (!yaEnviado) {
-    const patient = (await sbGet('center_patients', `id=eq.${patientId}&select=nombre,email`)).data?.[0]
+    const _pd = await callAdminCenter('get_patient', { id: patientId })
+    const patient = _pd.ok ? _pd.patient : null
     if (patient?.email && _center?.nombre) {
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
@@ -2932,17 +2946,18 @@ async function markAtendido(citaId, patientId, btn) {
 async function cancelarTurno(citaId, patientId, btn) {
   btn.disabled = true; btn.textContent = '...'
   // Verificar estado actual antes de enviar email
-  const {data: citaData} = await sbGet('center_citas', `id=eq.${citaId}&select=estado,email_noshow_at`)
-  const citaActual = citaData?.[0]
+  const _cd2 = await callAdminCenter('get_cita', { id: citaId, select: 'estado,email_noshow_at' })
+  const citaActual = _cd2.ok ? _cd2.cita : null
   const yaEnviado = !!citaActual?.email_noshow_at
 
   const now = new Date().toISOString()
-  const { error } = await sbPatch('center_citas', 'id=eq.'+citaId, { estado: 'cancelado', atendido: false, email_noshow_at: yaEnviado ? citaActual.email_noshow_at : now })
-  if (error) { toast('Error: '+error.message, 'err'); btn.disabled=false; btn.textContent='✕ Cancelar'; return }
+  const _r3 = await callAdminCenter('update_cita', { id: citaId, patch: { estado: 'cancelado', atendido: false, email_noshow_at: yaEnviado ? citaActual.email_noshow_at : now } })
+  if (!_r3.ok) { toast('Error: '+(_r3.error||'desconocido'), 'err'); btn.disabled=false; btn.textContent='✕ Cancelar'; return }
 
   if (!yaEnviado) {
     // Email de reagendamiento al paciente — solo si nunca se envió
-    const patient = (await sbGet('center_patients', `id=eq.${patientId}&select=nombre,email`)).data?.[0]
+    const _pd2 = await callAdminCenter('get_patient', { id: patientId })
+    const patient = _pd2.ok ? _pd2.patient : null
     if (patient?.email && _center?.nombre) {
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
@@ -2988,12 +3003,7 @@ function editarPaciente(id) {
 
 async function borrarPaciente(id, nombre) {
   if (!confirm(`¿Eliminar a ${nombre}? Se borrarán también sus citas registradas.`)) return
-  const { error } = await sbPatch('center_patients', 'id=eq.'+id, { nombre: null })
-  // Borrar via DELETE
-  await fetch(`${SB_URL}/rest/v1/center_patients?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: { apikey: SB_ANON, Authorization: 'Bearer '+SB_ANON }
-  })
+  await callAdminCenter('delete_patient', { id })
   toast(`${nombre} eliminado`, 'ok')
   await loadLeads()
   await loadNewTurnos()
@@ -3029,21 +3039,20 @@ async function guardarNuevoPaciente() {
 
   if (editId) {
     // EDITAR
-    const {error} = await sbPatch('center_patients','id=eq.'+editId,{nombre,telefono:telefono||null,email,cedula,canal})
+    const _ru = await callAdminCenter('update_patient', { id: editId, patch: {nombre,telefono:telefono||null,email,cedula,canal} })
     btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Guardar paciente'
-    if (error) { toast('Error: '+error.message,'err'); return }
+    if (!_ru.ok) { toast('Error: '+(_ru.error||'desconocido'),'err'); return }
     toast(`${nombre} actualizado ✓`,'ok')
     delete el('modalManual').dataset.editId
   } else {
     // CREAR
     if (email||cedula) {
-      const sf = email?`email=eq.${encodeURIComponent(email)}`:`cedula=eq.${encodeURIComponent(cedula)}`
-      const {data:found} = await sbGet('center_patients',`center_id=eq.${_center.id}&${sf}&limit=1`)
-      if (found?.length) { toast(`${nombre} ya está registrado — no se duplicó`,'ok'); cerrarModalPaciente(); await loadLeads(); btn.disabled=false; return }
+      const _rf = await callAdminCenter('find_patient', { center_id: _center.id, email: email||undefined, cedula: cedula||undefined })
+      if (_rf.ok && _rf.patient) { toast(`${nombre} ya está registrado — no se duplicó`,'ok'); cerrarModalPaciente(); await loadLeads(); btn.disabled=false; return }
     }
-    const {error} = await sbPost('center_patients',{center_id:_center.id,nombre,telefono:telefono||null,email,cedula,canal})
+    const _rc = await callAdminCenter('create_patient', { patch: {center_id:_center.id,nombre,telefono:telefono||null,email,cedula,canal} })
     btn.disabled=false
-    if (error) { toast('Error: '+error.message,'err'); return }
+    if (!_rc.ok) { toast('Error: '+(_rc.error||'desconocido'),'err'); return }
     toast(`${nombre} registrado ✓`,'ok')
   }
 
@@ -3120,13 +3129,13 @@ async function guardarNuevaCita() {
   const btn = el('btnGuardarCita')
   btn.disabled=true; btn.textContent='Guardando...'
 
-  const {data:cita, error} = await sbPost('center_citas',{
+  const _rcc = await callAdminCenter('create_cita', { patch: {
     center_id: _center.id, patient_id: _citaPatientId,
     fecha_pref: fecha, hora, nota: [medico?'Médico: '+medico:'',nota].filter(Boolean).join(' — ')||null,
     canal: 'presencial', followup_confirm_sent: true,
     email_confirm_at: new Date().toISOString(),
-  })
-  if (error) { toast('Error: '+error.message,'err'); btn.disabled=false; btn.textContent='Guardar cita'; return }
+  }})
+  if (!_rcc.ok) { toast('Error: '+(_rcc.error||'desconocido'),'err'); btn.disabled=false; btn.textContent='Guardar cita'; return }
 
   // Email al paciente
   const patient = _allLeads.find(p=>p.id===_citaPatientId)
@@ -3713,8 +3722,8 @@ async function generarOrdenLab() {
   // Send confirmation email to patient — fallback to DB if email missing in memory
   let _emailToSend = _labPatientEmail
   if (!_emailToSend) {
-    const { data: pd } = await sbGet('center_patients', `id=eq.${_labPatientId}&select=email`)
-    _emailToSend = pd?.[0]?.email || ''
+    const _pdLab = await callAdminCenter('get_patient', { id: _labPatientId })
+    _emailToSend = (_pdLab.ok && _pdLab.patient?.email) || ''
   }
   if (_emailToSend) {
     const medico = _labMedicos.find(m => m.id === medicoId)

@@ -2351,7 +2351,7 @@ function openModal() {
   el('modalTitle').textContent = 'Solicitar atención'
   el('modalServices').style.display = 'none'
   el('modalTotal').style.display    = 'none'
-  el('slotPicker').style.display    = 'none'
+  elSafe('slotPicker').style.display    = 'none'
   el('fechaGroup').style.display    = 'block'
   el('modalOverlay').classList.add('open')
   _stickyBarVisible(false)
@@ -2373,9 +2373,9 @@ async function openModalForDoctor(encoded) {
   }
 
   // WA + online booking options
-  const waOpt = el('modalWaOpt')
-  const waLink = el('modalWaLink')
-  const onlineBtn = el('modalOnlineBtn')
+  const waOpt = elSafe('modalWaOpt')
+  const waLink = elSafe('modalWaLink')
+  const onlineBtn = elSafe('modalOnlineBtn')
   if (d.wa || d.online) {
     waOpt.style.display = 'flex'
     if (d.wa) {
@@ -2397,13 +2397,13 @@ async function openModalForDoctor(encoded) {
 
   // Slot picker: show only if online booking enabled
   if (d.online) {
-    el('slotPicker').style.display = 'block'
-    el('slotWrap').style.display   = 'none'
+    elSafe('slotPicker').style.display = 'block'
+    elSafe('slotWrap').style.display   = 'none'
     el('fechaGroup').style.display = 'none'
-    el('modalDays').innerHTML = '<div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>'
+    elSafe('modalDays').innerHTML = '<div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>'
     // If also has WA, hide the form until user picks "Agendar con fecha"
     if (d.wa) {
-      el('slotPicker').style.display = 'none'
+      elSafe('slotPicker').style.display = 'none'
       el('fechaGroup').style.display = 'none'
       el('btnSubmit').style.display  = 'none'
       document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = 'none' })
@@ -2414,7 +2414,7 @@ async function openModalForDoctor(encoded) {
       renderModalDays()
     }
   } else {
-    el('slotPicker').style.display = 'none'
+    elSafe('slotPicker').style.display = 'none'
     el('fechaGroup').style.display = d.wa ? 'none' : 'block'
     el('btnSubmit').style.display  = d.wa ? 'none' : ''
     document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = d.wa ? 'none' : '' })
@@ -2428,9 +2428,9 @@ async function openModalForDoctor(encoded) {
 function modalShowOnlineForm() {
   const d = _modalDoctor
   if (!d) return
-  el('modalOnlineBtn').style.display = 'none'
-  el('slotPicker').style.display = 'block'
-  el('slotWrap').style.display   = 'none'
+  elSafe('modalOnlineBtn').style.display = 'none'
+  elSafe('slotPicker').style.display = 'block'
+  elSafe('slotWrap').style.display   = 'none'
   el('btnSubmit').style.display  = ''
   document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = '' })
   loadDoctorDisp(d.id).then(disp => { _modalDisp = disp; renderModalDays() })
@@ -2453,12 +2453,12 @@ function renderModalDays() {
     )
   }
   if (!pills.some((p,i)=>_modalDisp[new Date(today.getTime()+i*86400000).toISOString().split('T')[0]])) {
-    el('modalDays').innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin disponibilidad próxima</div>'
+    elSafe('modalDays').innerHTML = '<div style="font-size:.82rem;color:var(--muted2);padding:.5rem 0">Sin disponibilidad próxima</div>'
     return
   }
-  el('modalDays').innerHTML = pills.join('')
+  elSafe('modalDays').innerHTML = pills.join('')
   // Scroll to first available
-  const firstAvail = el('modalDays').querySelector('.avail')
+  const firstAvail = elSafe('modalDays').querySelector('.avail')
   if (firstAvail) setTimeout(()=>firstAvail.scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'}),50)
 }
 
@@ -2466,15 +2466,15 @@ function selectModalDay(date) {
   _modalDate = date; _modalSlot = null
   renderModalDays()
   const slots = _modalDisp[date] || []
-  el('slotsGrid').innerHTML = slots.map(h=>`<button class="slot-btn" onclick="selectModalSlot('${h}',this)">${h}</button>`).join('')
+  elSafe('slotsGrid').innerHTML = slots.map(h=>`<button class="slot-btn" onclick="selectModalSlot('${h}',this)">${h}</button>`).join('')
   const d = date.split('-')
-  el('slotTitle').textContent = 'Horarios — '+parseInt(d[2])+' de '+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(d[1])-1]
-  el('slotWrap').style.display = 'block'
+  elSafe('slotTitle').textContent = 'Horarios — '+parseInt(d[2])+' de '+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(d[1])-1]
+  elSafe('slotWrap').style.display = 'block'
 }
 
 function selectModalSlot(slot, btn) {
   _modalSlot = slot
-  el('slotsGrid').querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('sel'))
+  elSafe('slotsGrid').querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('sel'))
   btn.classList.add('sel')
 }
 
@@ -2497,14 +2497,14 @@ async function openModalFromCalc() {
   document.body.style.overflow = 'hidden'
 
   // Siempre fecha libre — sin slot picker en el flujo de calculadora
-  el('slotPicker').style.display = 'none'
+  elSafe('slotPicker').style.display = 'none'
   el('fechaGroup').style.display = 'block'
 }
 
 async function genCenterSlots(sch) {
-  const days = el('modalDays')
+  const days = elSafe('modalDays')
   days.innerHTML = '<div style="font-size:.78rem;color:var(--muted2);padding:.5rem 0">Cargando disponibilidad...</div>'
-  el('slotWrap').style.display = 'none'
+  elSafe('slotWrap').style.display = 'none'
   _modalDate = null; _modalSlot = null
 
   const dur = sch.duracion || 30
@@ -2581,7 +2581,7 @@ function selectCenterDay(idx) {
     if (pill) pill.classList.toggle('sel', i===idx)
   })
   // Render slots grouped by Mañana / Tarde
-  el('slotTitle').textContent = 'Horarios disponibles'
+  elSafe('slotTitle').textContent = 'Horarios disponibles'
   const am = sel.slots.filter(s => parseInt(s.h) < 12)
   const pm = sel.slots.filter(s => parseInt(s.h) >= 12)
   let html = ''
@@ -2593,13 +2593,13 @@ function selectCenterDay(idx) {
     html += '<div class="slots-period-label">Tarde</div>'
     html += pm.map(s => `<button class="slot-btn${s.taken?' booked':''}" ${s.taken?'disabled':''} onclick="selectCenterSlot('${s.h}',this)">${s.h}</button>`).join('')
   }
-  el('slotsGrid').innerHTML = html || '<div style="font-size:.8rem;color:var(--muted2);padding:.25rem 0;grid-column:1/-1">Sin turnos disponibles</div>'
-  el('slotWrap').style.display = 'block'
+  elSafe('slotsGrid').innerHTML = html || '<div style="font-size:.8rem;color:var(--muted2);padding:.25rem 0;grid-column:1/-1">Sin turnos disponibles</div>'
+  elSafe('slotWrap').style.display = 'block'
 }
 
 function selectCenterSlot(slot, btn) {
   _modalSlot = slot
-  el('slotsGrid').querySelectorAll('.slot-btn').forEach(b => b.classList.remove('sel'))
+  elSafe('slotsGrid').querySelectorAll('.slot-btn').forEach(b => b.classList.remove('sel'))
   btn.classList.add('sel')
 }
 
@@ -2617,7 +2617,7 @@ function closeModal() {
   el('modalContent').style.display = 'block'
   el('modalChannelContent').style.display = 'none'
   el('modalSuccessContent').style.display = 'none'
-  el('modalWaOpt').style.display = 'none'
+  elSafe('modalWaOpt').style.display = 'none'
   el('labNotice').style.display = 'none'
   el('btnSubmit').style.display  = ''
   document.querySelectorAll('#modalContent .form-group, #modalContent .form-row').forEach(g => { g.style.display = '' })
@@ -2648,88 +2648,26 @@ async function submitReserva() {
   const leadsTotal = leadsServices.reduce((a,s)=>a+(s.precio||0), 0)
 
   // ── Guardar en DB: find-or-create paciente + cita ──────────────────────────
+  // P2.2-A (20 ago 2026): center_patients/center_citas ya no aceptan acceso
+  // directo con la anon key -- todo el find-or-create + insert de cita pasa
+  // por center-booking (Edge Function pública, service role interno). El
+  // email de aviso al admin del centro también se manda server-side ahora,
+  // dentro de esa misma función.
   try {
     const centerId = _center?.id || null
-    let patientId = null
-
-    // 1. Buscar paciente existente por email o cédula
-    if (centerId && (email || cedula)) {
-      const searchField = email ? `email=eq.${encodeURIComponent(email)}` : `cedula=eq.${encodeURIComponent(cedula)}`
-      const found = await xhrReq('GET',
-        `${SB_URL}/rest/v1/center_patients?center_id=eq.${centerId}&${searchField}&limit=1`,
-        H(null))
-      if (found.ok) {
-        const rows = JSON.parse(found.text || '[]')
-        if (rows.length) {
-          patientId = rows[0].id
-          // Actualizar datos si faltan
-          const patch = {}
-          if (!rows[0].telefono && telefono) patch.telefono = telefono
-          if (!rows[0].email && email) patch.email = email
-          if (!rows[0].cedula && cedula) patch.cedula = cedula
-          if (Object.keys(patch).length) {
-            await xhrReq('PATCH',
-              `${SB_URL}/rest/v1/center_patients?id=eq.${patientId}`,
-              H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
-              JSON.stringify(patch))
-          }
-          console.log('[patients] paciente existente ✓', patientId)
-        }
-      }
-    }
-
-    // 2. Crear paciente si no existe
-    if (!patientId && centerId) {
-      const cr = await xhrReq('POST',
-        `${SB_URL}/rest/v1/center_patients`,
-        H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-        JSON.stringify({ center_id: centerId, nombre, email: email||null, telefono, cedula: cedula||null, canal: 'web' }))
-      if (cr.ok) {
-        const data = JSON.parse(cr.text || '[]')
-        patientId = Array.isArray(data) ? data[0]?.id : data?.id
-        console.log('[patients] paciente creado ✓', patientId)
-      } else { console.error('[patients] create failed:', cr.text) }
-    }
-
-    // 3. Registrar cita
-    const citaPayload = {
-      center_id:  centerId,
-      patient_id: patientId || null,
-      fecha_pref: fecha || null,
-      hora:       null,
-      servicios:  leadsServices.length ? leadsServices : null,
-      total_est:  leadsTotal || null,
-      canal:      'web',
-      nota:       _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
-    }
-    const cr2 = await xhrReq('POST',
-      `${SB_URL}/rest/v1/center_citas`,
-      H(null, { 'Content-Type': 'application/json', 'Prefer': 'return=representation' }),
-      JSON.stringify(citaPayload))
-    if (!cr2.ok) { console.error('[citas] insert failed:', cr2.text) }
-    else {
-      console.log('[citas] cita registrada ✓')
-      // Alarma 2: email inmediato al admin del centro
-      const citaId = JSON.parse(cr2.text)?.[0]?.id || null
-      if (_center?.email) {
-        fetch(`${SB_URL}/functions/v1/send-email`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_ANON}` },
-          body: JSON.stringify({
-            type: 'center_admin_lead',
-            to_email: _center.email,
-            center_name: _center.nombre || '',
-            patient_name: nombre,
-            lead_id: citaId,
-            telefono: telefono,
-            email: email || '',
-            fecha: fecha || 'Sin fecha',
-            hora: 'Por confirmar',
-            servicios: leadsServices.map(s=>s.nombre).join(', ') || '—',
-            total: leadsTotal ? '$'+leadsTotal : '',
-          })
-        }).catch(e => console.warn('[admin-email]', e))
-      }
+    if (centerId) {
+      const br = await xhrReq('POST',
+        `${SB_URL}/functions/v1/center-booking`,
+        { 'Content-Type': 'application/json' },
+        JSON.stringify({
+          center_id: centerId, nombre, telefono, email: email || null, cedula: cedula || null,
+          fecha: fecha || null,
+          servicios: leadsServices.length ? leadsServices : null,
+          total_est: leadsTotal || null,
+          nota: _modalDoctor ? 'Médico: '+_modalDoctor.nombre : null,
+        }))
+      if (!br.ok) console.error('[booking] center-booking failed:', br.text)
+      else console.log('[booking] reserva registrada ✓')
     }
 
   } catch(e) { console.error('[booking] error:', e) }
@@ -2770,6 +2708,17 @@ function showModalSuccess(byEmail) {
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function el(id) { return document.getElementById(id) }
+// Hotfix defensivo (20 ago 2026, independiente de P2.2-A): slotPicker/
+// slotWrap/modalDays/modalWaOpt/modalWaLink/modalOnlineBtn/slotsGrid/
+// slotTitle no existen en el HTML -- preexistente, no relacionado a este
+// cambio. openModal()/openModalForDoctor() (los dos entry points reales
+// de "Solicitar atención"/"Agendar consulta") los tocaban sin chequear,
+// crasheando el modal para cualquier visitante antes de que llegara a
+// abrirse. elSafe() devuelve un stub inerte cuando el id no existe, para
+// que esas líneas no rompan el resto del flujo -- no reconstruye la
+// feature de horarios online, solo evita que su ausencia bloquee la
+// reserva básica (que sí tiene sus elementos reales).
+function elSafe(id) { return document.getElementById(id) || { style: {}, innerHTML: '', textContent: '', querySelector: () => null, querySelectorAll: () => [] } }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 function shadeColor(hex, pct) {
   const n = parseInt(hex.replace('#',''), 16)
