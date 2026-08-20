@@ -3517,8 +3517,8 @@ async function loadLabExams() {
 }
 
 async function loadLabOrders() {
-  const { data } = await sbGet('lab_orders', `center_id=eq.${_center.id}&order=created_at.desc&limit=100`)
-  _labOrders = data || []
+  const _rlo = await callAdminCenter('list_lab_orders', { center_id: _center.id })
+  _labOrders = _rlo.ok ? (_rlo.orders || []) : []
   const pending = _labOrders.filter(o => o.estado === 'pendiente').length
   const badge = el('labOrdenesBadge')
   if (badge) {
@@ -3693,7 +3693,7 @@ async function generarOrdenLab() {
   }
 
   // Create order
-  const {data: order, error} = await sbPost('lab_orders', {
+  const _rco = await callAdminCenter('create_lab_order', { patch: {
     center_id:     _center.id,
     patient_id:    _labPatientId,
     medico_id:     medicoId || null,
@@ -3701,15 +3701,16 @@ async function generarOrdenLab() {
     fecha_estudio: fechaEstudio || null,
     hora_estudio:  horaEstudio || null,
     ...totals,
-  })
-  if (error || !order?.id) {
-    toast('Error al crear orden: '+(error?.message||''), 'err')
+  }})
+  const order = _rco.ok ? _rco.order : null
+  if (!_rco.ok || !order?.id) {
+    toast('Error al crear orden: '+(_rco.error||''), 'err')
     btn.disabled = false; btn.textContent = 'Generar Orden →'
     return
   }
 
   // Create order items
-  await Promise.all(items.map(e => sbPost('lab_order_items', {
+  await Promise.all(items.map(e => callAdminCenter('create_lab_order_item', { patch: {
     order_id:     order.id,
     exam_id:      e.id,
     descripcion:  e.descripcion,
@@ -3717,7 +3718,7 @@ async function generarOrdenLab() {
     precio_final: e.precio_final,
     ganancia_dres: e.ganancia_dres,
     ganancia_dc:  e.ganancia_dc,
-  })))
+  }})))
 
   // Send confirmation email to patient — fallback to DB if email missing in memory
   let _emailToSend = _labPatientEmail
@@ -3786,7 +3787,8 @@ async function renderLabOrdenes() {
     const badgeCls = o.estado === 'realizado' ? 'realizado' : o.estado === 'cancelado' ? 'pendiente' : 'pendiente'
     const badgeLbl = o.estado === 'realizado' ? 'Realizado' : o.estado === 'cancelado' ? 'Cancelado' : 'Pendiente'
 
-    const {data: items} = await sbGet('lab_order_items', `order_id=eq.${o.id}`)
+    const _rli = await callAdminCenter('list_lab_order_items', { order_id: o.id })
+    const items = _rli.ok ? _rli.items : null
     const itemsHTML = (items||[]).map(i =>
       `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem;padding:.35rem 0;border-bottom:1px solid #f3f4f6">
         <span style="font-weight:600;color:var(--ink)">${i.descripcion}</span>
@@ -3836,7 +3838,7 @@ async function renderLabOrdenes() {
 }
 
 async function marcarLabRealizado(orderId) {
-  await sbPatch('lab_orders', `id=eq.${orderId}`, { estado: 'realizado' })
+  await callAdminCenter('update_lab_order', { id: orderId, patch: { estado: 'realizado' } })
   const order = _labOrders.find(o=>o.id===orderId)
   if (order?.patient_id) {
     const patient = _allLeads.find(p=>p.id===order.patient_id)
@@ -3854,10 +3856,10 @@ async function cancelarLabOrden(orderId, patientId) {
   if (!confirm('¿Cancelar esta orden?')) return
   const now = new Date().toISOString()
   const alreadySent = _labOrders.find(o=>o.id===orderId)?.email_cancelado_at
-  await sbPatch('lab_orders', `id=eq.${orderId}`, {
+  await callAdminCenter('update_lab_order', { id: orderId, patch: {
     estado: 'cancelado',
     email_cancelado_at: alreadySent || now
-  })
+  }})
   if (!alreadySent && patientId) {
     const patient = _allLeads.find(p => p.id === patientId)
     if (patient?.email) {
@@ -3920,8 +3922,9 @@ async function renderLabLiquidaciones() {
   // ── UN SOLO FETCH para todos los items ───────────────────────────────────
   const itemsMap = {}
   if (realizadas.length) {
-    const ids = realizadas.map(o=>o.id).join(',')
-    const {data: allItems} = await sbGet('lab_order_items', `order_id=in.(${ids})`)
+    const ids = realizadas.map(o=>o.id)
+    const _rai = await callAdminCenter('list_lab_order_items', { order_ids: ids })
+    const allItems = _rai.ok ? _rai.items : null
     ;(allItems||[]).forEach(i => {
       if (!itemsMap[i.order_id]) itemsMap[i.order_id] = []
       itemsMap[i.order_id].push(i)
@@ -3936,8 +3939,8 @@ async function renderLabLiquidaciones() {
     ? `${labPend.length} orden${labPend.length!==1?'es':''} pendiente${labPend.length!==1?'s':''}`
     : 'Sin deuda pendiente'
 
-  const {data: liqHist} = await sbGet('lab_liquidaciones',
-    `center_id=eq.${_center.id}&tipo=eq.laboratorio&order=created_at.desc&limit=5`)
+  const _rlh = await callAdminCenter('list_lab_liquidaciones', { center_id: _center.id, tipo: 'laboratorio', limit: 5 })
+  const liqHist = _rlh.ok ? _rlh.liquidaciones : null
   el('labLiqLabHistory').innerHTML = liqHist?.length
     ? liqHist.map(l=>`<span class="liq-htag">${fmt(l.monto)} · ${l.fecha}</span>`).join('')
     : '<span style="color:#475569">Sin pagos registrados</span>'
@@ -4114,19 +4117,19 @@ async function confirmLiqPago() {
   const { tipo, medicoId, modo } = _liqModalCtx
   closeLiqModal()
 
-  await sbPost('lab_liquidaciones', {
+  await callAdminCenter('create_lab_liquidacion', { patch: {
     center_id: _center.id,
     tipo,
     medico_id: medicoId || null,
     monto,
     fecha: new Date().toISOString().split('T')[0],
     notas: modo === 'total' ? 'Liquidación total' : 'Pago parcial',
-  })
+  }})
 
   if (modo === 'total') {
     const field = tipo === 'laboratorio' ? 'lab_pagado' : 'medico_pagado'
     const toMark = _labOrders.filter(o => o.estado==='realizado' && !o[field] && (tipo==='laboratorio' || o.medico_id===medicoId))
-    await Promise.all(toMark.map(o => sbPatch('lab_orders', `id=eq.${o.id}`, {[field]: true})))
+    await Promise.all(toMark.map(o => callAdminCenter('update_lab_order', { id: o.id, patch: {[field]: true} })))
   }
 
   toast(`Pago de ${fmt(monto)} registrado ✓`, 'ok')
