@@ -7,7 +7,7 @@ const CORS = {
   'Content-Type': 'application/json',
 }
 
-const ADMIN_TOKEN = 'citadoc-growth-2026'
+const ADMIN_TOKEN = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 const RESEND_KEY  = Deno.env.get('RESEND_API_KEY') || ''
 const FROM        = 'CitaDoc <hola@citadoc.lat>'
 
