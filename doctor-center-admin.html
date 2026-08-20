@@ -4435,13 +4435,20 @@ async function sw2Init() {
   if (la) { la.textContent = adminUrl;   la.href = adminUrl }
 
   // Load website data
-  const [websites, services] = await Promise.all([
+  // Hotfix (20 ago 2026, independiente de P2.2-C3): sbGet() devuelve
+  // {data, error}, no un array ni el array directo -- el código leía
+  // websites[0]/services como si sbGet() devolviera eso, así que
+  // _sw2Data siempre quedaba {} y _sw2Services siempre quedaba el objeto
+  // {data,error} entero (no un array), rompiendo sw2FillForm() y el
+  // guardado de servicios. Corrige solo la forma de leer el resultado,
+  // no el contrato de sbGet() ni la lógica del editor.
+  const [websitesRes, servicesRes] = await Promise.all([
     sbGet('center_website', `center_id=eq.${_center.id}&limit=1`),
     sbGet('center_website_services', `center_id=eq.${_center.id}&order=order_index`)
   ])
 
-  _sw2Data     = websites[0] || {}
-  _sw2Services = services || []
+  _sw2Data     = (websitesRes.data && websitesRes.data[0]) || {}
+  _sw2Services = servicesRes.data || []
 
   sw2FillForm()
   sw2RenderServices()
