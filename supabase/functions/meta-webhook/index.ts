@@ -4,6 +4,7 @@ const SUPABASE_URL    = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SRV    = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const VERIFY_TOKEN    = Deno.env.get('META_WEBHOOK_VERIFY_TOKEN') || 'citadoc_webhook_2026'
 const PAGE_TOKEN      = Deno.env.get('META_PAGE_TOKEN') || ''
+const APP_SECRET      = Deno.env.get('META_APP_SECRET')!
 const META_BASE       = 'https://graph.facebook.com/v19.0'
 const sb = createClient(SUPABASE_URL, SUPABASE_SRV)
 
@@ -38,6 +39,31 @@ async function getIGUserInfo(userId: string, pageToken: string) {
   } catch { return {} }
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
+// Meta firma cada POST con HMAC-SHA256(rawBody, App Secret) en
+// X-Hub-Signature-256: sha256=<hex>. Verificar sobre el body crudo, antes
+// de parsear -- la firma es sobre los bytes exactos que Meta mandó.
+async function verifyMetaSignature(rawBody: string, signatureHeader: string | null): Promise<boolean> {
+  if (!signatureHeader || !signatureHeader.startsWith('sha256=')) return false
+  const expectedHex = signatureHeader.slice('sha256='.length)
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(APP_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const sigBuf = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(rawBody))
+  const computedHex = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('')
+  return timingSafeEqual(computedHex, expectedHex)
+}
+
 Deno.serve(async (req) => {
   // ── Webhook verification (GET) ─────────────────────────────────────────────
   if (req.method === 'GET') {
@@ -53,8 +79,14 @@ Deno.serve(async (req) => {
 
   // ── Receive webhook events (POST) ──────────────────────────────────────────
   if (req.method === 'POST') {
+    const rawBody = await req.text()
+    const signature = req.headers.get('x-hub-signature-256')
+    if (!(await verifyMetaSignature(rawBody, signature))) {
+      return new Response('Forbidden', { status: 403 })
+    }
+
     try {
-      const body = await req.json()
+      const body = JSON.parse(rawBody)
 
       for (const entry of body.entry || []) {
         for (const event of entry.messaging || []) {
