@@ -10,6 +10,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_SRV)
 const MAX_COST_PER_MSG = 8      // USD
 const MAX_DAYS_NO_MSG  = 2      // days
 const MIN_CTR          = 0.005  // 0.5%
+const ADMIN_TOKEN      = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 
 async function getMeta() {
   const { data } = await sb.from('platform_settings' as never).select('value').eq('key', 'meta_integration').single()
@@ -55,7 +56,14 @@ async function notifyAdmin(reason: string, campaignName: string, metrics: Record
   }).catch(() => {})
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  if (req.headers.get('x-admin-token') !== ADMIN_TOKEN) {
+    return new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const meta = await getMeta()
 
