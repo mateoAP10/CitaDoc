@@ -3511,7 +3511,8 @@ async function initLab() {
 }
 
 async function loadLabExams() {
-  const { data } = await sbGet('lab_exams', `center_id=eq.${_center.id}&activo=eq.true&order=descripcion`)
+  const _rle = await callAdminCenter('list_lab_exams', { center_id: _center.id, activo: true })
+  const data = _rle.ok ? _rle.exams : null
   _labExamsAll = data || []
   _labExams    = [..._labExamsAll]
 }
@@ -4261,7 +4262,7 @@ async function renderLabCatalogo() {
 
 async function deleteLabExam(id) {
   if (!confirm('¿Eliminar este examen?')) return
-  await sbPatch('lab_exams', `id=eq.${id}`, { activo: false })
+  await callAdminCenter('update_lab_exam', { id, patch: { activo: false } })
   toast('Examen eliminado', 'ok')
   renderLabCatalogo()
   loadLabExams()
@@ -4364,8 +4365,8 @@ async function importLabCSV() {
 
   let inserted = 0
   for (const exam of _labParsedRows) {
-    const { error } = await sbPost('lab_exams', exam)
-    if (!error) inserted++
+    const _rie = await callAdminCenter('create_lab_exam', { patch: exam })
+    if (_rie.ok) inserted++
   }
 
   toast(`${inserted} exámenes importados ✓`, 'ok')
@@ -4399,8 +4400,8 @@ async function saveLabExam() {
     ganancia_dres: parseFloat(el('addExamDres')?.value)  || 0,
     ganancia_dc:   parseFloat(el('addExamDC')?.value)    || 0,
   }
-  const { error } = await sbPost('lab_exams', exam)
-  if (error) { toast('Error: '+error.message, 'err'); return }
+  const _rse = await callAdminCenter('create_lab_exam', { patch: exam })
+  if (!_rse.ok) { toast('Error: '+(_rse.error||'desconocido'), 'err'); return }
   toast('Examen agregado ✓', 'ok')
   closeLabAddExam()
   renderLabCatalogo()

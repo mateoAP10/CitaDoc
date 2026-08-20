@@ -65,6 +65,13 @@ const LAB_ORDER_ITEM_CREATE_FIELDS = [
 ] as const
 const LAB_LIQUIDACION_CREATE_FIELDS = ['center_id', 'tipo', 'medico_id', 'monto', 'fecha', 'notas'] as const
 
+const LAB_EXAM_CREATE_FIELDS = [
+  'center_id', 'descripcion', 'categoria', 'valor_lab', 'precio_final', 'ganancia_dres', 'ganancia_dc',
+] as const
+const LAB_EXAM_UPDATE_FIELDS = [
+  'descripcion', 'categoria', 'valor_lab', 'precio_final', 'ganancia_dres', 'ganancia_dc', 'activo',
+] as const
+
 function pick(src: Record<string, unknown>, fields: readonly string[]) {
   const out: Record<string, unknown> = {}
   for (const f of fields) if (f in src) out[f] = src[f]
@@ -260,6 +267,33 @@ Deno.serve(async (req) => {
         const { data, error } = await sb.from('lab_liquidaciones').insert(patch).select('*').single()
         if (error) return fail(400, error.message)
         return new Response(JSON.stringify({ ok: true, liquidacion: data }), { headers: CORS })
+      }
+
+      // ── Lab exams (catálogo, P2.2-C1) ──────────────────────────────────────
+      case 'list_lab_exams': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        let q = sb.from('lab_exams').select('*').eq('center_id', body.center_id).order('descripcion')
+        if (body.activo !== undefined) q = q.eq('activo', !!body.activo)
+        const { data, error } = await q
+        if (error) return fail(500, error.message)
+        return new Response(JSON.stringify({ ok: true, exams: data || [] }), { headers: CORS })
+      }
+
+      case 'create_lab_exam': {
+        const patch = pick(body.patch || {}, LAB_EXAM_CREATE_FIELDS)
+        if (!patch.center_id || !patch.descripcion) return fail(400, 'center_id y descripcion son requeridos')
+        const { data, error } = await sb.from('lab_exams').insert(patch).select('*').single()
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true, exam: data }), { headers: CORS })
+      }
+
+      case 'update_lab_exam': {
+        if (!body.id) return fail(400, 'id requerido')
+        const patch = pick(body.patch || {}, LAB_EXAM_UPDATE_FIELDS)
+        if (Object.keys(patch).length === 0) return fail(400, 'patch vacío o sin campos permitidos')
+        const { error } = await sb.from('lab_exams').update(patch).eq('id', body.id)
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
       }
 
       default:
