@@ -72,6 +72,22 @@ const LAB_EXAM_UPDATE_FIELDS = [
   'descripcion', 'categoria', 'valor_lab', 'precio_final', 'ganancia_dres', 'ganancia_dc', 'activo',
 ] as const
 
+// P2.2-C2: centers -- solo update, nunca create/delete (un solo centro en
+// producción, sin UI para crear/borrar). id/created_at/slug/activo/
+// color_primary deliberadamente fuera -- el panel de hoy nunca los toca.
+const CENTER_UPDATE_FIELDS = [
+  'portada_url', 'portada_filter', 'portada_blur', 'logo_size', 'logo_url',
+  'chip1', 'chip2', 'chip3', 'maps_url', 'nombre', 'telefono', 'email', 'ciudad',
+  'instagram', 'direccion', 'tagline', 'descripcion', 'whatsapp', 'seguros', 'schedule_config',
+] as const
+
+// center_services -- sin update, no existe esa capacidad hoy (solo alta y baja).
+const CENTER_SERVICE_CREATE_FIELDS = ['center_id', 'nombre', 'categoria', 'precio', 'booking_type', 'orden', 'seguros'] as const
+
+// center_packages
+const CENTER_PACKAGE_CREATE_FIELDS = ['center_id', 'nombre', 'categoria', 'descripcion', 'incluye', 'precio_regular', 'precio_promo', 'icono', 'color', 'activo'] as const
+const CENTER_PACKAGE_UPDATE_FIELDS = ['nombre', 'categoria', 'descripcion', 'incluye', 'precio_regular', 'precio_promo', 'icono', 'color', 'activo'] as const
+
 function pick(src: Record<string, unknown>, fields: readonly string[]) {
   const out: Record<string, unknown> = {}
   for (const f of fields) if (f in src) out[f] = src[f]
@@ -292,6 +308,75 @@ Deno.serve(async (req) => {
         const patch = pick(body.patch || {}, LAB_EXAM_UPDATE_FIELDS)
         if (Object.keys(patch).length === 0) return fail(400, 'patch vacío o sin campos permitidos')
         const { error } = await sb.from('lab_exams').update(patch).eq('id', body.id)
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
+      // ── centers (P2.2-C2) ───────────────────────────────────────────────
+      case 'update_center': {
+        if (!body.id) return fail(400, 'id requerido')
+        const patch = pick(body.patch || {}, CENTER_UPDATE_FIELDS)
+        if (Object.keys(patch).length === 0) return fail(400, 'patch vacío o sin campos permitidos')
+        const { data: existing } = await sb.from('centers').select('id').eq('id', body.id).maybeSingle()
+        if (!existing) return fail(400, 'centro no encontrado')
+        const { error } = await sb.from('centers').update(patch).eq('id', body.id)
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
+      // ── center_services ───────────────────────────────────────────────────
+      case 'list_center_services': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        const { data, error } = await sb.from('center_services').select('*')
+          .eq('center_id', body.center_id).order('categoria').order('orden')
+        if (error) return fail(500, error.message)
+        return new Response(JSON.stringify({ ok: true, services: data || [] }), { headers: CORS })
+      }
+
+      case 'create_center_service': {
+        const patch = pick(body.patch || {}, CENTER_SERVICE_CREATE_FIELDS)
+        if (!patch.center_id || !patch.nombre) return fail(400, 'center_id y nombre son requeridos')
+        const { data, error } = await sb.from('center_services').insert(patch).select('*').single()
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true, service: data }), { headers: CORS })
+      }
+
+      case 'delete_center_service': {
+        if (!body.id) return fail(400, 'id requerido')
+        const { error } = await sb.from('center_services').delete().eq('id', body.id)
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
+      // ── center_packages ──────────────────────────────────────────────────
+      case 'list_center_packages': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        const { data, error } = await sb.from('center_packages').select('*')
+          .eq('center_id', body.center_id).order('orden').order('created_at')
+        if (error) return fail(500, error.message)
+        return new Response(JSON.stringify({ ok: true, packages: data || [] }), { headers: CORS })
+      }
+
+      case 'create_center_package': {
+        const patch = pick(body.patch || {}, CENTER_PACKAGE_CREATE_FIELDS)
+        if (!patch.center_id || !patch.nombre) return fail(400, 'center_id y nombre son requeridos')
+        const { data, error } = await sb.from('center_packages').insert(patch).select('*').single()
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true, package: data }), { headers: CORS })
+      }
+
+      case 'update_center_package': {
+        if (!body.id) return fail(400, 'id requerido')
+        const patch = pick(body.patch || {}, CENTER_PACKAGE_UPDATE_FIELDS)
+        if (Object.keys(patch).length === 0) return fail(400, 'patch vacío o sin campos permitidos')
+        const { error } = await sb.from('center_packages').update(patch).eq('id', body.id)
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
+      case 'delete_center_package': {
+        if (!body.id) return fail(400, 'id requerido')
+        const { error } = await sb.from('center_packages').delete().eq('id', body.id)
         if (error) return fail(400, error.message)
         return new Response(JSON.stringify({ ok: true }), { headers: CORS })
       }

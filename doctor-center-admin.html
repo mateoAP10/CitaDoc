@@ -1886,7 +1886,7 @@ async function init() {
   try {
     const [dr, sr, lr] = await Promise.all([
       sbGet('medicos', 'activo=eq.true&select=id,nombre,apellido,titulo,especialidades,foto_url&order=apellido'),
-      sbGet('center_services', 'center_id=eq.' + _center.id + '&select=*&order=categoria,orden'),
+      callAdminCenter('list_center_services', { center_id: _center.id }).then(r => ({ data: r.ok ? r.services : null, error: r.ok ? null : { message: r.error } })),
       sbGet('center_doctors', 'center_id=eq.' + _center.id + '&select=medico_id')
     ])
     _allDocs  = dr.data  || []
@@ -1919,7 +1919,8 @@ async function uploadPortada(input) {
   if (upErr) { prog.textContent = 'Error subiendo: ' + upErr.message; return }
 
   const url = stgPublicUrl('centers', path) + '?v=' + Date.now()
-  const { error: dbErr } = await sbPatch('centers', 'id=eq.' + _center.id, { portada_url: url })
+  const _rpu = await callAdminCenter('update_center', { id: _center.id, patch: { portada_url: url } })
+  const dbErr = _rpu.ok ? null : { message: _rpu.error || 'error al guardar portada_url' }
   if (dbErr) { prog.textContent = 'Foto subida pero URL no guardada: ' + dbErr.message; return }
 
   _center.portada_url = url
@@ -1991,10 +1992,11 @@ async function savePhotoSettings() {
   const btn = event.currentTarget
   btn.textContent = 'Guardando...'
   btn.disabled = true
-  const { error } = await sbPatch('centers', 'id=eq.' + _center.id, {
+  const _rap = await callAdminCenter('update_center', { id: _center.id, patch: {
     portada_filter: _currentFilter,
     portada_blur:   _currentBlur
-  })
+  }})
+  const error = _rap.ok ? null : { message: _rap.error || 'error' }
   btn.disabled = false
   if (error) { toast('Error: ' + error.message, 'err'); btn.innerHTML = '✕ Error'; }
   else { toast('Apariencia guardada', 'ok'); btn.textContent = '✓ Guardado'; }
@@ -2028,7 +2030,8 @@ async function saveLogoSize() {
   const btn = event.currentTarget
   btn.textContent = 'Guardando...'
   btn.disabled = true
-  const { error } = await sbPatch('centers', 'id=eq.' + _center.id, { logo_size: _currentLogoSize })
+  const _rls = await callAdminCenter('update_center', { id: _center.id, patch: { logo_size: _currentLogoSize } })
+  const error = _rls.ok ? null : { message: _rls.error || 'error' }
   btn.disabled = false
   if (error) {
     const msg = error.message && error.message.includes('400') ? 'Falta correr el migration en Supabase (logo_size)' : 'Error: ' + error.message
@@ -2053,7 +2056,7 @@ async function uploadLogo(input) {
   if (upErr) { prog.textContent = 'Error: ' + upErr.message; return }
 
   const url = stgPublicUrl('centers', path) + '?v=' + Date.now()
-  await sbPatch('centers', 'id=eq.' + _center.id, { logo_url: url })
+  await callAdminCenter('update_center', { id: _center.id, patch: { logo_url: url } })
   _center.logo_url = url
   showLogo(url)
   prog.textContent = '✓ Logo guardado'
@@ -2065,7 +2068,7 @@ async function uploadLogo(input) {
 async function removeLogo() {
   if (!_center) return
   await stgDelete('centers', [CENTER_SLUG+'/logo.png', CENTER_SLUG+'/logo.jpg', CENTER_SLUG+'/logo.svg', CENTER_SLUG+'/logo.webp'])
-  await sbPatch('centers', 'id=eq.' + _center.id, { logo_url: null })
+  await callAdminCenter('update_center', { id: _center.id, patch: { logo_url: null } })
   _center.logo_url = null
   el('logoPreview').style.display = 'none'
   el('logoPreview').src = ''
@@ -2152,7 +2155,8 @@ async function saveChips() {
     chip3:    el('fChip3').value.trim() || null,
     maps_url: el('fMapsUrl').value.trim() || null,
   }
-  const { error } = await sbPatch('centers', 'id=eq.' + _center.id, upd)
+  const _rup = await callAdminCenter('update_center', { id: _center.id, patch: upd })
+  const error = _rup.ok ? null : { message: _rup.error || 'error' }
   if (error) {
     toast('Error: ' + error.message, 'err')
   } else {
@@ -2187,7 +2191,8 @@ async function saveInfo() {
     seguros:     _seguros,
   }
 
-  const { error } = await sbPatch('centers', 'id=eq.' + _center.id, upd)
+  const _rup = await callAdminCenter('update_center', { id: _center.id, patch: upd })
+  const error = _rup.ok ? null : { message: _rup.error || 'error' }
   if (error) {
     toast('Error: ' + error.message, 'err')
   } else {
@@ -2296,14 +2301,14 @@ async function addServicio() {
   if (!(await ensureCenter())) { toast('No se pudo conectar al centro', 'err'); return }
 
   const svcSeguros = Array.from(document.querySelectorAll('input[name="svcSeguros"]:checked')).map(c => c.value)
-  const { data, error } = await sbPost('center_services', {
+  const _rcs = await callAdminCenter('create_center_service', { patch: {
     center_id: _center.id, nombre, categoria: cat, precio,
     booking_type: cat==='consulta'?'doctor':'request',
     orden: _services.filter(s=>s.categoria===cat).length+1,
     seguros: svcSeguros,
-  })
-  if (error) { toast('Error al agregar', 'err'); return }
-  _services.push(data)
+  }})
+  if (!_rcs.ok) { toast('Error al agregar', 'err'); return }
+  _services.push(_rcs.service)
   _svcTab = cat
   renderServices()
   el('svcNombre').value = ''
@@ -2312,7 +2317,7 @@ async function addServicio() {
 }
 
 async function deleteServicio(id) {
-  await sbDelete('center_services', 'id=eq.'+id)
+  await callAdminCenter('delete_center_service', { id })
   _services = _services.filter(s => s.id !== id)
   renderServices()
   toast('Servicio eliminado', 'ok')
@@ -2428,16 +2433,16 @@ async function commitImport() {
     for (const r of _importRows) {
       try {
         const orden = _services.filter(s => s.categoria === r.cat).length + ok + 1
-        const res = await sbPost('center_services', {
+        const res = await callAdminCenter('create_center_service', { patch: {
           center_id: _center.id, nombre: r.nombre, categoria: r.cat, precio: r.precio,
           booking_type: r.cat === 'consulta' ? 'doctor' : 'request',
           orden, seguros: [],
-        })
-        if (res.error) { console.error('svc error', res.error); fail++ } else { ok++ }
+        }})
+        if (!res.ok) { console.error('svc error', res.error); fail++ } else { ok++ }
       } catch(e) { console.error('svc exc', e); fail++ }
     }
-    const svcRes = await sbGet('center_services', 'center_id=eq.' + _center.id + '&select=*&order=categoria,orden')
-    _services = svcRes.data || []
+    const svcRes = await callAdminCenter('list_center_services', { center_id: _center.id })
+    _services = svcRes.ok ? (svcRes.services || []) : []
     renderServices()
     toggleImport()
     toast(`${ok} servicio${ok !== 1 ? 's' : ''} importado${ok !== 1 ? 's' : ''}${fail ? ` (${fail} con error)` : ''}`, fail ? 'err' : 'ok')
@@ -3277,9 +3282,9 @@ async function savePkg() {
   const editId = document.getElementById('pkgEditId').value
   let error
   if (editId) {
-    const r = await sbPatch('center_packages', 'id=eq.'+editId, payload); error = r.error
+    const r = await callAdminCenter('update_center_package', { id: editId, patch: payload }); error = r.ok ? null : { message: r.error }
   } else {
-    const r = await sbPost('center_packages', payload); error = r.error
+    const r = await callAdminCenter('create_center_package', { patch: payload }); error = r.ok ? null : { message: r.error }
   }
 
   btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Guardar paquete'
@@ -3291,18 +3296,15 @@ async function savePkg() {
 
 async function loadPackages() {
   if (!_center) return
-  const { data } = await sbGet('center_packages', `center_id=eq.${_center.id}&select=*&order=orden,created_at`)
-  _packages = data || []
+  const _rlp = await callAdminCenter('list_center_packages', { center_id: _center.id })
+  _packages = _rlp.ok ? (_rlp.packages || []) : []
   renderPackages()
 }
 
 async function deletePkg(id) {
   if (!confirm('¿Eliminar este paquete?')) return
-  await sbPatch('center_packages', 'id=eq.'+id, { activo: false })
-  // Actually delete
-  const { error } = await sbGet('center_packages', `id=eq.${id}`)
-  // Use xhr DELETE
-  await fetch(`${SB_URL}/rest/v1/center_packages?id=eq.${id}`, { method:'DELETE', headers: { apikey:SB_ANON, Authorization:'Bearer '+SB_ANON } })
+  await callAdminCenter('update_center_package', { id, patch: { activo: false } })
+  await callAdminCenter('delete_center_package', { id })
   await loadPackages()
   toast('Paquete eliminado', 'ok')
 }
@@ -3389,8 +3391,8 @@ async function saveSchedule() {
   })
   const config = { duracion: parseInt(el('schDuracion').value)||30, dias }
   try {
-    const res = await sbPatch('centers', 'id=eq.'+_center.id, { schedule_config: config })
-    if (res.error) throw new Error(res.error.message)
+    const _rsc = await callAdminCenter('update_center', { id: _center.id, patch: { schedule_config: config } })
+    if (!_rsc.ok) throw new Error(_rsc.error || 'error al guardar horarios')
     _center.schedule_config = config
     toast('Horarios guardados', 'ok')
     btn.textContent = '✓ Guardado'; btn.classList.add('saved')
