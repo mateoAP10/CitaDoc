@@ -1762,17 +1762,41 @@ async function sbDelete(table, query) {
   await xhr('DELETE', SB_URL + '/rest/v1/' + table + '?' + query, H())
 }
 
+// centers no tiene concepto de ownership por médico (es una sola entidad
+// de negocio, no per-doctor como growth-creatives/demo-media) -- todo
+// INSERT/UPDATE/DELETE pasa por la Edge Function admin-storage-upload
+// (x-admin-token + service role). El token se pide una vez por sesión de
+// página y se guarda solo en memoria, nunca embebido en este archivo --
+// mismo patrón que getAdminUpdateToken() en admin.html.
+var _dcAdminToken = null
+function getDcAdminToken() {
+  if (!_dcAdminToken) _dcAdminToken = window.prompt('Token admin (operación: subir/borrar archivo)') || ''
+  return _dcAdminToken
+}
+
 async function stgUpload(bucket, path, file) {
-  const r = await xhr('POST', SB_URL + '/storage/v1/object/' + bucket + '/' + path + '?upsert=true',
-    { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': file.type, 'x-upsert': 'true' },
-    file, 60000)
-  return r.ok ? { error: null } : { error: { message: 'Storage HTTP ' + r.status + ': ' + r.text } }
+  const form = new FormData()
+  form.append('bucket', bucket)
+  form.append('path', path)
+  form.append('file', file)
+  const res = await fetch(SB_URL + '/functions/v1/admin-storage-upload', {
+    method: 'POST',
+    headers: { 'x-admin-token': getDcAdminToken() },
+    body: form
+  }).then(r => r.json()).catch(() => ({ ok: false }))
+  return res.ok ? { error: null, publicUrl: res.publicUrl } : { error: { message: res.error || 'error de subida' } }
 }
 
 async function stgDelete(bucket, paths) {
-  await xhr('DELETE', SB_URL + '/storage/v1/object/' + bucket,
-    { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': 'application/json' },
-    JSON.stringify({ prefixes: paths })).catch(()=>{})
+  const form = new FormData()
+  form.append('bucket', bucket)
+  form.append('action', 'delete')
+  form.append('paths', JSON.stringify(paths))
+  await fetch(SB_URL + '/functions/v1/admin-storage-upload', {
+    method: 'POST',
+    headers: { 'x-admin-token': getDcAdminToken() },
+    body: form
+  }).catch(() => {})
 }
 
 function stgPublicUrl(bucket, path) {

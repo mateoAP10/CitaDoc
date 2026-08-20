@@ -62,6 +62,25 @@
     return r;
   }
 
+  // Mismo motivo que _adminUpdateMedico/_adminUpdateDemo -- en modo admin
+  // el path demo-media/{slug}/... puede pertenecer a OTRO médico (o a
+  // ninguno todavía). En modo dashboard (isAdmin:false) esto nunca se
+  // llama -- el upload directo ya está cubierto por la policy de
+  // ownership de storage.objects para growth-creatives.
+  async function _adminStorageUpload(bucket, path, file) {
+    var url = (_opts.sb ? _opts.sb.supabaseUrl : 'https://qxoomcqaafogczrvsyhg.supabase.co') + '/functions/v1/admin-storage-upload';
+    var form = new FormData();
+    form.append('bucket', bucket);
+    form.append('path', path);
+    form.append('file', file);
+    var r = await fetch(url, {
+      method: 'POST',
+      headers: { 'x-admin-token': _opts.adminToken || '' },
+      body: form
+    }).then(function(res){ return res.json(); }).catch(function(){ return { ok:false }; });
+    return r;
+  }
+
   /* ── CSS ────────────────────────────────────────────────────────────────── */
   var _CSS = [
     '#wbe-modal{display:none;position:fixed;inset:0;z-index:9000;background:#f4f6f8;flex-direction:column;font-family:"DM Sans",system-ui,sans-serif}',
@@ -569,9 +588,19 @@
     if (st) st.textContent = 'Subiendo...';
     var ext  = file.name.split('.').pop();
     var path = 'demo-media/' + _slug + '/' + type + '-' + Date.now() + '.' + ext;
-    var res  = await _sb().storage.from('growth-creatives').upload(path, file, { upsert: true, contentType: file.type });
-    if (res.error) { if (st) st.textContent = 'Error'; console.error(res.error); return; }
-    var pub = _sb().storage.from('growth-creatives').getPublicUrl(path).data.publicUrl;
+    var pub;
+    if (_opts.isAdmin) {
+      var _ru = await _adminStorageUpload('growth-creatives', path, file);
+      if (!_ru.ok) { if (st) st.textContent = 'Error'; console.error(_ru.error); return; }
+      pub = _ru.publicUrl;
+    } else {
+      // Propio demo (isAdmin:false) -- cubierto por la policy de
+      // ownership (demo-media/{slug}/... con medico_id propio), sin
+      // necesitar ni exponer el token admin.
+      var res = await _sb().storage.from('growth-creatives').upload(path, file, { upsert: true, contentType: file.type });
+      if (res.error) { if (st) st.textContent = 'Error'; console.error(res.error); return; }
+      pub = _sb().storage.from('growth-creatives').getPublicUrl(path).data.publicUrl;
+    }
     if (th) th.innerHTML = '<img src="' + pub + '" style="width:100%;height:100%;object-fit:cover">';
     if (st) st.textContent = '✓ Cargada';
     if (type === 'photo') { _photoUrl = pub; _initCropPreview(pub); }
@@ -597,9 +626,15 @@
     for (var i = 0; i < files.length; i++) {
       var f = files[i], ext = f.name.split('.').pop();
       var path = 'demo-media/' + _slug + '/gallery/' + ts + '_' + i + '.' + ext;
-      var res = await _sb().storage.from('growth-creatives').upload(path, f, { upsert: true, contentType: f.type });
-      if (res.error) { console.error(res.error); continue; }
-      _gallery.push(_sb().storage.from('growth-creatives').getPublicUrl(path).data.publicUrl);
+      if (_opts.isAdmin) {
+        var _ruG = await _adminStorageUpload('growth-creatives', path, f);
+        if (!_ruG.ok) { console.error(_ruG.error); continue; }
+        _gallery.push(_ruG.publicUrl);
+      } else {
+        var res = await _sb().storage.from('growth-creatives').upload(path, f, { upsert: true, contentType: f.type });
+        if (res.error) { console.error(res.error); continue; }
+        _gallery.push(_sb().storage.from('growth-creatives').getPublicUrl(path).data.publicUrl);
+      }
     }
     input.value = '';
     if (btn) { btn.textContent = '+ Fotos'; btn.disabled = false; }
