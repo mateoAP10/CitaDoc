@@ -1,10 +1,26 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.2-HF2 -- funcion exclusivamente batch (sin caso de uso publico, a
+// diferencia de center-followup): procesaba citas canceladas con nombre/
+// email del paciente y disparaba envios reales de email, invocable sin
+// ningun auth (verify_jwt=false, sin chequeo propio). Unico caller
+// legitimo: pg_cron (job "cancel-followup-hourly"), migrado al
+// service_role vigente como parte de este mismo hotfix.
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const SEND_EMAIL_URL       = `${SUPABASE_URL}/functions/v1/send-email`
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const sb  = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     const now = new Date()
