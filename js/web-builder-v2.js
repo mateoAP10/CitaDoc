@@ -49,6 +49,19 @@
     return r;
   }
 
+  // Mismo motivo que _adminUpdateMedico, pero para generated_demos -- en
+  // modo isAdmin el demo que se esta guardando/desplegando puede
+  // pertenecer a OTRO medico (o a ninguno todavia).
+  async function _adminUpdateDemo(slug, patch) {
+    var url = (_opts.sb ? _opts.sb.supabaseUrl : 'https://qxoomcqaafogczrvsyhg.supabase.co') + '/functions/v1/admin-update-demo';
+    var r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': _opts.adminToken || '' },
+      body: JSON.stringify({ slug: slug, patch: patch })
+    }).then(function(res){ return res.json(); }).catch(function(){ return { ok:false }; });
+    return r;
+  }
+
   /* ── CSS ────────────────────────────────────────────────────────────────── */
   var _CSS = [
     '#wbe-modal{display:none;position:fixed;inset:0;z-index:9000;background:#f4f6f8;flex-direction:column;font-family:"DM Sans",system-ui,sans-serif}',
@@ -1093,11 +1106,18 @@
         show_instagram: wsSnap.show_instagram, show_map: wsSnap.show_map
       });
 
-      // 1. Update con count para detectar si realmente afectó filas
-      var _upd = await _sb().from('generated_demos').update(upd, { count: 'exact' }).eq('slug', _slug);
-      console.log('[Builder] UPDATE RESULT', { error: _upd && _upd.error, status: _upd && _upd.status, count: _upd && _upd.count });
-      if (_upd && _upd.error) throw new Error(_upd.error.message || 'Error en base de datos');
-      if (_upd && _upd.count === 0) throw new Error('UPDATE no afectó ninguna fila — RLS puede estar bloqueando. Status: ' + (_upd.status || '?'));
+      // 1. Update -- en admin puede ser el demo de OTRO médico (o de
+      // ninguno todavía), pasa por la Edge Function; en dashboard sigue
+      // directo, cubierto por la ownership de generated_demos.
+      if (_opts.isAdmin) {
+        var _updAdmin = await _adminUpdateDemo(_slug, upd);
+        if (!_updAdmin.ok) throw new Error(_updAdmin.error || 'Error en base de datos');
+      } else {
+        var _upd = await _sb().from('generated_demos').update(upd, { count: 'exact' }).eq('slug', _slug);
+        console.log('[Builder] UPDATE RESULT', { error: _upd && _upd.error, status: _upd && _upd.status, count: _upd && _upd.count });
+        if (_upd && _upd.error) throw new Error(_upd.error.message || 'Error en base de datos');
+        if (_upd && _upd.count === 0) throw new Error('UPDATE no afectó ninguna fila — RLS puede estar bloqueando. Status: ' + (_upd.status || '?'));
+      }
 
       // 2. Read-back
       var _rb = await _sb().from('generated_demos')
@@ -1164,7 +1184,8 @@
     if (_isLive) {
       if (!confirm(_opts.isAdmin ? '¿Retirar el sitio de producción?' : '¿Despublicar tu sitio web?')) return;
       if (btn) { btn.textContent = 'Retirando...'; btn.disabled = true; }
-      await _sb().from('generated_demos').update({ activated_at: null }).eq('slug', _slug);
+      if (_opts.isAdmin) { await _adminUpdateDemo(_slug, { activated_at: null }); }
+      else { await _sb().from('generated_demos').update({ activated_at: null }).eq('slug', _slug); }
       _isLive = false;
     } else {
       if (btn) { btn.textContent = 'Publicando...'; btn.disabled = true; }
@@ -1251,12 +1272,14 @@
         }
 
         // 6. Activar demo — siempre con medico_id garantizado ─────────────────
-        await _sb().from('generated_demos').update({
+        var _patchActivar = {
           activated_at:   new Date().toISOString(),
           status:         'active',
           payment_status: 'paid',
           medico_id:      _medicoId,
-        }).eq('slug', _slug);
+        };
+        if (_opts.isAdmin) { await _adminUpdateDemo(_slug, _patchActivar); }
+        else { await _sb().from('generated_demos').update(_patchActivar).eq('slug', _slug); }
 
         console.log('[Deploy] ✓ ' + _slug + ' → medico_id:' + _medicoId);
 
