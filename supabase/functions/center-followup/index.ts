@@ -1,4 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.2-HF1 -- el batch POST (confirmaciones + recordatorios) procesa hasta
+// 100 citas de TODOS los centros con datos de contacto del paciente (nombre,
+// email, telefono, cedula) y dispara envios reales de email -- estaba
+// invocable sin ningun auth (verify_jwt=false a nivel gateway). El unico
+// caller legitimo es pg_cron (job "center-followup-hourly"), que ya manda
+// el service_role JWT real como Bearer -- requireAdmin(allowServiceRole)
+// lo acepta sin requerir cambios en el cron. Los links GET de accion
+// (confirm/cancel) que llegan desde los emails de paciente/admin quedan
+// intactos y sin auth a proposito: son clics humanos desde un cliente de
+// correo, no pueden mandar Authorization.
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -310,6 +322,15 @@ Deno.serve(async (req) => {
       }
     }
     return new Response('Not found', { status: 404 })
+  }
+
+  // ── Batch (POST) -- solo pg_cron / service_role ────────────────────────────
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   try {
