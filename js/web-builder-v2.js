@@ -43,7 +43,7 @@
     var url = (_opts.sb ? _opts.sb.supabaseUrl : 'https://qxoomcqaafogczrvsyhg.supabase.co') + '/functions/v1/admin-update-medico';
     var r = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': _opts.adminToken || '' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (_opts.adminToken || '') },
       body: JSON.stringify({ id: id, patch: patch })
     }).then(function(res){ return res.json(); }).catch(function(){ return { ok:false }; });
     return r;
@@ -56,7 +56,7 @@
     var url = (_opts.sb ? _opts.sb.supabaseUrl : 'https://qxoomcqaafogczrvsyhg.supabase.co') + '/functions/v1/admin-update-demo';
     var r = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': _opts.adminToken || '' },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (_opts.adminToken || '') },
       body: JSON.stringify({ slug: slug, patch: patch })
     }).then(function(res){ return res.json(); }).catch(function(){ return { ok:false }; });
     return r;
@@ -75,7 +75,7 @@
     form.append('file', file);
     var r = await fetch(url, {
       method: 'POST',
-      headers: { 'x-admin-token': _opts.adminToken || '' },
+      headers: { Authorization: 'Bearer ' + (_opts.adminToken || '') },
       body: form
     }).then(function(res){ return res.json(); }).catch(function(){ return { ok:false }; });
     return r;

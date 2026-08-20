@@ -1,16 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SRV = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const APP_ID       = Deno.env.get('META_APP_ID') || '992796710375550'
 const APP_SECRET   = Deno.env.get('META_APP_SECRET')!
 const REDIRECT_URI = Deno.env.get('META_REDIRECT_URI') || 'https://citadoc.lat/auth/meta/callback'
-const ADMIN_TOKEN  = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 const sb = createClient(SUPABASE_URL, SUPABASE_SRV)
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type,x-admin-token',
+  'Access-Control-Allow-Headers': 'content-type,authorization',
   'Content-Type': 'application/json',
 }
 
@@ -22,8 +22,8 @@ Deno.serve(async (req) => {
 
   // ── 1. Generate OAuth URL ──────────────────────────────────────────────────
   if (action === 'url') {
-    if (req.headers.get('x-admin-token') !== ADMIN_TOKEN)
-      return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+    const auth = await requireAdmin(req)
+    if (!auth.ok) return new Response(JSON.stringify({ error: auth.error }), { status: auth.status, headers: CORS })
 
     const params = new URLSearchParams({
       client_id:     APP_ID,
@@ -104,8 +104,8 @@ Deno.serve(async (req) => {
 
   // ── 3. Get current connection status ──────────────────────────────────────
   if (action === 'status') {
-    if (req.headers.get('x-admin-token') !== ADMIN_TOKEN)
-      return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+    const auth = await requireAdmin(req)
+    if (!auth.ok) return new Response(JSON.stringify({ error: auth.error }), { status: auth.status, headers: CORS })
 
     const { data, error: selErr } = await sb.from('platform_settings' as never).select('value').eq('key', 'meta_integration').single()
     if (selErr || !data) return new Response(JSON.stringify({ connected: false }), { headers: CORS })

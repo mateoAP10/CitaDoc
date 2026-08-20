@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SRV = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -10,7 +11,6 @@ const sb = createClient(SUPABASE_URL, SUPABASE_SRV)
 const MAX_COST_PER_MSG = 8      // USD
 const MAX_DAYS_NO_MSG  = 2      // days
 const MIN_CTR          = 0.005  // 0.5%
-const ADMIN_TOKEN      = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 
 async function getMeta() {
   const { data } = await sb.from('platform_settings' as never).select('value').eq('key', 'meta_integration').single()
@@ -57,9 +57,10 @@ async function notifyAdmin(reason: string, campaignName: string, metrics: Record
 }
 
 Deno.serve(async (req) => {
-  if (req.headers.get('x-admin-token') !== ADMIN_TOKEN) {
-    return new Response(JSON.stringify({ error: 'unauthorized' }), {
-      status: 401,
+  const auth = await requireAdmin(req)
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
       headers: { 'Content-Type': 'application/json' },
     })
   }

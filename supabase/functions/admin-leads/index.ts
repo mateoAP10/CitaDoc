@@ -1,11 +1,12 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 // ── Ventanita administrativa para doctor_leads (19 ago 2026) ────────────────
 // doctor_leads (pipeline de ventas de captacion de medicos) tenia sus 3
 // policies de SELECT/UPDATE/DELETE abiertas a cualquiera, sin login.
 // admin.html (unico consumidor cliente) corria con la anon key pura, sin
 // sesion -- esas policies eran la UNICA razon por la que funcionaba, no una
-// necesidad real. Mismo patron que admin-update-medico: x-admin-token +
+// necesidad real. Mismo patron que admin-update-medico: JWT admin (admin_users) +
 // service role, whitelist explicito de campos para 'update', 'delete' solo
 // por id, 'list' solo devuelve las columnas que admin.html realmente pinta.
 //
@@ -14,11 +15,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const ADMIN_TOKEN          = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type,x-admin-token',
+  'Access-Control-Allow-Headers': 'content-type,authorization',
   'Content-Type': 'application/json',
 }
 
@@ -34,8 +34,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return fail(405, 'method not allowed')
 
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) return fail(401, 'unauthorized')
+  const auth = await requireAdmin(req)
+  if (!auth.ok) return fail(auth.status, auth.error)
 
   let body: any
   try { body = await req.json() } catch { return fail(400, 'JSON inválido') }

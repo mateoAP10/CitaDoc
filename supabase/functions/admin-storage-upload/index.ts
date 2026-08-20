@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 // ── Ventanita administrativa para Storage (20 ago 2026) ─────────────────────
 // centers y growth-creatives son buckets PUBLICOS (public:true, correcto --
@@ -11,13 +12,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // Los 3 consumidores reales (admin.html, doctor-center-admin.html,
 // js/web-builder-v2.js) corren con la anon key pura, sin sesion real --
 // mismo patron que el resto de operaciones admin de este proyecto:
-// x-admin-token + service role. multipart/form-data en vez de JSON+base64
+// JWT admin (admin_users) + service role. multipart/form-data en vez de JSON+base64
 // -- mas eficiente para archivos binarios, el runtime de Deno lo soporta
 // nativamente via req.formData().
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const ADMIN_TOKEN          = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 
 const ALLOWED_BUCKETS = ['centers', 'growth-creatives']
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4']
@@ -25,7 +25,7 @@ const MAX_BYTES = 10 * 1024 * 1024 // 10MB -- el limite mas alto de los dos buck
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type,x-admin-token',
+  'Access-Control-Allow-Headers': 'content-type,authorization',
   'Content-Type': 'application/json',
 }
 
@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return fail(405, 'method not allowed')
 
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) return fail(401, 'unauthorized')
+  const auth = await requireAdmin(req)
+  if (!auth.ok) return fail(auth.status, auth.error)
 
   const contentType = req.headers.get('content-type') || ''
   if (!contentType.includes('multipart/form-data')) return fail(400, 'se espera multipart/form-data')

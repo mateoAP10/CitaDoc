@@ -1,15 +1,15 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type, x-admin-token',
+  'Access-Control-Allow-Headers': 'content-type, authorization',
   'Content-Type': 'application/json',
 }
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SRV = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const ADMIN_TOKEN  = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 
 const sb = createClient(SUPABASE_URL, SUPABASE_SRV)
 
@@ -110,10 +110,11 @@ function parseYear(pubdate: string): number | null {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
-  // Auth check
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) {
-    return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+  // Auth check -- admin real O service_role (Scheduled Trigger / cron
+  // server-to-server; nunca aceptar el service_role key desde HTML/JS)
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), { status: auth.status, headers: CORS })
   }
 
   if (req.method !== 'POST') {

@@ -1,13 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-admin-token',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Content-Type': 'application/json',
 }
 
-const ADMIN_TOKEN = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 const RESEND_KEY  = Deno.env.get('RESEND_API_KEY') || ''
 const FROM        = 'CitaDoc <hola@citadoc.lat>'
 
@@ -75,8 +75,8 @@ function tplSetPassword(d: { firstName: string; setup_link: string }): string {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) return json({ error: 'unauthorized' }, 401)
+  const auth = await requireAdmin(req)
+  if (!auth.ok) return json({ error: auth.error }, auth.status)
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
   const SUPABASE_SVC = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

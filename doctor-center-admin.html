@@ -455,6 +455,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -467,7 +468,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       <div class="gate-logo-sub">Panel de administración</div>
     </div>
   </div>
-  <input id="keyInput" type="password" placeholder="Contraseña" autocomplete="current-password">
+  <input id="loginEmail" type="email" placeholder="Email" autocomplete="username">
+  <input id="loginPassword" type="password" placeholder="Contraseña" autocomplete="current-password">
   <button onclick="checkKey()">Entrar</button>
   <div class="gate-err" id="gateErr"></div>
 </div>
@@ -485,6 +487,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
       </div>
       <div class="topbar-right">
         <a class="btn-view" id="btnVerPublica" href="#" target="_blank">Ver página pública →</a>
+        <button class="btn-view" onclick="logoutAdmin()">Salir</button>
         <script>document.getElementById('btnVerPublica').href='/'+(window.location.pathname.split('/')[1]||'');</script>
       </div>
     </div>
@@ -1709,7 +1712,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 <script>
 const SB_URL     = 'https://qxoomcqaafogczrvsyhg.supabase.co'
 const SB_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs'
-const ADMIN_PASS = 'doctorcenter2026'
+// P2.1 -- Admin Auth real (20 ago 2026). Reemplaza ADMIN_PASS (gate cosmetico)
+// + getDcAdminToken()/prompt por identidad real via Supabase Auth. Mismo
+// patron que admin.html: _ADMIN_JWT es el access_token de la sesion real
+// logueada, se manda como Authorization: Bearer en cada llamada admin.
+const sbAuth = supabase.createClient(SB_URL, SB_ANON, { auth: { persistSession: true, autoRefreshToken: true } })
+let _ADMIN_JWT = ''
+sbAuth.auth.onAuthStateChange((_ev, session) => { _ADMIN_JWT = session ? session.access_token : '' })
 // doctor-center.citadoc.lat/[slug]/admin  OR  citadoc.lat/doctor-center/[slug]/admin
 function _detectSlug() {
   const parts = window.location.pathname.replace(/\/+$/,'').split('/')
@@ -1764,15 +1773,9 @@ async function sbDelete(table, query) {
 
 // centers no tiene concepto de ownership por médico (es una sola entidad
 // de negocio, no per-doctor como growth-creatives/demo-media) -- todo
-// INSERT/UPDATE/DELETE pasa por la Edge Function admin-storage-upload
-// (x-admin-token + service role). El token se pide una vez por sesión de
-// página y se guarda solo en memoria, nunca embebido en este archivo --
-// mismo patrón que getAdminUpdateToken() en admin.html.
-var _dcAdminToken = null
-function getDcAdminToken() {
-  if (!_dcAdminToken) _dcAdminToken = window.prompt('Token admin (operación: subir/borrar archivo)') || ''
-  return _dcAdminToken
-}
+// INSERT/UPDATE/DELETE pasa por la Edge Function admin-storage-upload,
+// que ahora valida el JWT real de la sesion admin (admin_users), no un
+// secreto compartido.
 
 async function stgUpload(bucket, path, file) {
   const form = new FormData()
@@ -1781,7 +1784,7 @@ async function stgUpload(bucket, path, file) {
   form.append('file', file)
   const res = await fetch(SB_URL + '/functions/v1/admin-storage-upload', {
     method: 'POST',
-    headers: { 'x-admin-token': getDcAdminToken() },
+    headers: { Authorization: 'Bearer ' + _ADMIN_JWT },
     body: form
   }).then(r => r.json()).catch(() => ({ ok: false }))
   return res.ok ? { error: null, publicUrl: res.publicUrl } : { error: { message: res.error || 'error de subida' } }
@@ -1794,7 +1797,7 @@ async function stgDelete(bucket, paths) {
   form.append('paths', JSON.stringify(paths))
   await fetch(SB_URL + '/functions/v1/admin-storage-upload', {
     method: 'POST',
-    headers: { 'x-admin-token': getDcAdminToken() },
+    headers: { Authorization: 'Bearer ' + _ADMIN_JWT },
     body: form
   }).catch(() => {})
 }
@@ -1804,20 +1807,41 @@ function stgPublicUrl(bucket, path) {
 }
 
 // ── GATE ──────────────────────────────────────────────────────────────────────
-document.getElementById('keyInput').addEventListener('keydown', e => { if(e.key==='Enter') checkKey() })
-function unlockAdmin() {
-  sessionStorage.setItem('dc_admin_auth', '1')
+document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') checkKey() })
+
+async function checkAdminAndEnter() {
+  const { data: { session } } = await sbAuth.auth.getSession()
+  if (!session) return false
+  _ADMIN_JWT = session.access_token
+  const r = await fetch(SB_URL + '/functions/v1/admin-verify?resource=stats', { headers: { Authorization: 'Bearer ' + _ADMIN_JWT } })
+  if (r.status === 401 || r.status === 403) {
+    await sbAuth.auth.signOut()
+    _ADMIN_JWT = ''
+    const errEl = document.getElementById('gateErr')
+    if (errEl) errEl.textContent = 'Tu cuenta no tiene permisos de administrador'
+    return false
+  }
   document.getElementById('gate').style.display = 'none'
   document.getElementById('app').style.display  = 'block'
   init()
+  return true
 }
 
-function checkKey() {
-  if (document.getElementById('keyInput').value === ADMIN_PASS) {
-    unlockAdmin()
-  } else {
-    document.getElementById('gateErr').textContent = 'Contraseña incorrecta'
-  }
+async function checkKey() {
+  const email    = document.getElementById('loginEmail').value.trim()
+  const password = document.getElementById('loginPassword').value
+  const errEl    = document.getElementById('gateErr')
+  errEl.textContent = ''
+  const { error } = await sbAuth.auth.signInWithPassword({ email, password })
+  if (error) { errEl.textContent = 'Credenciales incorrectas'; return }
+  await checkAdminAndEnter()
+}
+
+async function logoutAdmin() {
+  await sbAuth.auth.signOut()
+  _ADMIN_JWT = ''
+  document.getElementById('app').style.display  = 'none'
+  document.getElementById('gate').style.display = 'flex'
 }
 
 
@@ -3435,8 +3459,8 @@ switchTab = function(tab) {
   if (tab === 'backend') setTimeout(initAutoPanel, 100)
 }
 
-// Auto-unlock al final — todas las variables ya están declaradas
-if (sessionStorage.getItem('dc_admin_auth') === '1') unlockAdmin()
+// Auto-entrar al final si ya hay sesion real persistida -- todas las variables ya están declaradas
+checkAdminAndEnter()
 
 // ════════════════════════════════════════════════════════════════════════════
 // LABORATORIO

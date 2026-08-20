@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 // ── Ventanita administrativa para generated_demos (20 ago 2026) ────────────
 // anon_update_demos + authenticated_update_demos permitian que cualquiera,
@@ -9,7 +10,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // (_deployWeb, solo en modo isAdmin:true) necesitan legitimamente
 // actualizar el demo de OTRO medico -- un operador activando el sitio
 // generado de alguien mas. Mismo patron que admin-update-medico:
-// x-admin-token + service role, whitelist explicito -- nunca reenvia un
+// JWT admin (admin_users) + service role, whitelist explicito -- nunca reenvia un
 // objeto arbitrario de generated_demos.
 //
 // En modo dashboard (isAdmin:false, un medico publicando su PROPIO demo)
@@ -24,11 +25,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const ADMIN_TOKEN          = Deno.env.get('ADMIN_TOKEN') || '7citadoc7'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type,x-admin-token',
+  'Access-Control-Allow-Headers': 'content-type,authorization',
   'Content-Type': 'application/json',
 }
 
@@ -49,8 +49,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return fail(405, 'method not allowed')
 
-  const token = req.headers.get('x-admin-token')
-  if (token !== ADMIN_TOKEN) return fail(401, 'unauthorized')
+  const auth = await requireAdmin(req)
+  if (!auth.ok) return fail(auth.status, auth.error)
 
   let body: any
   try { body = await req.json() } catch { return fail(400, 'JSON inválido') }
