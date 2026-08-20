@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -14,13 +15,29 @@ const SEND_EMAIL_URL       = `${SUPABASE_URL}/functions/v1/send-email`
 // descongelar. Ver el incident report para el detalle completo.
 const FROZEN = false
 
-Deno.serve(async () => {
+// ── P2.3-A1 (20 ago 2026) ────────────────────────────────────────────────────
+// verify_jwt=false + sin chequeo propio -- invocable por cualquiera con la
+// URL, disparando claims reales + emails con datos de paciente. Distinto de
+// HF1/HF2 en que esto se encontro con el cron YA active=true y el codigo YA
+// descongelado (FROZEN=false) en produccion -- no una funcion dormida.
+// verify_jwt se mantiene en false: el gate vive en codigo para ser compatible
+// con el service_role que manda el cron, mismo patron que HF1/HF2.
+Deno.serve(async (req) => {
   if (FROZEN) {
     return new Response(JSON.stringify({ ok: false, frozen: true, reason: 'review-drip congelado tras incidente de backlog -- ver incidents/2026-08-18-review-drip-backlog.md' }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' },
     })
   }
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const sb  = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     const now = new Date()
