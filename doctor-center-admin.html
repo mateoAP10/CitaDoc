@@ -4434,21 +4434,15 @@ async function sw2Init() {
   if (lp) { lp.textContent = publicUrl;  lp.href = publicUrl }
   if (la) { la.textContent = adminUrl;   la.href = adminUrl }
 
-  // Load website data
-  // Hotfix (20 ago 2026, independiente de P2.2-C3): sbGet() devuelve
-  // {data, error}, no un array ni el array directo -- el código leía
-  // websites[0]/services como si sbGet() devolviera eso, así que
-  // _sw2Data siempre quedaba {} y _sw2Services siempre quedaba el objeto
-  // {data,error} entero (no un array), rompiendo sw2FillForm() y el
-  // guardado de servicios. Corrige solo la forma de leer el resultado,
-  // no el contrato de sbGet() ni la lógica del editor.
+  // Load website data -- P2.2-C3: vía admin-center-crud, sin filtro
+  // published/active (el admin necesita ver borradores para editarlos).
   const [websitesRes, servicesRes] = await Promise.all([
-    sbGet('center_website', `center_id=eq.${_center.id}&limit=1`),
-    sbGet('center_website_services', `center_id=eq.${_center.id}&order=order_index`)
+    callAdminCenter('get_center_website', { center_id: _center.id }),
+    callAdminCenter('list_center_website_services', { center_id: _center.id }),
   ])
 
-  _sw2Data     = (websitesRes.data && websitesRes.data[0]) || {}
-  _sw2Services = servicesRes.data || []
+  _sw2Data     = (websitesRes.ok && websitesRes.website) || {}
+  _sw2Services = (servicesRes.ok && servicesRes.services) || []
 
   sw2FillForm()
   sw2RenderServices()
@@ -4671,36 +4665,22 @@ async function sw2Save() {
     meta_title:         el('sw2MetaTitle')?.value || null,
     meta_description:   el('sw2MetaDesc')?.value || null,
     published:          _sw2Data?.published ?? false,
-    updated_at:         new Date().toISOString(),
   }
 
-  // Upsert center_website
-  await sbPatch('center_website', `center_id=eq.${_center.id}`, payload)
-    .then(async r => {
-      if (r.error) {
-        // Try insert if patch returned no rows
-        await sbPost('center_website', payload)
-      }
-    })
+  // Upsert center_website -- P2.2-C3
+  await callAdminCenter('update_center_website', { center_id: _center.id, patch: payload })
 
-  // Upsert services
-  // Delete old, insert new
-  await fetch(`${SB_URL}/rest/v1/center_website_services?center_id=eq.${_center.id}`, {
-    method: 'DELETE',
-    headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON }
-  })
-  for (let i = 0; i < _sw2Services.length; i++) {
-    const s = _sw2Services[i]
-    await sbPost('center_website_services', {
-      center_id:   _center.id,
-      name:        s.name,
-      description: s.description || null,
-      icon_key:    s.icon_key || 'plus',
-      color:       s.color || '#00d4aa',
-      order_index: i,
-      active:      true,
-    })
-  }
+  // Reemplazar servicios -- P2.2-C3: una sola llamada atómica (RPC
+  // transaccional del lado servidor) en vez de DELETE+N×POST directos.
+  const servicesPayload = _sw2Services.map((s, i) => ({
+    name:        s.name,
+    description: s.description || null,
+    icon_key:    s.icon_key || 'plus',
+    color:       s.color || '#00d4aa',
+    order_index: i,
+    active:      true,
+  }))
+  await callAdminCenter('replace_center_website_services', { center_id: _center.id, services: servicesPayload })
 
   toast('Sitio guardado ✓','ok')
   btn.disabled = false; btn.textContent = 'Guardar cambios'

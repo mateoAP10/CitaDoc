@@ -23,6 +23,18 @@ import { requireAdmin } from '../_shared/admin-auth.ts'
 // ganancia_dres, ganancia_dc, monto) siguen viniendo del cliente, igual
 // que hoy -- ese cálculo ya vivía en el JS del panel antes de este
 // cambio, no es parte de lo que este bloque decidió tocar.
+//
+// P2.2-C3 (20 ago 2026): center_website/center_website_services --
+// mismo patrón, con dos particularidades. update_center_website es un
+// upsert atómico (constraint UNIQUE en center_id, vía .upsert() nativo).
+// replace_center_website_services replica el patrón actual del cliente
+// (DELETE todo + INSERT uno por uno) pero server-side y atómico -- llama
+// a la función de Postgres replace_center_website_services() (una sola
+// invocación = una sola transacción implícita), y ADEMÁS valida que cada
+// elemento del array tenga únicamente campos del whitelist, rechazando
+// (no ignorando) cualquier campo desconocido antes de llegar a la RPC.
+// center_website_testimonials NO tiene acciones acá -- sin consumidor de
+// escritura en todo el repo, confirmado dos veces en la auditoría.
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -88,10 +100,40 @@ const CENTER_SERVICE_CREATE_FIELDS = ['center_id', 'nombre', 'categoria', 'preci
 const CENTER_PACKAGE_CREATE_FIELDS = ['center_id', 'nombre', 'categoria', 'descripcion', 'incluye', 'precio_regular', 'precio_promo', 'icono', 'color', 'activo'] as const
 const CENTER_PACKAGE_UPDATE_FIELDS = ['nombre', 'categoria', 'descripcion', 'incluye', 'precio_regular', 'precio_promo', 'icono', 'color', 'activo'] as const
 
+// P2.2-C3: center_website -- exactamente los campos que sw2Save() ya manda
+// hoy, ni uno más (email_contact/address existen en la tabla pero el
+// panel nunca los usa). published queda adentro del whitelist a propósito
+// -- sw2TogglePublish() solo lo cambia en memoria, se persiste recién en
+// el próximo guardado general, igual que hoy.
+const CENTER_WEBSITE_UPDATE_FIELDS = [
+  'template_id', 'theme', 'primary_color', 'logo_url', 'logo_size', 'doctor_photo_url',
+  'hero_question', 'hero_headline', 'hero_tagline', 'doctor_name', 'doctor_specialty',
+  'doctor_credentials', 'show_about', 'about_photo_url', 'about_title', 'about_text',
+  'show_stats', 'stat1_number', 'stat1_label', 'stat2_number', 'stat2_label',
+  'stat3_number', 'stat3_label', 'show_testimonials', 'whatsapp', 'instagram',
+  'facebook', 'tiktok', 'booking_url', 'meta_title', 'meta_description', 'published',
+] as const
+
+// center_website_services -- por elemento del array en replace_center_website_services.
+const CENTER_WEBSITE_SERVICE_FIELDS = ['name', 'description', 'icon_key', 'color', 'order_index', 'active'] as const
+
 function pick(src: Record<string, unknown>, fields: readonly string[]) {
   const out: Record<string, unknown> = {}
   for (const f of fields) if (f in src) out[f] = src[f]
   return out
+}
+
+// A diferencia de pick() (que ignora en silencio lo que no está en el
+// whitelist), esto RECHAZA explícitamente -- devuelve el primer campo no
+// permitido que encuentra, o null si todo está bien. Se usa en
+// replace_center_website_services porque ahí el payload es un array de
+// objetos armado por el cliente, no un patch de un solo objeto -- vale la
+// pena la validación explícita en vez de solo filtrar.
+function firstUnknownField(src: Record<string, unknown>, fields: readonly string[]): string | null {
+  for (const key of Object.keys(src)) {
+    if (!(fields as readonly string[]).includes(key)) return key
+  }
+  return null
 }
 
 // medico_id (si viene) debe ser un médico real asociado a ESE center_id --
@@ -379,6 +421,54 @@ Deno.serve(async (req) => {
         const { error } = await sb.from('center_packages').delete().eq('id', body.id)
         if (error) return fail(400, error.message)
         return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
+      // ── center_website (P2.2-C3) ───────────────────────────────────────────
+      case 'get_center_website': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        const { data, error } = await sb.from('center_website').select('*').eq('center_id', body.center_id).maybeSingle()
+        if (error) return fail(500, error.message)
+        return new Response(JSON.stringify({ ok: true, website: data || null }), { headers: CORS })
+      }
+
+      case 'update_center_website': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        const { data: center } = await sb.from('centers').select('id').eq('id', body.center_id).maybeSingle()
+        if (!center) return fail(400, 'centro no encontrado')
+        const patch = pick(body.patch || {}, CENTER_WEBSITE_UPDATE_FIELDS)
+        // updated_at lo pone el servidor, no el cliente -- el payload
+        // actual lo manda, pero confiar en el reloj del navegador es
+        // innecesario cuando el servidor puede ponerlo con certeza.
+        const { data, error } = await sb.from('center_website')
+          .upsert({ center_id: body.center_id, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'center_id' })
+          .select('*').single()
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true, website: data }), { headers: CORS })
+      }
+
+      // ── center_website_services ──────────────────────────────────────────
+      case 'list_center_website_services': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        const { data, error } = await sb.from('center_website_services').select('*')
+          .eq('center_id', body.center_id).order('order_index')
+        if (error) return fail(500, error.message)
+        return new Response(JSON.stringify({ ok: true, services: data || [] }), { headers: CORS })
+      }
+
+      case 'replace_center_website_services': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        const services = Array.isArray(body.services) ? body.services : null
+        if (!services) return fail(400, 'services (array) requerido')
+        for (let i = 0; i < services.length; i++) {
+          const bad = firstUnknownField(services[i] || {}, CENTER_WEBSITE_SERVICE_FIELDS)
+          if (bad) return fail(400, `campo no permitido "${bad}" en services[${i}]`)
+        }
+        const { data, error } = await sb.rpc('replace_center_website_services', {
+          p_center_id: body.center_id,
+          p_services: services,
+        })
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true, services: data || [] }), { headers: CORS })
       }
 
       default:
