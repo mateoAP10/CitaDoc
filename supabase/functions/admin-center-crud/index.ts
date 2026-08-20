@@ -471,6 +471,46 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ ok: true, services: data || [] }), { headers: CORS })
       }
 
+      // ── center_doctors (P2.2-C4) ───────────────────────────────────────────
+      // Sin update_center_doctor -- no existe esa capacidad hoy (orden/
+      // horarios/etc. son columnas muertas desde esta tabla, nadie las
+      // toca). SELECT público queda intacto, sin cambios -- solo el write.
+      case 'list_center_doctors': {
+        if (!body.center_id) return fail(400, 'center_id requerido')
+        // Incluye el join a medicos que loadLabMedicos() ya necesitaba
+        // (antes vía select=medico_id,medicos(...) de PostgREST) -- los
+        // campos de más son inofensivos para el otro consumidor (solo lee
+        // medico_id de cada fila).
+        const { data, error } = await sb.from('center_doctors')
+          .select('*, medicos(id,nombre,apellido,titulo)')
+          .eq('center_id', body.center_id)
+        if (error) return fail(500, error.message)
+        return new Response(JSON.stringify({ ok: true, doctors: data || [] }), { headers: CORS })
+      }
+
+      case 'add_center_doctor': {
+        const centerId = body.center_id, medicoId = body.medico_id
+        if (!centerId || !medicoId) return fail(400, 'center_id y medico_id son requeridos')
+        const { data: center } = await sb.from('centers').select('id').eq('id', centerId).maybeSingle()
+        if (!center) return fail(400, 'center_id no corresponde a un centro real')
+        const { data: medico } = await sb.from('medicos').select('id').eq('id', medicoId).maybeSingle()
+        if (!medico) return fail(400, 'medico_id no corresponde a un médico real')
+        const { error } = await sb.from('center_doctors').insert({ center_id: centerId, medico_id: medicoId })
+        if (error) {
+          if (error.code === '23505') return fail(400, 'ese médico ya está afiliado a este centro')
+          return fail(400, error.message)
+        }
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
+      case 'remove_center_doctor': {
+        const centerId = body.center_id, medicoId = body.medico_id
+        if (!centerId || !medicoId) return fail(400, 'center_id y medico_id son requeridos')
+        const { error } = await sb.from('center_doctors').delete().eq('center_id', centerId).eq('medico_id', medicoId)
+        if (error) return fail(400, error.message)
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS })
+      }
+
       default:
         return fail(400, 'acción desconocida')
     }

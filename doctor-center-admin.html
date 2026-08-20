@@ -1887,7 +1887,7 @@ async function init() {
     const [dr, sr, lr] = await Promise.all([
       sbGet('medicos', 'activo=eq.true&select=id,nombre,apellido,titulo,especialidades,foto_url&order=apellido'),
       callAdminCenter('list_center_services', { center_id: _center.id }).then(r => ({ data: r.ok ? r.services : null, error: r.ok ? null : { message: r.error } })),
-      sbGet('center_doctors', 'center_id=eq.' + _center.id + '&select=medico_id')
+      callAdminCenter('list_center_doctors', { center_id: _center.id }).then(r => ({ data: r.ok ? r.doctors : null, error: r.ok ? null : { message: r.error } })),
     ])
     _allDocs  = dr.data  || []
     _services = sr.data  || []
@@ -2231,7 +2231,7 @@ function docRowHtml(d, mode) {
 
 async function addDoctor(medicoId) {
   if (!(await ensureCenter())) return
-  await sbPost('center_doctors', { center_id: _center.id, medico_id: medicoId })
+  await callAdminCenter('add_center_doctor', { center_id: _center.id, medico_id: medicoId })
   _inCenter.push(medicoId)
   renderDocs()
   toast('Médico agregado', 'ok')
@@ -2239,7 +2239,7 @@ async function addDoctor(medicoId) {
 
 async function removeDoctor(medicoId) {
   if (!(await ensureCenter())) return
-  await sbDelete('center_doctors', 'center_id=eq.'+_center.id+'&medico_id=eq.'+medicoId)
+  await callAdminCenter('remove_center_doctor', { center_id: _center.id, medico_id: medicoId })
   _inCenter = _inCenter.filter(id => id !== medicoId)
   renderDocs()
   toast('Médico removido', 'ok')
@@ -3531,8 +3531,8 @@ async function loadLabOrders() {
 }
 
 async function loadLabMedicos() {
-  const { data } = await sbGet('center_doctors',
-    `center_id=eq.${_center.id}&select=medico_id,medicos(id,nombre,apellido,titulo)`)
+  const _rld = await callAdminCenter('list_center_doctors', { center_id: _center.id })
+  const data = _rld.ok ? _rld.doctors : null
   _labMedicos = (data || []).map(d => d.medicos).filter(Boolean)
   const sel = el('labMedicoSelect')
   if (sel) {
