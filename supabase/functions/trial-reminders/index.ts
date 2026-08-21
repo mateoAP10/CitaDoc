@@ -1,11 +1,25 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-A2.1 -- funcion exclusivamente batch, sin caso de uso publico. Sin
+// auth (verify_jwt=false, sin chequeo propio) muta subscription_status/
+// plan_activo de CUALQUIER medico con trial vencido (downgrade real de
+// cuenta, no solo envio de email) y manda emails reales. Unico caller
+// legitimo: pg_cron (job "trial-reminders-daily"), sin Authorization hoy.
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const SEND_EMAIL_URL = `${SUPABASE_URL}/functions/v1/send-email`
 
 Deno.serve(async (req) => {
-  // Allow manual trigger via POST (for testing) or scheduled
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
