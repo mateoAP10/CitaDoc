@@ -1,5 +1,15 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-A2.7 -- funcion exclusivamente batch, sin caso de uso publico mas
+// alla del preflight CORS. Sin auth (verify_jwt=false, sin chequeo
+// propio, sin chequeo de metodo) permitia a cualquiera gastar cuota real
+// de Brave Search (hasta 10 queries por invocacion via body.batch_size)
+// e incluso mandar `targets` arbitrario -- usando la key de Brave de
+// CitaDoc como proxy de busqueda para lo que sea, sin limite. Unico
+// caller legitimo: pg_cron (jobs "scout-leads-morning"/"-afternoon"),
+// sin Authorization hoy.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -325,6 +335,14 @@ function buildLead(l: {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405, headers: CORS })
+  }
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return json({ error: auth.error }, auth.status)
+  }
 
   const BRAVE_KEY    = Deno.env.get('BRAVE_SEARCH_API_KEY')
   const MAPS_KEY     = Deno.env.get('GOOGLE_PLACES_API_KEY') || ''
