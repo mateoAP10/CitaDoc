@@ -1,10 +1,65 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // ───────────────────────────────────────────
 // CitaDoc AI Website Config Generator — Kimi Real
 // Phase: production wiring + quality iteration
 // ───────────────────────────────────────────
+
+// Grupo B -- generate-website-config aceptaba cualquier medico_id sin
+// verificar quien lo pedia: el frontend mandaba la anon key (publica,
+// hardcodeada en el HTML) en vez del JWT de sesion del medico, y el
+// codigo no chequeaba nada -- cualquiera podia regenerar (y gastar IA
+// real sobre) el borrador de CUALQUIER medico con solo su UUID. No toca
+// web_config (el campo que el sitio publico realmente renderiza) asi que
+// no era defacement en vivo, pero si integridad del draft + costo de IA
+// sin limite.
+//
+// Fix: 3 identidades validas -- (1) el propio medico via su JWT de
+// sesion real (medico.user_id === auth.uid()), (2) service_role (para
+// trigger_auto_website_config), (3) admin_users. medico_id deja de ser
+// suficiente por si solo para autorizar nada.
+type MedicoAccessResult =
+  | { ok: true; via: 'owner' | 'admin' | 'service_role' }
+  | { ok: false; status: 401 | 403; error: string }
+
+async function requireMedicoAccess(
+  req: Request,
+  sb: SupabaseClient,
+  medicoUserId: string | null,
+): Promise<MedicoAccessResult> {
+  const authHeader = req.headers.get('Authorization') || req.headers.get('authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { ok: false, status: 401, error: 'unauthorized' }
+  }
+  const jwt = authHeader.slice('Bearer '.length).trim()
+
+  const SUPABASE_SRV = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  if (jwt === SUPABASE_SRV) {
+    return { ok: true, via: 'service_role' }
+  }
+
+  const { data: userData, error: userErr } = await sb.auth.getUser(jwt)
+  if (userErr || !userData?.user) {
+    return { ok: false, status: 401, error: 'unauthorized' }
+  }
+
+  if (medicoUserId && userData.user.id === medicoUserId) {
+    return { ok: true, via: 'owner' }
+  }
+
+  const { data: adminRow } = await sb
+    .from('admin_users')
+    .select('user_id')
+    .eq('user_id', userData.user.id)
+    .maybeSingle()
+
+  if (adminRow) {
+    return { ok: true, via: 'admin' }
+  }
+
+  return { ok: false, status: 403, error: 'forbidden' }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -878,6 +933,14 @@ serve(async (req) => {
     if (medicoError || !medico) {
       return new Response(JSON.stringify({ error: 'Medico not found' }), {
         status: 404,
+        headers: corsHeaders
+      })
+    }
+
+    const access = await requireMedicoAccess(req, sb, (medico.user_id as string) || null)
+    if (!access.ok) {
+      return new Response(JSON.stringify({ error: access.error }), {
+        status: access.status,
         headers: corsHeaders
       })
     }
