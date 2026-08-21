@@ -1,5 +1,14 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-A2.6 -- funcion exclusivamente batch, sin caso de uso publico mas
+// alla del preflight CORS. Sin auth (verify_jwt=false, sin chequeo
+// propio, sin chequeo de metodo -- cualquier metodo salvo OPTIONS corria
+// el batch completo) generaba 4 llamadas reales a Kimi (costo real,
+// sin dedup ni limite) e insertaba 4 filas en growth_content_queue por
+// invocacion. Unico caller legitimo: pg_cron (job "growth-daily-content"),
+// sin Authorization hoy.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -145,6 +154,14 @@ Devuelve JSON: { "headline": "primera linea impactante", "caption": "caption com
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405, headers: CORS })
+  }
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return json({ error: auth.error }, auth.status)
+  }
 
   const SUPABASE_URL    = Deno.env.get('SUPABASE_URL')!
   const SUPABASE_SVCKEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
