@@ -67,7 +67,7 @@ async function processWindow(
 
     const res = await fetch(SEND_EMAIL_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SRV_KEY}` },
       body: JSON.stringify({
         type:             emailType,
         to_email:         cita.paciente_email,
