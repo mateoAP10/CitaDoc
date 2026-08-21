@@ -1,4 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-A2.5 -- funcion exclusivamente batch, sin caso de uso publico. Sin
+// auth (verify_jwt=false, sin chequeo propio, sin chequeo de metodo -- el
+// handler ni siquiera leia `req`) mandaba emails reales (nudges) y mutaba
+// perfil_nudges_sent en cada invocacion. Unico caller legitimo: pg_cron
+// (job "perfil-frio-daily"), sin Authorization hoy.
 
 const SUPABASE_URL        = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -28,7 +35,19 @@ const NUDGES = [
   },
 ]
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 })
+  }
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const sb  = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     const now = new Date()
