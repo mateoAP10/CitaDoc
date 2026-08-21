@@ -1,4 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-A2.3 -- funcion exclusivamente batch, sin caso de uso publico. Sin
+// auth (verify_jwt=false, sin chequeo propio, sin chequeo de metodo -- el
+// handler ni siquiera leia `req`) mandaba un email real a TODOS los
+// medicos activos en cada invocacion, sin ninguna idempotencia. Unico
+// caller legitimo: pg_cron (job "weekly-report-monday").
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -30,7 +37,19 @@ function pickInsight(m: any, citasSemana: number, citasTotal: number): string {
   return 'sin_citas_comparte'
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 })
+  }
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const sb  = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     const now = new Date()
