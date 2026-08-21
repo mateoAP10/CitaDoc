@@ -1,5 +1,12 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-A2.2 -- funcion exclusivamente batch, sin caso de uso publico. Sin
+// auth (verify_jwt=false, sin chequeo propio) leia citas de TODOS los
+// medicos (nombre/email de paciente) y mandaba emails reales. Unico
+// caller legitimo: pg_cron (job "appointment-reminders"), sin
+// Authorization hoy.
 
 const SUPABASE_URL     = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SRV_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -87,6 +94,14 @@ async function processWindow(
 serve(async (req) => {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return new Response('Method not allowed', { status: 405 })
+  }
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   try {
