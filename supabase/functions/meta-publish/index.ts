@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requireAdmin } from '../_shared/admin-auth.ts'
+import { checkRateLimit, getClientIp } from '../_shared/rate-limit.ts'
 
 // P2.3-B2 -- meta-publish publicaba de verdad en el Instagram/Facebook
 // real de CitaDoc sin ningun chequeo de auth propio (verify_jwt=true
@@ -105,6 +106,14 @@ serve(async (req) => {
   const auth = await requireAdmin(req, { allowServiceRole: true })
   if (!auth.ok) {
     return json({ error: auth.error }, auth.status)
+  }
+
+  // service_role (process-scheduled) no tiene userId real -- key fija
+  // 'system', mismo criterio que los batches (no es una funcion publica,
+  // no tiene sentido limitarla por IP variable)
+  const rl = await checkRateLimit('meta_publish', auth.userId, auth.viaServiceRole ? 'system' : getClientIp(req))
+  if (!rl.allowed) {
+    return json({ error: rl.reason }, 429)
   }
 
   try {
