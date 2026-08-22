@@ -1,5 +1,16 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// x-forwarded-for trae una cadena "cliente_real, hop1, hop2..." -- en el
+// gateway de Supabase el ultimo hop rota por request (confirmado
+// empiricamente: 3 llamadas seguidas del mismo curl trajeron 3 IPs
+// finales distintas), asi que usar el header entero como key hace que
+// cada request tenga una key distinta y el rate limit nunca se cumpla.
+// El primer segmento es el cliente real -- es el unico establo.
+export function getClientIp(req: Request): string {
+  const raw = req.headers.get('x-forwarded-for') || ''
+  return raw.split(',')[0]?.trim() || 'unknown'
+}
+
 // Rate limits per feature per minute
 const LIMITS: Record<string, { per_min: number; per_hour: number }> = {
   voice_extraction:   { per_min: 10, per_hour: 60 },

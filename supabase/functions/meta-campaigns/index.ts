@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requireAdmin } from '../_shared/admin-auth.ts'
+import { checkRateLimit, getClientIp } from '../_shared/rate-limit.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SRV = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -42,6 +43,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   const auth = await requireAdmin(req)
   if (!auth.ok) return new Response(JSON.stringify({ error: auth.error }), { status: auth.status, headers: CORS })
+
+  const rl = await checkRateLimit('meta_campaigns', auth.userId, getClientIp(req))
+  if (!rl.allowed) return new Response(JSON.stringify({ error: rl.reason }), { status: 429, headers: CORS })
 
   const url    = new URL(req.url)
   const action = url.searchParams.get('action')
