@@ -1,6 +1,63 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { checkRateLimit } from '../_shared/rate-limit.ts'
+
+// P2.3-B1 -- patient-summary aceptaba cualquier patient_id sin verificar
+// quien lo pedia: el frontend mandaba la anon key (publica, hardcodeada
+// en el HTML) en vez del JWT de sesion del medico, y el codigo leia
+// consultas/pacientes via service_role -- bypass total de la RLS que ya
+// protege esas tablas (medico ve sus pacientes: pacientes.medico_id IN
+// (medicos con user_id = auth.uid())). Cualquier medico autenticado
+// podia leer el historial clinico completo de CUALQUIER paciente de
+// CUALQUIER otro medico.
+//
+// Fix: mismo modelo de ownership que ya usa la RLS real, replicado
+// server-side -- patient_id -> pacientes.medico_id -> medicos.user_id ->
+// auth.uid(). No se usa medico_paciente (esa tabla no es la fuente de
+// verdad de RLS hoy). Sin allowServiceRole ni bypass admin: no existe
+// ningun caller legitimo que lo necesite (confirmado por grep + cron.job).
+type PatientOwnerResult =
+  | { ok: true; userId: string }
+  | { ok: false; status: 401 | 403 | 404; error: string }
+
+async function requirePatientOwner(
+  req: Request,
+  sb: SupabaseClient,
+  patientId: string,
+): Promise<PatientOwnerResult> {
+  const authHeader = req.headers.get('Authorization') || req.headers.get('authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { ok: false, status: 401, error: 'unauthorized' }
+  }
+  const jwt = authHeader.slice('Bearer '.length).trim()
+
+  const { data: userData, error: userErr } = await sb.auth.getUser(jwt)
+  if (userErr || !userData?.user) {
+    return { ok: false, status: 401, error: 'unauthorized' }
+  }
+
+  const { data: paciente, error: pacErr } = await sb
+    .from('pacientes')
+    .select('medico_id')
+    .eq('id', patientId)
+    .maybeSingle()
+
+  if (pacErr || !paciente) {
+    return { ok: false, status: 404, error: 'patient_not_found' }
+  }
+
+  const { data: medico } = await sb
+    .from('medicos')
+    .select('user_id')
+    .eq('id', paciente.medico_id)
+    .maybeSingle()
+
+  if (!medico || medico.user_id !== userData.user.id) {
+    return { ok: false, status: 403, error: 'forbidden' }
+  }
+
+  return { ok: true, userId: userData.user.id }
+}
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -52,6 +109,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
+
+    const access = await requirePatientOwner(req, supabase, patient_id)
+    if (!access.ok) {
+      return Response.json({ ok: false, error: access.error }, { headers: cors, status: access.status })
+    }
 
     // Check cache (unless force_regen)
     if (!force_regen) {
