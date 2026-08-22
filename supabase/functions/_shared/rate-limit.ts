@@ -12,6 +12,29 @@ const LIMITS: Record<string, { per_min: number; per_hour: number }> = {
   voice_assistant_chat:   { per_min: 40, per_hour: 400 },
   summary_generation: { per_min: 3,  per_hour: 20 },
   growth_content:     { per_min: 3,  per_hour: 15 },
+
+  // ── Observabilidad P0 -- matriz de rate limit aprobada por Mateo ──────────
+  // 👨‍⚕️ Usuario (key: doctor_id)
+  website_config:      { per_min: 3,  per_hour: 10 },
+  send_email_user:      { per_min: 15, per_hour: 100 },
+  // 🌐 Público (key: ip -- sin doctor_id posible)
+  triage_especialidad: { per_min: 3,  per_hour: 10 },
+  tag_asset:            { per_min: 3,  per_hour: 15 },
+  send_email_public:    { per_min: 10, per_hour: 30 },
+  // 🛡️ Admin/sistema (key: ip='system' -- un solo actor de confianza, el
+  // limite es fusible contra loop/cron duplicado/ejecucion manual
+  // accidental, no defensa contra abuso externo -- esos ya estan gateados
+  // por requireAdmin en P2.3). per_min se deja alto a proposito para que
+  // solo el limite por hora importe.
+  growth_daily_batch:          { per_min: 60, per_hour: 2 },
+  showcase_batch:               { per_min: 60, per_hour: 2 },
+  scout_leads:                  { per_min: 60, per_hour: 3 },
+  generate_showcase_content:    { per_min: 5,  per_hour: 15 },
+  generate_citadoc_content:     { per_min: 5,  per_hour: 30 },
+  meta_campaigns:                { per_min: 5,  per_hour: 30 },
+  meta_publish:                  { per_min: 60, per_hour: 5 },
+  payphone_prepare:              { per_min: 5,  per_hour: 20 },
+
   default:            { per_min: 20, per_hour: 100 }
 }
 

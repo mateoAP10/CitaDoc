@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 // ───────────────────────────────────────────
 // CitaDoc AI Website Config Generator — Kimi Real
@@ -941,6 +942,15 @@ serve(async (req) => {
     if (!access.ok) {
       return new Response(JSON.stringify({ error: access.error }), {
         status: access.status,
+        headers: corsHeaders
+      })
+    }
+
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const rl = await checkRateLimit('website_config', medico_id, ip)
+    if (!rl.allowed) {
+      return new Response(JSON.stringify({ error: rl.reason }), {
+        status: 429,
         headers: corsHeaders
       })
     }
