@@ -1,4 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3 (continuacion de Grupo A) -- growth-agent era invocable sin
+// ningun auth (verify_jwt=false, sin chequeo propio) -- gasta Kimi real
+// (generacion de bio) + manda un email real via send-email, usando
+// service_role internamente. Encontrado durante el mapeo de
+// observabilidad porque no aparecia en el inventario 🔵 (ese solo
+// escaneaba verify_jwt=true) -- mismo patron exacto que los 8 bloques de
+// Grupo A. Unico caller legitimo: trigger_growth_agent (Grupo B),
+// actualmente roto (current_setting() siempre NULL, confirmado por SQL,
+// documentado como hallazgo funcional separado, no se toca aca).
 
 const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -71,6 +82,18 @@ Reglas estrictas:
 }
 
 Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 })
+  }
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return new Response(JSON.stringify({ error: auth.error }), {
+      status: auth.status,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const { medico_id } = await req.json()
     if (!medico_id) return new Response(JSON.stringify({ error: 'missing medico_id' }), { status: 400 })
