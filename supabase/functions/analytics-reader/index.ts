@@ -1,5 +1,17 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-C1 -- analytics-reader esta catalogada como Admin en el inventario
+// de admin-agents pero aceptaba cualquier JWT (verify_jwt=true = "algun
+// usuario autenticado", no admin). Expone metricas de negocio internas
+// (conversion, views, CTR) y doctor_name de TODOS los generated_demos --
+// cualquier medico logueado podia leerlo. admin.html ademas mandaba la
+// anon key en vez del JWT real de admin (_ADMIN_JWT, ya usado
+// correctamente en otras llamadas del mismo archivo, ej. meta-campaigns).
+// Sin ownership por medico: el recurso es global/admin, no de un medico
+// puntual -- requireAdmin(req) alcanza, sin allowServiceRole (unico
+// caller real es admin.html).
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +26,11 @@ function json(data: unknown, status = 200) {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
+
+  const auth = await requireAdmin(req)
+  if (!auth.ok) {
+    return json({ error: auth.error }, auth.status)
+  }
 
   try {
     const sb = createClient(
