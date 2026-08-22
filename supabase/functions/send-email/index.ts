@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 // P2.3 -- send-email: la rama `Authorization` solo chequeaba que el header
 // no estuviera vacio, sin validar identidad -- "Authorization existe ->
@@ -1652,12 +1653,15 @@ serve(async (req) => {
     const publicKey  = req.headers.get('x-citadoc-public-key')
     const VALID_PUBLIC_KEY = Deno.env.get('PUBLIC_BOOKING_KEY') || 'citadoc-public-2026'
 
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice('Bearer '.length).trim()
       const SUPABASE_SRV = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
       if (token === SUPABASE_SRV) {
-        // service_role -- acceso completo, sigue directo al switch de abajo
+        // service_role -- acceso completo, sin rate limit (crons ya
+        // acotados por su propia naturaleza -- 1x/hora o 1x/dia)
       } else {
         const sbAuth = createClient(Deno.env.get('SUPABASE_URL')!, SUPABASE_SRV, {
           auth: { autoRefreshToken: false, persistSession: false },
@@ -1669,6 +1673,10 @@ serve(async (req) => {
         if (!USER_ALLOWED_TYPES.includes(type)) {
           return new Response(JSON.stringify({ error: 'Forbidden type for user access' }), { status: 403, headers: CORS })
         }
+        const rl = await checkRateLimit('send_email_user', userData.user.id, ip)
+        if (!rl.allowed) {
+          return new Response(JSON.stringify({ error: rl.reason }), { status: 429, headers: CORS })
+        }
       }
     } else {
       // Sin Authorization -- unica via es la public key, y solo para los tipos publicos
@@ -1677,6 +1685,10 @@ serve(async (req) => {
       }
       if (!PUBLIC_ALLOWED_TYPES.includes(type)) {
         return new Response(JSON.stringify({ error: 'Forbidden type for public access' }), { status: 403, headers: CORS })
+      }
+      const rl = await checkRateLimit('send_email_public', null, ip)
+      if (!rl.allowed) {
+        return new Response(JSON.stringify({ error: rl.reason }), { status: 429, headers: CORS })
       }
     }
 
