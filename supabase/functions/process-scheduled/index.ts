@@ -1,5 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3 -- funcion exclusivamente batch, sin caso de uso publico. Sin auth
+// (verify_jwt=true = "cualquier usuario autenticado", sin chequeo propio)
+// procesaba hasta 10 scheduled_posts vencidos y llamaba a meta-publish
+// (ya protegida) por cada uno. Sin cron activo hoy -- no se resucita en
+// este bloque, queda listo para cuando exista un caller real. Mismo
+// patron que showcase-batch (A2.8).
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +21,11 @@ function json(data: unknown, status = 200) {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return json({ error: auth.error }, auth.status)
+  }
 
   const SUPABASE_URL    = Deno.env.get('SUPABASE_URL')!
   const SUPABASE_SVCKEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
