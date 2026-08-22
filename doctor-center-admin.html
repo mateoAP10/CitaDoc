@@ -2730,7 +2730,7 @@ async function setCitaEstado(citaId, patientId, nuevoEstado, btnClicked) {
       await callAdminCenter('update_cita', { id: citaId, patch: { [cfg.ts_field]: now } })
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_ADMIN_JWT}` },
         body: JSON.stringify({
           type: cfg.type,
           to_email: patient.email,
@@ -2796,7 +2796,7 @@ async function sendManualFollowup() {
   try {
     const res = await fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_ADMIN_JWT}` },
       body: JSON.stringify(body)
     })
     if (res.ok) toast('Followup enviado a ' + email, 'ok')
@@ -2926,7 +2926,7 @@ async function markAtendido(citaId, patientId, btn) {
     if (patient?.email && _center?.nombre) {
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_ADMIN_JWT}` },
         body: JSON.stringify({
           type: 'center_postvista',
           to_email: patient.email,
@@ -2966,7 +2966,7 @@ async function cancelarTurno(citaId, patientId, btn) {
     if (patient?.email && _center?.nombre) {
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_SUPABASE_ANON}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_ADMIN_JWT}` },
         body: JSON.stringify({
         type: 'center_noshow',
         to_email: patient.email,
@@ -3148,7 +3148,7 @@ async function guardarNuevaCita() {
     const fmtFecha = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) : ''
     fetch(`${_SUPABASE_URL}/functions/v1/send-email`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${_ADMIN_JWT}`},
       body: JSON.stringify({
         type: 'center_reminder',
         to_email: patient.email, patient_name: patient.nombre||'',
@@ -3734,7 +3734,7 @@ async function generarOrdenLab() {
     try {
       const emailResp = await fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${_ADMIN_JWT}`},
         body: JSON.stringify({
           type:          'lab_order_confirm',
           to_email:      _emailToSend,
@@ -3846,7 +3846,7 @@ async function marcarLabRealizado(orderId) {
   if (order?.patient_id) {
     const patient = _allLeads.find(p=>p.id===order.patient_id)
     if (patient?.email) fetch(`${_SUPABASE_URL}/functions/v1/send-email`,{
-      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${_ADMIN_JWT}`},
       body: JSON.stringify({ type:'lab_order_realizado', to_email:patient.email, patient_name:patient.nombre||'', center_name:_center.nombre, center_phone:_center.whatsapp||_center.telefono||'' })
     }).catch(()=>{})
   }
@@ -3868,7 +3868,7 @@ async function cancelarLabOrden(orderId, patientId) {
     if (patient?.email) {
       fetch(`${_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${_ADMIN_JWT}`},
         body: JSON.stringify({
           type:         'lab_order_cancelado',
           to_email:     patient.email,
@@ -4215,7 +4215,7 @@ async function enviarResultado(orderId, patientId) {
     const b64 = e.target.result.split(',')[1]
     try {
       const resp = await fetch(`${_SUPABASE_URL}/functions/v1/send-email`,{
-        method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${_SUPABASE_ANON}`},
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${_ADMIN_JWT}`},
         body: JSON.stringify({
           type:'lab_result', to_email:patient.email,
           patient_name:patient.nombre||'', center_name:_center.nombre,

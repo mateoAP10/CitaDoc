@@ -1,4 +1,24 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+// P2.3 -- send-email: la rama `Authorization` solo chequeaba que el header
+// no estuviera vacio, sin validar identidad -- "Authorization existe ->
+// confianza". La anon key (publica, hardcodeada en varios HTML) es un
+// string no vacio, asi que entraba directo a la rama privilegiada y
+// desbloqueaba los 35 tipos sin restriccion, incluidos los que adjuntan
+// PDFs reales via pdf_url. Fix: 3 niveles explicitos por identidad real,
+// no por presencia de header.
+//
+// A -- JWT de usuario real (medico/staff, auth.getUser() resuelve):
+// solo los tipos que el dashboard/Doctor Center legitimamente disparan.
+const USER_ALLOWED_TYPES = [
+  'voice_doc', 'docs', 'indicaciones', 'verification_new',
+  'lab_order_confirm', 'lab_order_realizado', 'lab_order_cancelado', 'lab_result',
+  'center_reminder', 'center_noshow', 'center_postvista', 'center_coupon', 'center_confirm',
+]
+// C -- x-citadoc-public-key (flujo de booking sin sesion): sin cambios,
+// misma lista que ya existia.
+const PUBLIC_ALLOWED_TYPES = ['appointment', 'reschedule', 'reminder', 'web_generada']
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || ''
 const FROM = 'CitaDoc <hola@citadoc.lat>'
@@ -1627,19 +1647,34 @@ serve(async (req) => {
 
     if (!to_email) return new Response(JSON.stringify({ error: 'missing to_email' }), { status: 400, headers: CORS })
 
-    // ── Auth / Public Key validation ────────────────────────────────────────────
+    // ── Auth: 3 niveles por identidad real, nunca por presencia de header ──────
     const authHeader = req.headers.get('Authorization')
     const publicKey  = req.headers.get('x-citadoc-public-key')
     const VALID_PUBLIC_KEY = Deno.env.get('PUBLIC_BOOKING_KEY') || 'citadoc-public-2026'
 
-    // If no JWT auth, require valid public key
-    if (!authHeader && publicKey !== VALID_PUBLIC_KEY) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS })
-    }
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.slice('Bearer '.length).trim()
+      const SUPABASE_SRV = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    // Public key access: only allow appointment-related types
-    if (!authHeader && publicKey === VALID_PUBLIC_KEY) {
-      const PUBLIC_ALLOWED_TYPES = ['appointment', 'reschedule', 'reminder', 'web_generada']
+      if (token === SUPABASE_SRV) {
+        // service_role -- acceso completo, sigue directo al switch de abajo
+      } else {
+        const sbAuth = createClient(Deno.env.get('SUPABASE_URL')!, SUPABASE_SRV, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        })
+        const { data: userData, error: userErr } = await sbAuth.auth.getUser(token)
+        if (userErr || !userData?.user) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS })
+        }
+        if (!USER_ALLOWED_TYPES.includes(type)) {
+          return new Response(JSON.stringify({ error: 'Forbidden type for user access' }), { status: 403, headers: CORS })
+        }
+      }
+    } else {
+      // Sin Authorization -- unica via es la public key, y solo para los tipos publicos
+      if (publicKey !== VALID_PUBLIC_KEY) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS })
+      }
       if (!PUBLIC_ALLOWED_TYPES.includes(type)) {
         return new Response(JSON.stringify({ error: 'Forbidden type for public access' }), { status: 403, headers: CORS })
       }
