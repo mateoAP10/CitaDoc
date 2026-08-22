@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requireAdmin } from '../_shared/admin-auth.ts'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 // P2.3-A2.8 -- funcion exclusivamente batch, sin caso de uso publico. Sin
 // auth (verify_jwt=true = "cualquier usuario autenticado", sin chequeo
@@ -123,6 +124,11 @@ serve(async (req) => {
   const auth = await requireAdmin(req, { allowServiceRole: true })
   if (!auth.ok) {
     return json({ error: auth.error }, auth.status)
+  }
+
+  const rl = await checkRateLimit('showcase_batch', null, 'system')
+  if (!rl.allowed) {
+    return json({ error: rl.reason }, 429)
   }
 
   const SUPABASE_URL    = Deno.env.get('SUPABASE_URL')!
