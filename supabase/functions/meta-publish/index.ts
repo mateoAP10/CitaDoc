@@ -1,5 +1,19 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAdmin } from '../_shared/admin-auth.ts'
+
+// P2.3-B2 -- meta-publish publicaba de verdad en el Instagram/Facebook
+// real de CitaDoc sin ningun chequeo de auth propio (verify_jwt=true
+// solo exige CUALQUIER usuario autenticado). Ademas aceptaba image_url+
+// caption directos, saltando por completo growth_content_queue/
+// scheduled_posts. Unico caller legitimo real: process-scheduled
+// (server-to-server, ya manda Authorization: Bearer service_role
+// correcto -- no necesita ningun cambio).
+//
+// Fix: requireAdmin(req, {allowServiceRole:true}) antes de tocar
+// meta_config o la Graph API. Se mantiene la capacidad de admin/
+// service_role de pasar image_url+caption directos -- una vez cerrado
+// el endpoint a identidades autorizadas, eso ya no es una escalacion.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -87,6 +101,11 @@ async function publishFacebook(
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
+
+  const auth = await requireAdmin(req, { allowServiceRole: true })
+  if (!auth.ok) {
+    return json({ error: auth.error }, auth.status)
+  }
 
   try {
     const body = await req.json().catch(() => ({}))
