@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { checkRateLimit } from '../_shared/rate-limit.ts'
+import { checkRateLimit, getClientIp } from '../_shared/rate-limit.ts'
 
 // P2.3 -- send-email: la rama `Authorization` solo chequeaba que el header
 // no estuviera vacio, sin validar identidad -- "Authorization existe ->
@@ -1653,7 +1653,7 @@ serve(async (req) => {
     const publicKey  = req.headers.get('x-citadoc-public-key')
     const VALID_PUBLIC_KEY = Deno.env.get('PUBLIC_BOOKING_KEY') || 'citadoc-public-2026'
 
-    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const ip = getClientIp(req)
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice('Bearer '.length).trim()
