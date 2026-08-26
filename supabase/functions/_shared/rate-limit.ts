@@ -68,7 +68,7 @@ export async function checkRateLimit(
   // Check minute window
   const { data: minData } = await supabase
     .from('ai_rate_limits')
-    .select('request_count')
+    .select('id, request_count')
     .eq('feature', feature)
     .eq(doctorId ? 'doctor_id' : 'ip', key)
     .eq('window_start', windowMin)
@@ -91,14 +91,42 @@ export async function checkRateLimit(
     return { allowed: false, reason: `Rate limit: max ${limits.per_hour} requests/hour for ${feature}` }
   }
 
-  // Increment counter (upsert)
-  await supabase.from('ai_rate_limits').upsert({
-    doctor_id:     doctorId || null,
-    ip:            doctorId ? null : ip,
-    feature,
-    window_start:  windowMin,
-    request_count: (minData?.request_count || 0) + 1
-  }, { onConflict: 'doctor_id,feature,window_start', ignoreDuplicates: false })
+  // Increment counter.
+  if (doctorId) {
+    // Autenticado/system: el UNIQUE (doctor_id,feature,window_start) de
+    // siempre soporta upsert nativo sin problema (doctor_id nunca es NULL
+    // en esta rama).
+    await supabase.from('ai_rate_limits').upsert({
+      doctor_id:     doctorId,
+      ip:            null,
+      feature,
+      window_start:  windowMin,
+      request_count: (minData?.request_count || 0) + 1
+    }, { onConflict: 'doctor_id,feature,window_start', ignoreDuplicates: false })
+  } else {
+    // Anonimo: PostgREST no puede apuntar ON CONFLICT a un indice unico
+    // parcial (confirmado: error 42P10 "no unique or exclusion
+    // constraint matching" contra el indice
+    // ai_rate_limits_anon_ip_feature_window_key WHERE doctor_id IS NULL)
+    // -- se resuelve con lectura+escritura explicita usando el id ya
+    // leido arriba, en vez de upsert. El indice parcial igual protege la
+    // integridad de datos a nivel SQL (evita filas duplicadas si algo
+    // mas escribe directo), solo no lo puede usar el cliente para
+    // resolver el conflicto automaticamente.
+    if (minData?.id) {
+      await supabase.from('ai_rate_limits')
+        .update({ request_count: minData.request_count + 1 })
+        .eq('id', minData.id)
+    } else {
+      await supabase.from('ai_rate_limits').insert({
+        doctor_id:     null,
+        ip,
+        feature,
+        window_start:  windowMin,
+        request_count: 1
+      })
+    }
+  }
 
   return { allowed: true }
 }
