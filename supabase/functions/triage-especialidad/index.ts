@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkRateLimit, getClientIp } from '../_shared/rate-limit.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -125,6 +126,12 @@ serve(async (req) => {
     const { sintomas } = await req.json()
     if (!sintomas || sintomas.trim().length < 5) {
       return new Response(JSON.stringify({ error: 'Describe más tus síntomas' }), { status: 400, headers: cors })
+    }
+
+    // Publica por diseno, sin login -- unica identidad posible es la IP
+    const rl = await checkRateLimit('triage_especialidad', null, getClientIp(req))
+    if (!rl.allowed) {
+      return new Response(JSON.stringify({ error: rl.reason }), { status: 429, headers: cors })
     }
 
     // Fetch relevant clinical guidelines in parallel with (almost) nothing — single DB call
