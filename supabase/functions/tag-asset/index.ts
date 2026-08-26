@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkRateLimit, getClientIp } from '../_shared/rate-limit.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -38,6 +39,13 @@ serve(async (req) => {
     const { image_url, file_name } = body
 
     if (!image_url?.trim()) return json({ error: 'image_url es requerido' }, 400)
+
+    // Sin identidad hoy (🟡 pendiente de autorizacion, no se toca aca) --
+    // el limite reduce el costo de Claude Vision, no reemplaza el gate.
+    const rl = await checkRateLimit('tag_asset', null, getClientIp(req))
+    if (!rl.allowed) {
+      return json({ error: rl.reason }, 429)
+    }
 
     const SUPABASE_URL     = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SVCKEY  = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

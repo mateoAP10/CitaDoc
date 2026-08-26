@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -235,6 +236,13 @@ serve(async (req) => {
   const growthKey = req.headers.get('x-growth-key') || ''
   if (growthKey !== Deno.env.get('GROWTH_ADMIN_KEY')) {
     return new Response(JSON.stringify({ ok: false, error: 'unauthorized' }), { status: 401, headers: cors })
+  }
+
+  // Un solo actor de confianza (quien tiene GROWTH_ADMIN_KEY) -- key fija,
+  // el limite es fusible, no defensa contra un tercero externo.
+  const rl = await checkRateLimit('generate_citadoc_content', null, 'system')
+  if (!rl.allowed) {
+    return new Response(JSON.stringify({ ok: false, error: rl.reason }), { status: 429, headers: cors })
   }
 
   try {
