@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { checkRateLimit, getClientIp } from '../_shared/rate-limit.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,11 @@ serve(async (req) => {
 
   try {
     const { planType, medicoId, email } = await req.json()
+
+    const rl = await checkRateLimit('payphone_prepare', medicoId || null, getClientIp(req))
+    if (!rl.allowed) {
+      return new Response(JSON.stringify({ ok: false, error: rl.reason }), { status: 429, headers: cors })
+    }
 
     const PP_TOKEN = Deno.env.get('PAYPHONE_TOKEN') ?? ''
     const PP_STORE = Deno.env.get('PAYPHONE_STORE_ID') ?? ''
