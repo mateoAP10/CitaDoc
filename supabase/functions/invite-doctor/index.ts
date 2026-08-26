@@ -95,6 +95,7 @@ serve(async (req) => {
   // ── 1. Crear / recuperar usuario en Supabase Auth ─────────────────────────
   let setup_link = 'https://citadoc.lat/citadoc-dashboard.html'
   const redirectTo = 'https://citadoc.lat/citadoc-dashboard.html'
+  let userId: string | undefined
 
   const { data: linkData, error: linkError } = await sb.auth.admin.generateLink({
     type: 'invite',
@@ -110,8 +111,10 @@ serve(async (req) => {
       options: { redirectTo },
     })
     if (recData?.properties?.action_link) setup_link = recData.properties.action_link
+    userId = recData?.user?.id
   } else {
     setup_link = linkData?.properties?.action_link || redirectTo
+    userId = linkData?.user?.id
   }
 
   // ── 2. Crear registro en medicos si no existe ─────────────────────────────
@@ -122,16 +125,19 @@ serve(async (req) => {
     .limit(1)
 
   if (!existing || existing.length === 0) {
-    const userId = linkData?.user?.id
-
     const baseSlug = `dr-${slugify(nombre)}${apellido ? '-' + slugify(apellido.split(' ')[0]) : ''}`
     const { data: slugCheck } = await sb.from('medicos').select('slug').like('slug', `${baseSlug}%`)
     const slug = slugCheck && slugCheck.length > 0
       ? `${baseSlug}-${Math.random().toString(36).slice(2, 5)}`
       : baseSlug
 
+    // user_id (FK real a auth.users) -- NO id (PK propia de medicos, ya
+    // tiene su default gen_random_uuid()). Antes de este fix se seteaba
+    // "id: userId" por error de nombre de columna, dejando user_id NULL
+    // para siempre -- el dashboard busca por user_id, no por id, asi que
+    // el medico invitado quedaba sin poder entrar nunca a su propio panel.
     await sb.from('medicos').insert({
-      ...(userId ? { id: userId } : {}),
+      ...(userId ? { user_id: userId } : {}),
       email,
       nombre,
       apellido,
