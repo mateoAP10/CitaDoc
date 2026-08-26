@@ -30,7 +30,11 @@ serve(async (req) => {
     const storeHint = PP_STORE.slice(0, 8)
 
     const isWeb     = planType === 'pro_web'
-    const amount    = isWeb ? 15000 : 1999
+    // $9.99/mes es el precio oficial de Pro y Mantenimiento (mismo precio,
+    // no dos planes distintos) -- 1999 era un bug de implementacion, no
+    // una decision de pricing. Ver citadoc-pay.html y citadoc-dashboard.html
+    // (box de Mantenimiento), mismo fix aplicado ahi.
+    const amount    = isWeb ? 15000 : 999
     const shortPlan = isWeb ? 'pw' : 'pr'
     const shortId   = (medicoId ?? '').replace(/-/g, '').slice(0, 12)
     const txId      = ('cd-' + shortPlan + '-' + shortId + '-' + Date.now().toString(36)).slice(0, 50)
