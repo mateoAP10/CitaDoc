@@ -46,6 +46,19 @@ const LIMITS: Record<string, { per_min: number; per_hour: number }> = {
   meta_publish:                  { per_min: 60, per_hour: 5 },
   payphone_prepare:              { per_min: 5,  per_hour: 20 },
 
+  // ── Cooldown de abuse-detector -- NO son metricas de consumo real,
+  // son control de "ya se mando esta alerta en la ultima hora". Solo
+  // abuse-detector escribe/lee estas 8 features, con ip='system'
+  // siempre. Ningun otro codigo debe sumarlas a metricas de uso.
+  'alert:rate_limit_repeated': { per_min: 999, per_hour: 1 },
+  'alert:email_burst':          { per_min: 999, per_hour: 1 },
+  'alert:admin_burst':          { per_min: 999, per_hour: 1 },
+  'alert:ia_spike':              { per_min: 999, per_hour: 1 },
+  'alert:batch_abnormal':        { per_min: 999, per_hour: 1 },
+  'alert:meta_publish_burst':    { per_min: 999, per_hour: 1 },
+  'alert:probing_403':          { per_min: 999, per_hour: 1 },
+  'alert:probing_401':          { per_min: 999, per_hour: 1 },
+
   default:            { per_min: 20, per_hour: 100 }
 }
 

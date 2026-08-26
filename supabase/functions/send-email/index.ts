@@ -1985,6 +1985,25 @@ ${siteUrl ? `<p style="margin:0 0 20px;color:#374151;font-size:15px">Tu sitio we
         break
       }
 
+      // Solo alcanzable via service_role (abuse-detector) -- no esta en
+      // USER_ALLOWED_TYPES ni PUBLIC_ALLOWED_TYPES a proposito. Nunca
+      // incluye tokens/PDFs/body clinico, solo conteos y el nombre de la
+      // senal -- ver abuse-detector para el detalle de cada chequeo.
+      case 'security_alert': {
+        const safe = (s: unknown) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        const level = safe(data.level || '')
+        const label = safe(data.label || 'Actividad anómala')
+        const subject = `[CitaDoc ALERTA ${level}] ${label}`
+        const html = `<div style="font-family:Arial,sans-serif;padding:24px;color:#1a1a1a;max-width:600px">
+          <h2 style="margin:0 0 12px">${label}</h2>
+          <p style="margin:0 0 8px"><strong>Nivel:</strong> ${level}</p>
+          <p style="margin:0 0 8px;white-space:pre-wrap">${safe(data.detail || '')}</p>
+          <p style="margin:16px 0 0;color:#6b7280;font-size:12px">Generado automáticamente por abuse-detector — ${new Date().toISOString()}</p>
+        </div>`
+        await sendEmail(to_email, subject, html)
+        break
+      }
+
       default:
         return new Response(JSON.stringify({ error: 'unknown type: ' + type }), { status: 400, headers: CORS })
     }
