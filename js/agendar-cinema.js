@@ -276,7 +276,7 @@ function confirmar(data){
   var sb=window._sb;
   var nom=data.nom,tel=data.tel,email=data.email,motivo=data.motivo;
   buscarOCrearPaciente(sb,nom,email,tel).then(function(pacienteId){
-    sb.from('citas_disponibilidad').select('id')
+    sb.from('citas_disponibilidad').select('medico_id')
       .eq('medico_id',_medico.id).eq('fecha',_date).eq('hora',_slot)
       .in('estado',['confirmada','pendiente'])
       .then(function(check){

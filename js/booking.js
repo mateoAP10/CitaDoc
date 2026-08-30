@@ -240,7 +240,7 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
     var parts = selectedDate.split('-');
     var fechaLabel = parseInt(parts[2]) + ' de ' + MESES[parseInt(parts[1])-1] + ' ' + parts[0];
     window.buscarOCrearPaciente(window._sb, nombre, email, tel).then(function (pacienteId) {
-      window._sb.from('citas_disponibilidad').select('id')
+      window._sb.from('citas_disponibilidad').select('medico_id')
         .eq('medico_id', selectedDoctor.id).eq('fecha', selectedDate).eq('hora', selectedSlot)
         .in('estado', ['confirmada','pendiente'])
         .then(function (check) {
