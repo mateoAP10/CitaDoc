@@ -33,15 +33,15 @@ const CORS = {
 // ── Templates ─────────────────────────────────────────────────────────────────
 
 const I18N_EMAIL: Record<string, Record<string, string>> = {
-  es: { confirmed:'Cita Confirmada', new:'Nueva Cita', rescheduled:'Cita Reprogramada', headline_c:'Tu cita está confirmada.', headline_n:'Nueva cita agendada.', headline_r:'Tu cita ha sido reprogramada.', patient:'Paciente', doctor:'Médico', date:'Fecha', time:'Hora', location:'Lugar', mode:'Modalidad', view_doctor:'Ver perfil del médico →', view_panel:'Ver en mi panel →' },
-  en: { confirmed:'Confirmed Appointment', new:'New Appointment', rescheduled:'Rescheduled Appointment', headline_c:'Your appointment is confirmed.', headline_n:'New appointment scheduled.', headline_r:'Your appointment has been rescheduled.', patient:'Patient', doctor:'Doctor', date:'Date', time:'Time', location:'Location', mode:'Mode', view_doctor:'View doctor profile →', view_panel:'View in my panel →' },
-  pt: { confirmed:'Consulta Confirmada', new:'Nova Consulta', rescheduled:'Consulta Remarcada', headline_c:'Sua consulta está confirmada.', headline_n:'Nova consulta agendada.', headline_r:'Sua consulta foi remarcada.', patient:'Paciente', doctor:'Médico', date:'Data', time:'Hora', location:'Local', mode:'Modalidade', view_doctor:'Ver perfil do médico →', view_panel:'Ver no meu painel →' },
-  fr: { confirmed:'Rendez-vous confirmé', new:'Nouveau rendez-vous', rescheduled:'Rendez-vous reprogrammé', headline_c:'Votre rendez-vous est confirmé.', headline_n:'Nouveau rendez-vous planifié.', headline_r:'Votre rendez-vous a été reprogrammé.', patient:'Patient', doctor:'Médecin', date:'Date', time:'Heure', location:'Lieu', mode:'Mode', view_doctor:'Voir le profil du médecin →', view_panel:'Voir dans mon tableau →' },
-  de: { confirmed:'Termin bestätigt', new:'Neuer Termin', rescheduled:'Termin verschoben', headline_c:'Ihr Termin ist bestätigt.', headline_n:'Neuer Termin vereinbart.', headline_r:'Ihr Termin wurde verschoben.', patient:'Patient', doctor:'Arzt', date:'Datum', time:'Uhrzeit', location:'Ort', mode:'Art', view_doctor:'Arztprofil ansehen →', view_panel:'Im Cockpit ansehen →' },
-  it: { confirmed:'Appuntamento confermato', new:'Nuovo appuntamento', rescheduled:'Appuntamento riprogrammato', headline_c:'Il tuo appuntamento è confermato.', headline_n:'Nuovo appuntamento programmato.', headline_r:'Il tuo appuntamento è stato riprogrammato.', patient:'Paziente', doctor:'Medico', date:'Data', time:'Ora', location:'Luogo', mode:'Modalità', view_doctor:'Vedi profilo medico →', view_panel:'Vedi nel mio pannello →' },
-  tr: { confirmed:'Randevu Onaylandı', new:'Yeni Randevu', rescheduled:'Randevu Yeniden Planlandı', headline_c:'Randevunuz onaylandı.', headline_n:'Yeni randevu planlandı.', headline_r:'Randevunuz yeniden planlandı.', patient:'Hasta', doctor:'Doktor', date:'Tarih', time:'Saat', location:'Konum', mode:'Mod', view_doctor:'Doktor profilini görüntüle →', view_panel:'Panelimde görüntüle →' },
-  ru: { confirmed:'Приём подтверждён', new:'Новая запись', rescheduled:'Запись перенесена', headline_c:'Ваш приём подтверждён.', headline_n:'Новая запись создана.', headline_r:'Ваш приём перенесён.', patient:'Пациент', doctor:'Врач', date:'Дата', time:'Время', location:'Место', mode:'Формат', view_doctor:'Посмотреть профиль врача →', view_panel:'Открыть панель →' },
-  ar: { confirmed:'تم تأكيد الموعد', new:'موعد جديد', rescheduled:'تم إعادة جدولة الموعد', headline_c:'تم تأكيد موعدك.', headline_n:'تم جدولة موعد جديد.', headline_r:'تم إعادة جدولة موعدك.', patient:'المريض', doctor:'الطبيب', date:'التاريخ', time:'الوقت', location:'الموقع', mode:'الطريقة', view_doctor:'عرض ملف الطبيب ←', view_panel:'عرض في لوحتي ←' },
+  es: { confirmed:'Cita Confirmada', new:'Nueva Cita', rescheduled:'Cita Reprogramada', cancelled:'Cita Cancelada', headline_c:'Tu cita está confirmada.', headline_n:'Nueva cita agendada.', headline_r:'Tu cita ha sido reprogramada.', headline_x:'Tu cita fue cancelada.', patient:'Paciente', doctor:'Médico', date:'Fecha', time:'Hora', location:'Lugar', mode:'Modalidad', view_doctor:'Ver perfil del médico →', view_panel:'Ver en mi panel →' },
+  en: { confirmed:'Confirmed Appointment', new:'New Appointment', rescheduled:'Rescheduled Appointment', cancelled:'Cancelled Appointment', headline_c:'Your appointment is confirmed.', headline_n:'New appointment scheduled.', headline_r:'Your appointment has been rescheduled.', headline_x:'Your appointment has been cancelled.', patient:'Patient', doctor:'Doctor', date:'Date', time:'Time', location:'Location', mode:'Mode', view_doctor:'View doctor profile →', view_panel:'View in my panel →' },
+  pt: { confirmed:'Consulta Confirmada', new:'Nova Consulta', rescheduled:'Consulta Remarcada', cancelled:'Consulta Cancelada', headline_c:'Sua consulta está confirmada.', headline_n:'Nova consulta agendada.', headline_r:'Sua consulta foi remarcada.', headline_x:'Sua consulta foi cancelada.', patient:'Paciente', doctor:'Médico', date:'Data', time:'Hora', location:'Local', mode:'Modalidade', view_doctor:'Ver perfil do médico →', view_panel:'Ver no meu painel →' },
+  fr: { confirmed:'Rendez-vous confirmé', new:'Nouveau rendez-vous', rescheduled:'Rendez-vous reprogrammé', cancelled:'Rendez-vous annulé', headline_c:'Votre rendez-vous est confirmé.', headline_n:'Nouveau rendez-vous planifié.', headline_r:'Votre rendez-vous a été reprogrammé.', headline_x:'Votre rendez-vous a été annulé.', patient:'Patient', doctor:'Médecin', date:'Date', time:'Heure', location:'Lieu', mode:'Mode', view_doctor:'Voir le profil du médecin →', view_panel:'Voir dans mon tableau →' },
+  de: { confirmed:'Termin bestätigt', new:'Neuer Termin', rescheduled:'Termin verschoben', cancelled:'Termin storniert', headline_c:'Ihr Termin ist bestätigt.', headline_n:'Neuer Termin vereinbart.', headline_r:'Ihr Termin wurde verschoben.', headline_x:'Ihr Termin wurde storniert.', patient:'Patient', doctor:'Arzt', date:'Datum', time:'Uhrzeit', location:'Ort', mode:'Art', view_doctor:'Arztprofil ansehen →', view_panel:'Im Cockpit ansehen →' },
+  it: { confirmed:'Appuntamento confermato', new:'Nuovo appuntamento', rescheduled:'Appuntamento riprogrammato', cancelled:'Appuntamento annullato', headline_c:'Il tuo appuntamento è confermato.', headline_n:'Nuovo appuntamento programmato.', headline_r:'Il tuo appuntamento è stato riprogrammato.', headline_x:'Il tuo appuntamento è stato annullato.', patient:'Paziente', doctor:'Medico', date:'Data', time:'Ora', location:'Luogo', mode:'Modalità', view_doctor:'Vedi profilo medico →', view_panel:'Vedi nel mio pannello →' },
+  tr: { confirmed:'Randevu Onaylandı', new:'Yeni Randevu', rescheduled:'Randevu Yeniden Planlandı', cancelled:'Randevu İptal Edildi', headline_c:'Randevunuz onaylandı.', headline_n:'Yeni randevu planlandı.', headline_r:'Randevunuz yeniden planlandı.', headline_x:'Randevunuz iptal edildi.', patient:'Hasta', doctor:'Doktor', date:'Tarih', time:'Saat', location:'Konum', mode:'Mod', view_doctor:'Doktor profilini görüntüle →', view_panel:'Panelimde görüntüle →' },
+  ru: { confirmed:'Приём подтверждён', new:'Новая запись', rescheduled:'Запись перенесена', cancelled:'Приём отменён', headline_c:'Ваш приём подтверждён.', headline_n:'Новая запись создана.', headline_r:'Ваш приём перенесён.', headline_x:'Ваш приём отменён.', patient:'Пациент', doctor:'Врач', date:'Дата', time:'Время', location:'Место', mode:'Формат', view_doctor:'Посмотреть профиль врача →', view_panel:'Открыть панель →' },
+  ar: { confirmed:'تم تأكيد الموعد', new:'موعد جديد', rescheduled:'تم إعادة جدولة الموعد', cancelled:'تم إلغاء الموعد', headline_c:'تم تأكيد موعدك.', headline_n:'تم جدولة موعد جديد.', headline_r:'تم إعادة جدولة موعدك.', headline_x:'تم إلغاء موعدك.', patient:'المريض', doctor:'الطبيب', date:'التاريخ', time:'الوقت', location:'الموقع', mode:'الطريقة', view_doctor:'عرض ملف الطبيب ←', view_panel:'عرض في لوحتي ←' },
 }
 
 function tplAppointment(d: Record<string, string>): string {
@@ -50,15 +50,22 @@ function tplAppointment(d: Record<string, string>): string {
   const isDoctor      = (d.appointment_mode || '').includes('Dashboard')
   const isReschedule  = (d.appointment_mode || '').includes('reprogramada') || (d.appointment_mode || '').includes('rescheduled')
   const isDoctorCenter = (d.appointment_mode || '') === 'Solicitud de cita'
+  // P6.3 -- tplAppointment no tenia ninguna rama de cancelacion: tanto la
+  // cancelacion del medico (nueva, este bloque) como la del paciente
+  // (cita-action, ya existia) caian en el default y decian "confirmada".
+  // Se corrigen las dos de una porque comparten exactamente esta funcion.
+  const isCancelled   = /cancel/i.test(d.appointment_mode || '')
   const centerName    = d.brand_name || 'Doctor Center'
-  const badge         = isDoctorCenter ? centerName : isReschedule ? T.rescheduled : isDoctor ? T.new : T.confirmed
-  const headline      = isDoctorCenter ? `Tu turno en ${centerName}.` : isReschedule ? T.headline_r : isDoctor ? T.headline_n : T.headline_c
+  const badge         = isDoctorCenter ? centerName : isCancelled ? T.cancelled : isReschedule ? T.rescheduled : isDoctor ? T.new : T.confirmed
+  const headline      = isDoctorCenter ? `Tu turno en ${centerName}.` : isCancelled ? T.headline_x : isReschedule ? T.headline_r : isDoctor ? T.headline_n : T.headline_c
   const modeClean     = (d.appointment_mode || '')
     .replace('📋 Dashboard: https://citadoc.lat/citadoc-dashboard.html', 'Panel médico')
     .replace(/^[^\w]+ /, '')
-  const badgeBg       = isDoctorCenter ? '#f0f9ff' : isReschedule ? '#fef9c3' : '#dbeafe'
-  const badgeColor    = isDoctorCenter ? '#0891b2' : isReschedule ? '#92400e' : '#1d4ed8'
-  const headerGrad    = isReschedule
+  const badgeBg       = isDoctorCenter ? '#f0f9ff' : isCancelled ? '#fee2e2' : isReschedule ? '#fef9c3' : '#dbeafe'
+  const badgeColor    = isDoctorCenter ? '#0891b2' : isCancelled ? '#991b1b' : isReschedule ? '#92400e' : '#1d4ed8'
+  const headerGrad    = isCancelled
+    ? 'linear-gradient(135deg,#fef2f2 0%,#fee2e2 100%)'
+    : isReschedule
     ? 'linear-gradient(135deg,#fffbeb 0%,#fef9c3 100%)'
     : 'linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%)'
   const ctaColor      = isDoctor ? '#1d4ed8' : '#0891b2'
@@ -1697,7 +1704,13 @@ serve(async (req) => {
       case 'reschedule': {
         const isDoctor     = (data.appointment_mode || '').includes('Dashboard')
         const isReschedule = (data.appointment_mode || '').includes('reprogramada') || type === 'reschedule'
-        const subject = isReschedule
+        // P6.3 -- ver tplAppointment(): mismo fix de fondo, aplicado tambien
+        // al asunto (si no, el cuerpo diria "cancelada" bajo un asunto que
+        // sigue diciendo "confirmada").
+        const isCancelled  = /cancel/i.test(data.appointment_mode || '')
+        const subject = isCancelled
+          ? `Tu cita con ${data.doctor_name || 'tu médico'} fue cancelada`
+          : isReschedule
           ? `Tu cita con ${data.doctor_name || 'tu médico'} ha sido reprogramada`
           : isDoctor
           ? `Nueva cita — ${data.patient_name || ''}`
