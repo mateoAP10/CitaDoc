@@ -46,6 +46,15 @@ const LIMITS: Record<string, { per_min: number; per_hour: number }> = {
   meta_publish:                  { per_min: 60, per_hour: 5 },
   payphone_prepare:              { per_min: 5,  per_hour: 20 },
 
+  // ── P6.1 Eje 2c -- key = cita_id (no doctor_id ni ip), recurso no actor.
+  // Diseño pedía "5 intentos cada 10 min por cita" -- este helper solo
+  // soporta ventanas de minuto/hora, se traduce a per_min:3 (corta ráfagas
+  // de script) + per_hour:5 (tope total, generoso para reintentos reales
+  // de un paciente en el form). doctor_id=cita_id evita también el bug ya
+  // conocido de la rama IP/anon (ver comentario en checkRateLimit) porque
+  // esta key nunca es null.
+  resena_submit:                 { per_min: 3,  per_hour: 5 },
+
   // ── Cooldown de abuse-detector -- NO son metricas de consumo real,
   // son control de "ya se mando esta alerta en la ultima hora". Solo
   // abuse-detector escribe/lee estas 8 features, con ip='system'

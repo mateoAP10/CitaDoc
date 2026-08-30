@@ -92,6 +92,16 @@ textarea::placeholder{color:var(--muted2)}
 
 <script>
 var _sb = supabase.createClient("https://qxoomcqaafogczrvsyhg.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4b29tY3FhYWZvZ2N6cnZzeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDAyMzgsImV4cCI6MjA5Mjk3NjIzOH0.HRer4Z0vx1sNbxpZelIiHOqdGwSgpykEOZM5p2To2Vs");
+// P6.1 Eje 2c -- las escrituras a `resenas` ya no van directo con la anon
+// key (RLS pasó a ser solo-lectura para anon/authenticated). Pasan por
+// resena-submit, que valida ownership real, elegibilidad de la cita y
+// rate-limit antes de escribir con service role.
+var RESENA_SUBMIT_URL = "https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/resena-submit";
+function resenaSubmit(payload){
+  return fetch(RESENA_SUBMIT_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok && j.ok, status: r.status, error: j.error }; }); })
+    .catch(function(e){ return { ok:false, status:0, error: String(e) }; });
+}
 
 function _q(id){ return document.getElementById(id); }
 function showView(id){
@@ -146,12 +156,11 @@ async function init(){
     var btn = _q('btnSubmit');
     btn.disabled = true; btn.textContent = 'Enviando…';
     var comentario = (_q('comentario').value || '').trim();
-    var payload = { cita_id: citaId, rating_medico: rating, comentario: comentario || null };
-    if(medicoId) payload.medico_id = medicoId;
-    var r = await _sb.from('resenas').upsert(payload, { onConflict: 'cita_id' });
-    if(r.error){
+    var payload = { cita_id: citaId, rating_medico: rating, comentario: comentario || null, medico_id: medicoId || null };
+    var r = await resenaSubmit(payload);
+    if(!r.ok){
       btn.disabled = false; btn.textContent = 'Enviar reseña';
-      _q('starLabel').textContent = 'No se pudo enviar — intenta de nuevo';
+      _q('starLabel').textContent = r.status === 409 ? 'Esta cita ya fue evaluada' : 'No se pudo enviar — intenta de nuevo';
       _q('starLabel').classList.add('err-text');
       return;
     }
@@ -166,7 +175,7 @@ document.addEventListener('click', async function(e){
   var n = parseInt(b.dataset.n, 10);
   document.querySelectorAll('.app-star-link').forEach(function(x){ x.classList.remove('done'); });
   b.classList.add('done');
-  await _sb.from('resenas').update({ rating_app: n }).eq('cita_id', citaId);
+  await resenaSubmit({ cita_id: citaId, rating_app: n });
   _q('thanksSub').textContent = '¡Gracias por calificar todo! 🎉';
   setTimeout(function(){ _q('appRateBlock').classList.add('hidden'); }, 900);
 });
