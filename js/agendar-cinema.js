@@ -145,6 +145,15 @@ function renderStep1(){
     body.appendChild(si);
   }
 
+  // P6.2 -- mensaje de "sede sin horario propio", oculto por defecto. Se
+  // reconstruye en cada render de step1 (igual que todo lo demas acá) y lo
+  // togglea loadDisp() cuando resuelve la disponibilidad real.
+  var sinHorarioMsg=document.createElement('div');
+  sinHorarioMsg.id='acSedeSinHorarioMsg';
+  sinHorarioMsg.style.cssText='display:none;background:rgba(255,255,255,.04);border:1.5px dashed rgba(255,255,255,.15);border-radius:12px;padding:.75rem 1rem;margin-bottom:.8rem;font-size:.8rem;color:rgba(255,255,255,.55);text-align:center';
+  sinHorarioMsg.textContent='Esta sede aún no tiene horarios configurados.';
+  body.appendChild(sinHorarioMsg);
+
   // Day label + scroll
   var dl=document.createElement('div');dl.className='ac-sec';dl.textContent='Elige una fecha';body.appendChild(dl);
   var scroll=document.createElement('div');scroll.id='acDayScroll';body.appendChild(scroll);
@@ -217,8 +226,10 @@ function loadDisp(){
     .eq('medico_id',_medico.id).gte('fecha',today).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada')
     .then(function(res){
       cargarDisponibilidadPorSede(_medico,res.data||[],window._sb,_locSel||null)
-        .then(function(disp){
-          _disp=disp;
+        .then(function(r){
+          _disp=r.disp;
+          var m=document.getElementById('acSedeSinHorarioMsg');
+          if(m)m.style.display=(r.sedeConfigurada===false)?'block':'none';
           renderDays();
           if(_date) renderSlots();
           updateStepUI();

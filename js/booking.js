@@ -107,6 +107,24 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
     currentStep = n;
   }
 
+  // P6.2 -- mensaje inyectado por JS (no en el HTML estatico de cada
+  // template) porque el modal de booking.js se embebe identico en varias
+  // paginas (dna-*.html, index.html, demo.html, citadoc-web.html); un solo
+  // lugar evita duplicar el markup en cada una.
+  function toggleSedeSinHorarioMsgModal(show) {
+    var wrap = window.el('sedeSelectorWrap');
+    if (!wrap) return;
+    var msg = window.el('sedeSinHorarioMsgModal');
+    if (!msg) {
+      msg = document.createElement('div');
+      msg.id = 'sedeSinHorarioMsgModal';
+      msg.style.cssText = 'display:none;background:#f9fafb;border:1.5px dashed #e5e7eb;border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#6b7280;text-align:center';
+      msg.textContent = 'Esta sede aún no tiene horarios configurados.';
+      wrap.insertAdjacentElement('afterend', msg);
+    }
+    msg.style.display = show ? 'block' : 'none';
+  }
+
   function cargarDispModal() {
     var hoy = new Date().toISOString().split('T')[0];
     var en60 = new Date(); en60.setDate(en60.getDate() + 60);
@@ -116,7 +134,7 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
       .neq('estado', 'cancelada')
       .then(function (res) {
         window.cargarDisponibilidadPorSede(selectedDoctor, res.data || [], window._sb, selectedLocationId)
-          .then(function (disp) { dispModal = disp; renderCal(); });
+          .then(function (r) { dispModal = r.disp; toggleSedeSinHorarioMsgModal(r.sedeConfigurada === false); renderCal(); });
       });
   }
 

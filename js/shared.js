@@ -9,12 +9,17 @@ function el(a){return document.getElementById(a)}function setText(a,e){var i=el(
       .then(function(res){
         var blocks=res.data||[];
         if(!blocks.length){
-          // No location-specific blocks — try horarios_config filter, then fallback to full
+          // No location-specific blocks -- probar horarios_config (fuente
+          // legacy, misma info que guardarHorarios() escribe en paralelo a
+          // la tabla). P6.2: si tampoco hay nada ahi, YA NO cae al horario
+          // general -- una sede seleccionada sin configuracion propia
+          // devuelve cero disponibilidad real, nunca una copia engañosa
+          // del horario general.
           var n=a.horarios_config||{},o={};
           Object.keys(n).forEach(function(k){var e=n[k];if(e&&e.activo&&e.bloques){var f=e.bloques.filter(function(b){return String(b.location_id||"")===String(r)});f.length&&(o[k]=Object.assign({},e,{bloques:f}))}});
-          return Object.keys(o).length
-            ?cargarDisponibilidadConBloqueos(Object.assign({},a,{horarios_config:o,dias_atencion:Object.keys(o)}),e,i)
-            :cargarDisponibilidadConBloqueos(a,e,i);
+          if(Object.keys(o).length)
+            return cargarDisponibilidadConBloqueos(Object.assign({},a,{horarios_config:o,dias_atencion:Object.keys(o)}),e,i).then(function(disp){return{disp:disp,sedeConfigurada:true}});
+          return Promise.resolve({disp:{},sedeConfigurada:false});
         }
         var DAY_MAP={"Lunes":"lun","Martes":"mar","Miércoles":"mie","Miercoles":"mie","Jueves":"jue","Viernes":"vie","Sábado":"sab","Sabado":"sab","Domingo":"dom","lun":"lun","mar":"mar","mie":"mie","jue":"jue","vie":"vie","sab":"sab","dom":"dom"};
         var locConfig={};
@@ -26,9 +31,16 @@ function el(a){return document.getElementById(a)}function setText(a,e){var i=el(
         return cargarDisponibilidadConBloqueos(
           Object.assign({},a,{horarios_config:locConfig,dias_atencion:Object.keys(locConfig)}),
           e,i
-        );
+        ).then(function(disp){return{disp:disp,sedeConfigurada:true}});
       });
   }
-  return cargarDisponibilidadConBloqueos(a,e,i);
-}function getAvailableSlots(a,e,i){var r=(new Date).toISOString().split("T")[0],n=new Date;n.setDate(n.getDate()+60);var o=n.toISOString().split("T")[0];return i.from("citas_disponibilidad").select("fecha,hora").eq("medico_id",a.id).gte("fecha",r).lte("fecha",o).in("estado",["confirmada","pendiente"]).then((function(r){var n=r.data||[];return cargarDisponibilidadPorSede(a,n,i,e||null)}))}function generarDisponibilidad(a,e){var i=new Date;i.setHours(0,0,0,0);for(var r={},n=0;n<60;n++){var o=new Date(i);o.setDate(i.getDate()+n);var t=o.toISOString().split("T")[0],l=DIAS_SEM[o.getDay()];if(!((a.dias_atencion||[]).indexOf(l)<0)){r[t]=[];var u=a.horario_desde||"09:00",s=a.horario_hasta||"17:00",c=60*parseInt(u.split(":")[0])+parseInt(u.split(":")[1]),d=60*parseInt(s.split(":")[0])+parseInt(s.split(":")[1]),g=c,p=0;if(0===n){var f=new Date;p=60*f.getHours()+f.getMinutes()+120}for(;g<d;){var h=pad2(Math.floor(g/60))+":"+pad2(g%60);e.some((function(a){return a.fecha===t&&a.hora===h}))||0===n&&g<p||r[t].push(h),g+=30}r[t].length||delete r[t]}}return r}
+  // Sin sede seleccionada -- horario general sin cambios, sedeConfigurada:null
+  // significa "no aplica" (los 3 consumidores publicos no muestran mensaje).
+  return cargarDisponibilidadConBloqueos(a,e,i).then(function(disp){return{disp:disp,sedeConfigurada:null}});
+}function getAvailableSlots(a,e,i){var r=(new Date).toISOString().split("T")[0],n=new Date;n.setDate(n.getDate()+60);var o=n.toISOString().split("T")[0];return i.from("citas_disponibilidad").select("fecha,hora").eq("medico_id",a.id).gte("fecha",r).lte("fecha",o).in("estado",["confirmada","pendiente"]).then((function(r){var n=r.data||[];
+  // getAvailableSlots() desenvuelve {disp,sedeConfigurada} -- P6.2 cambia
+  // la forma que devuelve cargarDisponibilidadPorSede() para los 3
+  // consumidores publicos, pero dashboard/Assistant (unicos que llaman
+  // este wrapper) siguen viendo el mapa plano de siempre, sin cambios.
+  return cargarDisponibilidadPorSede(a,n,i,e||null).then(function(res){return res.disp})}))}function generarDisponibilidad(a,e){var i=new Date;i.setHours(0,0,0,0);for(var r={},n=0;n<60;n++){var o=new Date(i);o.setDate(i.getDate()+n);var t=o.toISOString().split("T")[0],l=DIAS_SEM[o.getDay()];if(!((a.dias_atencion||[]).indexOf(l)<0)){r[t]=[];var u=a.horario_desde||"09:00",s=a.horario_hasta||"17:00",c=60*parseInt(u.split(":")[0])+parseInt(u.split(":")[1]),d=60*parseInt(s.split(":")[0])+parseInt(s.split(":")[1]),g=c,p=0;if(0===n){var f=new Date;p=60*f.getHours()+f.getMinutes()+120}for(;g<d;){var h=pad2(Math.floor(g/60))+":"+pad2(g%60);e.some((function(a){return a.fecha===t&&a.hora===h}))||0===n&&g<p||r[t].push(h),g+=30}r[t].length||delete r[t]}}return r}
 function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/booking-resolve-patient",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nombre:n,email:t||null,telefono:a||null})}).then((function(r){return r.json()})).then((function(j){return j.ok?j.patient_id:null})).catch((function(){return null}))}
