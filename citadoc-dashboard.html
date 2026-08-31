@@ -4110,6 +4110,21 @@ async function vaToolLoopConfirm(){
     } else {
       toolResultContent = { ok:true, cita:r.cita };
       if(typeof cargarCitasCal === 'function' && M && AppState.currentPanel === 'calendario') cargarCitasCal(M.id);
+      // P6.6 -- mismo patron que confirmarNuevaCita() (boton manual): un
+      // solo envio, solo despues de que appointmentsCore() confirmo que la
+      // cita se creo, solo si hay email. No se toca appointmentsCore() ni
+      // citadocSendEmail() -- esta rama sigue siendo la unica que decide
+      // si corresponde avisar al paciente.
+      if(p.email){
+        var vaDocName = (M.titulo||"Dr.")+" "+M.nombre+" "+M.apellido;
+        var vaFechaLabel = new Date(fechaConfirm+"T12:00:00").toLocaleDateString("es",{weekday:"long",day:"numeric",month:"long"});
+        citadocSendEmail("appointment", {
+          to_email: p.email, doctor_name: vaDocName, patient_name: p.nombre,
+          appointment_date: vaFechaLabel, appointment_time: pend.pendingArgs.time,
+          location_name: "Consultorio médico", appointment_mode: "🏥 Presencial",
+          public_profile_url: "https://citadoc.lat/citadoc-perfil.html?slug="+(M.slug||"")
+        });
+      }
     }
   }
   else if(name === 'crear_paciente'){
