@@ -10,7 +10,7 @@ var MO=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 var MO_LARGO=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 var DI=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
-var _medico=null,_locs=[],_locSel=null,_date=null,_slot=null,_disp={},_step=1;
+var _medico=null,_locs=[],_locSel=null,_date=null,_slot=null,_disp={},_step=1,_autoSel=false; // P7.1 -- true solo cuando hay 1 sede y se autoselecciono
 
 function sendEmail(payload){
   try{fetch(EMAIL_FN,{method:'POST',headers:{'Content-Type':'application/json','x-citadoc-public-key':EMAIL_KEY},body:JSON.stringify(payload)});}catch(e){}
@@ -135,11 +135,11 @@ function renderStep1(){
       var c=document.createElement('div');
       c.className='ac-sede'+(String(_locSel)===String(l.id)?' sel':'');
       c.innerHTML='<div class="ac-sede-ico">📍</div><div><div class="ac-sede-n">'+esc(l.nombre||'Consultorio')+'</div><div class="ac-sede-a">'+esc((l.direccion||'')+(l.ciudad?', '+l.ciudad:''))+'</div></div>';
-      c.addEventListener('click',function(){_locSel=l.id;_date=null;_slot=null;renderStep1();loadDisp();});
+      c.addEventListener('click',function(){_locSel=l.id;_autoSel=false;_date=null;_slot=null;renderStep1();loadDisp();});
       body.appendChild(c);
     });
   } else if(_locs.length===1){
-    _locSel=_locs[0].id;
+    _locSel=_locs[0].id;_autoSel=true;
     var si=document.createElement('div');si.className='ac-sede sel';
     si.innerHTML='<div class="ac-sede-ico">📍</div><div><div class="ac-sede-n">'+esc(_locs[0].nombre||'Consultorio')+'</div><div class="ac-sede-a">'+esc((_locs[0].direccion||'')+(_locs[0].ciudad?', '+_locs[0].ciudad:''))+'</div></div>';
     body.appendChild(si);
@@ -225,7 +225,7 @@ function loadDisp(){
   window._sb.from('citas_disponibilidad').select('fecha,hora')
     .eq('medico_id',_medico.id).gte('fecha',today).lte('fecha',en60.toISOString().split('T')[0]).neq('estado','cancelada')
     .then(function(res){
-      cargarDisponibilidadPorSede(_medico,res.data||[],window._sb,_locSel||null)
+      cargarDisponibilidadPorSede(_medico,res.data||[],window._sb,_locSel||null,_autoSel)
         .then(function(r){
           _disp=r.disp;
           var m=document.getElementById('acSedeSinHorarioMsg');

@@ -10,6 +10,7 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
   var selectedDate       = null;
   var selectedSlot       = null;
   var selectedLocationId = null;
+  var _sedeAutoSeleccionada = false; // P7.1 -- true solo cuando hay 1 sede y se autoselecciono, no cuando el paciente eligio
   var currentStep        = 1;
   var dispModal          = {};
   var _locationsModal    = [];
@@ -133,7 +134,7 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
       .gte('fecha', hoy).lte('fecha', en60.toISOString().split('T')[0])
       .neq('estado', 'cancelada')
       .then(function (res) {
-        window.cargarDisponibilidadPorSede(selectedDoctor, res.data || [], window._sb, selectedLocationId)
+        window.cargarDisponibilidadPorSede(selectedDoctor, res.data || [], window._sb, selectedLocationId, _sedeAutoSeleccionada)
           .then(function (r) { dispModal = r.disp; toggleSedeSinHorarioMsgModal(r.sedeConfigurada === false); renderCal(); });
       });
   }
@@ -143,9 +144,9 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
     var wrap = window.el('sedeSelectorWrap');
     if (!wrap) return;
     wrap.innerHTML = '';
-    if (!locs || locs.length === 0) { wrap.style.display = 'none'; selectedLocationId = null; return; }
+    if (!locs || locs.length === 0) { wrap.style.display = 'none'; selectedLocationId = null; _sedeAutoSeleccionada = false; return; }
     if (locs.length === 1) {
-      selectedLocationId = locs[0].id; wrap.style.display = 'block';
+      selectedLocationId = locs[0].id; _sedeAutoSeleccionada = true; wrap.style.display = 'block';
       var label = document.createElement('div'); label.className = 'sede-info-label';
       label.innerHTML = '📍 <strong>' + (locs[0].nombre || 'Consultorio') + '</strong> · ' + (locs[0].direccion ? locs[0].direccion.split(',').slice(0,2).join(',') : '');
       wrap.appendChild(label); return;
@@ -161,7 +162,7 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
       var chip = document.createElement('span'); chip.className = 'sede-chip'; chip.textContent = 'Elegir esta sede';
       card.appendChild(name); card.appendChild(addr); card.appendChild(chip);
       card.addEventListener('click', function () {
-        selectedLocationId = loc.id; selectedDate = null; selectedSlot = null;
+        selectedLocationId = loc.id; _sedeAutoSeleccionada = false; selectedDate = null; selectedSlot = null;
         window.el('slotsWrap').style.display = 'none';
         window.el('btnSig1').disabled = true; window.el('btnSig1').style.opacity = '.4';
         renderSedeSelectorModal(locs); cargarDispModal();
