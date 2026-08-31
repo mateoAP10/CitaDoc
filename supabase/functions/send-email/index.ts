@@ -16,6 +16,13 @@ const USER_ALLOWED_TYPES = [
   'voice_doc', 'docs', 'indicaciones', 'verification_new',
   'lab_order_confirm', 'lab_order_realizado', 'lab_order_cancelado', 'lab_result',
   'center_reminder', 'center_noshow', 'center_postvista', 'center_coupon', 'center_confirm',
+  // P6.3.1 -- citadocSendEmail() (dashboard) ya manda el JWT del medico
+  // correctamente desde antes (segunda definicion, DOMContentLoaded
+  // posterior, verificado en vivo); appointment nunca se agrego a este
+  // allowlist cuando se creo en P2.3 -- ahi solo existia el flujo publico.
+  // Reprogramar cita y "Nueva cita" manual usan este tipo hacia el
+  // paciente y quedaban en 403 sin ninguna otra causa.
+  'appointment',
 ]
 // C -- x-citadoc-public-key (flujo de booking sin sesion): sin cambios,
 // misma lista que ya existia.
