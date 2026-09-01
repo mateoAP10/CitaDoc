@@ -239,7 +239,8 @@ async function crearPacienteCore(fields, opts){
     genero:fields.genero||null,
     direccion:(fields.direccion||'').trim()||null,
     notas:(fields.notas||'').trim()||null,
-    origen: opts.origen || 'manual'
+    origen: opts.origen || 'manual',
+    is_qa: opts.is_qa != null ? !!opts.is_qa : (typeof cdIsQa === 'function' && cdIsQa())
   }]).select("id,nombre,email,telefono,cedula").maybeSingle();
   if(o.error) return { ok:false, code:'db_error', message:o.error.message };
   return { ok:true, paciente:o.data };
@@ -449,7 +450,13 @@ async function appointmentsCore(fields){
     fecha: fields.fecha,
     hora: fields.hora,
     estado: 'confirmada',
-    seguro: fields.seguro || null
+    seguro: fields.seguro || null,
+    // P7.2 -- origen es obligatorio en la práctica: los 2 únicos callers
+    // (botón manual / Assistant) siempre lo pasan explícito. is_qa cae a
+    // cdIsQa() (?qa=1 en la URL del dashboard) solo si el caller no lo
+    // especificó a mano.
+    origen: fields.origen || null,
+    is_qa: fields.is_qa != null ? !!fields.is_qa : (typeof cdIsQa === 'function' && cdIsQa())
   };
   var r = await _sb.from("citas").insert([insertData]).select("id,fecha,hora,paciente_nombre,estado").maybeSingle();
   if(r.error){
@@ -486,7 +493,8 @@ async function confirmarNuevaCita(e,t,a,o,i,n,r){
   g&&(g.textContent="Creando...",g.disabled=!0);
   var res = await appointmentsCore({
     paciente_id:e||null, paciente_nombre:t, paciente_email:a||null, paciente_tel:o||'',
-    fecha:s, hora:l, tipo:u, modalidad:f, location_id:c, seguro:n||null
+    fecha:s, hora:l, tipo:u, modalidad:f, location_id:c, seguro:n||null,
+    origen:'dashboard_manual'
   });
   if(!res.ok){
     if(res.code==='slot_unavailable'){
@@ -540,7 +548,8 @@ async function crearPacienteCore(fields, opts){
     genero:fields.genero||null,
     direccion:(fields.direccion||'').trim()||null,
     notas:(fields.notas||'').trim()||null,
-    origen: opts.origen || 'manual'
+    origen: opts.origen || 'manual',
+    is_qa: opts.is_qa != null ? !!opts.is_qa : (typeof cdIsQa === 'function' && cdIsQa())
   }]).select("id,nombre,email,telefono,cedula").maybeSingle();
   if(o.error) return { ok:false, code:'db_error', message:o.error.message };
   return { ok:true, paciente:o.data };
@@ -4100,7 +4109,8 @@ async function vaToolLoopConfirm(){
     var r = await appointmentsCore({
       paciente_id: p.id, paciente_nombre: p.nombre, paciente_email: p.email||'',
       paciente_tel: p.telefono||'', fecha: fechaConfirm, hora: pend.pendingArgs.time,
-      tipo:'Control', modalidad:'presencial', location_id:null, seguro:null
+      tipo:'Control', modalidad:'presencial', location_id:null, seguro:null,
+      origen:'assistant'
     });
     console.log('[VA TOOL] result', r);
     if(!r.ok){

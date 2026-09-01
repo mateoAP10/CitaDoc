@@ -286,7 +286,7 @@ function confirmar(data){
   btn.textContent='Confirmando...';btn.disabled=true;
   var sb=window._sb;
   var nom=data.nom,tel=data.tel,email=data.email,motivo=data.motivo;
-  buscarOCrearPaciente(sb,nom,email,tel).then(function(pacienteId){
+  buscarOCrearPaciente(sb,nom,email,tel,window.cdIsQa&&window.cdIsQa()).then(function(pacienteId){
     sb.from('citas_disponibilidad').select('medico_id')
       .eq('medico_id',_medico.id).eq('fecha',_date).eq('hora',_slot)
       .in('estado',['confirmada','pendiente'])
@@ -304,7 +304,9 @@ function confirmar(data){
           motivo:motivo||null,
           fecha:_date,hora:_slot,
           estado:'confirmada',
-          location_id:_locSel||null
+          location_id:_locSel||null,
+          origen:'public_widget',
+          is_qa:!!(window.cdIsQa&&window.cdIsQa())
         }).then(function(res){
           if(res.error){
             if(res.error.message&&res.error.message.indexOf('unique_slot_cita')>-1){

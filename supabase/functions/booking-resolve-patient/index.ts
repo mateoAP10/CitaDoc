@@ -43,6 +43,11 @@ Deno.serve(async (req) => {
   const nombre   = (body.nombre || '').toString().trim()
   const email    = (body.email || '').toString().trim() || null
   const telefono = (body.telefono || '').toString().trim() || null
+  // P7.2 -- esta función SOLO la llama buscarOCrearPaciente() desde los
+  // templates públicos, nunca el dashboard/Assistant -- por eso origen se
+  // fija acá mismo, no llega como parámetro del cliente. is_qa sí viaja
+  // desde el cliente (?qa=1 -> cdIsQa()), default false si no se manda.
+  const isQa     = body.is_qa === true
 
   if (!nombre) return fail(400, 'falta nombre')
   if (!email && !telefono) return fail(400, 'falta email o telefono')
@@ -70,7 +75,7 @@ Deno.serve(async (req) => {
       // Sin medico_id -- igual que crearPaciente() hoy. Paciente "sin dueño"
       // hasta que algún médico lo atienda y quede vinculado por otra vía.
       const created = await sb.from('pacientes')
-        .insert({ nombre, email, telefono })
+        .insert({ nombre, email, telefono, origen: 'public_widget', is_qa: isQa })
         .select('id').single()
       if (created.error) return fail(500, 'no se pudo crear el paciente')
       patientId = created.data.id

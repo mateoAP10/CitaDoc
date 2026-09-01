@@ -1,5 +1,5 @@
 // ── Patient helpers (pre-existing) ────────────────────────────────────────
-function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/booking-resolve-patient",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nombre:n,email:t||null,telefono:a||null})}).then((function(r){return r.json()})).then((function(j){return j.ok?j.patient_id:null})).catch((function(){return null}))}
+function buscarOCrearPaciente(e,n,t,a,q){return fetch("https://qxoomcqaafogczrvsyhg.supabase.co/functions/v1/booking-resolve-patient",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nombre:n,email:t||null,telefono:a||null,is_qa:!!q})}).then((function(r){return r.json()})).then((function(j){return j.ok?j.patient_id:null})).catch((function(){return null}))}
 
 // ── Booking UI Module ──────────────────────────────────────────────────────
 (function () {
@@ -258,7 +258,7 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
     if (btn) { btn.textContent = 'Confirmando...'; btn.disabled = true; }
     var parts = selectedDate.split('-');
     var fechaLabel = parseInt(parts[2]) + ' de ' + MESES[parseInt(parts[1])-1] + ' ' + parts[0];
-    window.buscarOCrearPaciente(window._sb, nombre, email, tel).then(function (pacienteId) {
+    window.buscarOCrearPaciente(window._sb, nombre, email, tel, window.cdIsQa && window.cdIsQa()).then(function (pacienteId) {
       window._sb.from('citas_disponibilidad').select('medico_id')
         .eq('medico_id', selectedDoctor.id).eq('fecha', selectedDate).eq('hora', selectedSlot)
         .in('estado', ['confirmada','pendiente'])
@@ -272,7 +272,8 @@ function buscarOCrearPaciente(e,n,t,a){return fetch("https://qxoomcqaafogczrvsyh
           window._sb.from('citas').insert({
             medico_id: selectedDoctor.id, paciente_id: pacienteId||null,
             paciente_nombre: nombre, paciente_email: email||null, paciente_tel: tel,
-            motivo: motivo||null, fecha: selectedDate, hora: selectedSlot, estado: 'confirmada'
+            motivo: motivo||null, fecha: selectedDate, hora: selectedSlot, estado: 'confirmada',
+            origen: 'public_widget', is_qa: !!(window.cdIsQa && window.cdIsQa())
           }).then(function (res) {
             if (res.error) {
               if (res.error.message && res.error.message.indexOf('unique_slot_cita') > -1) {
