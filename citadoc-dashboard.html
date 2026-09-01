@@ -3813,6 +3813,16 @@ async function vaPrepareMutatingToolPreview(toolCall, args, readyResults, assist
   var name = toolCall.name;
 
   if(name === 'crear_cita'){
+    // P8.2.2 -- BUG REAL encontrado en el benchmark de Claude: un modelo
+    // puede llamar crear_cita sin haber resuelto paciente antes (Haiku lo
+    // hizo). vaShowCitaPreviewFromTool() leía _vaChat.patient.nombre sin
+    // validar -- TypeError crudo en vez de un error controlado. Mismo
+    // patrón que actualizar_paciente/archivar_paciente/restaurar_paciente.
+    if(!_vaChat.patient){
+      var noPatientCita = readyResults.concat([{ tool_call_id:toolCall.id, name:toolCall.name, content: JSON.stringify({ ok:false, reason:'patient_not_found', message:'No hay un paciente resuelto todavía -- vuelve a buscarlo con buscar_paciente.' }) }]);
+      await vaContinueToolLoop(assistantMessage, noPatientCita);
+      return;
+    }
     console.log('[VA TOOL] next: esperando confirmación humana antes de ejecutar crear_cita');
     _vaChat._pendingToolLoop = { assistantMessage:assistantMessage, pendingCall:toolCall, pendingArgs:args, readyResults:readyResults };
     vaShowCitaPreviewFromTool(args);
