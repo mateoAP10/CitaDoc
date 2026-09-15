@@ -5932,15 +5932,60 @@ async function vaActionDispatch(){
   // pegado en pantalla. Al detectar ese caso (event.persisted) se repite
   // la misma entrada elegante desde cero -- vuelve a mostrar el splash y
   // reactiva Home, nunca deja lo viejo pegado.
+  function _vhoReassertEntry(){
+    var splash = document.getElementById('citadocSplash');
+    if(splash){ splash.style.display = ''; splash.classList.remove('cd-splash-out'); }
+    _splashShownAt = Date.now();
+    tries = 0;
+    if(window.M && M.id) activar(); else waitForMedico();
+  }
+
   window.addEventListener('pageshow', function(e){
-    if(e.persisted && isMobile()){
-      var splash = document.getElementById('citadocSplash');
-      if(splash){ splash.style.display = ''; splash.classList.remove('cd-splash-out'); }
-      _splashShownAt = Date.now();
-      tries = 0;
-      if(window.M && M.id) activar(); else waitForMedico();
-    }
+    if(e.persisted && isMobile()) _vhoReassertEntry();
   });
+
+  // Ciclo de vida NATIVO real de Capacitor -- distinto del pageshow/
+  // bfcache de arriba (eso es Safari; esto es el WebView nativo dentro
+  // de la app empaquetada). Nunca se asume que exista: en un navegador
+  // normal (o en el preview de Vercel) window.Capacitor simplemente no
+  // está, y todo este bloque no hace nada -- diseñado para su ausencia.
+  if(isMobile() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
+    var CapApp = window.Capacitor.Plugins.App;
+
+    // Al volver de background (el sistema operativo pudo haber
+    // descargado el WebView de memoria) -- misma reafirmación que ya
+    // hace el pageshow de Safari, para que la app real nunca vuelva
+    // mostrando una pantalla vieja pegada.
+    CapApp.addListener('appStateChange', function(state){
+      if(state && state.isActive) _vhoReassertEntry();
+    });
+
+    // Botón físico de back de Android -- CitaDoc navega entre paneles
+    // por JS (showPanel), nunca cambia el historial real del
+    // navegador, así que sin esto Capacitor cerraría la app entera al
+    // primer back sin importar en qué pantalla esté el médico. Patrón
+    // real de Android: si no está en el Home de Vera, el back lo lleva
+    // ahí (como tocar el orbe central); si ya está en el Home, pide
+    // "tocar de nuevo para salir" en vez de cerrar de una -- nunca se
+    // sale por accidente.
+    var _vhoBackExitArmed = false;
+    CapApp.addListener('backButton', function(){
+      var overlay = document.getElementById('veraHomeOverlay');
+      var enHome = overlay && overlay.classList.contains('vho-active');
+      if(!enHome){
+        vhoOpenHome();
+        _vhoBackExitArmed = false;
+        return;
+      }
+      if(_vhoBackExitArmed){
+        CapApp.exitApp();
+      } else {
+        _vhoBackExitArmed = true;
+        if(typeof mostrarToast === 'function') mostrarToast('Tocá de nuevo para salir');
+        setTimeout(function(){ _vhoBackExitArmed = false; }, 2000);
+      }
+    });
+  }
 })();
 </script>
 </body></html>
