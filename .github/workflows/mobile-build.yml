@@ -33,8 +33,16 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
+      # Los runners ubuntu-latest de GitHub ya traen el Android SDK
+      # preinstalado (ANDROID_HOME/ANDROID_SDK_ROOT) -- no hace falta
+      # instalarlo aparte. La acción android-actions/setup-android@v3
+      # se probó primero y falló: intenta bajar el paquete "tools"
+      # (legacy), que Google ya eliminó del repositorio del SDK.
+      - name: Confirmar SDK preinstalado + instalar la plataforma que hace falta
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: npm ci
         run: npm ci
