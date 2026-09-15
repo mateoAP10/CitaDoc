@@ -1,0 +1,123 @@
+name: CitaDoc App -- build y validación (sin publicar)
+
+# Fase 1 del plan: esto SOLO construye y valida que el wrapper de
+# Capacitor compila y que el WebView carga la CitaDoc real
+# (server.url en capacitor.config.json) -- nunca firma con
+# credenciales de Apple/Google, nunca sube nada a App Store Connect
+# ni a Play Console. Eso es Fase 3, a propósito, más adelante.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [mobile-app-v1]
+    paths: ['mobile-app/**', '.github/workflows/mobile-build.yml']
+
+jobs:
+  android:
+    name: Build Android (debug, sin firmar)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Capacitor sync (copia capacitor.config.json real al proyecto Android)
+        run: npx cap sync android
+
+      - name: Gradle build (APK debug, instalable por sideload)
+        working-directory: mobile-app/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Subir el APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: citadoc-android-debug
+          path: mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+  ios:
+    name: Build iOS (simulador, sin firmar) + captura de pantalla real
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Capacitor sync (copia capacitor.config.json real al proyecto iOS)
+        run: npx cap sync ios
+
+      - name: pod install
+        working-directory: mobile-app/ios/App
+        run: pod install
+
+      - name: xcodebuild (solo simulador -- sin firma, sin certificados de Apple)
+        working-directory: mobile-app/ios/App
+        run: |
+          xcodebuild -workspace App.xcworkspace -scheme App \
+            -configuration Debug -sdk iphonesimulator \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      # Prueba de humo real: arranca la app en un simulador de verdad y
+      # saca una captura -- confirma que el WebView de verdad carga
+      # citadoc-dashboard.html (server.url), no solo que el proyecto
+      # compila. Esto es lo más cerca de "verificar que abre
+      # correctamente" que se puede automatizar sin un dispositivo real
+      # ni interacción humana -- login/Vera/micrófono siguen
+      # necesitando la pasada manual en un iPhone real (Fase 2).
+      - name: Arrancar simulador y capturar pantalla real
+        working-directory: mobile-app/ios/App
+        run: |
+          set -e
+          DEVICE=$(xcrun simctl list devices available | grep -m1 "iPhone" | sed -E 's/.*\(([-0-9A-F]+)\).*/\1/')
+          echo "Usando simulador: $DEVICE"
+          xcrun simctl boot "$DEVICE" || true
+          xcrun simctl bootstatus "$DEVICE" -b
+          APP_PATH=$(find build/Build/Products/Debug-iphonesimulator -maxdepth 1 -name "*.app" | head -1)
+          echo "App: $APP_PATH"
+          xcrun simctl install "$DEVICE" "$APP_PATH"
+          xcrun simctl launch "$DEVICE" lat.citadoc.app
+          sleep 12
+          xcrun simctl io "$DEVICE" screenshot citadoc-simulador.png
+
+      - name: Subir la captura de pantalla
+        uses: actions/upload-artifact@v4
+        with:
+          name: citadoc-ios-screenshot
+          path: mobile-app/ios/App/citadoc-simulador.png
+          retention-days: 30
+
+      - name: Subir el .app compilado
+        uses: actions/upload-artifact@v4
+        with:
+          name: citadoc-ios-simulator-app
+          path: mobile-app/ios/App/build/Build/Products/Debug-iphonesimulator/App.app
+          retention-days: 30
