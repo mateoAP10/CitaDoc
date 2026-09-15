@@ -1,0 +1,10 @@
+{
+  "appId": "lat.citadoc.app",
+  "appName": "CitaDoc",
+  "webDir": "www",
+  "server": {
+    "url": "https://citadoc-git-mobile-app-v1-mateoap10s-projects.vercel.app/citadoc-dashboard.html",
+    "androidScheme": "https",
+    "cleartext": false
+  }
+}

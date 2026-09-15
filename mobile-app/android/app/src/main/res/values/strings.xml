@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CitaDoc</string>
+    <string name="title_activity_main">CitaDoc</string>
+    <string name="package_name">lat.citadoc.app</string>
+    <string name="custom_url_scheme">lat.citadoc.app</string>
+</resources>
